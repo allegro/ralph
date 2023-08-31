@@ -256,8 +256,9 @@ class ClusterAdmin(CustomFieldValueAdminMixin, RalphAdmin):
 
 @register(DataCenter)
 class DataCenterAdmin(RalphAdmin):
-
-    search_fields = ['name']
+    list_display = ['name', 'company', 'country', 'city', 'address', 'latitude', 'longitude', 'type', 'shortcut']
+    search_fields = ['name', 'shortcut']
+    list_filter = ['name', 'company', 'country', 'city', 'address', 'type', 'shortcut']
 
 
 class NetworkTerminatorReadOnlyInline(RalphTabularM2MInline):

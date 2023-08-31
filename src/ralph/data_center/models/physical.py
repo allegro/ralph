@@ -4,6 +4,7 @@ import re
 from collections import namedtuple, OrderedDict
 from itertools import chain
 
+from dj.choices import Country, Choices
 from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -124,11 +125,44 @@ class Gap(object):
                 handle_missing(str(slot_no))
         return items
 
+class DataCenterType(Choices):
+    _ = Choices.Choice
+
+    dc = _("dc")
+    cowork = _("cowork")
+    call_center = _("call_center")
+    depot = _("depot")
+    warehouse = _("warehouse")
+    retail = _("retail")
+    office = _("office")
 
 class DataCenter(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
     _allow_in_dashboard = True
 
     show_on_dashboard = models.BooleanField(default=True)
+
+    company = models.CharField(
+        verbose_name=_('company'), max_length=256, blank=True, null=True)
+    country = models.PositiveIntegerField(
+        verbose_name=_('country'),
+        choices=Country(),
+        blank=True,
+        null=True
+    )
+    city = models.CharField(
+        verbose_name=_('city'), max_length=256, blank=True, null=True)
+    address = models.CharField(
+        verbose_name=_('address'), max_length=256, blank=True, null=True)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+    type = models.PositiveIntegerField(
+        verbose_name=_("data center type"), choices=DataCenterType(),
+        blank=True, null=True
+    )
+    shortcut = models.CharField(
+        verbose_name=_("shortcut"), max_length=256, blank=True, null=True
+    )
+
 
     @property
     def rack_set(self):
