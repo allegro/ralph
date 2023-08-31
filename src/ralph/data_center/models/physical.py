@@ -4,7 +4,7 @@ import re
 from collections import namedtuple, OrderedDict
 from itertools import chain
 
-from dj.choices import Country, Choices
+from dj.choices import Choices, Country
 from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
