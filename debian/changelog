@@ -1,3 +1,12 @@
+ralph (20230901.1) bionic; urgency=medium
+
+  * Additional fields in DataCenter model
+  * Fix isort
+  * Fix line length
+  * Fix empty lines
+
+ -- Pawel Szulc <pawel.szulc@allegro.com>  Fri, 01 Sep 2023 09:48:31 +0000
+
 ralph (20230829.1) bionic; urgency=medium
 
   [ lukasz.karykowski ]
