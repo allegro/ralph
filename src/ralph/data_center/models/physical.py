@@ -131,7 +131,7 @@ class DataCenterType(Choices):
 
     dc = _("dc")
     cowork = _("cowork")
-    call_center = _("call_center")
+    call_center = _("callcenter")
     depot = _("depot")
     warehouse = _("warehouse")
     retail = _("retail")
