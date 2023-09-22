@@ -237,9 +237,9 @@ class BackOfficeAsset(Regionalizable, Asset):
             service = (int(self.service_cost) / months)
             buy_rate = (self.price.amount / self.depreciation_rate) + 50
             if service < int(buy_rate):
-                return 'naprawa opłacalna'
+                return _('Repair profitable')
             else:
-                return 'naprawa nieopłacalna'
+                return _('Repair unprofitable')
 
     @property
     def country_code(self):
