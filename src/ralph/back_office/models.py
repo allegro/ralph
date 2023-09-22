@@ -2,6 +2,7 @@
 import datetime
 import logging
 import re
+from datetime import date
 from functools import partial
 
 from dj.choices import Choices, Country
@@ -214,10 +215,31 @@ class BackOfficeAsset(Regionalizable, Asset):
         default=None,
         verbose_name=_('Last status change')
     )
+    service_cost = models.IntegerField(
+        default=None,
+        null=True,
+        blank=True,
+        verbose_name=_('Service Cost')
+    )
 
     class Meta:
         verbose_name = _('Back Office Asset')
         verbose_name_plural = _('Back Office Assets')
+
+    @property
+    def service_calculation(self):
+        if self.service_cost is None:
+            return None
+        else:
+            today = date.today()
+            timedelta = (self.buyout_date - today)
+            months = timedelta.days // 30
+            service = (int(self.service_cost) / months)
+            buy_rate = (self.price.amount / self.depreciation_rate) + 50
+            if service < int(buy_rate):
+                return 'naprawa opłacalna'
+            else:
+                return 'naprawa nieopłacalna'
 
     @property
     def country_code(self):

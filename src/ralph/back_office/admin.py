@@ -149,6 +149,7 @@ class BackOfficeAssetAdmin(
         'task_url', 'service_env', 'depreciation_rate', 'price', 'order_no',
         'depreciation_end_date', 'tags', 'start_usage'
     ]
+    readonly_fields = ['service_calculation']
     bulk_edit_no_fillable = ['barcode', 'sn', 'imei', 'imei2', 'hostname']
     _invoice_report_name = 'invoice-back-office-asset'
     _invoice_report_item_fields = (
@@ -179,6 +180,11 @@ class BackOfficeAssetAdmin(
                 'force_depreciation', 'provider', 'budget_info', 'start_usage'
             )
         }),
+        (_('Service Info'), {
+            'fields': (
+                'service_cost', 'service_calculation',
+            )
+        })
     )
 
     def licences(self, obj):
