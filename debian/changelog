@@ -1,3 +1,9 @@
+ralph (20230926.1) bionic; urgency=medium
+
+  * Rename call_center to callcenter in dc type
+
+ -- Pawel Szulc <pawel.szulc@allegro.com>  Tue, 26 Sep 2023 08:48:38 +0000
+
 ralph (20230901.1) bionic; urgency=medium
 
   * Additional fields in DataCenter model
