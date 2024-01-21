@@ -28,6 +28,15 @@ def _render_configuration(configuration, deployment, disable_reverse=False):
         ),
         'ralph_instance': ralph_instance,
         'deployment_id': deployment.id,
+        'deployment_base': urljoin(
+            ralph_instance,
+            url(
+                'deployment_base',
+                kwargs={
+                    'deployment_id': deployment.id
+                }
+            )
+        ),
         'kickstart': urljoin(
             ralph_instance,
             url(
@@ -55,6 +64,26 @@ def _render_configuration(configuration, deployment, disable_reverse=False):
                 kwargs={
                     'deployment_id': deployment.id,
                     'config_type': 'script',
+                }
+            ),
+        ),
+        'meta_data': urljoin(
+            ralph_instance,
+            url(
+                'deployment_config',
+                kwargs={
+                    'deployment_id': deployment.id,
+                    'config_type': 'meta-data',
+                }
+            ),
+        ),
+        'user_data': urljoin(
+            ralph_instance,
+            url(
+                'deployment_config',
+                kwargs={
+                    'deployment_id': deployment.id,
+                    'config_type': 'user-data',
                 }
             ),
         ),

@@ -21,7 +21,10 @@ from ralph.lib.custom_fields.models import (
     CustomFieldMeta,
     WithCustomFieldsMixin
 )
-from ralph.lib.mixins.fields import NullableCharField
+from ralph.lib.mixins.fields import (
+    NullableCharField,
+    NullableCharFieldWithAutoStrip
+)
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
     NamedMixin,
@@ -345,7 +348,6 @@ class BudgetInfo(
     TimeStampMixin,
     models.Model
 ):
-
     class Meta:
         verbose_name = _('Budget info')
         verbose_name_plural = _('Budgets info')
@@ -360,7 +362,7 @@ class Asset(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
     )
     # TODO: unify hostname for DCA, VirtualServer, Cluster and CloudHost
     # (use another model?)
-    hostname = NullableCharField(
+    hostname = NullableCharFieldWithAutoStrip(
         blank=True,
         default=None,
         max_length=255,
@@ -464,17 +466,25 @@ class Asset(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
         """
         Get buyout date.
 
-        Calculate buyout date invoice_date + depreciation_rate months
+        Calculate buyout date:
+         invoice_date + buyout months offset by category
 
         Returns:
-            Deprecation date
+            Buyout date
         """
-        if self.depreciation_end_date:
-            return self.depreciation_end_date
-        elif self.invoice_date:
-            return self.invoice_date + relativedelta(
-                months=self.get_depreciation_months() + 1
-            )
+        if (
+            not self.model
+            or not self.model.category
+            or not self.model.category.show_buyout_date
+        ):
+            return None
+
+        category = self.model.category  # type: Category
+        months = settings.ASSET_BUYOUT_CATEGORY_TO_MONTHS.get(
+            str(category.pk), None
+        )
+        if self.invoice_date and months:
+            return self.invoice_date + relativedelta(months=months)
         else:
             return None
 
@@ -534,5 +544,6 @@ class Asset(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
                 value = None
             setattr(self, unique_field, value)
 
-        self.buyout_date = self.calculate_buyout_date()
+        if not self.buyout_date:
+            self.buyout_date = self.calculate_buyout_date()
         return super(Asset, self).save(*args, **kwargs)

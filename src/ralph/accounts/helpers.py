@@ -4,6 +4,7 @@ from urllib.parse import urlencode
 from django.conf import settings
 from django.core.urlresolvers import reverse
 
+from ralph.access_cards.models import AccessCard
 from ralph.admin.sites import ralph_site
 from ralph.back_office.models import BackOfficeAsset
 from ralph.lib.transitions.models import Transition
@@ -17,6 +18,12 @@ ACCEPTANCE_LOAN_TRANSITION_ID = settings.ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['
 ACCEPTANCE_BACK_OFFICE_ACCEPT_LOAN_STATUS = settings.ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['BACK_OFFICE_ACCEPT_LOAN_STATUS']  # noqa: E509
 ACCEPTANCE_RETURN_TRANSITION_ID = settings.ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['RETURN_TRANSITION_ID']  # noqa: E509
 ACCEPTANCE_BACK_OFFICE_RETURN_STATUS = settings.ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['BACK_OFFICE_ACCEPT_RETURN_STATUS']  # noqa: E509
+ACCEPTANCE_ACCESS_CARD_TRANSITION_ID = settings.ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['TRANSITION_ACCESS_CARD_ID']  # noqa: E509
+ACCEPTANCE_ACCESS_CARD_ACCEPT_STATUS = settings.ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['ACCESS_CARD_ACCEPT_ACCEPT_STATUS']  # noqa: E509
+ACCEPTANCE_BACK_OFFICE_TEAM_ACCEPT_STATUS = settings.ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['BACK_OFFICE_TEAM_ACCEPT_STATUS']  # noqa: E509
+ACCEPTANCE_TEAM_ACCEPT_TRANSITION_ID = settings.ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['TRANSITION_TEAM_ACCEPT_ID']  # noqa: E509
+ACCEPTANCE_BACK_OFFICE_TEST_ACCEPT_STATUS = settings.ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['BACK_OFFICE_TEST_ACCEPT_STATUS']  # noqa: E509
+ACCEPTANCE_TEST_ACCEPT_TRANSITION_ID = settings.ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG['TRANSITION_TEST_ACCEPT_ID']  # noqa: E509
 
 
 def transition_exists(transition_id):
@@ -34,6 +41,15 @@ acceptance_sim_transition_exists = partial(
 loan_transition_exists = partial(
     transition_exists, ACCEPTANCE_LOAN_TRANSITION_ID
 )
+acceptance_access_card_transition_exists = partial(
+    transition_exists, ACCEPTANCE_ACCESS_CARD_TRANSITION_ID
+)
+acceptance_team_asset_transition_exists = partial(
+    transition_exists, ACCEPTANCE_TEAM_ACCEPT_TRANSITION_ID
+)
+acceptance_test_asset_transition_exists = partial(
+    transition_exists, ACCEPTANCE_TEST_ACCEPT_TRANSITION_ID
+)
 
 
 def get_assets(user, status):
@@ -47,10 +63,17 @@ def get_simcards(user, status):
         status=status
     ).filter(user=user)
 
+
+def get_access_cards(user, status):
+    return AccessCard.objects.filter(
+        status=status,
+        user=user
+    )
+
+
 get_assets_to_accept = partial(
     get_assets, status=ACCEPTANCE_BACK_OFFICE_ACCEPT_STATUS
 )
-
 get_simcards_to_accept = partial(
     get_simcards, status=ACCEPTANCE_SIMCARD_ACCEPT_STATUS
 )
@@ -59,6 +82,15 @@ get_assets_to_accept_loan = partial(
 )
 get_assets_to_accept_return = partial(
     get_assets, status=ACCEPTANCE_BACK_OFFICE_RETURN_STATUS
+)
+get_access_cards_to_accept = partial(
+    get_access_cards, status=ACCEPTANCE_ACCESS_CARD_ACCEPT_STATUS
+)
+get_team_assets_to_accept = partial(
+    get_assets, status=ACCEPTANCE_BACK_OFFICE_TEAM_ACCEPT_STATUS
+)
+get_test_assets_to_accept = partial(
+    get_assets, status=ACCEPTANCE_BACK_OFFICE_TEST_ACCEPT_STATUS
 )
 
 
@@ -109,6 +141,45 @@ def get_return_acceptance_url(user):
     url_name = admin_instance.get_transition_bulk_url_name()
     if assets_to_accept:
         url = reverse(url_name, args=(ACCEPTANCE_RETURN_TRANSITION_ID,))
+        query = urlencode([('select', a.id) for a in assets_to_accept])
+        return '?'.join((url, query))
+    return None
+
+
+def get_access_card_acceptance_url(user):
+    assets_to_accept = get_access_cards_to_accept(user)
+    admin_instance = ralph_site.get_admin_instance_for_model(
+        AccessCard
+    )
+    url_name = admin_instance.get_transition_bulk_url_name()
+    if assets_to_accept:
+        url = reverse(url_name, args=(ACCEPTANCE_ACCESS_CARD_TRANSITION_ID,))
+        query = urlencode([('select', a.id) for a in assets_to_accept])
+        return '?'.join((url, query))
+    return None
+
+
+def get_team_asset_acceptance_url(user):
+    assets_to_accept = get_team_assets_to_accept(user)
+    admin_instance = ralph_site.get_admin_instance_for_model(
+        BackOfficeAsset
+    )
+    url_name = admin_instance.get_transition_bulk_url_name()
+    if assets_to_accept:
+        url = reverse(url_name, args=(ACCEPTANCE_TEAM_ACCEPT_TRANSITION_ID,))
+        query = urlencode([('select', a.id) for a in assets_to_accept])
+        return '?'.join((url, query))
+    return None
+
+
+def get_test_asset_acceptance_url(user):
+    assets_to_accept = get_test_assets_to_accept(user)
+    admin_instance = ralph_site.get_admin_instance_for_model(
+        BackOfficeAsset
+    )
+    url_name = admin_instance.get_transition_bulk_url_name()
+    if assets_to_accept:
+        url = reverse(url_name, args=(ACCEPTANCE_TEST_ACCEPT_TRANSITION_ID,))
         query = urlencode([('select', a.id) for a in assets_to_accept])
         return '?'.join((url, query))
     return None

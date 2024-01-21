@@ -19,7 +19,7 @@ LABEL version="$RALPH_VERSION"
 
 RUN apt-get clean && \
     apt-get update && \
-    apt-get -y install apt-transport-https ca-certificates gnupg2 locales && \
+    apt-get -y install apt-transport-https ca-certificates gnupg2 locales curl && \
     rm -rf /var/lib/apt/lists/*
 
 # set UTF-8 locale

@@ -81,9 +81,10 @@ class PolymorphicViewSetMixin(QuerysetRelatedMixin):
                     args[0].__class__
                 ]
             except KeyError:
-                logger.warning('Dedicated serializer not found for {}'.format(
+                logger.warning(
+                    'Dedicated serializer not found for %s',
                     args[0].__class__
-                ))
+                )
         return serializer_class(*args, **kwargs)
 
 

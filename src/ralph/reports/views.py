@@ -31,7 +31,7 @@ def get_choice_name(choices_class, key, default='------'):
     try:
         return choices_class.from_id(key) if key else default
     except ValueError:
-        logger.error('Choice not found for key {}'.format(key))
+        logger.error('Choice not found for key %s', key)
         return 'Does not exist for key {}'.format(key)
 
 

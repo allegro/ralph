@@ -111,7 +111,7 @@ class BackOfficeAssetAdmin(
         # BackOfficeAssetSoftware,
     ]
     list_display = [
-        'status', 'barcode', 'purchase_order', 'model', 'user', 'warehouse',
+        'status', 'barcode', 'purchase_order', 'model', 'get_user', 'warehouse',
         'service_env', 'sn', 'hostname', 'invoice_date', 'invoice_no',
         'region', 'property_of', 'buyout_date_display'
     ]
@@ -162,9 +162,9 @@ class BackOfficeAssetAdmin(
         (_('Basic info'), {
             'fields': (
                 'hostname', 'model', 'barcode', 'sn', 'imei', 'imei2', 'niw',
-                'status', 'warehouse', 'location', 'region', 'loan_end_date',
-                'remarks', 'tags', 'property_of', 'task_url', 'service_env',
-                'office_infrastructure'
+                'status', 'last_status_change', 'warehouse', 'location',
+                'region', 'loan_end_date', 'remarks', 'tags', 'property_of',
+                'task_url', 'service_env', 'office_infrastructure'
             )
         }),
         (_('User Info'), {
@@ -271,6 +271,19 @@ class BackOfficeAssetAdmin(
                 {'field': 'imei2', 'allow_duplicates': False}
             )
         return multi_add_fields
+
+    def get_user(self, obj):
+        if not obj.user_id:
+            return '-'
+        return '<a href="{}">{} {} ({})<a/>'.format(
+            obj.user.get_absolute_url(),
+            obj.user.first_name,
+            obj.user.last_name,
+            obj.user.username
+        )
+    get_user.short_description = _('User')
+    get_user.admin_order_field = 'get_user'
+    get_user.allow_tags = True
 
 
 @register(Warehouse)

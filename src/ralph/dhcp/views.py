@@ -172,7 +172,7 @@ class DHCPEntriesView(
         ).annotate(c=Count('id')).filter(c__gt=1)]
         for hostname in duplicated_hostnames:
             logger.error(
-                'Duplicated hostname for DHCP entry: {}'.format(hostname)
+                'Duplicated hostname for DHCP entry: %s', hostname
             )
         return entries.exclude(hostname__in=duplicated_hostnames)
 

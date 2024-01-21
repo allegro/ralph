@@ -29,15 +29,13 @@ def get_imported_obj(model, old_pk):
     ).first()
     if not imported_obj:
         msg = (
-            "Record with pk {pk} not found for model {model} "
-            "of '{content_type}'"
+            "Record with pk %s not found for model %s of '%s'"
         )
         logger.warning(
-            msg.format(
-                pk=str(old_pk),
-                model=model._meta.model_name,
-                content_type=content_type,
-            )
+            msg,
+            str(old_pk),
+            model._meta.model_name,
+            content_type
         )
     return content_type, imported_obj
 
@@ -54,7 +52,7 @@ class UserWidget(widgets.ForeignKeyWidget):
             )
             if created:
                 logger.warning(
-                    'User not found: {} create a new.'.format(value),
+                    'User not found: %s create a new.', value
                 )
         return result
 
@@ -241,6 +239,30 @@ class AssetServiceEnvWidget(widgets.ForeignKeyWidget):
             value.service.name,
             value.environment.name
         )
+
+
+class AssetServiceUidWidget(widgets.ForeignKeyWidget):
+
+    def clean(self, value):
+        if not value:
+            return None
+        try:
+            if value.isdigit():
+                value = ServiceEnvironment.objects.get(pk=value)
+            else:
+                service, enviroment = value.split("|")
+                value = ServiceEnvironment.objects.get(
+                    service__name=service,
+                    environment__name=enviroment
+                )
+        except (ValueError, ServiceEnvironment.DoesNotExist):
+            value = None
+        return value
+
+    def render(self, value):
+        if value is None:
+            return ""
+        return value.service.uid
 
 
 class IPManagementWidget(widgets.ManyToManyWidget):

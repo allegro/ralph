@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
 import json
 import os
 from collections import ChainMap
@@ -41,6 +42,7 @@ def get_sentinels(sentinels_string):
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+START_TIMESTAMP = datetime.now()
 SECRET_KEY = os.environ.get('SECRET_KEY', 'CHANGE_ME')
 LOG_FILEPATH = os.environ.get('LOG_FILEPATH', '/tmp/ralph.log')
 
@@ -69,6 +71,7 @@ INSTALLED_APPS = (
     'sitetree',
     'ralph.access_cards',
     'ralph.accounts',
+    'ralph.accessories',
     'ralph.assets',
     'ralph.attachments',
     'ralph.back_office',
@@ -116,6 +119,8 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'threadlocals.middleware.ThreadLocalMiddleware',
+    'ralph.lib.error_handling.middleware.OperationalErrorHandlerMiddleware',
+    'ralph.lib.metrics.middlewares.RequestMetricsMiddleware'
 )
 
 ROOT_URLCONF = 'ralph.urls'
@@ -267,6 +272,11 @@ LOGGING = {
             'level': os.environ.get('LOGGING_RALPH_LEVEL', 'WARNING'),
             'propagate': True,
         },
+        'ralph.lib.error_handling.middleware': {
+            'handlers': ['file'],
+            'level': os.environ.get('LOGGING_RALPH_LEVEL', 'WARNING'),
+            'propagate': False,
+        },
         'rq.worker': {
             'level': os.environ.get('LOGGING_RQ_LEVEL', 'WARNING'),
             'handlers': ['file'],
@@ -303,7 +313,8 @@ REST_FRAMEWORK = {
     'DEFAULT_METADATA_CLASS': 'ralph.lib.api.utils.RalphApiMetadata',
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.AcceptHeaderVersioning',  # noqa
     'DEFAULT_VERSION': 'v1',
-    'ALLOWED_VERSIONS': ('v1',)
+    'ALLOWED_VERSIONS': ('v1',),
+    'EXCEPTION_HANDLER': 'ralph.lib.api.exception_handler.validation_error_exception_handler',  # noqa
 }
 
 API_THROTTLING = bool_from_env('API_THROTTLING', default=False)
@@ -377,12 +388,13 @@ else:
 USE_CACHE = bool_from_env('USE_CACHE', True)
 
 SENTRY_ENABLED = bool_from_env('SENTRY_ENABLED')
-SENTRY_JS_DSN = os.environ.get('SENTRY_JS_DSN', None)
-SENTRY_JS_CONFIG = json.loads(os.environ.get('SENTRY_JS_CONFIG', '{}'))
 
-BACK_OFFICE_ASSET_AUTO_ASSIGN_HOSTNAME = True
+BACK_OFFICE_ASSET_AUTO_ASSIGN_HOSTNAME = bool_from_env(
+    'BACK_OFFICE_ASSET_AUTO_ASSIGN_HOSTNAME', False
+)
+
 BACKOFFICE_HOSTNAME_FIELD_READONLY = bool_from_env(
-    'BACKOFFICE_HOSTNAME_FIELD_READONLY', True
+    'BACKOFFICE_HOSTNAME_FIELD_READONLY', False
 )
 
 TAGGIT_CASE_INSENSITIVE = True  # case insensitive tags
@@ -458,12 +470,18 @@ ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG = {
     'TRANSITION_SIM_ID': os.environ.get(
         'ACCEPT_SIMCARD_FOR_CURRENT_USER_CONFIG', None
     ),
+    'TRANSITION_ACCESS_CARD_ID': os.environ.get(
+        'ACCEPT_ACCESS_CARD_FOR_CURRENT_USER_CONFIG', None
+    ),
     # in_progress by default
     'BACK_OFFICE_ACCEPT_STATUS': os.environ.get(
         'ACCEPT_ASSETS_FOR_CURRENT_USER_BACK_OFFICE_ACCEPT_STATUS', 2
     ),
     'SIMCARD_ACCEPT_STATUS': os.environ.get(
         'SIMCARD_FOR_CURRENT_USER_BACK_OFFICE_ACCEPT_STATUS', 2
+    ),
+    'ACCESS_CARD_ACCEPT_ACCEPT_STATUS': os.environ.get(
+        'ACCESS_CARD_FOR_CURRENT_USER_BACK_OFFICE_ACCEPT_STATUS', 2
     ),
     'LOAN_TRANSITION_ID': os.environ.get(
         'LOAN_ASSETS_FOR_CURRENT_USER_TRANSITION_ID', None
@@ -478,6 +496,18 @@ ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG = {
     # waiting_for_return by default
     'BACK_OFFICE_ACCEPT_RETURN_STATUS': os.environ.get(
         'RETURN_ASSESTS_FOR_CURRENT_USER_BACK_OFFICE_ACCEPT_STATUS', 14
+    ),
+    'BACK_OFFICE_TEAM_ACCEPT_STATUS': os.environ.get(
+        'ACCEPT_TEAM_ASSETS_FOR_CURRENT_USER_BACK_OFFICE_ACCEPT_STATUS', 20
+    ),
+    'TRANSITION_TEAM_ACCEPT_ID': os.environ.get(
+        'ACCEPT_TEAM_ASSETS_FOR_CURRENT_USER_TRANSITION_ID', None
+    ),
+    'BACK_OFFICE_TEST_ACCEPT_STATUS': os.environ.get(
+        'ACCEPT_TEST_ASSETS_FOR_CURRENT_USER_BACK_OFFICE_ACCEPT_STATUS', 21
+    ),
+    'TRANSITION_TEST_ACCEPT_ID': os.environ.get(
+        'ACCEPT_TEST_ASSETS_FOR_CURRENT_USER_TRANSITION_ID', None
     ),
 }
 RELEASE_REPORT_CONFIG = {
@@ -655,6 +685,10 @@ COLLECT_METRICS = False
 ALLOW_PUSH_GRAPHS_DATA_TO_STATSD = False
 STATSD_GRAPHS_PREFIX = 'ralph.graphs'
 
+ENABLE_REQUESTS_AND_QUERIES_METRICS = True
+LARGE_NUMBER_OF_QUERIES_THRESHOLD = 25
+LONG_QUERIES_THRESHOLD_MS = 250
+
 TRANSITION_TEMPLATES = None
 
 CONVERT_TO_DATACENTER_ASSET_DEFAULT_STATUS_ID = 1
@@ -671,3 +705,9 @@ CURRENCY_CHOICES.append(('XXX', '---'))
 OAUTH_CLIENT_ID = ""
 OAUTH_SECRET = ""
 OAUTH_TOKEN_URL = "https://localhost/"
+
+GOOGLE_TAG_MANAGER_TAG_ID = os.environ.get('GOOGLE_TAG_MANAGER_TAG_ID', None)
+
+ASSET_BUYOUT_CATEGORY_TO_MONTHS = json.loads(os.environ.get(
+    'ASSET_BUYOUT_CATEGORY_TO_MONTHS', '{}')
+)

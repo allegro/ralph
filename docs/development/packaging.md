@@ -7,7 +7,7 @@ the latter into a package. Although this approach is not blessed by either
 [Debian] or Ubuntu maintainers, it provides a healthy compromise between the
 availability of the Ralph package and the effort required to make one.
 
-The package is built and published to [Bintray] by the Ralph core maintainers.
+The package is built and published to [packagecloud] by the Ralph core maintainers.
 This document describes what is necessary to know and to have for a maintainer
 to be able to build, test and publish the package.
 
@@ -58,9 +58,8 @@ The process of releasing and publishing a new version is the following:
    ```
    git push upstream ng --follow-tags
    ```
-9. Log in to the CI used for publishing Ralph packages and run
-   `ralph-release-package` job:
-10. Verify the job succeeded and the Bintray repository contains the
+9. Create a new GitHub release.
+10. Verify the job succeeded and the packagecloud repository contains the
    [built version][2].
 
 
@@ -77,10 +76,10 @@ compromises:
 * Since IO performance for docker mounted volumes experiences severe problems
   on certain platforms, containers are built every time a package maintenance
   operation is performed.
-* Official Ralph repository is owned by [Allegro], so publishing a package
-  requires sharing Allegro's credentials for Bintray which according to their
-  policy cannot be done. Therefore the script for that is going to only be
-  present in the CI system that is available to maintainers inside Allegro.
+* Official Ralph repository is owned by [Allegro] and is  hosted
+  in packagecloud. Package publishing action is triggered by publishing
+  a new release in Ralph GitHub repository. This is done by maintainers
+  with sufficient repository access rights.
 
 
 ## Building packages
@@ -116,14 +115,13 @@ In order to build a release package run:
 make build-package
 ```
 
- > If a release package is meant to be published, a maintainer should release
- > a new version prior to building one. The way to do that is described bellow.
+ > If a release package is meant to be published, a maintainer should manually
+ > create a new GitHub release.
 
-
-[1]: https://github.com/allegro.ralph
-[2]: https://dl.bintray.com/allegro/debng/dists/bionic/main/binary-amd64/
+[1]: https://github.com/allegro/ralph
+[2]: https://packagecloud.io/allegro/ralph
 [3]: ./maintainers_devtools.md
-[Bintray]: https://bintray.com
+[packagecloud]: https://packagecloud.io
 [Ubuntu]: https://ubuntu.com
 [Debian]: https://debian.org
 [Allegro]: https://allegro.pl

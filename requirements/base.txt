@@ -6,6 +6,7 @@ django-extensions==1.7.5
 django-filter==0.13.0
 django-import-export==0.4.2
 django-money==0.15.1
+py-moneyed==1.2
 django-mptt==0.8.7
 django-reversion==1.8.6
 django-rq==2.0

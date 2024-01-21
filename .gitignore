@@ -89,3 +89,5 @@ tags
 *.lock
 .*.swp
 .*.swo
+.envrc
+.direnv/

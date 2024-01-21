@@ -12,13 +12,20 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.helpers import (
     get_acceptance_url,
+    get_access_card_acceptance_url,
+    get_access_cards_to_accept,
     get_assets_to_accept,
     get_assets_to_accept_loan,
     get_assets_to_accept_return,
     get_loan_acceptance_url,
     get_return_acceptance_url,
     get_simcard_acceptance_url,
-    get_simcards_to_accept
+    get_simcards_to_accept,
+    get_team_asset_acceptance_url,
+    get_team_assets_to_accept,
+    get_test_asset_acceptance_url,
+    get_test_assets_to_accept
+
 )
 from ralph.assets.models import BaseObject, Service, ServiceEnvironment
 from ralph.back_office.models import BackOfficeAsset
@@ -36,7 +43,7 @@ COLORS = ['green', 'blue', 'purple', 'orange', 'red', 'pink']
 def get_user_equipment_tile_data(user):
     return {
         'class': 'my-equipment',
-        'label': _('Your equipment'),
+        'label': _('My equipment'),
         'count': BackOfficeAsset.objects.filter(
             Q(user=user) | Q(owner=user)
         ).count(),
@@ -68,6 +75,18 @@ def get_user_simcard_to_accept_tile_data(user):
     }
 
 
+def get_user_access_card_to_accept_tile_data(user):
+    access_card_to_accept_count = get_access_cards_to_accept(user).count()
+    if not access_card_to_accept_count:
+        return None
+    return {
+        'class': 'equipment-to-accept',
+        'label': _('Access Card pick up'),
+        'count': access_card_to_accept_count,
+        'url': get_access_card_acceptance_url(user),
+    }
+
+
 def get_user_equipment_to_accept_loan_tile_data(user):
     assets_to_accept_count = get_assets_to_accept_loan(user).count()
     if not assets_to_accept_count:
@@ -89,6 +108,30 @@ def get_user_equipment_to_accept_return_tile_data(user):
         'label': _('Hardware return'),
         'count': assets_to_accept_count,
         'url': get_return_acceptance_url(user),
+    }
+
+
+def get_user_team_equipment_to_accept_tile_data(user):
+    assets_to_accept_count = get_team_assets_to_accept(user).count()
+    if not assets_to_accept_count:
+        return None
+    return {
+        'class': 'equipment-to-accept',
+        'label': _('Team hardware pick up'),
+        'count': assets_to_accept_count,
+        'url': get_team_asset_acceptance_url(user),
+    }
+
+
+def get_user_test_equipment_to_accept_tile_data(user):
+    assets_to_accept_count = get_test_assets_to_accept(user).count()
+    if not assets_to_accept_count:
+        return None
+    return {
+        'class': 'equipment-to-accept',
+        'label': _('Test hardware pick up'),
+        'count': assets_to_accept_count,
+        'url': get_test_asset_acceptance_url(user),
     }
 
 
@@ -196,12 +239,22 @@ def ralph_summary(context):
     accept_for_simcard_tile_data = get_user_simcard_to_accept_tile_data(user=user)  # noqa
     if accept_for_simcard_tile_data:
         results.append(accept_for_simcard_tile_data)
+    accept_for_access_card_tile_data = get_user_access_card_to_accept_tile_data(user=user)  # noqa
+    if accept_for_access_card_tile_data:
+        results.append(accept_for_access_card_tile_data)
     accept_for_loan_tile_data = get_user_equipment_to_accept_loan_tile_data(user=user)  # noqa
     if accept_for_loan_tile_data:
         results.append(accept_for_loan_tile_data)
     accept_for_return_tile_data = get_user_equipment_to_accept_return_tile_data(user=user)  # noqa
     if accept_for_return_tile_data:
         results.append(accept_for_return_tile_data)
+    accept_for_team_asset_tile_data = get_user_team_equipment_to_accept_tile_data(user=user)  # noqa
+    if accept_for_team_asset_tile_data:
+        results.append(accept_for_team_asset_tile_data)
+    accept_for_test_asset_tile_data = get_user_test_equipment_to_accept_tile_data(user=user)  # noqa
+    if accept_for_test_asset_tile_data:
+        results.append(accept_for_test_asset_tile_data)
+
     return {'results': results}
 
 

@@ -19,7 +19,8 @@ from ralph.lib.mixins.models import (
 
 
 class OperationStatus(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
-    pass
+    class Meta:
+        verbose_name_plural = _('Operation statuses')
 
 
 class OperationType(

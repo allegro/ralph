@@ -2,6 +2,7 @@
 from datetime import datetime
 from unittest.mock import patch
 
+from dateutil.relativedelta import relativedelta
 from dj.choices import Country
 from django.conf import settings
 from django.contrib.auth.models import Permission
@@ -164,47 +165,50 @@ class TestBackOfficeAsset(RalphTestCase):
         )
 
     def setUp(self):
-        super().setUp()
-        AssetLastHostname.objects.create(prefix='POLPC', counter=1000)
-        self.bo_asset = BackOfficeAssetFactory(
-            model=self.model,
-            hostname='abc',
-            region=self.region_pl,
-        )
-        self.bo_asset_2 = BackOfficeAssetFactory(
-            model=self.model,
-            hostname='abc2',
-            region=self.region_pl,
-            status=BackOfficeAssetStatus.liquidated.id,
-            invoice_date=None
-        )
-        self.bo_asset_3 = BackOfficeAssetFactory(
-            model=self.model,
-            hostname='abc3',
-            region=self.region_pl,
-            status=BackOfficeAssetStatus.liquidated.id,
-            invoice_date=datetime(2016, 1, 11).date(),
-            depreciation_rate=50
-        )
-        self.bo_asset_4 = BackOfficeAssetFactory(
-            model=self.model,
-            hostname='abc3',
-            region=self.region_pl,
-            status=BackOfficeAssetStatus.liquidated.id,
-            invoice_date=datetime(2016, 1, 11).date(),
-            depreciation_end_date=datetime(2015, 1, 11).date(),
-            depreciation_rate=50
-        )
-        self.category_parent = CategoryFactory(
-            code='Mob1', default_depreciation_rate=30
-        )
-        self.category_2 = CategoryFactory(
-            code='Mob2', default_depreciation_rate=25
-        )
-        self.category_3 = CategoryFactory(
-            code='Mob3', parent=self.category_parent,
-            default_depreciation_rate=0
-        )
+        with override_settings(
+            ASSET_BUYOUT_CATEGORY_TO_MONTHS={str(self.category.pk): 48}
+        ):
+            super().setUp()
+            AssetLastHostname.objects.create(prefix='POLPC', counter=1000)
+            self.bo_asset = BackOfficeAssetFactory(
+                model=self.model,
+                hostname='abc',
+                region=self.region_pl,
+            )
+            self.bo_asset_2 = BackOfficeAssetFactory(
+                model=self.model,
+                hostname='abc2',
+                region=self.region_pl,
+                status=BackOfficeAssetStatus.liquidated.id,
+                invoice_date=None
+            )
+            self.bo_asset_3 = BackOfficeAssetFactory(
+                model=self.model,
+                hostname='abc3',
+                region=self.region_pl,
+                status=BackOfficeAssetStatus.liquidated.id,
+                invoice_date=datetime(2016, 1, 11).date(),
+                depreciation_rate=50
+            )
+            self.bo_asset_4 = BackOfficeAssetFactory(
+                model=self.model,
+                hostname='abc3',
+                region=self.region_pl,
+                status=BackOfficeAssetStatus.liquidated.id,
+                invoice_date=datetime(2016, 1, 11).date(),
+                depreciation_end_date=datetime(2015, 1, 11).date(),
+                depreciation_rate=50
+            )
+            self.category_parent = CategoryFactory(
+                code='Mob1', default_depreciation_rate=30
+            )
+            self.category_2 = CategoryFactory(
+                code='Mob2', default_depreciation_rate=25
+            )
+            self.category_3 = CategoryFactory(
+                code='Mob3', parent=self.category_parent,
+                default_depreciation_rate=0
+            )
 
     def test_try_assign_hostname(self):
         self.bo_asset._try_assign_hostname(commit=True)
@@ -246,7 +250,7 @@ class TestBackOfficeAsset(RalphTestCase):
     def test_buyout_date(self):
         self.assertEqual(
             self.bo_asset_3.buyout_date,
-            datetime(2018, 2, 11).date()
+            datetime(2020, 1, 11).date()
         )
 
         self.assertEqual(
@@ -254,10 +258,20 @@ class TestBackOfficeAsset(RalphTestCase):
             None
         )
 
-    def test_butout_date_with_depreciation_end_date(self):
+    def test_buyout_date_doesnt_use_depreciation_end_date(self):
         self.assertEqual(
             self.bo_asset_4.buyout_date,
-            datetime(2015, 1, 11).date()
+            datetime(2020, 1, 11).date()
+        )
+
+    def test_changing_buyout_date(self):
+        new_date = datetime(2020, 5, 11).date()
+        self.bo_asset_3.buyout_date = new_date
+        self.bo_asset_3.save()
+        self.bo_asset_3.refresh_from_db()
+        self.assertEqual(
+            self.bo_asset_3.buyout_date,
+            new_date
         )
 
     def test_get_depreciation_rate(self):
@@ -462,6 +476,34 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             requester=self.request.user
         )
 
+    @override_settings(BACK_OFFICE_ASSET_AUTO_ASSIGN_HOSTNAME=False)
+    def test_assign_hostname_doesnt_assign_hostname_when_its_empty(self):
+        hostname = ''
+        self.bo_asset = BackOfficeAssetFactory(
+            model=self.model,
+            hostname=hostname,
+            region=self.region_us,
+        )
+        _, transition, _ = self._create_transition(
+            model=self.bo_asset,
+            name='assign_hostname_if_empty_or_country_not_match',
+            source=[BackOfficeAssetStatus.new.id],
+            target=BackOfficeAssetStatus.used.id,
+            actions=['assign_hostname_if_empty_or_country_not_match']
+        )
+        self.assertEquals(self.bo_asset.hostname, hostname)
+
+        run_field_transition(
+            [self.bo_asset],
+            field='status',
+            transition_obj_or_name=transition,
+            data={},
+            requester=self.request.user
+        )
+
+        self.assertEqual(self.bo_asset.hostname, hostname)
+
+    @override_settings(BACK_OFFICE_ASSET_AUTO_ASSIGN_HOSTNAME=True)
     def test_assign_hostname_assigns_hostname_when_its_empty(self):
         hostname = ''
         self.bo_asset = BackOfficeAssetFactory(
@@ -565,8 +607,9 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             timezone.now().isoformat()[:10], 'james', 'bond',
             report_template.report.name,
         )
-        self.assertEqual(attachment.original_filename, correct_filename)
-        self.assertEqual(attachment.file.read(), GENERATED_FILE_CONTENT)
+        self.assertEqual(len(attachment), 1)
+        self.assertEqual(attachment[0].original_filename, correct_filename)
+        self.assertEqual(attachment[0].file.read(), GENERATED_FILE_CONTENT)
 
     @patch.object(ralph.back_office.models, 'get_hook')
     def test_send_attachments_to_user_action_sends_email(self, mock_get_hook):
@@ -676,7 +719,7 @@ class BackOfficeAssetFormTest(TransitionTestCase, ClientMixin):
         self.assertNotIn('hostname', resp.context['adminform'].form.fields)
         self.assertNotIn('service_env', resp.context['adminform'].form.fields)
 
-    @override_settings(BACKOFFICE_HOSTNAME_FIELD_READONLY=1)
+    @override_settings(BACKOFFICE_HOSTNAME_FIELD_READONLY=True)
     def test_bo_admin_form_with_readonly_hostname(self):
         self.assertTrue(self.login_as_user())
         asset = BackOfficeAssetFactory()

@@ -14,17 +14,18 @@ from ralph.lib.mixins.models import (
 )
 
 
+def verbose_names(**kwargs):
+    def wrap(cls):
+        for field, value in kwargs.items():
+            setattr(cls._meta.get_field(field), 'verbose_name', value)
+        return cls
+    return wrap
+
+
 def upload_dir(filename, instance):
     return get_file_path(
         filename, instance, default_dir="trade_marks"
     )
-
-
-class TradeMarkType(Choices):
-    _ = Choices.Choice
-    word = _('Word')
-    figurative = _('Figurative')
-    word_figurative = _('Word - Figurative')
 
 
 class ProviderAdditionalMarking(
@@ -81,30 +82,22 @@ class TradeMarkCountry(
         return Country.desc_from_id(self.country)
 
 
-class TradeMark(AdminAbsoluteUrlMixin, BaseObject):
+class IntellectualPropertyBase(models.Model):
     name = models.CharField(
-        verbose_name=_('Trade Mark name'),
         blank=False,
         max_length=255,
     )
-    registrant_number = models.CharField(
-        verbose_name=_('Registrant number'),
+    number = models.CharField(
         blank=False,
         null=False,
         max_length=255
-    )
-    type = models.PositiveIntegerField(
-        verbose_name=_('Trade Mark type'),
-        choices=TradeMarkType(),
-        default=TradeMarkType.figurative.id
     )
     image = models.ImageField(
         null=True,
         blank=True,
         upload_to=upload_dir
     )
-    registrant_class = models.CharField(
-        verbose_name=_('Registrant class'),
+    classes = models.CharField(
         blank=False,
         null=False,
         max_length=255,
@@ -113,13 +106,13 @@ class TradeMark(AdminAbsoluteUrlMixin, BaseObject):
     valid_to = models.DateField(null=True, blank=True)
     business_owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        related_name='trademark_business_owner',
+        related_name='%(class)s_business_owner',
         blank=False,
         null=False
     )
     technical_owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        related_name='trademark_technical_owner',
+        related_name='%(class)s_technical_owner',
         blank=False,
         null=False
     )
@@ -132,30 +125,57 @@ class TradeMark(AdminAbsoluteUrlMixin, BaseObject):
     )
     holder = models.ForeignKey(
         AssetHolder,
-        verbose_name=_('Trade Mark holder'),
         blank=True,
         null=True
     )
     status = models.PositiveIntegerField(
-        verbose_name=_('Trade Mark status'),
         choices=TradeMarkStatus(),
         default=TradeMarkStatus.registered.id
+    )
+    registrar_institution = models.ForeignKey(
+        TradeMarkRegistrarInstitution,
+        null=True,
+    )
+    database_link = models.URLField(
+        max_length=255, blank=True, null=True,
+    )
+
+    def __str__(self):
+        return '{}, {}, {} expires {}.'.format(
+            self.name, self.number,
+            self.classes, self.valid_to
+        )
+
+    class Meta:
+        abstract = True
+
+
+class TradeMarkKind(AdminAbsoluteUrlMixin, models.Model):
+    id = models.AutoField(primary_key=True)
+    type = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.type
+
+
+@verbose_names(
+    name=_('Trade Mark Name'), number=_('Trade Mark number'),
+    status=_('Trade Mark status'), holder=_('Trade Mark holder'),
+    image=_('Representation')
+)
+class TradeMark(IntellectualPropertyBase, AdminAbsoluteUrlMixin, BaseObject):
+    type = models.ForeignKey(
+        TradeMarkKind,
+        verbose_name=_('Trade Mark type'),
+        related_name='trademarks',
+        on_delete=models.DO_NOTHING,
+        default=2,
     )
     domains = models.ManyToManyField(
         Domain,
         related_name='+',
         through='TradeMarksLinkedDomains',
     )
-    registrar_institution = models.ForeignKey(
-        TradeMarkRegistrarInstitution,
-        null=True,
-    )
-
-    def __str__(self):
-        return '{}, {}, {} expires {}.'.format(
-            self.name, self.registrant_number,
-            self.registrant_class, self.valid_to
-        )
 
 
 class TradeMarksLinkedDomains(models.Model):
@@ -184,3 +204,120 @@ class TradeMarkAdditionalCountry(models.Model):
         verbose_name = _('Trade Mark Additional Country')
         verbose_name_plural = _('Trade Mark Additional Countries')
         unique_together = ('country', 'trade_mark')
+
+
+@verbose_names(
+    name=_('Patent Name'), number=_('Patent number'), status=_('Patent status'),
+    holder=_('Patent holder'), image=_('Representation')
+)
+class Patent(IntellectualPropertyBase, AdminAbsoluteUrlMixin, BaseObject):
+    domains = models.ManyToManyField(
+        Domain,
+        related_name='+',
+        through='PatentsLinkedDomains',
+    )
+
+
+class PatentsLinkedDomains(models.Model):
+    patent = models.ForeignKey(Patent)
+    domain = models.ForeignKey(
+        Domain,
+        related_name='patent'
+    )
+
+    class Meta:
+        unique_together = ('patent', 'domain')
+        verbose_name = _('Patent Linked Domain')
+        verbose_name_plural = _('Patent Linked Domains')
+
+    def __str__(self):
+        return '{} assigned to {}'.format(
+            self.patent, self.domain,
+        )
+
+
+class PatentAdditionalCountry(models.Model):
+    patent = models.ForeignKey(Patent)
+    country = models.ForeignKey(TradeMarkCountry)
+
+    class Meta:
+        verbose_name = _('Patent Additional Country')
+        verbose_name_plural = _('Patent Additional Countries')
+        unique_together = ('country', 'patent')
+
+
+@verbose_names(
+    name=_('Design Name'), number=_('Design number'), status=_('Design status'),
+    holder=_('Design holder'), image=_('Representation')
+)
+class Design(IntellectualPropertyBase, AdminAbsoluteUrlMixin, BaseObject):
+    domains = models.ManyToManyField(
+        Domain,
+        related_name='+',
+        through='DesignsLinkedDomains',
+    )
+
+
+class DesignsLinkedDomains(models.Model):
+    design = models.ForeignKey(Design)
+    domain = models.ForeignKey(
+        Domain,
+        related_name='design'
+    )
+
+    class Meta:
+        unique_together = ('design', 'domain')
+        verbose_name = _('Design Linked Domain')
+        verbose_name_plural = _('Design Linked Domains')
+
+    def __str__(self):
+        return '{} assigned to {}'.format(
+            self.design, self.domain,
+        )
+
+
+class DesignAdditionalCountry(models.Model):
+    design = models.ForeignKey(Design)
+    country = models.ForeignKey(TradeMarkCountry)
+
+    class Meta:
+        verbose_name = _('Design Additional Country')
+        verbose_name_plural = _('Design Additional Countries')
+        unique_together = ('country', 'design')
+
+
+@verbose_names(
+    name=_('Utility Model Name'), number=_('Utility Model number'),
+    status=_('Utility Model status'), holder=_('Utility Model holder'),
+    image=_('Representation'), classes=_('IPC Classification')
+)
+class UtilityModel(IntellectualPropertyBase, AdminAbsoluteUrlMixin, BaseObject):
+    pass
+
+
+class UtilityModelAdditionalCountry(models.Model):
+    utility_model = models.ForeignKey(UtilityModel)
+    country = models.ForeignKey(TradeMarkCountry)
+
+    class Meta:
+        verbose_name = _('Utility Model Additional Country')
+        verbose_name_plural = _('Utility Model Additional Countries')
+        unique_together = ('country', 'utility_model')
+
+
+class UtilityModelLinkedDomains(models.Model):
+    utility_model = models.ForeignKey(UtilityModel)
+    domain = models.ForeignKey(
+        Domain,
+        related_name='utility_model'
+    )
+
+    class Meta:
+        unique_together = ('utility_model', 'domain')
+        verbose_name = _('Utility Model Linked Domain')
+        verbose_name_plural = _('Utility Model Linked Domains')
+
+    def __str__(self):
+        return '{} assigned to {}'.format(
+            self.utility_model, self.domain,
+        )

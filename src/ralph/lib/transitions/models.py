@@ -201,9 +201,8 @@ def _check_instances_for_transition(
                 status__in=JOB_NOT_ENDED_STATUSES
             ).exists():
                 logger.warning(
-                    'Another async transition is already running for {}'.format(
-                        instance,
-                    )
+                    'Another async transition is already running for %s',
+                    instance
                 )
                 errors[instance].append(
                     'Another async transition for this object is already started'  # noqa
@@ -441,6 +440,11 @@ def run_field_transition(
 
         if isinstance(result, Attachment):
             attachments.append(result)
+        elif isinstance(result, list):
+            for item in result:
+                if isinstance(item, Attachment):
+                    attachments.append(item)
+
     for instance in instances:
         _post_transition_instance_processing(
             instance, transition, data, history_kwargs=history_kwargs,
@@ -749,6 +753,8 @@ def update_transitions_after_migrate(**kwargs):
     """
     Create or update transition for models which detetected
     TRANSITION_ATTR_TAG in any field in model.
+    To force transition update if no database related model fields change,
+    use `ralph.lib.transitions.migration.TransitionActionMigration`
     """
     sender_models = list(kwargs['sender'].get_models())
     action_ids = set()
@@ -773,7 +779,7 @@ def update_transitions_after_migrate(**kwargs):
         to_delete = Action.objects.filter(content_type=content_type).exclude(
             id__in=action_ids
         )
-        logger.warning('Deleting actions: {}'.format(list(to_delete)))
+        logger.warning('Deleting actions: %s', list(to_delete))
         to_delete.delete()
 
 

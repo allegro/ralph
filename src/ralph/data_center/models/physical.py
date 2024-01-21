@@ -4,6 +4,7 @@ import re
 from collections import namedtuple, OrderedDict
 from itertools import chain
 
+from dj.choices import Choices, Country
 from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -125,10 +126,44 @@ class Gap(object):
         return items
 
 
+class DataCenterType(Choices):
+    _ = Choices.Choice
+
+    dc = _("dc")
+    cowork = _("cowork")
+    call_center = _("callcenter")
+    depot = _("depot")
+    warehouse = _("warehouse")
+    retail = _("retail")
+    office = _("office")
+
+
 class DataCenter(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
     _allow_in_dashboard = True
 
     show_on_dashboard = models.BooleanField(default=True)
+
+    company = models.CharField(
+        verbose_name=_('company'), max_length=256, blank=True, null=True)
+    country = models.PositiveIntegerField(
+        verbose_name=_('country'),
+        choices=Country(),
+        blank=True,
+        null=True
+    )
+    city = models.CharField(
+        verbose_name=_('city'), max_length=256, blank=True, null=True)
+    address = models.CharField(
+        verbose_name=_('address'), max_length=256, blank=True, null=True)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+    type = models.PositiveIntegerField(
+        verbose_name=_("data center type"), choices=DataCenterType(),
+        blank=True, null=True
+    )
+    shortcut = models.CharField(
+        verbose_name=_("shortcut"), max_length=256, blank=True, null=True
+    )
 
     @property
     def rack_set(self):
@@ -367,7 +402,7 @@ class NetworkableBaseObject(models.Model):
         """
         if self.network_environment:
             return self.network_environment.next_free_hostname
-        logger.warning('Network-environment not provided for {}'.format(self))
+        logger.warning('Network-environment not provided for %s', self)
         return ''
 
     def issue_next_free_hostname(self):
@@ -377,7 +412,7 @@ class NetworkableBaseObject(models.Model):
         """
         if self.network_environment:
             return self.network_environment.issue_next_free_hostname()
-        logger.warning('Network-environment not provided for {}'.format(self))
+        logger.warning('Network-environment not provided for %s', self)
         return ''
 
     def _get_available_network_environments(self):
@@ -679,7 +714,7 @@ class DataCenterAsset(
             self._validate_orientation,
             self._validate_position,
             self._validate_position_in_rack,
-            self._validate_slot_no
+            self._validate_slot_no,
         ]:
             try:
                 validator()

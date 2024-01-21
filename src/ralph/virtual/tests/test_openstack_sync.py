@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
+from copy import copy
 from datetime import datetime
 
+import mock
 from django.core.exceptions import ObjectDoesNotExist
 from django.test.utils import override_settings
 
 from ralph.assets.models.components import ComponentModel
 from ralph.assets.tests.factories import DataCenterAssetModelFactory
 from ralph.data_center.models.physical import DataCenterAsset
+from ralph.lib.openstack.client import RalphOpenStackInfrastructureClient
 from ralph.networks.models.networks import IPAddress
 from ralph.tests import RalphTestCase
-from ralph.virtual.management.commands.openstack_sync import Command
+from ralph.virtual.management.commands.openstack_sync import RalphClient
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
@@ -26,8 +29,8 @@ from ralph.virtual.tests.factories import (
 )
 from ralph.virtual.tests.samples.openstack_data import (
     OPENSTACK_DATA,
-    OPENSTACK_FLAVOR,
-    TEST_HOSTS
+    OPENSTACK_FLAVORS,
+    OPENSTACK_INSTANCES
 )
 
 
@@ -49,40 +52,55 @@ class TestOpenstackSync(RalphTestCase):
             base_object=self.cloud_flavor[0]
         )
 
-        self.cloud_project = CloudProjectFactory(project_id='project_id1')
-        CloudProjectFactory(project_id='project_id2')
-        CloudProjectFactory(project_id='project_os_id1')
+        self.cloud_project_1 = CloudProjectFactory(project_id='project_id1')
+        self.cloud_project_2 = CloudProjectFactory(project_id='project_id2')
+        self.cloud_project_3 = CloudProjectFactory(project_id='project_os_id1')
 
-        host = CloudHostFactory(
+        self.host = CloudHostFactory(
             host_id='host_id1',
-            parent=self.cloud_project,
+            parent=self.cloud_project_1,
             cloudflavor=self.cloud_flavor[1]
         )
-        IPAddress.objects.create(base_object=host, address='2.2.3.4')
-        IPAddress.objects.create(base_object=host, address='1.2.3.4')
+        IPAddress.objects.create(base_object=self.host, address='2.2.3.4')
+        IPAddress.objects.create(base_object=self.host, address='1.2.3.4')
 
         DataCenterAsset.objects.create(
             hostname='hypervisor_os1.dcn.net',
             model=asset_model,
         )
 
-        self.cmd = Command()
-        self.cmd._get_cloud_provider()
-        self.cmd.openstack_projects = OPENSTACK_DATA
-        self.cmd.openstack_flavors = OPENSTACK_FLAVOR
-        self.cmd._get_ralph_data()
-        self.cmd.ironic_serial_number_param = 'serial_number'
-        self.cmd.ralph_serial_number_param = 'sn'
+        self.ironic_serial_number_param = 'serial_number'
+        self.ralph_serial_number_param = 'sn'
+        self.ralph_client = RalphClient(
+            'openstack', self.ironic_serial_number_param,
+            self.ralph_serial_number_param
+        )
+        self.openstack_client = RalphOpenStackInfrastructureClient(
+            self.cloud_provider.name
+        )
 
     def test_check_get_ralph_data(self):
-        ralph = self.cmd.ralph_projects
-        self.assertEqual(ralph['project_id1']['name'], self.cloud_project.name)
+        ralph_projects = self.ralph_client.get_ralph_servers_data(
+            self.ralph_client.get_ralph_projects()
+        )
+        self.assertEqual(ralph_projects['project_id1']['name'], self.cloud_project_1.name)
+        self.assertIn('host_id1', ralph_projects['project_id1']['servers'].keys())
 
     def test_check_process_servers(self):
         """Check if servers are added and modified correctly"""
-        self.cmd._process_servers(TEST_HOSTS, self.cloud_project)
-
-        for host_id, test_host in TEST_HOSTS.items():
+        ralph_projects = self.ralph_client.get_ralph_servers_data(
+            self.ralph_client.get_ralph_projects()
+        )
+        self.ralph_client._add_or_update_servers(
+            OPENSTACK_INSTANCES, self.cloud_project_1.project_id, ralph_projects
+        )
+        for host_id, test_host in OPENSTACK_INSTANCES.items():
+            if test_host['status'] == 'DELETED':
+                self.assertRaises(
+                    ObjectDoesNotExist, CloudHost.objects.get,
+                    host_id=host_id
+                )
+                continue
             host = CloudHost.objects.get(host_id=host_id)
             ips = host.ip_addresses
             self.assertEqual(host.hostname, test_host['hostname'])
@@ -97,15 +115,18 @@ class TestOpenstackSync(RalphTestCase):
                 self.assertEqual(
                     datetime.strptime(
                         test_host['created'],
-                        self.cmd.DATETIME_FORMAT
+                        self.ralph_client.DATETIME_FORMAT
                     ),
                     host.created,
                 )
 
     def test_check_add_flavor(self):
         """Check if flavors are added and modified correctly"""
-        for flavor_id, flavor in OPENSTACK_FLAVOR.items():
-            self.cmd._add_flavor(flavor, flavor_id)
+        ralph_flavors = self.ralph_client.get_ralph_flavors()
+        for flavor_id, flavor in OPENSTACK_FLAVORS.items():
+            self.ralph_client._add_or_modify_flavours(
+                flavor, flavor_id, ralph_flavors
+            )
             ralph_flavor = CloudFlavor.objects.get(flavor_id=flavor_id)
             self.assertEqual(ralph_flavor.name, flavor['name'])
             self.assertEqual(ralph_flavor.cloudprovider, self.cloud_provider)
@@ -114,13 +135,20 @@ class TestOpenstackSync(RalphTestCase):
             self.assertEqual(flavor['memory'], ralph_flavor.memory)
             self.assertEqual(flavor['disk'], ralph_flavor.disk)
 
-    def test_check_complete(self):
-        """Check the whole run of the script"""
-        self.cmd._update_ralph()
-        self.cmd._cleanup()
+    def test_check_ralph_update(self):
+        ralph_projects = self.ralph_client.get_ralph_servers_data(
+            self.ralph_client.get_ralph_projects()
+        )
+        ralph_flavours = self.ralph_client.get_ralph_flavors()
+        self.ralph_client.perform_update(
+            OPENSTACK_DATA,
+            OPENSTACK_FLAVORS,
+            ralph_projects,
+            ralph_flavours
+        )
 
-        # Objects add/modification
-        for flavor_id, flavor in OPENSTACK_FLAVOR.items():
+        # Objects addition/modification
+        for flavor_id, flavor in OPENSTACK_FLAVORS.items():
             ralph_flavor = CloudFlavor.objects.get(flavor_id=flavor_id)
             self.assertEqual(ralph_flavor.name, flavor['name'])
             self.assertEqual(ralph_flavor.cloudprovider, self.cloud_provider)
@@ -130,12 +158,30 @@ class TestOpenstackSync(RalphTestCase):
             self.assertEqual(project['name'], ralph_project.name)
             self.assertEqual(self.cloud_provider, ralph_project.cloudprovider)
             for host_id, host in OPENSTACK_DATA[project_id]['servers'].items():
+                if host['status'] == 'DELETED':
+                    self.assertRaises(
+                        ObjectDoesNotExist, CloudHost.objects.get,
+                        host_id=host_id
+                    )
+                    continue
                 ralph_host = CloudHost.objects.get(host_id=host_id)
                 ips = ralph_host.ip_addresses
                 self.assertEqual(ralph_host.hostname, host['hostname'])
                 self.assertIn(host['tag'], ralph_host.tags.names())
                 self.assertEqual(set(host['ips']), set(ips))
 
+    def test_check_ralph_delete(self):
+        ralph_projects = self.ralph_client.get_ralph_servers_data(
+            self.ralph_client.get_ralph_projects()
+        )
+        ralph_flavors = self.ralph_client.get_ralph_flavors()
+        servers_to_delete = self.ralph_client.calculate_servers_to_delete(
+            OPENSTACK_DATA, ralph_projects,
+        )
+        self.ralph_client.perform_delete(
+            OPENSTACK_DATA, OPENSTACK_FLAVORS, ralph_projects, ralph_flavors,
+            servers_to_delete
+        )
         # projects removal
         for project_id in ['project_id2', 'project_id3']:
             self.assertRaises(
@@ -154,25 +200,114 @@ class TestOpenstackSync(RalphTestCase):
             host_id='host_id1',
         )
 
+    def test_check_ralph_delete_incremental(self):
+        # Create server to be deleted in Ralph
+        host_to_delete = CloudHostFactory(
+            host_id='deleted',
+            parent=self.cloud_project_3,
+            cloudflavor=self.cloud_flavor[1]
+        )
+        ralph_projects = self.ralph_client.get_ralph_servers_data(
+            self.ralph_client.get_ralph_projects()
+        )
+        ralph_flavors = self.ralph_client.get_ralph_flavors()
+        servers_to_delete = self.ralph_client.calculate_servers_to_delete(
+            OPENSTACK_DATA, ralph_projects, incremental=True
+        )
+        self.ralph_client.perform_delete(
+            OPENSTACK_DATA, OPENSTACK_FLAVORS, ralph_projects, ralph_flavors,
+            servers_to_delete
+        )
+        self.assertRaises(
+            ObjectDoesNotExist,
+            CloudHost.objects.get,
+            host_id=host_to_delete.host_id
+        )
+        try:
+            CloudHost.objects.get(host_id=self.host.host_id)
+        except ObjectDoesNotExist:
+            self.fail("Removed host that should have been kept.")
+
     def test_cleanup_doesnt_remove_cloud_projects_with_children(self):
         project = CloudProjectFactory(project_id='im_not_here')
-        host = CloudHostFactory(
+        CloudHostFactory(
             host_id='host_id123',
             parent=project,
             cloudflavor=self.cloud_flavor[1]
         )
-        self.cmd._get_ralph_data()
-
-        self.cmd._cleanup()
+        ralph_projects = self.ralph_client.get_ralph_servers_data(
+            self.ralph_client.get_ralph_projects()
+        )
+        ralph_flavors = self.ralph_client.get_ralph_flavors()
+        servers_to_delete = self.ralph_client.calculate_servers_to_delete(
+            OPENSTACK_DATA, ralph_projects,
+        )
+        self.ralph_client.perform_delete(
+            OPENSTACK_DATA, OPENSTACK_FLAVORS, ralph_projects, ralph_flavors,
+            servers_to_delete
+        )
 
         try:
             CloudProject.objects.get(project_id='im_not_here')
         except ObjectDoesNotExist:
             self.fail('Project "im_not_here" was deleted.')
 
+    def test_cleanup_doesnt_remove_cloud_projects_with_different_provider(self):
+        CloudProjectFactory(
+            project_id='im_not_here',
+            cloudprovider=CloudProviderFactory(name='some_random_provider')
+        )
+        ralph_projects = self.ralph_client.get_ralph_servers_data(
+            self.ralph_client.get_ralph_projects()
+        )
+        ralph_flavors = self.ralph_client.get_ralph_flavors()
+        servers_to_delete = self.ralph_client.calculate_servers_to_delete(
+            OPENSTACK_DATA, ralph_projects,
+        )
+        self.ralph_client.perform_delete(
+            OPENSTACK_DATA, OPENSTACK_FLAVORS, ralph_projects, ralph_flavors,
+            servers_to_delete
+        )
+
+        try:
+            CloudProject.objects.get(project_id='im_not_here')
+        except ObjectDoesNotExist:
+            self.fail('Project "im_not_here" was deleted.')
+
+    def test_cleanup_doesnt_remove_cloud_flavours_with_assignments(self):
+        flavor = CloudFlavorFactory(flavor_id='im_not_here', name='im_not_here')
+        CloudHostFactory(
+            host_id='host_id123',
+            cloudflavor=flavor
+        )
+        openstack_flavors = copy(OPENSTACK_FLAVORS)
+        openstack_flavors.update({flavor.flavor_id: {"name": flavor.name}})
+        ralph_projects = self.ralph_client.get_ralph_servers_data(
+            self.ralph_client.get_ralph_projects()
+        )
+        ralph_flavors = self.ralph_client.get_ralph_flavors()
+        servers_to_delete = self.ralph_client.calculate_servers_to_delete(
+            OPENSTACK_DATA, ralph_projects, incremental=True
+        )
+        self.ralph_client.perform_delete(
+            OPENSTACK_DATA, OPENSTACK_FLAVORS, ralph_projects, ralph_flavors,
+            servers_to_delete
+        )
+
+        try:
+            CloudFlavor.objects.get(flavor_id='im_not_here')
+        except ObjectDoesNotExist:
+            self.fail('Flavor "im_not_here" was deleted.')
+
     def test_delete_cloud_instance_cleanup_ip(self):
         ips_count = IPAddress.objects.count()
-        self.cmd._cleanup_servers({}, self.cloud_project.project_id)
+        ralph_projects = self.ralph_client.get_ralph_servers_data(
+            self.ralph_client.get_ralph_projects()
+        )
+        servers_to_delete = self.ralph_client.calculate_servers_to_delete(
+            OPENSTACK_DATA, ralph_projects,
+        )
+        self.ralph_client._delete_servers(servers_to_delete)
         # cloud instance in cloud_project had 2 ip addresses
         self.assertEqual(IPAddress.objects.count(), ips_count - 2)
 
@@ -207,18 +342,30 @@ class TestOpenstackSync(RalphTestCase):
             'provider': 'my-own-openstack'
         },
     ])
-    def test_non_default_provider(self):
+    @mock.patch(
+        "ralph.lib.openstack.client.RalphOpenstackClient._get_nova_client_connection"
+    )
+    @mock.patch(
+        "ralph.lib.openstack.client.RalphOpenstackClient._get_keystone_client"
+    )
+    def test_non_default_provider(self, get_kc, get_nc):
         tenants = [
-            os['tenant_name'] for os in self.cmd._get_instances_from_settings()
+            os.site['tenant_name'] for os in self.openstack_client._get_instances_from_settings()
         ]
         self.assertCountEqual(tenants, ['admin', 'admin2'])
-        self.cmd.openstack_provider_name = 'my-own-openstack'
-        self.cmd._get_cloud_provider()
+
+        RalphClient(
+            'my-own-openstack', self.ironic_serial_number_param,
+            self.ralph_serial_number_param
+        )
+        new_openstack_client = RalphOpenStackInfrastructureClient(
+            'my-own-openstack',
+        )
         self.assertTrue(
             CloudProvider.objects.filter(name='my-own-openstack').exists()
         )
         tenants = [
-            os['tenant_name'] for os in self.cmd._get_instances_from_settings()
+            os.site['tenant_name'] for os in new_openstack_client._get_instances_from_settings()
         ]
         self.assertCountEqual(tenants, ['admin3'])
 
@@ -244,7 +391,7 @@ class TestOpenstackSync(RalphTestCase):
             for asset, host in zip(assets, hosts)
         ]
 
-        self.cmd._match_nodes_to_hosts(nodes)
+        self.ralph_client._match_nodes_to_hosts(nodes)
 
         updated_hosts = CloudHost.objects.filter(
             id__in=[host.id for host in hosts]
@@ -287,7 +434,7 @@ class TestOpenstackSync(RalphTestCase):
             without_hypervisor_node
         ]
 
-        self.cmd._match_nodes_to_hosts(nodes)
+        self.ralph_client._match_nodes_to_hosts(nodes)
         without_hypervisor.refresh_from_db()
         with_hypervisor.refresh_from_db()
 
@@ -299,7 +446,7 @@ class TestOpenstackSync(RalphTestCase):
     def test_match_cloud_hosts_host_not_found(self):
         host = CloudHostFactory(host_id='foo')
         node = FakeIronicNode(serial_number='SN0', instance_uuid='bar')
-        self.cmd._match_nodes_to_hosts([node])
+        self.ralph_client._match_nodes_to_hosts([node])
 
         updated_host = CloudHost.objects.get(pk=host.pk)
         self.assertIsNone(updated_host.hypervisor)
@@ -314,7 +461,7 @@ class TestOpenstackSync(RalphTestCase):
 
         host = CloudHostFactory(host_id='buz')
         node = FakeIronicNode(serial_number='BAR', instance_uuid=host.host_id)
-        self.cmd._match_nodes_to_hosts([node])
+        self.ralph_client._match_nodes_to_hosts([node])
 
         updated_host = CloudHost.objects.get(pk=host.pk)
         self.assertIsNone(updated_host.hypervisor)
@@ -336,7 +483,54 @@ class TestOpenstackSync(RalphTestCase):
             instance_uuid=host.host_id
         )
 
-        self.cmd._match_nodes_to_hosts([node])
+        self.ralph_client._match_nodes_to_hosts([node])
 
         updated_host = CloudHost.objects.get(pk=host.pk)
         self.assertIsNone(updated_host.hypervisor)
+
+    def test_get_or_create_cloud_provider(self):
+        existing_provider = self.ralph_client._get_or_create_cloud_provider(
+            'openstack'
+        )
+        self.assertEqual(self.cloud_provider.name, existing_provider.name)
+        new_provider = self.ralph_client._get_or_create_cloud_provider(
+            'new_provider'
+        )
+        self.assertEqual(
+            'new_provider', new_provider.name
+        )
+        self.assertIsInstance(new_provider, CloudProvider)
+
+    def test_get_ralph_projects(self):
+        ralph_projects = self.ralph_client.get_ralph_projects()
+        expected_result = {
+            self.cloud_project_1.project_id: {
+                'name': self.cloud_project_1.name, 'servers': {}, 'tags': []
+            },
+            self.cloud_project_2.project_id: {
+                'name': self.cloud_project_2.name, 'servers': {}, 'tags': []
+            },
+            self.cloud_project_3.project_id: {
+                'name': self.cloud_project_3.name, 'servers': {}, 'tags': []
+            }
+        }
+        self.assertDictEqual(expected_result, ralph_projects)
+
+    def test_get_ralph_flavors(self):
+        ralph_flavors = self.ralph_client.get_ralph_flavors()
+        expected_flavors = {
+            self.cloud_flavor[0].flavor_id: {'name': self.cloud_flavor[0].name},
+            self.cloud_flavor[1].flavor_id: {'name': self.cloud_flavor[1].name},
+            self.cloud_flavor[2].flavor_id: {'name': self.cloud_flavor[2].name}
+        }
+        self.assertEqual(expected_flavors, ralph_flavors)
+
+    def test_get_ralph_servers_data(self):
+        ralph_projects = self.ralph_client.get_ralph_projects()
+        ralph_projects_with_servers = self.ralph_client.get_ralph_servers_data(
+            ralph_projects
+        )
+        self.assertIn(
+            self.host.host_id,
+            ralph_projects_with_servers[self.cloud_project_1.project_id]['servers'].keys()
+        )

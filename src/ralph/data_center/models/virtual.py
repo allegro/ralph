@@ -106,6 +106,7 @@ class Cluster(
         default=ClusterStatus.in_use.id,
         choices=ClusterStatus(),
     )
+    previous_dc_host_update_fields = ['hostname']
 
     def __str__(self):
         return '{} ({})'.format(self.name or self.hostname, self.type)

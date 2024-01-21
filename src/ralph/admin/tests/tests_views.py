@@ -90,6 +90,8 @@ FACTORY_MAP = {
     'ralph.supports.models.SupportType': 'ralph.supports.tests.factories.SupportTypeFactory',  # noqa
     'ralph.trade_marks.models.TradeMark': 'ralph.trade_marks.tests.factories.TradeMarkFactory', #noqa
     'ralph.trade_marks.models.TradeMarksLinkedDomains': 'ralph.trade_marks.tests.factories.TradeMarksLinkedDomainsFactory',  # noqa
+    'ralph.trade_marks.models.UtilityModel': 'ralph.trade_marks.tests.factories.UtilityModelFactory',# noqa
+    'ralph.trade_marks.models.UtilityModelLinkedDomains': 'ralph.trade_marks.tests.factories.UtilityModelLinkedDomainsFactory',# noqa
     'ralph.trade_marks.models.ProviderAdditionalMarking': 'ralph.trade_marks.tests.factories.ProviderAdditionalMarkingFactory',  # noqa
     'ralph.trade_marks.models.TradeMarkCountry': 'ralph.trade_marks.tests.factories.TradeMarkCountryFactory',  # noqa
     'ralph.trade_marks.models.TradeMarkRegistrarInstitution': 'ralph.trade_marks.tests.factories.TradeMarkRegistrarInstitutionFactory',  # noqa
@@ -105,11 +107,15 @@ FACTORY_MAP = {
     'ralph.security.models.SecurityScan': 'ralph.security.tests.factories.SecurityScanFactory',  # noqa
     'ralph.sim_cards.models.SIMCard': 'ralph.sim_cards.tests.factories.SIMCardFactory',  # noqa
     'ralph.sim_cards.models.CellularCarrier': 'ralph.sim_cards.tests.factories.CellularCarrierFactory',  # noqa
-    'ralph.sim_cards.models.SIMCardFeatures': 'ralph.sim_cards.tests.factories.SIMCardFeatureFactory',  # noqa'
+    'ralph.sim_cards.models.SIMCardFeatures': 'ralph.sim_cards.tests.factories.SIMCardFeatureFactory',  # noqa
+    'ralph.trade_marks.models.Design': 'ralph.trade_marks.tests.factories.DesignFactory',  # noqa
+    'ralph.trade_marks.models.Patent': 'ralph.trade_marks.tests.factories.PatentFactory'  # noqa
+
 }
 
 EXCLUDE_MODELS = [
     'django.contrib.contenttypes.models.ContentType',
+    'ralph.accessories.models.Accessory',  # TODO: Add in the future
     'ralph.assets.models.assets.Asset',
     'ralph.assets.models.base.BaseObject',  # TODO: Add in the future
     'ralph.assets.models.components.GenericComponent',

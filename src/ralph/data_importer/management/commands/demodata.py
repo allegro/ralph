@@ -36,7 +36,8 @@ from ralph.data_center.tests.factories import (
     RackFactory,
     ServerRoomFactory
 )
-from ralph.lib.transitions.models import Action, Transition, TransitionModel
+from ralph.data_importer.management.commands.create_transitions import \
+    Command as TransitionCommand
 from ralph.licences.models import LicenceUser
 from ralph.licences.tests.factories import (
     BaseObjectLicenceFactory,
@@ -166,8 +167,7 @@ class Command(BaseCommand):
     def generate_back_office(self):
         self.stdout.write('Generating Back Office assets')
         back_office_status = BackOfficeAssetStatus()
-        status_count = len(back_office_status)
-        per_page = self.object_limit / status_count
+        per_page = 2
         parent_category = CategoryFactory(
             name='BACK OFFICE',
             imei_required=False
@@ -283,22 +283,6 @@ class Command(BaseCommand):
     def generate_transitions(self):
         self.stdout.write('Generating Transitions')
 
-        def add_transition(content_type, name, source, target, actions):
-            transition, _ = Transition.objects.get_or_create(
-                model=TransitionModel.objects.get(
-                    content_type=content_type
-                ),
-                name=name,
-                source=source,
-                target=target
-            )
-            for action in actions:
-                transition.actions.add(
-                    Action.objects.get(
-                        name=action, content_type=content_type
-                    )
-                )
-
         report = Report.objects.create(name='release')
         language = ReportLanguage.objects.create(name='en', default=True)
         report_template = ReportTemplate.objects.create(
@@ -313,10 +297,10 @@ class Command(BaseCommand):
             report_template.template.save('release.odt', File(f))
 
         bo_content_type = ContentType.objects.get_for_model(BackOfficeAsset)
-        add_transition(
-            bo_content_type,
-            'Deploy',
-            [
+        TransitionCommand.add_transition(
+            content_type=bo_content_type,
+            name='Deploy',
+            source=[
                 BackOfficeAssetStatus.new.id,
                 BackOfficeAssetStatus.in_progress.id,
                 BackOfficeAssetStatus.waiting_for_release.id,
@@ -328,47 +312,47 @@ class Command(BaseCommand):
                 BackOfficeAssetStatus.free.id,
                 BackOfficeAssetStatus.reserved.id
             ],
-            BackOfficeAssetStatus.in_progress.id,
-            ['assign_licence', 'assign_user', 'assign_owner']
+            target=BackOfficeAssetStatus.in_progress.id,
+            actions=['assign_licence', 'assign_user', 'assign_owner']
         )
-        add_transition(
-            bo_content_type,
-            'Release asset',
-            [
+        TransitionCommand.add_transition(
+            content_type=bo_content_type,
+            name='Release asset',
+            source=[
                 BackOfficeAssetStatus.new.id,
                 BackOfficeAssetStatus.in_progress.id,
                 BackOfficeAssetStatus.waiting_for_release.id,
                 BackOfficeAssetStatus.free.id,
                 BackOfficeAssetStatus.reserved.id
             ],
-            BackOfficeAssetStatus.used.id,
-            [
+            target=BackOfficeAssetStatus.used.id,
+            actions=[
                 'assign_user', 'assign_owner', 'assign_warehouse',
                 'release_report'
             ]
         )
-        add_transition(
-            bo_content_type,
-            'Loan asset',
-            [
+        TransitionCommand.add_transition(
+            content_type=bo_content_type,
+            name='Loan asset',
+            source=[
                 BackOfficeAssetStatus.new.id,
                 BackOfficeAssetStatus.in_progress.id,
                 BackOfficeAssetStatus.waiting_for_release.id,
                 BackOfficeAssetStatus.free.id,
                 BackOfficeAssetStatus.reserved.id
             ],
-            BackOfficeAssetStatus.loan.id,
-            [
+            target=BackOfficeAssetStatus.loan.id,
+            actions=[
                 'assign_loan_end_date', 'assign_user', 'assign_owner',
                 'assign_warehouse', 'assign_task_url'
             ]
         )
-        add_transition(
-            bo_content_type,
-            'Buyout',
-            [i[0] for i in BackOfficeAssetStatus()],
-            BackOfficeAssetStatus.liquidated.id,
-            [
+        TransitionCommand.add_transition(
+            content_type=bo_content_type,
+            name='Buyout',
+            source=[i[0] for i in BackOfficeAssetStatus()],
+            target=BackOfficeAssetStatus.liquidated.id,
+            actions=[
                 'assign_task_url', 'assign_warehouse', 'assign_warehouse',
                 'unassign_licences', 'unassign_loan_end_date',
                 'unassign_owner',
@@ -377,16 +361,16 @@ class Command(BaseCommand):
 
         dc_content_type = ContentType.objects.get_for_model(DataCenterAsset)
 
-        add_transition(
-            dc_content_type,
-            'Change rack',
-            [
+        TransitionCommand.add_transition(
+            content_type=dc_content_type,
+            name='Change rack',
+            source=[
                 DataCenterAssetStatus.free.id,
                 DataCenterAssetStatus.new.id,
                 DataCenterAssetStatus.to_deploy.id,
             ],
-            DataCenterAssetStatus.used.id,
-            ['change_rack']
+            target=DataCenterAssetStatus.used.id,
+            actions=['change_rack']
         )
 
     def generate_licence(self):

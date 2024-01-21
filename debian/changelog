@@ -1,3 +1,617 @@
+ralph (20230926.1) bionic; urgency=medium
+
+  * Rename call_center to callcenter in dc type
+
+ -- Pawel Szulc <pawel.szulc@allegro.com>  Tue, 26 Sep 2023 08:48:38 +0000
+
+ralph (20230901.1) bionic; urgency=medium
+
+  * Additional fields in DataCenter model
+  * Fix isort
+  * Fix line length
+  * Fix empty lines
+
+ -- Pawel Szulc <pawel.szulc@allegro.com>  Fri, 01 Sep 2023 09:48:31 +0000
+
+ralph (20230829.1) bionic; urgency=medium
+
+  [ lukasz.karykowski ]
+  * ITS-437975 | added new status to backoffice assets
+
+  [ Julian Szulc ]
+  * Adding support for static files (both app and debug toolbar). Adding fast init script and documemntation
+  * Default login and password in documentation
+  * Fixing local static build
+  * Log queries stats, log long and a lot of queries
+  * Code cleanup and config
+  * No dataclasses in python 3.6
+  * Default params argument value
+
+  [ lukasz.karykowski ]
+  * ITS-445851 | added hyperlink to username in backoffice assets
+
+ -- Pawel Szulc <pawel.szulc@allegro.com>  Tue, 29 Aug 2023 08:56:49 +0000
+
+ralph (20230628.1) bionic; urgency=medium
+
+  [ root ]
+  * UNRELEASED
+
+ -- Marcin Pyrka <marcin.pyrka@allegro.pl>  Wed, 28 Jun 2023 08:18:28 +0000
+
+ralph (20230627.1) bionic; urgency=medium
+
+  [ root ]
+  * UNRELEASED
+
+ -- Marcin Pyrka <marcin.pyrka@allegro.pl>  Tue, 27 Jun 2023 08:33:30 +0000
+
+ralph (20230531.1) bionic; urgency=medium
+
+  * Fix accept asset test and team (#3773)
+
+ -- Olga Matyla <olga.matyla@allegro.pl>  Wed, 31 May 2023 11:42:00 +0000
+
+ralph (20230524.1) bionic; urgency=medium
+
+  [ lukasz.karykowski ]
+  * HAL-2220 | new system to accept released assets to status in use team and test.
+  * HAL-2220 | new system to accept released assets to status in use team and test.
+  * HAL-2220 | added missing code to helpers.
+  * HAL-2220 | Code Style repair.
+  * HAL-2220 | Errors repair.
+  * HAL-2220 | import sorting repair.
+  * ITS-432085 | added features to bulk edit and added new transition action in sim cards.
+
+ -- Olga Matyla <olga.matyla@allegro.pl>  Wed, 24 May 2023 09:17:48 +0000
+
+ralph (20230511.1) bionic; urgency=medium
+
+  [ lukasz.karykowski ]
+  * ITS-424572 | Added new status to backoffice assets.
+  * ITS-424572 | Added blank line.
+  * ITS-428445 | Added edition by user and owner in sim cards bulk edit, and updated date in all last_status_change in backoffice assets.
+  * ITS-428445 | changed amount of days in quarantine_date action.
+
+  [ awieckowski ]
+  * rename migrations
+
+ -- awieckowski <aleksander.wieckowski@allegro.pl>  Thu, 11 May 2023 11:06:29 +0000
+
+ralph (20230511.1) bionic; urgency=medium
+
+  [ lukasz.karykowski ]
+  * ITS-424572 | Added new status to backoffice assets.
+  * ITS-424572 | Added blank line.
+  * ITS-428445 | Added edition by user and owner in sim cards bulk edit, and updated date in all last_status_change in backoffice assets.
+  * ITS-428445 | changed amount of days in quarantine_date action.
+
+  [ awieckowski ]
+  * rename migrations
+
+ -- awieckowski <aleksander.wieckowski@allegro.pl>  Thu, 11 May 2023 11:00:05 +0000
+
+ralph (20230330.1) bionic; urgency=medium
+
+  [ root ]
+  * UNRELEASED
+
+ -- Marcin Pyrka <marcin.pyrka@allegro.pl>  Thu, 30 Mar 2023 09:18:10 +0000
+
+ralph (20230330.1) bionic; urgency=medium
+
+  [ root ]
+  * UNRELEASED
+
+ -- Marcin Pyrka <marcin.pyrka@allegro.pl>  Thu, 30 Mar 2023 09:14:00 +0000
+
+ralph (20230330.1) bionic; urgency=medium
+
+  [ root ]
+  * UNRELEASED
+
+ -- Marcin Pyrka <marcin.pyrka@allegro.pl>  Thu, 30 Mar 2023 09:13:33 +0000
+
+ralph (20230330.1) bionic; urgency=medium
+
+  [ root ]
+  * UNRELEASED
+
+ -- Marcin Pyrka <marcin.pyrka@allegro.pl>  Thu, 30 Mar 2023 09:12:27 +0000
+
+ralph (20230330.1) bionic; urgency=medium
+
+  [ lukasz.karykowski ]
+  * ITS-417932 | added new status for backoffice assets.
+  * ITS-417932 | added new status for backoffice assets.
+  * ITS-421350 | Changed condition of showing buyout link
+  * ITS-423764 | Added Bulk Edit for sim_cards, added new actions to sim_cards transitions.
+  * HAL-2320 | Added new Field to backoffice assets and two new action transitions.
+  * HAL-2320 | Added new Field to backoffice assets and two new action transitions.
+
+  [ Marcin Pyrka ]
+  * HAL-2382 | Rename migrations
+
+ -- Marcin Pyrka <marcin.pyrka@allegro.pl>  Thu, 30 Mar 2023 09:09:41 +0000
+
+ralph (20230118.1) bionic; urgency=medium
+
+  [ lukasz.karykowski ]
+  * ITS-413740 | added 2 new statuses for new transitions ([NEW] Prepare to accept - asset team and [NEW] Prepare to accept - asset test )
+  * ITS-413740 | added 1 blank line
+
+ -- Pawel Szulc <pawel.szulc@allegro.pl>  Wed, 18 Jan 2023 11:35:43 +0000
+
+ralph (20230103.1) bionic; urgency=medium
+
+  [ lukasz.karykowski ]
+  * ITS-409837 | changed name of status in backoffice from "buyout" to "to buyout"
+
+  [ Olga Matyla ]
+  * Add service_uid for licences export
+  * Cleanup
+
+ -- Pawel Szulc <pawel.szulc@allegro.pl>  Tue, 03 Jan 2023 14:25:19 +0000
+
+ralph (20221208.1) bionic; urgency=medium
+
+  * Add new statuses for assets (#3744)
+
+ -- Olga Matyla <olga.matyla@allegro.pl>  Thu, 08 Dec 2022 10:52:33 +0000
+
+ralph (20221108.1) bionic; urgency=medium
+
+  [ lukasz.karykowski ]
+  * ITS-368993 | Added new status to backoffice assets.
+  * ITS-368993 | removed new status, and renamed, old unused.
+  * ITS-368993 | removed new status, and renamed, old unused.
+  * ITS-368993 | removed new status, and renamed, old unused.
+  * ITS-368993 | Renamed, old unused.
+  * ITS-368993 | added migrations
+  * ITS-368993 | added new status
+  * ITS-368993 | changed test.
+  * ITS-368993 | changed test.
+  * ITS-368993 | changed test.
+  * ITS-403788 | added new status
+
+ -- Pawel Szulc <pawel.szulc@allegro.pl>  Tue, 08 Nov 2022 11:03:52 +0000
+
+ralph (20221107.1) bionic; urgency=medium
+
+  * Modify buyout date calculation
+  * Fix calculating buyout date. Modify tests
+  * Handle string dictionary keys since config is loaded from JSON
+  * Category pk to string
+
+ -- Pawel Szulc <pawel.szulc@allegro.pl>  Mon, 07 Nov 2022 13:50:28 +0000
+
+ralph (20221027.1) bionic; urgency=medium
+
+  [ Aleksander Więckowski ]
+  * Add Utility Model (#3741)
+
+ -- awieckowski <aleksander.wieckowski@allegro.pl>  Thu, 27 Oct 2022 09:24:25 +0000
+
+ralph (20221027.1) bionic; urgency=medium
+
+  [ Aleksander Więckowski ]
+  * Add Utility Model (#3741)
+
+ -- awieckowski <aleksander.wieckowski@allegro.pl>  Thu, 27 Oct 2022 09:21:50 +0000
+
+ralph (20221027.1) bionic; urgency=medium
+
+  [ Aleksander Więckowski ]
+  * Add Utility Model (#3741)
+
+ -- root <root@8bc7e8d888ea>  Thu, 27 Oct 2022 09:16:53 +0000
+
+ralph (20220725.1) bionic; urgency=medium
+
+  * Allow editing hostname by default
+  * Correct settings in tests
+
+ -- Pawel Szulc <pawel.szulc@allegro.pl>  Mon, 25 Jul 2022 11:21:45 +0000
+
+ralph (20220718.1) bionic; urgency=medium
+
+  * Add additional transitions history filter fields
+  * Revert "Add additional transitions history filter fields"
+  * Add additional transitions history filter fields
+  * Add import ssl certificates from many repositories
+
+ -- awieckowski <aleksander.wieckowski@allegro.pl>  Mon, 18 Jul 2022 12:33:29 +0000
+
+ralph (20220701.1) bionic; urgency=medium
+
+  [ Szymon Jasiński ]
+  * fix vip update event handling (#3734)
+
+  [ Olga Matyla ]
+  * Fix report generation (#3733)
+
+  [ Szymon Jasiński ]
+  * disallow ralph user modification in ralph demo (#3735)
+
+ -- Olga Matyla <olga.matyla@allegro.pl>  Fri, 01 Jul 2022 11:32:55 +0000
+
+ralph (20220414.1) bionic; urgency=medium
+
+  * Fix failure when service missing
+
+ -- Pawel Szulc <pawel.szulc@allegro.pl>  Thu, 14 Apr 2022 09:15:43 +0000
+
+ralph (20220411.1) bionic; urgency=medium
+
+  * Fix recursion error when querying dnsaas API
+  * Remove typo
+  * Remove typo
+
+ -- Pawel Szulc <pawel.szulc@allegro.pl>  Mon, 11 Apr 2022 09:52:03 +0000
+
+ralph (20220405.1) bionic; urgency=medium
+
+  [ Szymon Jasiński ]
+  * fix ralph demo nginx config (#3719)
+
+  [ Pawel Szulc ]
+  * Don't query obsolete /api/domains endpoint
+  * Update test
+
+ -- Pawel Szulc <pawel.szulc@allegro.pl>  Tue, 05 Apr 2022 11:35:53 +0000
+
+ralph (20220301.1) bionic; urgency=medium
+
+  * Fix extra arguments persisting between requests causing OperationalError
+
+ -- Pawel Szulc <pawel.szulc@allegro.pl>  Tue, 01 Mar 2022 09:03:53 +0000
+
+ralph (20220228.1) bionic; urgency=medium
+
+  [ Szymon Jasiński ]
+  * ralph demo resources (#3709)
+
+  [ ✪ vi4m Marcin Kliks ]
+  * Switching to Discourse (#3708)
+
+  [ Szymon Jasiński ]
+  * trace request id if operational error occurs (#3713)
+
+ -- Szymon Jasiński <szymon.jasinski@allegro.pl>  Mon, 28 Feb 2022 14:11:40 +0000
+
+ralph (20220207.1) bionic; urgency=medium
+
+  * Prevent xss in network related to ip address and in related subnetwork table
+
+ -- Pawel Szulc <pawel.szulc@allegro.pl>  Mon, 07 Feb 2022 12:02:26 +0000
+
+ralph (20220111.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * Openstack sync changed since parameter 2 (#3697)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Tue, 11 Jan 2022 15:55:39 +0000
+
+ralph (20211222.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * initial data commands (#3680)
+  * refactor openstack client (#3682)
+
+  [ Pawel Szulc ]
+  * Documentation links should now work correctly locally and hosted
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Wed, 22 Dec 2021 10:11:58 +0000
+
+ralph (20211220.1) bionic; urgency=medium
+
+  * Fix XSS vulnerability in IP Addresses when linked object contained html tags
+  * trademark type now read from database
+  * Tidy up imports
+  * Remove superfluous field verbose_type
+  * Fix error when checking for missing migrations
+  * Exclude TradeMarkKind from view test
+  * Exclude TradeMark from view test
+  * Add default trade mark kind
+  * Change default trade mark kind to figurative
+  * VIP error logs should now correctly aggregate
+  * Fix line length
+
+ -- Pawel Szulc <pawel.szulc@allegro.pl>  Mon, 20 Dec 2021 10:30:45 +0000
+
+ralph (20211123.1) bionic; urgency=medium
+
+  * Add hostname validation for hostname, management hostname and network->hostname
+  * Add migrations including hostname validators
+  * Add missing newline
+  * Fix isort
+  * Fix exception when hostname missing
+  * Fix a test
+  * Fix flake8
+  * Remove hostname validation
+  * Fix error causing problems on Support import
+  * Fix flake8
+
+ -- Pawel Szulc <pawel.szulc@allegro.pl>  Tue, 23 Nov 2021 13:14:38 +0000
+
+ralph (20211117.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * dc asset report logging (#3677)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Wed, 17 Nov 2021 09:59:46 +0000
+
+ralph (20211112.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * Data Center Asset email report (#3674)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Fri, 12 Nov 2021 12:49:37 +0000
+
+ralph (20211108.1) bionic; urgency=medium
+
+  [ Pawel Szulc ]
+  * Dont allow trailing whitespaces in hostname
+  * Auto strip hostname on save
+
+  [ Szymon Jasinski ]
+  * prepare Ralph for casper deployment in Ubuntu (#3671)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Mon, 08 Nov 2021 13:07:36 +0000
+
+ralph (20211029.1) bionic; urgency=medium
+
+  [ vi4m Marcin Kliks ]
+  * Fix documentation links (#3659)
+  * Codespaces support
+  * Revert "Codespaces support" (#3670)
+
+  [ Szymon Jasinski ]
+  * access card acceptance transition (#3672)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Fri, 29 Oct 2021 07:03:22 +0000
+
+ralph (20210922.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * wait for deb in packagecloud before docker build (#3663)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Wed, 22 Sep 2021 10:39:54 +0000
+
+ralph (20210921.3) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * use proper Ralph version (#3662)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Tue, 21 Sep 2021 11:40:23 +0000
+
+ralph (20210921.2) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * verify github ref (#3661)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Tue, 21 Sep 2021 08:03:37 +0000
+
+ralph (20210921.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * publish docker images the new way (#3660)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Tue, 21 Sep 2021 05:55:01 +0000
+
+ralph (20210908.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Added property of for simcards. (#3657)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Wed, 08 Sep 2021 09:34:06 +0000
+
+ralph (20210706.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * openstack sync - remove projects from processed provider only (#3648)
+  * Intellectual property labels (#3649)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Tue, 06 Jul 2021 09:53:08 +0000
+
+ralph (20210629.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * New transition (#3644)
+
+  [ Szymon Jasinski ]
+  * intellectual property: designs and patents (#3647)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Tue, 29 Jun 2021 08:12:49 +0000
+
+ralph (20210615.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Fixed search list, changed filters, added new column to list_display. (#3639)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Tue, 15 Jun 2021 13:59:33 +0000
+
+ralph (20210525.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * fix vip update event (#3636)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Tue, 25 May 2021 10:00:03 +0000
+
+ralph (20210524.2) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * trigger dockerhub build when publishing new release (#3635)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Mon, 24 May 2021 11:34:41 +0000
+
+ralph (20210524.1) bionic; urgency=medium
+
+  [ mzdeb ]
+  * Feature/update vip event support (#3608)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Mon, 24 May 2021 10:18:28 +0000
+
+ralph (20210521.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Calculate free used accessory (#3621)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Fri, 21 May 2021 09:41:58 +0000
+
+ralph (20210517.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * Documentation update (#3633)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Mon, 17 May 2021 08:27:16 +0000
+
+ralph (20210513.2) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * push packages to packagecloud - add missing sudo (#3631)
+  * docker build from packagecloud (#3632)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Thu, 13 May 2021 13:22:50 +0000
+
+ralph (20210513.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * push packages to packagecloud (#3629)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Thu, 13 May 2021 12:08:17 +0000
+
+ralph (20210512.1) bionic; urgency=medium
+
+  [ Aleksander Wieckowski ]
+  * Add fields to LicenceUserSerializer
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Wed, 12 May 2021 15:51:54 +0000
+
+ralph (20210510.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Changed manufacturer and accessory_type - to be picked from table. (#3617)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Mon, 10 May 2021 14:08:32 +0000
+
+ralph (20210507.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Label name change (#3618)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Fri, 07 May 2021 08:10:32 +0000
+
+ralph (20210426.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * asset buyout delay months (#3625)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Mon, 26 Apr 2021 08:42:56 +0000
+
+ralph (20210423.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * get buyout related setting from environment (#3622)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Fri, 23 Apr 2021 20:01:15 +0000
+
+ralph (20210422.1) bionic; urgency=medium
+
+  [ Szymon Jasinski ]
+  * fix buyout ticket (#3620)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Thu, 22 Apr 2021 06:57:55 +0000
+
+ralph (20210421.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Added a condition for the buyout ticket link.  (#3612)
+
+  [ Szymon Jasinski ]
+  * Allow buyout date change (#3619)
+
+ -- Szymon Jasinski <szymon.jasinski@allegro.pl>  Wed, 21 Apr 2021 14:40:54 +0000
+
+ralph (20210401.1) bionic; urgency=medium
+
+  [ Pawel Szulc ]
+  * Fix import to prevent 500 on MAC validation (#3615)
+  * Remove Sentry logging for JS (#3614)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Thu, 01 Apr 2021 11:28:25 +0000
+
+ralph (20210324.1) bionic; urgency=medium
+
+  [ Aleksander Wieckowski ]
+  * Add backoffice status - to find
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Wed, 24 Mar 2021 07:08:02 +0000
+
+ralph (20210309.1) bionic; urgency=medium
+
+  [ lukaszkarykowski ]
+  * Introducing Backoffice Accessories managment. (#3548)
+
+  [ Aleksander Wieckowski ]
+  * Add Google Tag Manager tag
+  * Fix tag url
+
+  [ Pawel Szulc ]
+  * Add explicit logger
+  * Reraise original error
+
+  [ Aleksander Wieckowski ]
+  * Fix unequivocal variable names
+  * Fix flake8
+
+  [ Pawel Szulc ]
+  * Use arguments in logger.error and logger.warning instead of direct string formatting
+  * info back to warning
+
+ -- Pawel Szulc <pawel.szulc@allegro.pl>  Tue, 09 Mar 2021 13:14:59 +0000
+
+ralph (20210219.1) bionic; urgency=medium
+
+  [ Paweł Szulc ]
+  * Log operational error (#3605)
+
+ -- Pawel Szulc <pawel.szulc@allegro.pl>  Fri, 19 Feb 2021 11:36:12 +0000
+
+ralph (20210119.1) bionic; urgency=medium
+
+  * fix form error message format (#3600)
+  * change dns api url for ip records (#3601)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Tue, 19 Jan 2021 08:11:03 +0000
+
+ralph (20210104.1) bionic; urgency=medium
+
+  [ Przemyslaw Bromber ]
+  * better responses handling in dns module (#3597)
+
+  [ Marek Bleschke ]
+  * fix issue with showing proper form error for DNS tab (#3598)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Mon, 04 Jan 2021 13:12:46 +0000
+
+ralph (20201228.2) bionic; urgency=medium
+
+  [ Przemyslaw Bromber ]
+  * fixed renew_token_when_unauthorized() decorator (#3596)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Mon, 28 Dec 2020 13:12:30 +0000
+
+ralph (20201228.1) bionic; urgency=medium
+
+  [ Marek Bleschke ]
+  * fix github actions by downgrading pip (#3592)
+
+  [ Przemyslaw Bromber ]
+  * Dns module replace (#3589)
+
+ -- Marek Bleschke <marek.bleschke@allegro.pl>  Mon, 28 Dec 2020 07:39:05 +0000
+
 ralph (20201202.1) bionic; urgency=medium
 
   * fix building Ralph's debian package (#3590)

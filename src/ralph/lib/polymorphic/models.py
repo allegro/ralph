@@ -16,18 +16,22 @@ from collections import defaultdict
 from itertools import groupby
 
 from django.contrib.contenttypes.models import ContentType
-from django.db import models
+from django.db import models, OperationalError
+
+from ralph.lib.error_handling.exceptions import WrappedOperationalError
 
 
 class PolymorphicQuerySet(models.QuerySet):
-    _polymorphic_select_related = {}
-    _polymorphic_prefetch_related = {}
-    _annotate_args = []
-    _annotate_kwargs = {}
-    _extra_args = []
-    _extra_kwargs = {}
-    _polymorphic_filter_args = []
-    _polymorphic_filter_kwargs = {}
+    def __init__(self, *args, **kwargs):
+        self._polymorphic_select_related = {}
+        self._polymorphic_prefetch_related = {}
+        self._annotate_args = []
+        self._annotate_kwargs = {}
+        self._extra_args = []
+        self._extra_kwargs = {}
+        self._polymorphic_filter_args = []
+        self._polymorphic_filter_kwargs = {}
+        super().__init__(*args, **kwargs)
 
     def iterator(self):
         """
@@ -110,8 +114,15 @@ class PolymorphicQuerySet(models.QuerySet):
                         *self._polymorphic_filter_args,
                         **self._polymorphic_filter_kwargs
                     )
-                for obj in model_query:
-                    result_mapping[obj.pk].append(obj)
+                try:
+                    for obj in model_query:
+                        result_mapping[obj.pk].append(obj)
+                # NOTE(pszulc): We try to catch OperationalError that randomly
+                # occurs (1052, "Column 'created' in field list is ambiguous")
+                except OperationalError as e:
+                    raise WrappedOperationalError(
+                        query=model_query.query, model=self, error_str=str(e)) \
+                        from e
         # yield objects in original order
         for pk in pks_order:
             # yield all objects with particular PK

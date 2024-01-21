@@ -105,8 +105,8 @@ sitetrees = [
                 section(_('Clusters'), 'data_center', 'cluster'),
                 section(_('Data Centers'), 'data_center', 'DataCenter'),
                 section(_('Racks'), 'data_center', 'Rack'),
-                section(_('Rack Accessories'), 'data_center', 'RackAccessory'),
-                section(_('Accessories'), 'data_center', 'Accessory'),
+                section(_('Rack accessories'), 'data_center', 'RackAccessory'),
+                section(_('accessories'), 'data_center', 'Accessory'),
                 section(_('Databases'), 'data_center', 'Database'),
                 section(_('Disk Shares'), 'data_center', 'DiskShare'),
                 section(_('Server Rooms'), 'data_center', 'ServerRoom'),
@@ -141,6 +141,7 @@ sitetrees = [
                 section(_('Access Cards'), 'access_cards', 'AccessCard'),
                 section(_('Hardware'), 'back_office', 'backofficeasset'),
                 section(_('SIM Cards'), 'sim_cards', 'SIMCard'),
+                section(_('Accessory'), 'accessories', 'Accessory'),
             ]
         ),
         ralph_item(
@@ -178,6 +179,9 @@ sitetrees = [
             perms_mode_all=False,
             children=[
                 section(_('Trade Marks'), 'trade_marks', 'TradeMark'),
+                section(_('Designs'), 'trade_marks', 'Design'),
+                section(_('Patents'), 'trade_marks', 'Patent'),
+                section(_('Utility Models'), 'trade_marks', 'UtilityModel'),
                 section(_('Domains'), 'domains', 'Domain'),
                 section(_('Contracts'), 'domains', 'DomainContract'),
                 section(_('Registrants'), 'domains', 'DomainRegistrant'),

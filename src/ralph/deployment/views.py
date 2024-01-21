@@ -10,29 +10,28 @@ from ralph.deployment.utils import _render_configuration
 logger = logging.getLogger(__name__)
 
 
-DEPLOYMENT_404_MSG = 'Deployment {} doesn\'t exist'
+DEPLOYMENT_404_MSG = 'Deployment %s doesn\'t exist'
 
 
-def get_object_or_404_with_message(model, msg, **kwargs):
+def get_object_or_404_with_message(model, msg, logger_args, **kwargs):
     try:
         return model.objects.get(**kwargs)
     except model.DoesNotExist:
-        logger.error(msg)
+        logger.error(msg, *logger_args)
         raise Http404(msg)
 
 
 def _get_preboot(deployment_id):
-    error_msg = 'Deployment with UUID: {} doesn\'t exist' .format(
-        deployment_id
-    )
+    error_msg = 'Deployment with UUID: %s doesn\'t exist'
     try:
         return get_object_or_404_with_message(
             model=Deployment,
             msg=error_msg,
+            logger_args=[deployment_id],
             id=deployment_id
         ).preboot
     except ValueError:
-        logger.warning('Incorrect UUID: {}'.format(deployment_id))
+        logger.warning('Incorrect UUID: %s', deployment_id)
         raise SuspiciousOperation('Malformed UUID')
 
 
@@ -55,10 +54,10 @@ def ipxe(request, deployment_id=None):
         else:
             deployment = Deployment.get_deployment_for_ip(ip)
     except Ethernet.DoesNotExist:
-        logger.warning('Deployment does not exists for ip: {}'.format(ip))
+        logger.warning('Deployment does not exists for ip: %s', ip)
         raise Http404
     except Deployment.DoesNotExist:
-        logger.warning(DEPLOYMENT_404_MSG.format(deployment_id))
+        logger.warning(DEPLOYMENT_404_MSG, deployment_id)
         raise Http404
     configuration = _render_configuration(
         deployment.preboot.get_configuration('ipxe'), deployment
@@ -66,12 +65,17 @@ def ipxe(request, deployment_id=None):
     return HttpResponse(configuration, content_type='text/plain')
 
 
+def deployment_base(*_args, **_kwargs):
+    return HttpResponse(content_type='text/plain')
+
+
 def config(request, deployment_id, config_type):
     """View returns rendered config configuration.
 
     Args:
         deployment_id (string): deployment's UUID
-        config_type (choices): kickstart|preseed|script - type of config
+        config_type (choices): kickstart|preseed|script|meta-data|user-data
+            - type of config
 
     Returns:
         HttpResponse: rendered config
@@ -80,15 +84,17 @@ def config(request, deployment_id, config_type):
         Http404: if deployment with specified UUID doesn't exist
     """
     preboot = _get_preboot(deployment_id)
-    configuration = preboot.get_configuration(config_type)
+    configuration = preboot.get_configuration(config_type.replace("-", "_"))
     if configuration is None:
-        logger.warning('{} for deployment {} doesn\'t exist'.format(
+        logger.warning(
+            '%s for deployment %s doesn\'t exist',
             config_type, deployment_id
-        ))
+        )
         raise Http404
     deployment = get_object_or_404_with_message(
         model=Deployment,
-        msg=DEPLOYMENT_404_MSG.format(deployment_id),
+        msg=DEPLOYMENT_404_MSG,
+        logger_args=[deployment_id],
         id=deployment_id
     )
     configuration = _render_configuration(configuration, deployment)
@@ -115,9 +121,10 @@ def files(request, file_type, deployment_id):
     preboot = _get_preboot(deployment_id)
     file_url = preboot.get_file_url(file_type)
     if file_url is None:
-        logger.warning('File {} for deployment {} doesn\'t exist'.format(
+        logger.warning(
+            'File %s for deployment %s doesn\'t exist',
             file_type, deployment_id
-        ))
+        )
         raise Http404
     return HttpResponseRedirect(file_url)
 

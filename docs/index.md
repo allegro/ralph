@@ -1,6 +1,6 @@
 # Ralph 3 - Asset Management / CMDB
 
-![](./img/welcome-screen-1.png)
+![](img/welcome-screen-1.png)
 
 
 Ralph is a simple yet powerful Asset Management, DCIM and CMDB system for data center and back office.

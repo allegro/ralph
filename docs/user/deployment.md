@@ -7,7 +7,15 @@ TODO
 ## Preboot configuration
 
 `Preboot configuration` allows you define custom files being executed during
-`Deployment`. Such as `kickstart`, `iPXE` or `preseed`.
+`Deployment`. You can define several types of files which can be passed as
+kernel parameters during deployment (they will be served by Ralph via http
+protocol):
+
+ - `kickstart` for RedHat style deployments
+ - `preseed` for Debian style deployments
+ - `meta-data` and `user-data` for Ubuntu casper deployments (starting from
+Ubuntu 20.04)
+ - `iPXE` configuration for iPXE boot
 
 To define such `preboot configuration` you need to:
 - visit `Preboot configuration` (/deployment/prebootconfiguration/) page
@@ -16,13 +24,13 @@ To define such `preboot configuration` you need to:
 
     - Name (This is the name, by which you could reference this `preboot
       configuration` in future)
-    - Type (one of these options: 'kickstart`, `iPXE`)
+    - Type (one of the file types listed above, for example 'kickstart` or `iPXE`)
     - Configuration
     - Description
 
 
 Ad. `Configuration` field:
-This field allows you to write `kickstart`, `preseed`, `iPXE` or some general `script` configuration.
+This field allows you to write `kickstart`, `preseed`, `meta-data`, `user-data`, `iPXE` or some general `script` configuration.
 It's possible to include variables from Ralph. These are:
 
     - configuration_class_name (eg. 'www')
@@ -38,6 +46,9 @@ It's possible to include variables from Ralph. These are:
     - kickstart (eg. 'http://127.0.0.1:8000/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/kickstart')
     - preseed (eg. 'http://127.0.0.1:8000/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/preseed')
     - script (eg. 'http://127.0.0.1:8000/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/script')
+    - meta_data (eg. 'http://127.0.0.1:8000//deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/meta-data')
+    - user_data (eg. 'http://127.0.0.1:8000/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/user-data')
+    - deployment_base (eg. 'http://127.0.0.1:8000/deployment/ea9ea3a0-1c4d-42b7-a19b-922000abe9f7/')
     - ralph_instance (eg. 'http://127.0.0.1:8000')
     - service_env (eg. 'Backup systems - prod')
     - service_uid (eg. 'sc-123')

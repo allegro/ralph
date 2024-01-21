@@ -65,7 +65,6 @@ gulp.task('js', function(){
         './bower_components/foundation/js/foundation.min.js',
         './bower_components/foundation-datepicker/js/foundation-datepicker.js',
         './bower_components/angular-loading-bar/build/loading-bar.min.js',
-        './bower_components/raven-js/dist/raven.min.js',
         './bower_components/webcomponentsjs/webcomponents-lite.js',
         './bower_components/chartist/dist/chartist.js',
     ];

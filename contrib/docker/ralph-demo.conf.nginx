@@ -1,0 +1,41 @@
+# Ralph demo NGINX config
+
+server {
+    listen 80;
+    server_name ralph;
+
+    location /static {
+        alias /opt/static;
+        expires 1y;
+        access_log off;
+        add_header Pragma public;
+        add_header Cache-Control "public";
+    }
+
+    location /media {
+        alias /opt/media;
+        add_header Content-disposition "attachment";
+        access_log off;
+    }
+
+    location /password_change/ {
+        return 301 /;
+    }
+
+    location /accounts/ralphuser/1/ {
+        return 301 /;
+    }
+
+    location /api/users/1/ {
+        return 301 /;
+    }
+
+    location / {
+        proxy_pass http://web:8000;
+
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}

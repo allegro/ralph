@@ -1,6 +1,7 @@
 version: '3'
 services:
   web:
+    platform: linux/amd64
     image: allegro/ralph:latest
     restart: always
     ports:
@@ -23,6 +24,7 @@ services:
         REDIS_DB: 0
 
   nginx:
+    platform: linux/amd64
     image: allegro/ralph-static-nginx:latest
     restart: always
     ports:
@@ -31,6 +33,7 @@ services:
       - ralph_media:/opt/media
 
   db:
+    platform: linux/amd64
     image: mysql:5.7
     environment:
       MYSQL_DATABASE: ralph_ng
@@ -42,12 +45,14 @@ services:
     command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
 
   redis:
+    platform: linux/amd64
     image: redis:3.0
     restart: always
     ports:
       - "6379"
 
   inkpy:
+    platform: linux/amd64
     image: allegro/inkpy:latest
     restart: always
     links:

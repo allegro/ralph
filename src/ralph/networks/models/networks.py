@@ -16,7 +16,10 @@ from mptt.models import MPTTModel, TreeForeignKey
 from ralph.assets.models import AssetLastHostname, Ethernet
 from ralph.dns.dnsaas import DNSaaS
 from ralph.lib import network as network_tools
-from ralph.lib.mixins.fields import NullableCharField
+from ralph.lib.mixins.fields import (
+    NullableCharField,
+    NullableCharFieldWithAutoStrip
+)
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
     LastSeenMixin,
@@ -539,7 +542,7 @@ class Network(
                 next_free_ip = ipaddress.ip_address(free_ip_as_int)
                 if is_in_dnsaas(next_free_ip):
                     logger.warning(
-                        'IP {} is already in DNS'.format(next_free_ip)
+                        'IP %s is already in DNS', next_free_ip
                     )
                 else:
                     return next_free_ip
@@ -616,7 +619,7 @@ class IPAddress(
         blank=False,
         null=False,
     )
-    hostname = NullableCharField(
+    hostname = NullableCharFieldWithAutoStrip(
         verbose_name=_('hostname'),
         max_length=255,
         null=True,

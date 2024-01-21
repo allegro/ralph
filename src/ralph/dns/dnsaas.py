@@ -31,10 +31,10 @@ def renew_token_when_unauthorized(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
         self._verify_oauth_token_validity()
-        status_code, data = func(*args, **kwargs)
+        status_code, data = func(self, *args, **kwargs)
         if status_code == 401:
             self._update_oauth_token()
-            status_code, data = func(*args, **kwargs)
+            status_code, data = func(self, *args, **kwargs)
         return status_code, data
     return wrapper
 
@@ -111,7 +111,7 @@ class DNSaaS:
         result_url = _url._replace(query=query).geturl()
         return result_url
 
-    def get_api_result(self, url: str, page: int = 0) -> List[dict]:
+    def get_api_result(self, url: str) -> List[dict]:
         """
         Returns 'results' from DNSAAS API.
 
@@ -121,16 +121,21 @@ class DNSaaS:
 
         Returns:
             list of records
-
         """
-        status_code, json_data = self._get(url)
-        api_results = json_data.get('content', [])
-        if not json_data.get('last', None):
+        page = 0
+        api_results, last_page = self._get_api_result(url)
+        while not last_page:
             page = page + 1
             next_url = self._set_page_qp(url, page)
-            _api_results = self.get_api_result(next_url, page=page)
+            _api_results, last_page = self._get_api_result(next_url)
             api_results.extend(_api_results)
         return api_results
+
+    def _get_api_result(self, url: str) -> Tuple[List[dict], bool]:
+        status_code, json_data = self._get(url)
+        api_results = json_data.get('content', [])
+        last_page = bool(json_data.get('last', False))
+        return api_results, last_page
 
     def get_dns_records(self, ipaddresses: List[str]) -> List[dict]:
         """Gets DNS Records for `ipaddresses` by API call"""
@@ -181,10 +186,12 @@ class DNSaaS:
     @staticmethod
     def _response2result(response: requests.Response) -> Union[dict, list]:
         if response.status_code == 500:
+            logger.error('Internal Server Error from DNSAAS: %s',
+                         response.content)
             return {
                 'non_field_errors': ['Internal Server Error from DNSAAS']
             }
-        elif response.status_code != 201 and response.status_code != 204:
+        elif response.status_code not in (202, 204):
             return response.json()
 
     def create_dns_record(self, record: dict, service=None) -> Optional[dict]:
@@ -210,11 +217,12 @@ class DNSaaS:
             data['service_uid'] = service.uid
         else:
             logger.error(
-                'Service is required for record {}'.format(data)
+                'Service is required for record %s', data
             )
-            return {'name': [
-                _('Service is required for record {}'.format(data))
-            ]}
+            return {'errors': [{
+                'value': 'name',
+                'comment': _('Service is required for record {}'.format(data))
+            }]}
         return self._post(url, data)[1]
 
     def _send_request_to_dnsaas(self, request_method: str, url: str,
@@ -323,11 +331,10 @@ class DNSaaS:
             JSON response from API
         """
         logger.info('Send update data: {}'.format(ip_record_data))
-        url = self.build_url('ip_record')
+        url = self.build_url('ip-record')
         status_code, response_data = self._post(url, ip_record_data)
         if status_code >= 400:
             logger.error(
-                'DNSaaS returned {} data: {}, send_data: {}'.format(
-                    status_code, str(response_data), ip_record_data
-                )
+                'DNSaaS returned %s data: %s, send_data: %s',
+                status_code, str(response_data), ip_record_data
             )

@@ -1,0 +1,68 @@
+version: '3'
+services:
+  web:
+    platform: linux/amd64
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile-local-dev
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../.:/var/local/ralph
+    links:
+      - db
+      - redis
+    environment:
+        DATABASE_NAME: ralph_ng
+        DATABASE_USER: ralph_ng
+        DATABASE_PASSWORD: ralph_ng
+        DATABASE_HOST: db
+        REDIS_HOST: redis
+        REDIS_PASSWORD: ""
+        REDIS_PORT: 6379
+        REDIS_DB: 0
+
+  db:
+    platform: linux/amd64
+    image: mysql:5.7
+    environment:
+      MYSQL_DATABASE: ralph_ng
+      MYSQL_ROOT_PASSWORD: ralph_ng
+      MYSQL_USER: ralph_ng
+      MYSQL_PASSWORD: ralph_ng
+    volumes:
+      - ralph_dbdata:/var/lib/mysql
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.0.11
+    ports:
+      - "6379"
+    restart: unless-stopped
+
+  inkpy:
+    platform: linux/amd64
+    image: allegro/inkpy:latest
+    links:
+      - redis:redis
+    environment:
+        REDIS_HOST: redis
+        REDIS_PASSWORD: ""
+        REDIS_PORT: 6379
+        REDIS_DB: 0
+    restart: unless-stopped
+
+  nginx:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile-local-dev-static
+    ports:
+      - "80:80"
+    volumes:
+      - ../src/ralph:/opt/media
+      - ../src/ralph/static:/opt/static
+    restart: unless-stopped
+volumes:
+  ralph_dbdata:

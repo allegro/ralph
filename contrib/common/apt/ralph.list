@@ -1,1 +1,1 @@
-deb https://dl.bintray.com/allegro/debng bionic main
+deb https://packagecloud.io/allegro/ralph/ubuntu/ bionic main

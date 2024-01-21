@@ -1,6 +1,7 @@
 from django.contrib.admin.views.main import ORDER_VAR, SEARCH_VAR
 from django.core.urlresolvers import reverse
 from django.db.models import Count, F, Prefetch
+from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import RalphAdmin, register
@@ -64,13 +65,14 @@ class DiscoveryQueueAdmin(RalphAdmin):
 def ip_address_base_object_link(obj):
     if not obj.base_object:
         return '&ndash;'
-    return '<a href="{}" target="_blank">{}</a>'.format(
+    link = '<a href="{}" target="_blank">{}</a>'.format(
         reverse('admin:view_on_site', args=(
             obj.base_object.content_type_id,
             obj.base_object.id
         )),
-        obj.base_object._str_with_type,
+        escape(obj.base_object._str_with_type),
     )
+    return link
 
 
 class LinkedObjectTable(TableWithUrl):
@@ -190,7 +192,7 @@ class NetworkAdmin(RalphMPTTAdmin):
         nodes_link = []
         for node in nodes:
             nodes_link.append('<a href="{}" target="blank">{}</a>'.format(
-                node.get_absolute_url(), node
+                node.get_absolute_url(), escape(node)
             ))
         return ' <br /> '.join(nodes_link)
     show_parent_networks.short_description = _('Parent networks')
@@ -299,7 +301,7 @@ class IPAddressAdmin(ParentChangeMixin, RalphAdmin):
         nodes_link = []
         for node in nodes:
             nodes_link.append('<a href="{}" target="blank">{}</a>'.format(
-                node.get_absolute_url(), node
+                node.get_absolute_url(), escape(node)
             ))
         return ' > '.join(nodes_link)
     get_network_path.short_description = _('Network')
@@ -315,7 +317,7 @@ class IPAddressAdmin(ParentChangeMixin, RalphAdmin):
 
     def ip_address(self, obj):
         return '<a href="{}">{}</a>'.format(
-            obj.get_absolute_url(), obj.address
+            obj.get_absolute_url(), escape(obj.address)
         )
     ip_address.short_description = _('IP address')
     ip_address.admin_order_field = 'number'

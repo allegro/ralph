@@ -80,6 +80,16 @@ class BackOfficeAssetStatus(Choices):
     sale = _("sale")
     loan_in_progress = _("loan in progress")
     return_in_progress = _("return in progress")
+    to_find = _("to find")
+    sent = _("sent")
+    to_buyout = _("to buyout")
+    in_use_team = _("in use team")
+    in_use_test = _("in use test")
+    in_progress_team = _("in progress team")
+    in_progress_test = _("in progress test")
+    quarantine = _("quarantine")
+    refurbished = _("refurbished")
+    reserved_to_order = _("reserved to order")
 
 
 class OfficeInfrastructure(
@@ -198,6 +208,12 @@ class BackOfficeAsset(Regionalizable, Asset):
     office_infrastructure = models.ForeignKey(
         OfficeInfrastructure, null=True, blank=True
     )
+    last_status_change = models.DateField(
+        null=True,
+        blank=True,
+        default=None,
+        verbose_name=_('Last status change')
+    )
 
     class Meta:
         verbose_name = _('Back Office Asset')
@@ -247,10 +263,9 @@ class BackOfficeAsset(Regionalizable, Asset):
             context = Context(template_vars or {})
             return template.render(context)
 
-        logger.warning(
-            'Generating new hostname for {} using {} old hostname {}'.format(
-                self, template_vars, self.hostname
-            )
+        logger.info(
+            'Generating new hostname for %s using %s old hostname %s',
+            self, template_vars, self.hostname
         )
         prefix = render_template(
             ASSET_HOSTNAME_TEMPLATE.get('prefix', ''),
@@ -695,5 +710,18 @@ class BackOfficeAsset(Regionalizable, Asset):
     def assign_hostname_if_empty_or_country_not_match(
         cls, instances, **kwargs
     ):
+        if settings.BACK_OFFICE_ASSET_AUTO_ASSIGN_HOSTNAME:
+            for instance in instances:
+                instance._try_assign_hostname(commit=False, force=False)
+
+    @classmethod
+    @transition_action()
+    def last_status(cls, instances, **kwargs):
         for instance in instances:
-            instance._try_assign_hostname(commit=False, force=False)
+            instance.last_status_change = datetime.date.today()
+
+    @classmethod
+    @transition_action()
+    def hardware_replacement(cls, instances, **kwargs):
+        for instance in instances:
+            instance.loan_end_date = datetime.date.today() + datetime.timedelta(days=10)  # noqa

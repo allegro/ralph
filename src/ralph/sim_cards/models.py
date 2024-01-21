@@ -1,3 +1,5 @@
+import datetime
+
 from functools import partial
 
 from dj.choices import Choices
@@ -12,6 +14,7 @@ from django.core.validators import (
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+from ralph.assets.models import AssetHolder
 from ralph.attachments.utils import send_transition_attachments_to_user
 from ralph.back_office.models import autocomplete_user, Warehouse
 from ralph.lib.hooks import get_hook
@@ -140,6 +143,12 @@ class SIMCard(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model,
     )
     features = models.ManyToManyField(
         SIMCardFeatures,
+        blank=True,
+    )
+    property_of = models.ForeignKey(
+        AssetHolder,
+        on_delete=models.PROTECT,
+        null=True,
         blank=True,
     )
 
@@ -308,3 +317,67 @@ class SIMCard(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model,
     def assign_task_url(cls, instances, **kwargs):
         for instance in instances:
             instance.task_url = kwargs['task_url']
+
+    @classmethod
+    @transition_action()
+    def quarantine_date(cls, instances, **kwargs):
+        for instance in instances:
+            instance.quarantine_until = datetime.date.today() + datetime.timedelta(days=90)  # noqa
+
+    @classmethod
+    @transition_action(
+        form_fields={
+            'pin1': {
+                'field': forms.CharField(label=_('pin1')),
+            },
+            'puk1': {
+                'field': forms.CharField(label=_('puk1')),
+            }
+        }
+    )
+    def change_pin_and_puk(cls, instances, **kwargs):
+        for instance in instances:
+            instance.pin1 = kwargs['pin1']
+            instance.puk1 = kwargs['puk1']
+
+    @classmethod
+    @transition_action(
+        form_fields={
+            'card number': {
+                'field': forms.CharField(label=_('card number')),
+            }
+        }
+    )
+    def card_number_to_notes(cls, instances, **kwargs):
+        for instance in instances:
+            instance.remarks = '{}\n{}'.format(
+                instance.remarks, instance.card_number
+            )
+            instance.card_number = kwargs['card number']
+
+    @classmethod
+    @transition_action(
+        form_fields={
+            'user': {
+                'field': forms.CharField(label=_('User')),
+                'autocomplete_field': 'user',
+            },
+            'owner': {
+                'field': forms.CharField(label=_('Owner')),
+                'autocomplete_field': 'owner',
+                'condition': lambda obj, actions: bool(obj.owner),
+            }
+        }
+    )
+    def change_user_and_owner(cls, instances, **kwargs):
+        UserModel = get_user_model()  # noqa
+        user_id = kwargs.get('user', None)
+        user = UserModel.objects.get(id=user_id)
+        owner_id = kwargs.get('owner', None)
+        for instance in instances:
+            instance.user = user
+            if not owner_id:
+                instance.owner = user
+            else:
+                instance.owner = UserModel.objects.get(id=owner_id)
+            instance.location = user.location

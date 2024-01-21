@@ -1,0 +1,47 @@
+name: Publish
+
+on:
+  release:
+    types: [ created ]
+
+jobs:
+  publish:
+
+    runs-on: ubuntu-latest
+    environment: ci
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Verify github ref
+        run: |
+          TAG=$(echo "$GITHUB_REF" | grep -E -o '^refs\/tags\/[0-9]{8}\.[0-9]+$' || true)
+          if [[ -z "$TAG" ]]; then
+              >&2 echo "The \$GITHUB_REF does not point to a properly named tag."
+              exit 1
+          fi
+      - name: Build
+        run: make build-package
+      - name: Install packagecloud CLI
+        run: sudo gem install package_cloud
+      - name: Publish deb
+        env:
+          PACKAGECLOUD_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
+        run: package_cloud push allegro/ralph/ubuntu/bionic build/*.deb
+      - name: Publish docker
+        env:
+          WAIT_FOR_PACKAGECLOUD_DELAY: 10
+          RETRY_COUNT: 3
+        run: |
+          docker login --username ${{ secrets.DOCKER_HUB_USERNAME }} --password ${{ secrets.DOCKER_HUB_PASSWORD }}
+          export RALPH_VERSION=${GITHUB_REF#refs/*/}
+          until [ "$RETRY_COUNT" -le 0 ]
+            do
+              sleep $WAIT_FOR_PACKAGECLOUD_DELAY
+              make publish-docker-image && break
+              RETRY_COUNT=$((RETRY_COUNT-1))
+              echo "==== Publish docker failed. Remaining retries: $RETRY_COUNT ===="
+            done
+          docker logout
