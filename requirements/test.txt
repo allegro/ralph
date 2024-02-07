@@ -1,6 +1,5 @@
 -e .
 -r prod_ldap.txt
--r docs.txt
 -r code_style.txt
 coverage
 coveralls
