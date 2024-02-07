@@ -1,3 +1,23 @@
+ralph (20240207.1) bionic; urgency=medium
+
+  [ Marcin Pyrka ]
+  * Readme update
+
+  [ Olga Matyla ]
+  * Fix openstack requirements (#3789)
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Wed, 07 Feb 2024 12:50:43 +0000
+
+ralph (20240207.1) bionic; urgency=medium
+
+  [ Marcin Pyrka ]
+  * Readme update
+
+  [ Olga Matyla ]
+  * Fix openstack requirements (#3789)
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Wed, 07 Feb 2024 12:49:32 +0000
+
 ralph (20230926.1) bionic; urgency=medium
 
   * Rename call_center to callcenter in dc type
