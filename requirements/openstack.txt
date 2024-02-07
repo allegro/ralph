@@ -2,6 +2,7 @@
 
 python-keystoneclient==2.3.0
 python-novaclient==3.2.0
+openstacksdk==1.5.0
 python-ironicclient==1.7.1
 
 Babel==2.2.0
