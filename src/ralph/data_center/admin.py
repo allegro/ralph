@@ -495,6 +495,11 @@ class DataCenterAssetAdmin(
         }),
     )
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        qs = qs.select_related('property_of')
+        return qs
+
     def get_multiadd_fields(self, obj=None):
         multiadd_fields = [
             {'field': 'sn', 'allow_duplicates': False},
