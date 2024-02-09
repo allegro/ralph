@@ -456,6 +456,7 @@ class DataCenterAssetAdmin(
         'service_env__service',
         'service_env__environment',
         'configuration_path',
+        'property_of'
     ]
     raw_id_fields = [
         'model', 'rack', 'service_env', 'parent', 'budget_info',
@@ -494,16 +495,6 @@ class DataCenterAssetAdmin(
             )
         }),
     )
-
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        qs = qs.select_related('property_of')
-        return qs
-
-    def get_export_queryset(self, request):
-        qs = super().get_export_queryset(request)
-        qs = qs.select_related('property_of')
-        return qs
 
     def get_multiadd_fields(self, obj=None):
         multiadd_fields = [
