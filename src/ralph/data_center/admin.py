@@ -414,14 +414,17 @@ class DataCenterAssetAdmin(
         'service_env',
         'configuration_path',
         'scan_status',
-        'scm_status_check'
+        'scm_status_check',
+        'property_of',
+        'order_no'
     ]
     multiadd_summary_fields = list_display + ['rack']
     one_of_mulitvalue_required = ['sn', 'barcode']
     bulk_edit_list = [
         'hostname', 'status', 'barcode', 'model', 'sn', 'invoice_date',
         'invoice_no', 'rack', 'orientation', 'position', 'slot_no', 'price',
-        'provider', 'service_env', 'configuration_path', 'tags', 'start_usage'
+        'provider', 'service_env', 'configuration_path', 'tags', 'start_usage',
+        'depreciation_end_date', 'depreciation_rate', 'order_no', 'remarks'
     ]
     bulk_edit_no_fillable = ['barcode', 'sn']
     search_fields = [
@@ -455,6 +458,7 @@ class DataCenterAssetAdmin(
         'service_env__service',
         'service_env__environment',
         'configuration_path',
+        'property_of'
     ]
     raw_id_fields = [
         'model', 'rack', 'service_env', 'parent', 'budget_info',
