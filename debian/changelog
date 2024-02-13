@@ -1,3 +1,10 @@
+ralph (20240213.1) bionic; urgency=medium
+
+  [ Aleksander Więckowski ]
+  * Additional fields in data center assets list view and bulk edit (#3790)
+
+ -- awieckowski <aleksander.wieckowski@allegro.pl>  Tue, 13 Feb 2024 09:49:05 +0000
+
 ralph (20240207.1) bionic; urgency=medium
 
   [ root ]
