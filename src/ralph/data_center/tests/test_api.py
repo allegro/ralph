@@ -234,6 +234,20 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         self.assertTrue(self.dc_asset.force_depreciation)
         self.assertEqual(self.dc_asset.tags.count(), 1)
 
+    def test_update_vendor_contract_number_and_leasing_rate(self):
+        url = reverse('datacenterasset-detail', args=(self.dc_asset.id,))
+        hostname = self.dc_asset.hostname
+        data = {
+            'vendor_contract_number': 'abc-123',
+            'leasing_rate': 123.45
+        }
+        response = self.client.patch(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.dc_asset.refresh_from_db()
+        self.assertEqual(self.dc_asset.hostname, hostname)
+        self.assertEqual(self.dc_asset.vendor_contract_number, 'abc-123')
+        self.assertEqual(self.dc_asset.leasing_rate, 123.45)
+
     def test_filter_by_configuration_path(self):
         url = reverse('datacenterasset-list') + '?configuration_path={}'.format(
             self.dc_asset.configuration_path.path,
