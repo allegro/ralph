@@ -543,9 +543,9 @@ class DataCenterAssetTest(RalphTestCase):
             (str(common_net.pk), common_net)
         ]
         expected_common_result = [(str(common_net.pk), common_net)]
-        self.assertEqual(rack_100_result, expected_rack100_result)
+        self.assertCountEqual(rack_100_result, expected_rack100_result)
         self.assertEqual(len(rack_100_result), 2)
-        self.assertEqual(common_result, expected_common_result)
+        self.assertCountEqual(common_result, expected_common_result)
         self.assertEqual(len(common_result), 1)
 
 

@@ -461,6 +461,17 @@ class DataCenterAsset(
         choices=Orientation(),
         default=Orientation.front.id,
     )
+    vendor_contract_number = models.CharField(
+        null=True,
+        blank=True,
+        max_length=256,
+        verbose_name=_('Vendor contract number'),
+    )
+    leasing_rate = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name=_('Vendor contact number'),
+    )
     slot_no = models.CharField(
         blank=True,
         help_text=_('Fill it if asset is blade server'),
