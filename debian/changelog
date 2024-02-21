@@ -1,3 +1,14 @@
+ralph (20240221.1) bionic; urgency=medium
+
+  [ Paweł Szulc ]
+  * Add vendor contract number and leasing rate
+
+  [ Olga Matyla ]
+  * Add migration
+  * Fix test
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Wed, 21 Feb 2024 11:57:53 +0000
+
 ralph (20240213.1) bionic; urgency=medium
 
   [ root ]
