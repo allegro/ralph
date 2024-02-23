@@ -90,7 +90,7 @@ class BackOfficeAssetStatus(Choices):
     quarantine = _("quarantine")
     refurbished = _("refurbished")
     reserved_to_order = _("reserved to order")
-
+    replacement = _("replacement")
 
 class OfficeInfrastructure(
     AdminAbsoluteUrlMixin,
