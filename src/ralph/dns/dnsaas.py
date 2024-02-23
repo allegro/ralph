@@ -183,7 +183,9 @@ class DNSaaS:
             return response_data
 
     @staticmethod
-    def _response2result(response: requests.Response) -> Union[dict, list, None]:
+    def _response2result(
+        response: requests.Response
+    ) -> Union[dict, list, None]:
         if response.status_code == 500:
             logger.error('Internal Server Error from DNSAAS: %s',
                          response.content)
