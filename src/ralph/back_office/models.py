@@ -92,6 +92,7 @@ class BackOfficeAssetStatus(Choices):
     reserved_to_order = _("reserved to order")
     replacement = _("replacement")
 
+
 class OfficeInfrastructure(
     AdminAbsoluteUrlMixin,
     NamedMixin,
