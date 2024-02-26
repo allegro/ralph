@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 from functools import wraps
 from typing import List, Optional, Tuple, Union
 from urllib.parse import parse_qs, urlencode, urljoin,  urlsplit
-
 import requests
 from dj.choices import Choices
 from django.conf import settings
@@ -184,7 +183,9 @@ class DNSaaS:
             return response_data
 
     @staticmethod
-    def _response2result(response: requests.Response) -> Union[dict, list]:
+    def _response2result(
+        response: requests.Response
+    ) -> Union[dict, list, None]:
         if response.status_code == 500:
             logger.error('Internal Server Error from DNSAAS: %s',
                          response.content)
@@ -192,7 +193,10 @@ class DNSaaS:
                 'non_field_errors': ['Internal Server Error from DNSAAS']
             }
         elif response.status_code not in (202, 204):
-            return response.json()
+            try:
+                return response.json()
+            except ValueError:
+                pass
 
     def create_dns_record(self, record: dict, service=None) -> Optional[dict]:
         """
