@@ -1,3 +1,10 @@
+ralph (20240226.1) bionic; urgency=medium
+
+  * Fix error when decoding response from DNSaaS
+  * Fix flake8
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Mon, 26 Feb 2024 10:04:13 +0000
+
 ralph (20240221.1) bionic; urgency=medium
 
   [ Paweł Szulc ]
