@@ -424,7 +424,8 @@ class DataCenterAssetAdmin(
         'hostname', 'status', 'barcode', 'model', 'sn', 'invoice_date',
         'invoice_no', 'rack', 'orientation', 'position', 'slot_no', 'price',
         'provider', 'service_env', 'configuration_path', 'tags', 'start_usage',
-        'depreciation_end_date', 'depreciation_rate', 'order_no', 'remarks'
+        'depreciation_end_date', 'depreciation_rate', 'order_no', 'remarks',
+        'property_of'
     ]
     bulk_edit_no_fillable = ['barcode', 'sn']
     search_fields = [
