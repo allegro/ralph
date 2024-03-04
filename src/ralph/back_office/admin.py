@@ -122,8 +122,8 @@ class BackOfficeAssetAdmin(
     def get_search_results(self, request, queryset, search_term):
         queryset, use_distinct = super().get_search_results(request, queryset, search_term) # noqa
         if 'barcode' in request.GET:
-            barcode = request.GET.get('barcode')
-            queryset = self.model.objects.filter(barcode__exact=barcode)
+            barcode = request.GET.get('barcode').split(";")
+            queryset = self.model.objects.filter(barcode__in=barcode)
         return queryset, use_distinct
 
     list_filter = [
