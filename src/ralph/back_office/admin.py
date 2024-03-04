@@ -119,6 +119,13 @@ class BackOfficeAssetAdmin(
 
     search_fields = ['barcode', 'sn', 'hostname', 'invoice_no', 'order_no']
 
+    def get_search_results(self, request, queryset, search_term):
+        queryset, use_distinct = super().get_search_results(request, queryset, search_term) # noqa
+        if 'barcode' in request.GET:
+            barcode = request.GET.get('barcode')
+            queryset = self.model.objects.filter(barcode__exact=barcode)
+        return queryset, use_distinct
+
     list_filter = [
         'barcode', 'status', 'imei', 'imei2', 'sn', 'model', 'purchase_order',
         'hostname', 'required_support', 'region', 'warehouse', 'task_url',
