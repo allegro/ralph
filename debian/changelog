@@ -1,3 +1,33 @@
+ralph (20240304.1) bionic; urgency=medium
+
+  [ lukasz.karykowski ]
+  * ITS-363398 | Search fields search changed to find exact barcode
+  * ITS-488335 | new status for backoffice assets.
+  * ITS-488335 | added blank line.
+
+  [ awieckowski ]
+  * Additional field in data center asset export
+
+  [ lukasz.karykowski ]
+  * 3716 | Changed code suggested in comment.
+
+ -- awieckowski <aleksander.wieckowski@allegro.pl>  Mon, 04 Mar 2024 08:02:55 +0000
+
+ralph (20240304.1) bionic; urgency=medium
+
+  [ lukasz.karykowski ]
+  * ITS-363398 | Search fields search changed to find exact barcode
+  * ITS-488335 | new status for backoffice assets.
+  * ITS-488335 | added blank line.
+
+  [ awieckowski ]
+  * Additional field in data center asset export
+
+  [ lukasz.karykowski ]
+  * 3716 | Changed code suggested in comment.
+
+ -- awieckowski <aleksander.wieckowski@allegro.pl>  Mon, 04 Mar 2024 08:01:42 +0000
+
 ralph (20240226.1) bionic; urgency=medium
 
   * Fix error when decoding response from DNSaaS
