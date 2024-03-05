@@ -71,7 +71,6 @@ class ComponentModelFactory(DjangoModelFactory):
 
     speed = factory.Iterator(['2700', '2500', '2100'])
     cores = factory.Iterator(['2', '4', '8'])
-    logical_cores = factory.Iterator(['2', '4', '8'])
     size = factory.Iterator(['512', '1024', '2048'])
     type = factory.Iterator([
         ComponentType.processor.id, ComponentType.memory.id,
@@ -83,7 +82,7 @@ class ComponentModelFactory(DjangoModelFactory):
     class Meta:
         model = ComponentModel
         django_get_or_create = [
-            'name', 'speed', 'cores', 'logical_cores', 'size', 'type', 'family'
+            'name', 'speed', 'cores', 'size', 'type', 'family'
         ]
 
 
