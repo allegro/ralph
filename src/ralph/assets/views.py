@@ -39,6 +39,7 @@ class ComponentsAdminView(RalphDetailViewAdmin):
             'model_name',
             'speed',
             'cores',
+            'logical_cores'
         )
         extra = 1
 
