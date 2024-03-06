@@ -207,7 +207,9 @@ class CurrentUserInfoView(
             ],
             request=self.request,
         )
-        context['managing_devices_moved_info'] = settings.MANAGING_DEVICES_MOVED_INFO
+        context['managing_devices_moved_info'] = (
+            settings.MANAGING_DEVICES_MOVED_INFO
+        )
 
         context['simcard_list'] = AssignedSimcardsList(
             self.get_simcard_queryset(),
