@@ -381,7 +381,7 @@ class FibreChannelCardSerializer(FibreChannelCardSimpleSerializer):
 class ProcessorSimpleSerializer(RalphAPISerializer):
     class Meta:
         model = Processor
-        fields = ('id', 'url', 'speed', 'cores')
+        fields = ('id', 'url', 'speed', 'cores', 'logical_cores')
 
 
 class ProcessorSerializer(ProcessorSimpleSerializer):

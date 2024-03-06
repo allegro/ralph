@@ -221,7 +221,10 @@ class Processor(Component):
     speed = models.PositiveIntegerField(
         verbose_name=_("speed (MHz)"), null=True, blank=True,
     )
-    cores = models.PositiveIntegerField(null=True, blank=True)
+    cores = models.PositiveIntegerField(
+        verbose_name="physical cores", null=True, blank=True
+    )
+    logical_cores = models.PositiveIntegerField(null=True, blank=True)
 
     class Meta:
         verbose_name = _('processor')
