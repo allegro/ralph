@@ -470,7 +470,7 @@ class DataCenterAsset(
     leasing_rate = models.FloatField(
         null=True,
         blank=True,
-        verbose_name=_('Vendor contact number'),
+        verbose_name=_('Leasing rate'),
     )
     slot_no = models.CharField(
         blank=True,
