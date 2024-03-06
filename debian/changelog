@@ -1,3 +1,13 @@
+ralph (20240306.1) bionic; urgency=medium
+
+  [ awieckowski ]
+  * Display leasing rate and depreciation end date fields on frontend
+
+  [ Aleksander Więckowski ]
+  * Add CPU logical cores (#3796)
+
+ -- awieckowski <aleksander.wieckowski@allegro.pl>  Wed, 06 Mar 2024 08:06:34 +0000
+
 ralph (20240304.2) bionic; urgency=medium
 
   * Allow to search for multiple barcodes
