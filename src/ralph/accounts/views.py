@@ -191,22 +191,6 @@ class CurrentUserInfoView(
         if settings.MY_EQUIPMENT_SHOW_BUYOUT_DATE:
             asset_fields += ['buyout_date']
 
-        if settings.MY_EQUIPMENT_REPORT_FAILURE_URL:
-            asset_fields += ['report_failure']
-
-        if settings.MY_EQUIPMENT_BUYOUT_URL and settings.MY_EQUIPMENT_SHOW_BUYOUT_DATE:  # noqa
-            asset_fields += ['buyout_ticket']
-
-        warehouse_stocktaking_enabled = BackOfficeAsset.objects.filter(
-            user=self.request.user, warehouse__stocktaking_enabled=True
-        ).exists()
-        region_stocktaking_enabled = BackOfficeAsset.objects.filter(
-            user=self.request.user, region__stocktaking_enabled=True
-        ).exists()
-
-        if warehouse_stocktaking_enabled or region_stocktaking_enabled:
-            asset_fields += ['confirm_ownership']
-
         context['asset_list'] = MyEquipmentAssetList(
             self.get_asset_queryset(),
             asset_fields,
@@ -223,6 +207,7 @@ class CurrentUserInfoView(
             ],
             request=self.request,
         )
+        context['managing_devices_moved_info'] = settings.MANAGING_DEVICES_MOVED_INFO
 
         context['simcard_list'] = AssignedSimcardsList(
             self.get_simcard_queryset(),
