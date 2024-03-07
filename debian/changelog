@@ -1,3 +1,10 @@
+ralph (20240307.1) bionic; urgency=medium
+
+  [ Aleksander Więckowski ]
+  * Update My Equipment tab (#3799)
+
+ -- awieckowski <aleksander.wieckowski@allegro.pl>  Thu, 07 Mar 2024 10:21:16 +0000
+
 ralph (20240306.1) bionic; urgency=medium
 
   [ awieckowski ]
