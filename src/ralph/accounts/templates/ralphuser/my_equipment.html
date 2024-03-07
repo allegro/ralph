@@ -9,17 +9,15 @@
     {% include 'ralphuser/partials/accept_assets.html' with title="Assets to accept" action="accept" transition_id=acceptance_transition_id transition_exists=acceptance_transition_exists assets=assets_to_accept %}
     {% include 'ralphuser/partials/accept_assets.html' with title="Assets to loan" action="loan" transition_id=loan_transition_id transition_exists=loan_transition_exists assets=assets_to_loan %}
 
+    {% if managing_devices_moved_info %}
+      {{ managing_devices_moved_info|safe }}
+    {% endif %}
+
     <h5>{% trans 'Assigned assets' %}:</h5>
     {% table asset_list.get_table_content %}
-
-    <h5>{% trans 'Assigned SIM cards' %}:</h5>
-    {% table simcard_list.get_table_content %}
 
     <h5>{% trans 'Assigned licences' %}:</h5>
     {% table licence_list.get_table_content %}
 
-    {% for link in my_equipment_links %}
-      <a href="{{ link.url }}">{{ link.name }}</a><br />
-    {% endfor %}
   </div>
 {% endblock %}

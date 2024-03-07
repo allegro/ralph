@@ -442,6 +442,7 @@ DEPLOYMENT_MAX_DNS_ENTRIES_TO_CLEAN = 30
 #     {'url': 'http://....', 'name': 'Link name'},
 # ]
 MY_EQUIPMENT_LINKS = json.loads(os.environ.get('MY_EQUIPMENT_LINKS', '[]'))
+MANAGING_DEVICES_MOVED_INFO = os.environ.get('MANAGING_DEVICES_MOVED_INFO', '')  # noqa
 MY_EQUIPMENT_REPORT_FAILURE_URL = os.environ.get('MY_EQUIPMENT_REPORT_FAILURE_URL', '')  # noqa
 MY_EQUIPMENT_SHOW_BUYOUT_DATE = bool_from_env('MY_EQUIPMENT_SHOW_BUYOUT_DATE')
 MY_EQUIPMENT_BUYOUT_URL = os.environ.get('MY_EQUIPMENT_BUYOUT_URL', '')
