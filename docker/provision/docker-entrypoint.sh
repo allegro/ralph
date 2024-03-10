@@ -51,7 +51,10 @@ case "$ARG" in
     upgrade)
         "${RALPH_LOCAL_DIR}/init-ralph.sh" upgrade
         ;;
+    demodata)
+        "${RALPH_LOCAL_DIR}/demo-ralph.sh"
+        ;;
     *)
-        echo "Usage: ${0} {start|init|upgrade}"
+        echo "Usage: ${0} {start|init|upgrade|demodata}"
         exit 1
 esac

@@ -32,6 +32,7 @@ COPY contrib/common/apt/ralph.list \
      docker/provision/docker-entrypoint.sh \
      docker/provision/createsuperuser.py \
      docker/provision/start-ralph.sh \
+     docker/provision/demo-ralph.sh \
      docker/provision/wait-for-it.sh \
      docker/provision/install_ralph.sh \
      build/*$RALPH_VERSION*.deb \

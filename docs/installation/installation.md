@@ -182,13 +182,13 @@ Then build ralph:
 
 To initialize database run:
 
-    docker-compose run --rm web /root/init.sh
+    docker-compose run --rm web init
 
 Notice that this command should be executed only once, at the very beginning.
 
 If you need to populate Ralph with some demonstration data run:
 
-    docker-compose run --rm web ralph demodata
+    docker-compose run --rm web demodata
 
 ### Run
 
@@ -200,7 +200,7 @@ Ralph should be accessible at ``http://127.0.0.1`` (or if you are using ``boot2d
 
 If you are upgrading ralph image (source code) run:
 
-    docker-compose run --rm web /root/upgrade.sh
+    docker-compose run --rm web upgrade
 
 
 # Migration from Ralph 2
