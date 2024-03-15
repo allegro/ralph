@@ -110,7 +110,7 @@ docs: install-docs
 	mkdocs build
 
 run:
-	dev_ralph runserver_plus 0.0.0.0:8000
+	dev_ralph runserver_plus 0.0.0.0:3000
 
 menu:
 	ralph sitetree_resync_apps

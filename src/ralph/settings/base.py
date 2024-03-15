@@ -51,7 +51,7 @@ DEBUG = False
 ALLOWED_HOSTS = ['*']
 
 # Only for deployment
-RALPH_INSTANCE = os.environ.get('RALPH_INSTANCE', 'http://127.0.0.1:8000')
+RALPH_INSTANCE = os.environ.get('RALPH_INSTANCE', 'http://127.0.0.1:80')
 
 # Application definition
 

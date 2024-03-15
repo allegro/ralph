@@ -1,0 +1,48 @@
+version: '3'
+
+services:  
+
+  db:
+    container_name: postgres
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ralph_ng
+      POSTGRES_PASSWORD: ralph_ng
+      POSTGRES_DB: ralph_ng
+    volumes:
+      - ralph_dbdata:/var/lib/postgresql/data  
+    ports:
+      - "5432:5432"
+
+  pgadmin4:
+    container_name: pgadmin4
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ralph_ng@mylab.local
+      PGADMIN_DEFAULT_PASSWORD: ralph_ng
+    ports:
+      - "5050:80"
+
+  redis:
+    image: redis:3.0
+    restart: always
+    ports:
+      - "6379"
+
+  inkpy:
+    image: allegro/inkpy:latest
+    restart: always
+    links:
+      - redis:redis
+    environment:
+        REDIS_HOST: redis
+        REDIS_PASSWORD: ""
+        REDIS_PORT: 6379
+        REDIS_DB: 0
+
+volumes:
+  ralph_dbdata:
+
+
