@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ralph.fullname" . }}
+  labels:
+    {{- include "ralph.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "ralph.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "ralph.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          env:
+            - name: DATABASE_NAME
+              value: {{ .Values.mysql.database | quote}}
+            - name: DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql
+                  key: username
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql
+                  key: password
+            - name: DATABASE_HOST
+              value: {{ .Values.mysql.host | quote}}
+            - name: DATABASE_PORT
+              value: {{ .Values.mysql.port | quote}}
+            - name: REDIS_HOST
+              value: {{ .Values.redis.host | quote}}
+            - name: REDIS_PASSWORD
+              value: {{ .Values.redis.password | quote}}
+            - name: REDIS_PORT
+              value: {{ .Values.redis.port | quote}}
+            - name: REDIS_DB
+              value: {{ .Values.redis.db | quote}}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: web
+              containerPort: 8000
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
+        - name: {{ .Chart.Name }}-nginx
+          securityContext:
+            {}
+          image: "allegro/ralph-static-nginx:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          volumeMounts:
+          - mountPath: /opt/media
+            name: ralph-media
+          resources:
+            {}
+      volumes:
+      - name: ralph-media
+        emptyDir: {}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
