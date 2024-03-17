@@ -114,7 +114,7 @@ class Ethernet(Component):
         verbose_name=_('label'), max_length=255, blank=True, null=True
     )
     mac = MACAddressField(
-        verbose_name=_('MAC address'), unique=True,
+        verbose_name=_('MAC address'),
         validators=[mac_validator], max_length=24, null=True, blank=True
     )
     speed = models.PositiveIntegerField(
