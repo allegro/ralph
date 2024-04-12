@@ -3,7 +3,8 @@
 # - required: manual run of `/var/local/ralph/docker-entrypoint.sh init` (maybe use initContainer)
 # - required: manual run of `ralphctl collectstatic` to deploy static files to shared volume for nginx (maybe use lifecycle postStart)
 #
-apiVersion: extensions/v1beta1
+#original (2024)rc: https://gist.github.com/tkuther/eeb7d4c3dc536fc28250f3a91beef179
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ralph
@@ -11,6 +12,9 @@ metadata:
     app: ralph
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: ralph
   template:
     metadata:
       labels:
@@ -111,7 +115,7 @@ kind: Service
 metadata:
   name: ralph
   labels:
-    app: ralph
+    kubernetes.io/service-name: ralph
 spec:
   ports:
   - name: ralph
@@ -125,7 +129,7 @@ kind: Service
 metadata:
   name: ralph-nginx
   labels:
-    app: ralph-nginx
+    kubernetes.io/service-name: ralph-nginx
 spec:
   ports:
   - name: ralph-nginx
@@ -194,16 +198,33 @@ data:
         }
     }
 ---
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ralph
 spec:
   rules:
-  - host: CHANGEME
+  - host: ralph.ss.es
     http:
       paths:
       - path: /
         backend:
           serviceName: ralph-nginx
           servicePort: 80
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ralph
+spec:
+  rules:
+  - host: "ralph.ss.es"
+    http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: ralph-nginx
+              port:
+                number: 80
