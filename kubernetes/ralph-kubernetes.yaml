@@ -1,0 +1,209 @@
+#
+# Note: this does not work right out of the box yet
+# - required: manual run of `/var/local/ralph/docker-entrypoint.sh init` (maybe use initContainer)
+# - required: manual run of `ralphctl collectstatic` to deploy static files to shared volume for nginx (maybe use lifecycle postStart)
+#
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ralph
+  labels:
+    app: ralph
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ralph
+    spec:
+      containers:
+      - name: ralph
+        image: allegro/ralph:latest
+        ports:
+        - containerPort: 8000
+        resources:
+          requests:
+            memory: "500Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        env:
+        - name: DATABASE_NAME
+          value: 'ralph_ng'
+        - name: DATABASE_USER
+          value: 'ralph_ng'
+        - name: DATABASE_PASSWORD
+          value: 'ralph_ng'
+        - name: DATABASE_HOST
+          value: 'proxysql.default.svc.cluster.local'
+        - name: DATABASE_PORT
+          value: '3306'
+        - name: REDIS_HOST
+          value: '127.0.0.1'
+        - name: REDIS_PORT
+          value: '6379'
+        - name: REDIS_DB
+          value: '0'
+        volumeMounts:
+        - name: ralph-static-files
+          mountPath: /usr/share/ralph/static
+        - name: ralph-media-files
+          mountPath: /var/local/ralph/media
+      - name: ralph-nginx
+        image: nginx
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "125m"
+          limits:
+            memory: "256Mi"
+            cpu: "250m"
+        volumeMounts:
+        - name: ralph-nginx-config
+          mountPath: /etc/nginx/conf.d/default.conf
+          subPath: default.conf
+        - name: ralph-static-files
+          mountPath: /opt/static
+        - name: ralph-media-files
+          mountPath: /opt/media
+      - name: ralph-redis
+        image: redis:3.0
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "125m"
+          limits:
+            memory: "256Mi"
+            cpu: "250m"
+      - name: ralph-inkpy
+        image: allegro/inkpy:latest
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "125m"
+          limits:
+            memory: "256Mi"
+            cpu: "250m"
+        env:
+        - name: REDIS_HOST
+          value: '127.0.0.1'
+        - name: REDIS_PORT
+          value: '6379'
+        - name: REDIS_DB
+          value: '0'
+      restartPolicy: Always
+      volumes:
+      - name: ralph-nginx-config
+        configMap:
+          name: ralph-nginx-conf
+      - name: ralph-static-files
+        persistentVolumeClaim:
+          claimName: ralph-static-files
+      - name: ralph-media-files
+        persistentVolumeClaim:
+          claimName: ralph-media-files
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ralph
+  labels:
+    app: ralph
+spec:
+  ports:
+  - name: ralph
+    port: 8000
+    targetPort: 8000
+  selector:
+    app: ralph
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ralph-nginx
+  labels:
+    app: ralph-nginx
+spec:
+  ports:
+  - name: ralph-nginx
+    port: 80
+    targetPort: 80
+  selector:
+    app: ralph
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ralph-static-files
+  labels:
+    pvcname: ralph-static-files
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ralph-media-files
+  labels:
+    pvcname: ralph-media-files
+spec:
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata: 
+  name: ralph-nginx-conf
+data:
+  default.conf: |
+    server {
+        listen 80;
+        server_name _;
+
+        location /static {
+            alias /opt/static;
+            expires 1y;
+            access_log off;
+            add_header Pragma public;
+            add_header Cache-Control "public";
+        }
+
+        location /media {
+            alias /opt/media;
+            add_header Content-disposition "attachment";
+            access_log off;
+        }
+
+        location / {
+            proxy_pass http://ralph:8000;
+
+            proxy_set_header Host $http_host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ralph
+spec:
+  rules:
+  - host: CHANGEME
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: ralph-nginx
+          servicePort: 80
