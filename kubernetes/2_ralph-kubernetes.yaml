@@ -147,7 +147,7 @@ metadata:
 spec:
   storageClassName: ralphstorageclass
   accessModes:
-  - ReadWriteMany
+  - ReadWriteOnce #ReadWriteMany
   resources:
     requests:
       storage: 1Gi
@@ -161,7 +161,7 @@ metadata:
 spec:
   storageClassName: ralphstorageclass
   accessModes:
-  - ReadWriteMany
+  - ReadWriteOnce #ReadWriteMany
   resources:
     requests:
       storage: 1Gi
