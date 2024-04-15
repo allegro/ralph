@@ -145,6 +145,7 @@ metadata:
   labels:
     pvcname: ralph-static-files
 spec:
+  storageClassName: ralphstorageclass
   accessModes:
   - ReadWriteMany
   resources:
@@ -158,6 +159,7 @@ metadata:
   labels:
     pvcname: ralph-media-files
 spec:
+  storageClassName: ralphstorageclass
   accessModes:
   - ReadWriteMany
   resources:
@@ -198,20 +200,6 @@ data:
         }
     }
 ---
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: ralph
-spec:
-  rules:
-  - host: ralph.ss.es
-    http:
-      paths:
-      - path: /
-        backend:
-          serviceName: ralph-nginx
-          servicePort: 80
-
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
