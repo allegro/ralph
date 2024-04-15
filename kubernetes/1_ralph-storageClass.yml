@@ -2,6 +2,6 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: ralphstorageclass
-provisioner: rancher.io/local-path
+provisioner: local-path
 #provisioner: csi-cinder-sc-retain
 volumeBindingMode: WaitForFirstConsumer
