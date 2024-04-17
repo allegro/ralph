@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  ports:
+  - port: 3306
+  selector:
+    app: mysql
+  clusterIP: None
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - image: mysql:5.6
+        name: mysql
+        env:
+          # Use secret in real usage
+        - name: MYSQL_ROOT_PASSWORD
+          value: ralph_ng
+        ports:
+        - containerPort: 3306
+          name: mysql
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+        - name: mysql-initdb
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: mysql-pv-claim
+      - name: mysql-initdb
+        configMap:
+          name: mysql-initdb-config
+---
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pv-claim
+  labels:
+    pvcname: mysql-pv-claim
+spec:
+  storageClassName: ralphstorageclass
+  accessModes:
+  - ReadWriteOnce #ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-initdb-config
+data:
+  initdb.sql: |
+    CREATE DATABASE ralph_ng;
+    CREATE USER 'ralph_ng'@'localhost' IDENTIFIED BY 'ralph_ng';
+    GRANT ALL PRIVILEGES ON ralph_ng.* TO 'ralph_ng'@'localhost' WITH GRANT OPTION;
