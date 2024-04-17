@@ -30,7 +30,7 @@ spec:
         env:
           # Use secret in real usage
         - name: MYSQL_ROOT_PASSWORD
-          value: ralph_ng
+          value: ralph_ng_root_sql_password
         ports:
         - containerPort: 3306
           name: mysql
@@ -69,5 +69,5 @@ metadata:
 data:
   initdb.sql: |
     CREATE DATABASE ralph_ng;
-    CREATE USER 'ralph_ng'@'localhost' IDENTIFIED BY 'ralph_ng';
-    GRANT ALL PRIVILEGES ON ralph_ng.* TO 'ralph_ng'@'localhost' WITH GRANT OPTION;
+    CREATE USER 'ralph_ng' IDENTIFIED BY 'ralph_ng';
+    GRANT ALL PRIVILEGES ON ralph_ng.* TO 'ralph_ng' WITH GRANT OPTION;

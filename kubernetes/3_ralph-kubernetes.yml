@@ -2,8 +2,9 @@
 # Note: this does not work right out of the box yet
 # - required: manual run of `/var/local/ralph/docker-entrypoint.sh init` (maybe use initContainer)
 # - required: manual run of `ralphctl collectstatic` to deploy static files to shared volume for nginx (maybe use lifecycle postStart)
-#
+# TODO: automatize manual runs
 #original (2024)rc: https://gist.github.com/tkuther/eeb7d4c3dc536fc28250f3a91beef179
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
