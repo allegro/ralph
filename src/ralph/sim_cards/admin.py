@@ -1,6 +1,7 @@
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, register
+from ralph.admin.mixins import RalphAdmin
+from ralph.admin.decorators import register
 from ralph.admin.mixins import BulkEditChangeListMixin, RalphAdminMixin
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin

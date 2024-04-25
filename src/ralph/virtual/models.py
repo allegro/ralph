@@ -203,7 +203,7 @@ class CloudHost(PreviousStateMixin,
             pass
         super(CloudHost, self).save(*args, **kwargs)
 
-    cloudflavor = models.ForeignKey(CloudFlavor, verbose_name='Instance Type')
+    # cloudflavor = models.ForeignKey(CloudFlavor, verbose_name='Instance Type')
     cloudprovider = models.ForeignKey(CloudProvider)
     cloudprovider._autocomplete = False
 
@@ -364,7 +364,7 @@ class VirtualServer(
         unique=True,
     )
     # TODO: remove this field
-    cluster = models.ForeignKey(Cluster, blank=True, null=True)
+    # cluster = models.ForeignKey(Cluster, blank=True, null=True)
 
     previous_dc_host_update_fields = ['hostname']
     _allow_in_dashboard = True

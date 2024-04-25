@@ -55,7 +55,7 @@ from django.forms.models import (
 from django.utils.text import get_text_list
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphStackedInline, RalphTabularInline
+from ralph.admin.mixins import RalphStackedInline, RalphTabularInline
 from ralph.admin.mixins import RalphAdminForm
 
 

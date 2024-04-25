@@ -7,7 +7,8 @@ from django.utils.lru_cache import lru_cache
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, RalphTabularInline, register
+from ralph.admin.mixins import RalphAdmin, RalphTabularInline
+from ralph.admin.decorators import register
 from ralph.admin.helpers import get_admin_url
 from ralph.admin.sites import ralph_site
 from ralph.admin.views.extra import RalphDetailView

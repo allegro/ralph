@@ -6,7 +6,8 @@ from django.core.urlresolvers import reverse
 from django.db.models import Count, Prefetch
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, RalphAdminForm, RalphTabularInline, register
+from ralph.admin.mixins import RalphAdmin, RalphAdminForm, RalphTabularInline
+from ralph.admin.decorators import register
 from ralph.admin.filters import BaseObjectHostnameFilter, TagsListFilter
 from ralph.assets.models import BaseObject
 from ralph.assets.models.components import Ethernet
@@ -50,7 +51,7 @@ class CloudHostSecurityInfoView(SecurityInfo):
     url_name = 'security_cloudhost_security_info'
 
 
-@register(VirtualServerType)
+# @register(VirtualServerType)
 class VirtualServerTypeForm(RalphAdmin):
     pass
 
@@ -255,7 +256,7 @@ class CloudHostSCMInfo(SCMCheckInfo):
     url_name = 'cloudhost_scm_info'
 
 
-@register(CloudHost)
+# @register(CloudHost)
 class CloudHostAdmin(
     SCMStatusCheckInChangeListMixin, ScanStatusInChangeListMixin,
     CustomFieldValueAdminMixin, RalphAdmin

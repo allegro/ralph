@@ -4,7 +4,8 @@ from django.db.models import Count, F, Prefetch
 from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, register
+from ralph.admin.mixins import RalphAdmin
+from ralph.admin.decorators import register
 from ralph.admin.filters import RelatedAutocompleteFieldListFilter
 from ralph.admin.helpers import CastToInteger
 from ralph.admin.mixins import RalphMPTTAdmin
@@ -12,7 +13,7 @@ from ralph.admin.views.main import RalphChangeList
 from ralph.assets.models import BaseObject
 from ralph.data_importer import resources
 from ralph.lib.mixins.admin import ParentChangeMixin
-from ralph.lib.table import TableWithUrl
+from ralph.lib.table.table import TableWithUrl
 from ralph.networks.filters import (
     ContainsIPAddressFilter,
     IPRangeFilter,

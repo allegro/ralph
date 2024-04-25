@@ -213,7 +213,7 @@ class Accessory(
     free._permission_field = 'number_bought'
 
 
-@reversion.register()
+# @reversion.register()
 class AccessoryUser(models.Model):
     accessory = models.ForeignKey(Accessory)
     user = models.ForeignKey(

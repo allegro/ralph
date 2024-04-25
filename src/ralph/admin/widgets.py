@@ -8,11 +8,11 @@ from itertools import chain, groupby
 from urllib import parse
 
 from django import forms
+from django.apps import apps
 from django.contrib.admin.templatetags.admin_static import static
 from django.contrib.admin.views.main import TO_FIELD_VAR
 from django.core.exceptions import FieldDoesNotExist
 from django.core.urlresolvers import reverse
-from django.db.models.loading import get_model
 from django.forms.utils import flatatt
 from django.template import loader
 from django.template.context import RenderContext
@@ -232,7 +232,7 @@ class AutocompleteWidget(forms.TextInput):
             limit_models = getattr(self.field, 'limit_models', [])
             if limit_models:
                 polymorphic_models = [
-                    get_model(*i.split('.')) for i in limit_models
+                    apps.get_model(*i.split('.')) for i in limit_models
                 ]
 
             search_fields_tooltip = defaultdict(list)

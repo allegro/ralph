@@ -14,7 +14,7 @@ from ralph.lib.mixins.models import (
     PriceMixin,
     TimeStampMixin
 )
-from ralph.lib.permissions import PermByFieldMixin
+from ralph.lib.permissions.models import PermByFieldMixin
 
 
 class DomainRegistrant(

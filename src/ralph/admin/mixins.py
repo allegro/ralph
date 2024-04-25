@@ -21,7 +21,8 @@ from django.views.generic import TemplateView
 from import_export.admin import ImportExportModelAdmin
 from import_export.widgets import ForeignKeyWidget
 from mptt.admin import MPTTAdminForm, MPTTModelAdmin
-from reversion import VersionAdmin
+
+from reversion.admin import VersionAdmin
 
 from ralph.admin import widgets
 from ralph.admin.autocomplete import AjaxAutocompleteMixin
@@ -473,8 +474,8 @@ class RalphAdmin(
     PermissionAdminMixin,
     RalphAdminImportExportMixin,
     AjaxAutocompleteMixin,
+    VersionAdmin,
     RalphAdminMixin,
-    VersionAdmin
 ):
     @property
     def media(self):

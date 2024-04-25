@@ -56,10 +56,11 @@ RALPH_INSTANCE = os.environ.get('RALPH_INSTANCE', 'http://127.0.0.1:8000')
 # Application definition
 
 INSTALLED_APPS = (
+    'django.contrib.contenttypes',
+    'taggit',
+    'django.contrib.auth',
     'ralph.admin',
     'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
     'django.contrib.humanize',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -98,12 +99,11 @@ INSTALLED_APPS = (
     'ralph.lib.transitions',
     'ralph.lib.permissions',
     'ralph.lib.custom_fields',
-    'ralph.lib.hooks',
-    'ralph.notifications',
+    # 'ralph.lib.hooks',
+    # 'ralph.notifications',
     'ralph.ssl_certificates',
     'rest_framework',
     'rest_framework.authtoken',
-    'taggit',
     'taggit_serializer',
     'djmoney',
 )
@@ -169,7 +169,7 @@ if DATABASE_SSL_CA:
 
 DATABASES = {
     'default': {
-        'ENGINE': os.environ.get('DATABASE_ENGINE', 'transaction_hooks.backends.mysql'),  # noqa
+        'ENGINE': os.environ.get('DATABASE_ENGINE', 'django.db.backends.mysql'),  # noqa
         'NAME': os.environ.get('DATABASE_NAME', 'ralph_ng'),
         'USER': os.environ.get('DATABASE_USER', 'ralph_ng'),
         'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'ralph_ng') or None,

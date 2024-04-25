@@ -3,7 +3,8 @@ from django.conf.urls import url
 from django.contrib.admin.utils import unquote
 from django.contrib.contenttypes.models import ContentType
 
-from ralph.admin import RalphAdmin, register
+from ralph.admin.decorators import register
+from ralph.admin.mixins import RalphAdmin
 from ralph.admin.mixins import RalphGenericTabularInline
 from ralph.lib.custom_fields.forms import (
     CustomFieldValueForm,

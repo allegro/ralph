@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from ralph.admin.filters import register_custom_filters
+
 from ralph.apps import RalphAppConfig
 
 
@@ -9,5 +9,6 @@ class RalphAdminConfig(RalphAppConfig):
     verbose_name = 'Ralph Admin'
 
     def ready(self):
+        from ralph.admin.filters import register_custom_filters
         register_custom_filters()
         super().ready()

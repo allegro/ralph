@@ -11,6 +11,7 @@ class PermissionAppConfig(AppConfig):
     verbose_name = 'Permissions'
 
     def ready(self):
+        default_app_config = 'ralph.lib.permissions.apps.PermissionAppConfig'
         post_migrate.disconnect(
             dispatch_uid='django.contrib.auth.management.create_permissions'
         )

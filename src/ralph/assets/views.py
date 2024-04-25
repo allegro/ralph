@@ -1,6 +1,6 @@
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphTabularInline
+from ralph.admin.mixins import RalphTabularInline
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.assets.models.components import (
     Disk,

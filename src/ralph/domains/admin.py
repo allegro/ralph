@@ -2,7 +2,8 @@
 from django.utils.html import format_html
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, RalphTabularInline, register
+from ralph.admin.mixins import RalphAdmin, RalphTabularInline
+from ralph.admin.decorators import register
 from ralph.admin.filters import DateListFilter
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_importer.resources import DomainContractResource, DomainResource

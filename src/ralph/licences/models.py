@@ -19,7 +19,7 @@ from ralph.lib.mixins.models import (
     NamedMixin,
     PriceMixin
 )
-from ralph.lib.permissions import PermByFieldMixin
+from ralph.lib.permissions.models import PermByFieldMixin
 from ralph.lib.polymorphic.models import PolymorphicQuerySet
 
 
@@ -313,7 +313,7 @@ class Licence(Regionalizable, AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
         )
 
 
-@reversion.register()
+# @reversion.register()
 class BaseObjectLicence(models.Model):
     licence = models.ForeignKey(Licence)
     base_object = BaseObjectForeignKey(

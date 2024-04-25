@@ -3,7 +3,7 @@ from django.conf.urls import include, url
 from rest_framework.authtoken import views
 from sitetree.sitetreeapp import SiteTree  # noqa
 
-from ralph.admin import ralph_site as admin
+from ralph.admin.sites import ralph_site as admin
 from ralph.api import router
 from ralph.health_check import status_health, status_ping
 

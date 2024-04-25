@@ -3,7 +3,7 @@ import io
 from os.path import abspath, dirname, join
 
 from django.apps import apps
-from django.template import TemplateDoesNotExist
+from django.template.loader import TemplateDoesNotExist
 from django.template.loaders.base import Loader as BaseLoader
 
 
@@ -50,7 +50,7 @@ class AppTemplateLoader(BaseLoader):
         template_parts = template_name.split(":", 1)
 
         if len(template_parts) != 2:
-            raise TemplateDoesNotExist()
+            raise TemplateDoesNotExist(template_name)
 
         app_label, template_name = template_parts
         app = apps.get_app_config(app_label)
