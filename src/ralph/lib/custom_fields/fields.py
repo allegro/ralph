@@ -111,7 +111,7 @@ class CustomFieldValueQuerySet(models.QuerySet):
             '_prioritize': self._prioritize,
             '_prioritize_model_or_instance': self._prioritize_model_or_instance,
         })
-        return super()._clone(klass, setup, **kwargs)
+        return super()._clone(**kwargs)
 
     def prioritize(self, model_or_instance):
         self._prioritize = True
@@ -166,10 +166,12 @@ class ReverseGenericRelatedObjectsWithInheritanceDescriptor():
         if instance is None:
             return self
         rel_model = self.field.rel.to
+        rel_model.model = self.field.rel.to
+        rel_model.field = self.field
         # difference here comparing to Django!
         superclass = rel_model.inherited_objects.__class__
         RelatedManager = create_generic_related_manager_with_inheritance(
-            superclass
+            superclass, rel_model
         )
 
         qn = connection.ops.quote_name
@@ -180,20 +182,13 @@ class ReverseGenericRelatedObjectsWithInheritanceDescriptor():
 
         join_cols = self.field.get_joining_columns(reverse_join=True)[0]
         manager = RelatedManager(
-            model=rel_model,
             instance=instance,
-            source_col_name=qn(join_cols[0]),
-            target_col_name=qn(join_cols[1]),
-            content_type=content_type,
-            content_type_field_name=self.field.content_type_field_name,
-            object_id_field_name=self.field.object_id_field_name,
-            prefetch_cache_name=self.field.attname,
         )
 
         return manager
 
 
-def create_generic_related_manager_with_inheritance(superclass):  # noqa: C901
+def create_generic_related_manager_with_inheritance(superclass, rel):  # noqa: C901
     """
     Extension to Django's create_generic_related_manager.
 
@@ -204,7 +199,7 @@ def create_generic_related_manager_with_inheritance(superclass):  # noqa: C901
     with inheritance  of more than one instance
     """
     # get Django's GenericRelatedObject manager first
-    manager = create_generic_related_manager(superclass)
+    manager = create_generic_related_manager(superclass, rel)
 
     class GenericRelatedObjectWithInheritanceManager(manager):
         def __init__(self, *args, **kwargs):

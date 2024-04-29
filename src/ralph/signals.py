@@ -1,4 +1,4 @@
-from django.db import connection
+from django.db import transaction
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -54,4 +54,4 @@ def post_commit(func, model, signal=post_save, single_call=True):
 
         # TODO(mkurek): replace connection by transaction after upgrading to
         # Django 1.9
-        connection.on_commit(wrapper)
+        transaction.on_commit(wrapper)

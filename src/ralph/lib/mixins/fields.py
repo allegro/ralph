@@ -73,9 +73,11 @@ class NullableCharFieldWithAutoStrip(
 #                in UD.
 class NUMPFieldMixIn(object):
 
-    def __init__(self, fields_to_ignore, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
+        fields_to_ignore = kwargs.pop('fields_to_ignore', None)
         super(NUMPFieldMixIn, self).__init__(*args, **kwargs)
-        self.fields_to_ignore = fields_to_ignore
+        self.fields_to_ignore = fields_to_ignore if fields_to_ignore is not None else ('help_text', 'verbose_name')
+
 
     def deconstruct(self):
         name, path, args, kwargs = super(NUMPFieldMixIn, self).deconstruct()

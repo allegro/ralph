@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """SAM module models."""
-import reversion
+from reversion import revisions as reversion
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -313,7 +313,7 @@ class Licence(Regionalizable, AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
         )
 
 
-# @reversion.register()
+@reversion.register()
 class BaseObjectLicence(models.Model):
     licence = models.ForeignKey(Licence)
     base_object = BaseObjectForeignKey(

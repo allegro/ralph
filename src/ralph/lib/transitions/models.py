@@ -4,7 +4,7 @@ import inspect
 import logging
 from collections import defaultdict
 
-import reversion
+from reversion import revisions as reversion
 from dj.choices import Choices
 from django import forms
 from django.conf import settings

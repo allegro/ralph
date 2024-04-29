@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from ralph.lib.table import Table
+from ralph.lib.table.table import Table
 from ralph.tests.models import Foo
 
 

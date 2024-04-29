@@ -7,7 +7,7 @@ from django.test import RequestFactory, TestCase
 from django.test.utils import CaptureQueriesContext
 
 from ralph.accounts.tests.factories import UserFactory
-from ralph.admin import ralph_site
+from ralph.admin.sites import ralph_site
 from ralph.data_center.models import DataCenterAsset
 from ralph.data_center.tests.factories import DataCenterAssetFullFactory
 from ralph.licences.models import Licence

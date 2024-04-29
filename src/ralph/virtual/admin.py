@@ -51,7 +51,7 @@ class CloudHostSecurityInfoView(SecurityInfo):
     url_name = 'security_cloudhost_security_info'
 
 
-# @register(VirtualServerType)
+@register(VirtualServerType)
 class VirtualServerTypeForm(RalphAdmin):
     pass
 
@@ -256,7 +256,7 @@ class CloudHostSCMInfo(SCMCheckInfo):
     url_name = 'cloudhost_scm_info'
 
 
-# @register(CloudHost)
+@register(CloudHost)
 class CloudHostAdmin(
     SCMStatusCheckInChangeListMixin, ScanStatusInChangeListMixin,
     CustomFieldValueAdminMixin, RalphAdmin

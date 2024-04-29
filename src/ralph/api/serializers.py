@@ -3,7 +3,7 @@ import logging
 import operator
 from functools import reduce
 
-import reversion
+from reversion import revisions as reversion
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.exceptions import NON_FIELD_ERRORS, ObjectDoesNotExist
 from django.db import transaction

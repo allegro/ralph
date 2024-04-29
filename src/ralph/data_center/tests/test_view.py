@@ -39,7 +39,7 @@ class DataCenterAssetViewTest(ClientMixin, TestCase):
     def test_changelist_view(self):
         self.login_as_user()
         DataCenterAssetFullFactory.create_batch(10)
-        with self.assertNumQueries(18):
+        with self.assertNumQueries(16):
             self.client.get(
                 reverse('admin:data_center_datacenterasset_changelist'),
             )

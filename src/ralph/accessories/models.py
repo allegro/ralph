@@ -1,4 +1,4 @@
-import reversion
+from reversion import revisions as reversion
 from dj.choices import Choices
 from django import forms
 from django.conf import settings
@@ -213,7 +213,7 @@ class Accessory(
     free._permission_field = 'number_bought'
 
 
-# @reversion.register()
+@reversion.register()
 class AccessoryUser(models.Model):
     accessory = models.ForeignKey(Accessory)
     user = models.ForeignKey(
