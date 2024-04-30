@@ -70,8 +70,9 @@ def update_extra_view_permissions(sender, **kwargs):
     logger.info('Updating extra views permissions...')
     admin_classes = {}
     for model, admin_class in ralph_site._registry.items():
-        for change_view in admin_class.change_views:
-            admin_classes[change_view] = model
+        if admin_class.change_views:
+            for change_view in admin_class.change_views:
+                admin_classes[change_view] = model
 
     old_permission = Permission.objects.filter(
         codename__startswith='can_view_extra_'

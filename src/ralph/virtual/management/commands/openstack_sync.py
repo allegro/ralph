@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from enum import auto, Enum
 from functools import lru_cache
 
-import reversion as revisions
+from reversion import revisions
 from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.core.management.base import BaseCommand
