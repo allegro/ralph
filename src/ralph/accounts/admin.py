@@ -12,6 +12,7 @@ from django.db.models import Q
 from django.forms.models import model_to_dict
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
+from reversion import revisions as reversion
 
 from ralph.accounts.models import RalphUser, Region, Team
 from ralph.admin.decorators import register
@@ -338,8 +339,8 @@ class RalphUserAdmin(UserAdmin, RalphAdmin):
 
         if not self.has_change_permission(request, obj=user):
             raise PermissionDenied
-
-        return super().user_change_password(request, id, form_url)
+        with reversion.create_revision():
+            return super().user_change_password(request, id, form_url)
 
 
 @register(Group)
