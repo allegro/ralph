@@ -169,29 +169,28 @@ class RalphAdminChecks(admin.checks.ModelAdminChecks):
         ('contenttypes', 'ContentType'.lower())
     )
 
-    def check(self, cls, model, **kwargs):
-        errors = super().check(cls, model, **kwargs)
-        errors.extend(self._check_absolute_url(cls, model))
+    def check(self, model, **kwargs):
+        errors = super().check(model, **kwargs)
+        errors.extend(self._check_absolute_url(model.model))
         return errors
 
-    def _check_form(self, cls, model):
+    def _check_form(self, model):
         """
         Check if form subclasses RalphAdminFormMixin
         """
-        result = super()._check_form(cls, model)
+        result = super()._check_form(model)
         if (
-            hasattr(cls, 'form') and
-            not issubclass(cls.form, RalphAdminFormMixin)
+            hasattr(model, 'form') and not issubclass(model.form, RalphAdminFormMixin)
         ):
             result += admin.checks.must_inherit_from(
                 parent='RalphAdminFormMixin',
                 option='form',
-                obj=cls,
+                obj=model,
                 id='admin.E016'
             )
         return result
 
-    def _check_absolute_url(self, cls, model):
+    def _check_absolute_url(self, model):
         """
         Check if model inherit from AdminAbsoluteUrlMixin
         """
@@ -474,8 +473,8 @@ class RalphAdmin(
     PermissionAdminMixin,
     RalphAdminImportExportMixin,
     AjaxAutocompleteMixin,
-    VersionAdmin,
     RalphAdminMixin,
+    VersionAdmin,
 ):
     @property
     def media(self):
