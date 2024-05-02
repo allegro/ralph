@@ -76,7 +76,7 @@ class TransitionViewMixin(NonAtomicView, object):
 
     def get_template_names(self):
         template_names = super().get_template_names()
-        template_names.insert(0, self.transition.template_name)
+        template_names.insert(1, self.transition.template_name)
         return template_names
 
     @property
