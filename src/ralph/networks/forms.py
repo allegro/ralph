@@ -99,7 +99,11 @@ class SimpleNetworkForm(EthernetLockDeleteForm):
         modified/deleted.
     """
     hostname = CharFormFieldWithAutoStrip(label='Hostname', required=False)
-    address = forms.GenericIPAddressField(label='IP address', required=False, protocol='IPv4')
+    address = forms.GenericIPAddressField(
+        label='IP address',
+        required=False,
+        protocol='IPv4'
+    )
 
     ip_fields = ['hostname', 'address']
 

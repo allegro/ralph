@@ -6,9 +6,9 @@ from django.core.urlresolvers import reverse
 from django.db.models import Count, Prefetch
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin.mixins import RalphAdmin, RalphAdminForm, RalphTabularInline
 from ralph.admin.decorators import register
 from ralph.admin.filters import BaseObjectHostnameFilter, TagsListFilter
+from ralph.admin.mixins import RalphAdmin, RalphAdminForm, RalphTabularInline
 from ralph.assets.models import BaseObject
 from ralph.assets.models.components import Ethernet
 from ralph.assets.views import ComponentsAdminView, RalphDetailViewAdmin
@@ -34,7 +34,8 @@ from ralph.virtual.models import (
     CloudProject,
     CloudProvider,
     VirtualServer,
-    VirtualServerType)
+    VirtualServerType
+)
 
 if settings.ENABLE_DNSAAS_INTEGRATION:
     from ralph.dns.views import DNSView

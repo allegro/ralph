@@ -11,7 +11,10 @@ from rest_framework.fields import empty
 from rest_framework.filters import BaseFilterBackend
 from rest_framework.permissions import IsAuthenticated as DRFIsAuthenticated
 
-from ralph.lib.permissions.models import PermByFieldMixin, PermissionsForObjectMixin
+from ralph.lib.permissions.models import (
+    PermByFieldMixin,
+    PermissionsForObjectMixin
+)
 
 ADD_PERM = ['%(app_label)s.add_%(model_name)s']
 CHANGE_PERM = ['%(app_label)s.change_%(model_name)s']

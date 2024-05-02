@@ -55,8 +55,11 @@ from django.forms.models import (
 from django.utils.text import get_text_list
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin.mixins import RalphStackedInline, RalphTabularInline
-from ralph.admin.mixins import RalphAdminForm
+from ralph.admin.mixins import (
+    RalphAdminForm,
+    RalphStackedInline,
+    RalphTabularInline
+)
 
 
 class BaseInlineM2MFormset(BaseInlineFormSet):

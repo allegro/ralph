@@ -1,8 +1,8 @@
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.access_cards.models import AccessCard, AccessZone
-from ralph.admin.mixins import RalphAdmin, RalphMPTTAdmin
 from ralph.admin.decorators import register
+from ralph.admin.mixins import RalphAdmin, RalphMPTTAdmin
 from ralph.lib.transitions.admin import TransitionAdminMixin
 
 

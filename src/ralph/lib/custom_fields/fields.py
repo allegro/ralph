@@ -4,10 +4,10 @@ from functools import reduce
 
 from django.contrib.contenttypes.fields import (
     create_generic_related_manager,
-    GenericRelation,
+    GenericRelation
 )
 from django.contrib.contenttypes.models import ContentType
-from django.db import connection, models
+from django.db import models
 from django.db.models.fields.related import OneToOneRel
 
 from ralph.admin.helpers import get_field_by_relation_path, getattr_dunder
@@ -174,13 +174,6 @@ class ReverseGenericRelatedObjectsWithInheritanceDescriptor():
             superclass, rel_model
         )
 
-        qn = connection.ops.quote_name
-        content_type = ContentType.objects.db_manager(
-            instance._state.db
-        ).get_for_model(
-            instance, for_concrete_model=self.for_concrete_model)
-
-        join_cols = self.field.get_joining_columns(reverse_join=True)[0]
         manager = RelatedManager(
             instance=instance,
         )

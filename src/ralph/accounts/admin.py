@@ -14,10 +14,9 @@ from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.accounts.models import RalphUser, Region, Team
-from ralph.admin.mixins import RalphAdmin
 from ralph.admin.decorators import register
 from ralph.admin.helpers import getattr_dunder
-from ralph.admin.mixins import RalphAdminFormMixin
+from ralph.admin.mixins import RalphAdmin, RalphAdminFormMixin
 from ralph.admin.views.extra import RalphDetailView
 from ralph.back_office.models import BackOfficeAsset, BackOfficeAssetStatus
 from ralph.lib.table.table import Table

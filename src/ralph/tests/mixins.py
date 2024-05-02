@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import sys
 from imp import reload
+from importlib import import_module
 
 from django.conf import settings
 from django.core.urlresolvers import clear_url_caches
-from importlib import import_module
 
 from ralph.tests.factories import UserFactory
 

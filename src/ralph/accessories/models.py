@@ -1,4 +1,3 @@
-from reversion import revisions as reversion
 from dj.choices import Choices
 from django import forms
 from django.conf import settings
@@ -8,6 +7,7 @@ from django.db.models import Sum
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 from mptt.fields import TreeForeignKey
+from reversion import revisions as reversion
 
 from ralph.accounts.models import RalphUser, Regionalizable
 from ralph.assets.models import Category, Manufacturer
@@ -17,6 +17,7 @@ from ralph.lib.polymorphic.models import PolymorphicQuerySet
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField
 from ralph.lib.transitions.models import TransitionWorkflowBaseWithPermissions
+
 
 _SELECT_USED_ACCESSORY_QUERY = """
     SELECT COALESCE(SUM({assignment_table}.{quantity_column}), 0)

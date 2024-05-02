@@ -4,7 +4,6 @@ import inspect
 import logging
 from collections import defaultdict
 
-from reversion import revisions as reversion
 from dj.choices import Choices
 from django import forms
 from django.conf import settings
@@ -25,6 +24,7 @@ from django.utils.functional import curry
 from django.utils.text import slugify
 from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.fields.json import JSONField
+from reversion import revisions as reversion
 
 from ralph.admin.helpers import (
     get_content_type_for_model,

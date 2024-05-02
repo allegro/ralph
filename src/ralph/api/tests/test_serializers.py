@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from reversion import revisions as reversion
 from dj.choices import Choices
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 from rest_framework.test import APIClient, APIRequestFactory
+from reversion import revisions as reversion
 
 from ralph.accounts.tests.factories import RegionFactory
 from ralph.api.relations import RalphHyperlinkedRelatedField, RalphRelatedField

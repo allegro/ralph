@@ -1,8 +1,11 @@
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin.mixins import RalphAdmin
 from ralph.admin.decorators import register
-from ralph.admin.mixins import BulkEditChangeListMixin, RalphAdminMixin
+from ralph.admin.mixins import (
+    BulkEditChangeListMixin,
+    RalphAdmin,
+    RalphAdminMixin
+)
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.sim_cards.forms import SIMCardForm

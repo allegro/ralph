@@ -180,7 +180,8 @@ class RalphAdminChecks(admin.checks.ModelAdminChecks):
         """
         result = super()._check_form(model)
         if (
-            hasattr(model, 'form') and not issubclass(model.form, RalphAdminFormMixin)
+            hasattr(model, 'form') and
+            not issubclass(model.form, RalphAdminFormMixin)
         ):
             result += admin.checks.must_inherit_from(
                 parent='RalphAdminFormMixin',

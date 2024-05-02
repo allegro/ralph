@@ -5,11 +5,11 @@ from datetime import datetime, timedelta
 from enum import auto, Enum
 from functools import lru_cache
 
-from reversion import revisions
 from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.core.management.base import BaseCommand
 from django.db import IntegrityError, transaction
+from reversion import revisions
 
 from ralph.data_center.models.physical import DataCenterAsset
 from ralph.lib.openstack.client import (

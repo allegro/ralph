@@ -11,8 +11,7 @@ from ralph.lib.custom_fields.models import (
     WithCustomFieldsMixin
 )
 from ralph.lib.mixins.models import TaggableMixin, TimeStampMixin
-from ralph.lib.permissions.models import PermByFieldMixin
-from ralph.lib.permissions.models import PermissionsBase
+from ralph.lib.permissions.models import PermByFieldMixin, PermissionsBase
 from ralph.lib.polymorphic.models import (
     Polymorphic,
     PolymorphicBase,
