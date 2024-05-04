@@ -36,7 +36,7 @@ If the demo is down, you can create your own in under a minute with:
 ```
 alias docker="sudo docker"
 DB=$(docker run --rm --env MARIADB_USER=ralph --env MARIADB_PASSWORD=ralph --env MARIADB_DATABASE=ralph_ng --env MARIADB_ROOT_PASSWORD=ralph -d mariadb)
-RALPH=$(docker run --rm --env DATAABASE_NAME=ralph  --env DATABASE_USER=ralph_ng --env DATABASE_PASSWORD=ralph --env DATABASE_HOST=mariadb --env RALPH_DEBUG=1 --link $DB -d allegro/ralph)
+RALPH=$(docker run --rm --env DATAABASE_NAME=ralph  --env DATABASE_USER=ralph_ng --env DATABASE_PASSWORD=ralph --env DATABASE_HOST=$DB --env RALPH_DEBUG=1 --link $DB -d allegro/ralph)
 docker exec -ti $RALPH ralph migrate # wait for this to finish 
 cat <<--- > ralph.conf
 server {
