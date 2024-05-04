@@ -35,9 +35,9 @@ http://ralph-demo.allegro.tech/
 If the demo is down, you can create your own in under a minute with:
 ```
 alias docker="sudo docker"
-docker run --rm --name mariadb --env MARIADB_USER=ralph --env MARIADB_PASSWORD=ralph --env MARIADB_DATABASE=ralph_ng --env MARIADB_ROOT_PASSWORD=ralph -d mariadb
-docker run --rm --env DATAABASE_NAME=ralph  --env DATABASE_USER=ralph_ng --env DATABASE_PASSWORD=ralph --env DATABASE_HOST=mariadb --env RALPH_DEBUG=1 --link mariadb -d allegro/ralph
-docker exec -ti ralph ralph migrate # wait for this to finish 
+DB=$(docker run --rm --env MARIADB_USER=ralph --env MARIADB_PASSWORD=ralph --env MARIADB_DATABASE=ralph_ng --env MARIADB_ROOT_PASSWORD=ralph -d mariadb)
+RALPH=$(docker run --rm --env DATAABASE_NAME=ralph  --env DATABASE_USER=ralph_ng --env DATABASE_PASSWORD=ralph --env DATABASE_HOST=mariadb --env RALPH_DEBUG=1 --link $DB -d allegro/ralph)
+docker exec -ti $RALPH ralph migrate # wait for this to finish 
 cat <<--- > ralph.conf
 server {
 
@@ -65,20 +65,20 @@ server {
     #}
 
     location / {
-        proxy_pass http://ralph:8000;
+        proxy_pass http://$RALPH:8000;
         include /etc/nginx/uwsgi_params;
         proxy_set_header Host $http_host;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 }
 ---
-docker run --rm --name nginx -v `pwd`/ralph.conf:/etc/nginx/conf.d/default.conf:ro --link ralph -p 7777:80 -d nginx
-docker cp ralph:/usr/share/ralph/static - | docker cp - nginx:/
-docker exec -ti ralph ralph createsuperuser # creates a login user and password
+NGINX=$(docker run --rm -v `pwd`/ralph.conf:/etc/nginx/conf.d/default.conf:ro --link $RALPH -p 7777:80 -d nginx)
+docker cp $RALPH:/usr/share/ralph/static - | docker cp - $NGINX:/
+docker exec -ti $RALPH ralph createsuperuser # creates a login user and password
 ```
 And then navigating to http://localhost:7777
 
-Clean up with `docker stop nginx ralph mariadb; # and remove the downloaded images docker rmi nginx ralph mariadb`
+Clean up with `docker stop $NGINX $RALPH $MARIADB; # and remove the downloaded images docker rmi nginx ralph mariadb`
 
 ## Screenshots
 
