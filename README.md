@@ -35,9 +35,9 @@ http://ralph-demo.allegro.tech/
 If the demo is down, you can create your own in under a minute with:
 ```
 alias docker="sudo docker"
-docker run --rm --name mariadb --env MARIADB_USER=ralph --env MARIADB_PASSWORD=ralph --env MARIADB_DATABASE=ralph_ng --env MARIADB_ROOT_PASSWORD=ralph -ti mariadb
-docker run --rm --env DATAABASE_NAME=ralph  --env DATABASE_USER=ralph_ng --env DATABASE_PASSWORD=ralph --env DATABASE_HOST=mariadb --env RALPH_DEBUG=1 --link mariadb -ti allegro/ralph
-docker exec -ti ralph ralph migrate
+docker run --rm --name mariadb --env MARIADB_USER=ralph --env MARIADB_PASSWORD=ralph --env MARIADB_DATABASE=ralph_ng --env MARIADB_ROOT_PASSWORD=ralph -d mariadb
+docker run --rm --env DATAABASE_NAME=ralph  --env DATABASE_USER=ralph_ng --env DATABASE_PASSWORD=ralph --env DATABASE_HOST=mariadb --env RALPH_DEBUG=1 --link mariadb -d allegro/ralph
+docker exec -ti ralph ralph migrate # wait for this to finish 
 cat <<--- > ralph.conf
 server {
 
@@ -72,11 +72,13 @@ server {
     }
 }
 ---
-docker run --rm --name nginx -v `pwd`/ralph.conf:/etc/nginx/conf.d/default.conf:ro --link ralph -p 7777:80 nginx
+docker run --rm --name nginx -v `pwd`/ralph.conf:/etc/nginx/conf.d/default.conf:ro --link ralph -p 7777:80 -d nginx
 docker cp ralph:/usr/share/ralph/static - | docker cp - nginx:/
-docker exec -ti ralph ralph createsuperuser
+docker exec -ti ralph ralph createsuperuser # creates a login user and password
 ```
 And then navigating to http://localhost:7777
+
+Clean up with `docker stop nginx ralph mariadb; # and remove the downloaded images docker rmi nginx ralph mariadb`
 
 ## Screenshots
 
