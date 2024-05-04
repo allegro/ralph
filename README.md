@@ -74,12 +74,14 @@ server {
 }
 ---
 NGINX=$(docker run --rm -v `pwd`/ralph.conf:/etc/nginx/conf.d/default.conf:ro --link $RALPH -p 7777:80 -d nginx)
+sleep 3
 docker cp $RALPH:/usr/share/ralph/static - | docker cp - $NGINX:/
 docker exec -ti $RALPH ralph createsuperuser # creates a login user and password
 ```
 And then navigating to http://localhost:7777
+If it fails, increase the sleep values or run the docker commands in separate terminals with -ti instead of -d. so you can know when the image is ready for the next one. 
 
-Clean up with `docker stop $NGINX $RALPH $MARIADB; # and remove the downloaded images docker rmi nginx ralph mariadb`
+Clean up with `docker stop $NGINX $RALPH $MARIADB; # and remove the downloaded images docker rmi nginx allegro/ralph mariadb`
 
 ## Screenshots
 
