@@ -52,6 +52,4 @@ def post_commit(func, model, signal=post_save, single_call=True):
                 func(instance)
                 setattr(instance, called_already_attr, True)
 
-        # TODO(mkurek): replace connection by transaction after upgrading to
-        # Django 1.9
         transaction.on_commit(wrapper)
