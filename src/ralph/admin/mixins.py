@@ -213,6 +213,9 @@ class RalphAdminChecks(admin.checks.ModelAdminChecks):
 
 
 class DashboardChangelistMixin(object):
+    # TODO(Django-1.11) remove and check if test_patch_deadline_filters_hosts passes
+    def lookup_allowed(self, *args, **kwargs):
+        return True
 
     def _is_graph_preview_view(self, request):
         return request.GET.get('graph-query', '')
