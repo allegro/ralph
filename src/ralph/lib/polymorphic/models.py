@@ -33,7 +33,7 @@ class PolymorphicQuerySet(models.QuerySet):
         self._polymorphic_filter_kwargs = {}
         super().__init__(*args, **kwargs)
 
-    def iterator(self):
+    def iterator(self):  # noqa
         """
         Override iterator:
             - Iterate for all objects and collected ID
