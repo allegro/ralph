@@ -42,22 +42,28 @@ class PolymorphicQuerySet(models.QuerySet):
         """
         # if this is final-level model, don't check for descendants - just
         # return original queryset result
+
         if not getattr(self.model, '_polymorphic_descendants', []):
             yield from super().iterator()
             return
 
         result = []
-        content_types_ids = set()
+        content_types_ids = set()  # type: set[int]
         select_related = None
+
         if self.query.select_related:
             select_related = self.query.select_related
             self.query.select_related = False
+        objs = [obj for obj in super().iterator()]
+        for obj in objs:
+            try:
+                content_types_ids.add(obj.content_type_id)
+                result.append((
+                    obj.content_type_id, obj.pk)
+                )
+            except:  # noqa
+                pass
 
-        for obj in super().iterator():
-            content_types_ids.add(obj.content_type_id)
-            result.append((
-                obj.content_type_id, obj.pk)
-            )
         # store original order of items by PK
         pks_order = [r[1] for r in result]
         # WARNING! sorting result (by content type) breaks original order of

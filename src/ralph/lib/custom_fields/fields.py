@@ -147,8 +147,7 @@ class CustomFieldValueQuerySet(models.QuerySet):
         )
 
 
-class ReverseGenericRelatedObjectsWithInheritanceDescriptor():
-
+class ReverseGenericRelatedObjectsWithInheritanceDescriptor:
     def __init__(self, field, for_concrete_model=True):
         """
         imported from ReverseGenericRelatedObjectsDescriptor

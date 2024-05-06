@@ -5,6 +5,8 @@ from __future__ import unicode_literals
 from django.db import migrations
 import django.db.models.manager
 
+from ralph.lib.polymorphic.models import PolymorphicQuerySet
+
 
 class Migration(migrations.Migration):
 
@@ -16,19 +18,19 @@ class Migration(migrations.Migration):
         migrations.AlterModelManagers(
             name='prebootconfiguration',
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ('polymorphic_objects', PolymorphicQuerySet.as_manager()),
             ],
         ),
         migrations.AlterModelManagers(
             name='prebootfile',
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ('polymorphic_objects', PolymorphicQuerySet.as_manager()),
             ],
         ),
         migrations.AlterModelManagers(
             name='prebootitem',
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ('polymorphic_objects', PolymorphicQuerySet.as_manager()),
             ],
         ),
     ]

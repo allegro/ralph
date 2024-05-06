@@ -134,7 +134,7 @@ class DataImporterFieldsTestCase(TestCase):
 
         self.assertEqual(self.licence.base_objects.all().count(), 4)
         self.assertCountEqual(
-            [bo.pk for bo in self.licence.base_objects.all()], ids
+            self.licence.base_objects.values_list('pk', flat=True), ids
         )
         # Make sure it doesn't touch other licences
         self.assertEqual(self.licence2.base_objects.all().count(), 2)
@@ -151,7 +151,7 @@ class DataImporterFieldsTestCase(TestCase):
 
         self.assertEqual(self.licence.base_objects.all().count(), 1)
         self.assertCountEqual(
-            [bo.pk for bo in self.licence.base_objects.all()], ids
+            self.licence.base_objects.values_list('pk', flat=True), ids
         )
         # Make sure it doesn't touch other licences
         self.assertEqual(self.licence2.base_objects.all().count(), 2)
@@ -172,7 +172,7 @@ class DataImporterFieldsTestCase(TestCase):
             )
         self.assertEqual(self.licence.base_objects.all().count(), 3)
         self.assertCountEqual(
-            [bo.pk for bo in self.licence.base_objects.all()], ids
+            self.licence.base_objects.values_list('pk', flat=True), ids
         )
         # Make sure it doesn't touch other licences
         self.assertEqual(self.licence2.base_objects.all().count(), 2)

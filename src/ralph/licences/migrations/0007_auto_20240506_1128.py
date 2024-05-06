@@ -5,6 +5,8 @@ from __future__ import unicode_literals
 from django.db import migrations
 import django.db.models.manager
 
+from ralph.assets.models.base import BaseObjectPolymorphicQuerySet
+
 
 class Migration(migrations.Migration):
 
@@ -16,7 +18,7 @@ class Migration(migrations.Migration):
         migrations.AlterModelManagers(
             name='licence',
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ('polymorphic_objects', BaseObjectPolymorphicQuerySet.as_manager()),
             ],
         ),
     ]
