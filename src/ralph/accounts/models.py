@@ -5,6 +5,7 @@ from dj.choices import Country
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models import Field
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.encoding import force_bytes
@@ -168,7 +169,8 @@ class RalphUser(
         for field in ('country',):
             val = getattr(self, field)
             if val is None:
-                val = self._meta.get_field_by_name(field)[0].default
+                field_: Field = self._meta.get_field(field)
+                val = field_.default
                 setattr(self, field, val)
         return super().save(*args, **kwargs)
 

@@ -176,7 +176,7 @@ class RalphAPISerializerMixin(
         # exclude some fields from nested serializer
         for field in NESTED_SERIALIZER_FIELDS_BLACKLIST:
             try:
-                relation_info.related_model._meta.get_field_by_name(field)
+                relation_info.related_model._meta.get_field(field)
             except exceptions.FieldDoesNotExist:
                 pass
             else:

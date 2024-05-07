@@ -28,7 +28,7 @@ class PermissionPerFieldAdminMixin(object):
         this field.
         """
         try:
-            self.model._meta.get_field_by_name(field_name)
+            self.model._meta.get_field(field_name)
         except FieldDoesNotExist:
             perm_field = getattr(
                 (
