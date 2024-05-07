@@ -1,7 +1,9 @@
 import operator
 from collections import defaultdict
 from functools import reduce
+from typing import Any
 
+from dataclasses import dataclass
 from django.contrib.contenttypes.fields import (
     create_generic_related_manager,
     GenericRelation
@@ -147,6 +149,12 @@ class CustomFieldValueQuerySet(models.QuerySet):
         )
 
 
+@dataclass
+class RelModel:
+    model: Any  # noqa
+    field: CustomFieldsWithInheritanceRelation  # noqa
+
+
 class ReverseGenericRelatedObjectsWithInheritanceDescriptor:
     def __init__(self, field, for_concrete_model=True):
         """
@@ -164,11 +172,9 @@ class ReverseGenericRelatedObjectsWithInheritanceDescriptor:
         """
         if instance is None:
             return self
-        rel_model = self.field.rel.to
-        rel_model.model = self.field.rel.to
-        rel_model.field = self.field
+        rel_model = RelModel(model=self.field.rel.to, field=self.field)
         # difference here comparing to Django!
-        superclass = rel_model.inherited_objects.__class__
+        superclass = rel_model.model.inherited_objects.__class__
         RelatedManager = create_generic_related_manager_with_inheritance(
             superclass, rel_model
         )
