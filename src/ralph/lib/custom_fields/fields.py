@@ -3,7 +3,6 @@ from collections import defaultdict
 from functools import reduce
 from typing import Any
 
-from dataclasses import dataclass
 from django.contrib.contenttypes.fields import (
     create_generic_related_manager,
     GenericRelation
@@ -149,10 +148,10 @@ class CustomFieldValueQuerySet(models.QuerySet):
         )
 
 
-@dataclass
 class RelModel:
-    model: Any  # noqa
-    field: CustomFieldsWithInheritanceRelation  # noqa
+    def __init__(self, model: Any, field: CustomFieldsWithInheritanceRelation):
+        self.model = model
+        self.field = field
 
 
 class ReverseGenericRelatedObjectsWithInheritanceDescriptor:
