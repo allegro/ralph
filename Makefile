@@ -69,6 +69,12 @@ publish-docker-image: build-docker-image
 	docker push $(DOCKER_REPO_NAME)/ralph-static-nginx:$(RALPH_VERSION)
 	docker push $(DOCKER_REPO_NAME)/ralph-static-nginx:latest
 
+publish-docker-snapshot-image: build-snapshot-docker-image
+	echo $(version)
+
+# docker push $(DOCKER_REPO_NAME)/ralph:$(RALPH_VERSION)
+# docker push $(DOCKER_REPO_NAME)/ralph-static-nginx:$(RALPH_VERSION)
+
 install-js:
 	npm install
 	./node_modules/.bin/gulp
