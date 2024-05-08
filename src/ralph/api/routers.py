@@ -18,7 +18,7 @@ class RalphRouter(NestedCustomFieldsRouterMixin, routers.DefaultRouter):
     # skip .json style formatting suffixes in urls
     include_format_suffixes = False
 
-    def get_api_root_view(self):
+    def get_api_root_view(self, schema_urls=None):
         api_root_dict = {}
         list_name = self.routes[0].name
         for prefix, viewset, basename in self.registry:

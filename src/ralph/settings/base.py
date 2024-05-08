@@ -9,7 +9,9 @@ from moneyed import CURRENCIES
 
 from ralph.settings.hooks import HOOKS_CONFIGURATION  # noqa: F401
 
-SILENCED_SYSTEM_CHECKS = ['models.E006']  # TODO fix
+SILENCED_SYSTEM_CHECKS = []
+SILENCED_SYSTEM_CHECKS += ['models.E006',]  # TODO fix
+# SILENCED_SYSTEM_CHECKS += ['admin.E013',]  # TODO fix
 
 
 def bool_from_env(var, default: bool=False) -> bool:

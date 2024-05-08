@@ -5,7 +5,6 @@ Django Rest Framework Mixins to use with permissions per field and per object.
 from collections import OrderedDict
 
 from django.utils.translation import ugettext_lazy as _
-from rest_framework.compat import get_model_name
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import empty
 from rest_framework.filters import BaseFilterBackend
@@ -190,7 +189,7 @@ class RalphPermission(ObjectPermissionsMixin, IsAuthenticated):
         """
         kwargs = {
             'app_label': model_cls._meta.app_label,
-            'model_name': get_model_name(model_cls)
+            'model_name': model_cls._meta.model_name
         }
         return [perm % kwargs for perm in self.perms_map[method]]
 
