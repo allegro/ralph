@@ -52,7 +52,7 @@ build-docker-image:
 
 build-snapshot-docker-image: version = $(shell ./get_version.sh show)
 build-snapshot-docker-image: build-snapshot-package
-    echo $(version)
+	echo "$version"
 	docker build \
 		-f docker/Dockerfile-prod \
 		--build-arg RALPH_VERSION="$(version)" \
@@ -72,10 +72,10 @@ publish-docker-image: build-docker-image
 
 publish-docker-snapshot-image: version = $(shell ./get_version.sh show)
 publish-docker-snapshot-image: build-snapshot-docker-image
-	echo $(version)
+	echo "$version"
 
-# docker push $(DOCKER_REPO_NAME)/ralph:$(RALPH_VERSION)
-# docker push $(DOCKER_REPO_NAME)/ralph-static-nginx:$(RALPH_VERSION)
+# docker push $(DOCKER_REPO_NAME)/ralph:$(version)
+# docker push $(DOCKER_REPO_NAME)/ralph-static-nginx:$(version)
 
 install-js:
 	npm install
