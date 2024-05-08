@@ -56,7 +56,7 @@ class UserWidget(widgets.ForeignKeyWidget):
                 )
         return result
 
-    def render(self, value):
+    def render(self, value, obj=None):
         if value:
             return value.username
         return ''
@@ -72,7 +72,7 @@ class UserManyToManyWidget(widgets.ManyToManyWidget):
         usernames = value.split(self.separator)
         return get_user_model().objects.filter(username__in=usernames)
 
-    def render(self, value):
+    def render(self, value, obj=None):
         return self.separator.join([obj.username for obj in value.all()])
 
 
@@ -101,7 +101,7 @@ class ManyToManyThroughWidget(widgets.ManyToManyWidget):
             pk__in=value.split(self.separator)
         )
 
-    def render(self, value):
+    def render(self, value, obj=None):
         return self.separator.join(
             [str(getattr(obj, self.through_field).pk) for obj in value.all()]
         )
@@ -109,13 +109,13 @@ class ManyToManyThroughWidget(widgets.ManyToManyWidget):
 
 class ExportForeignKeyStrWidget(widgets.Widget):
 
-    def render(self, value):
+    def render(self, value, obj=None):
         return str(value)
 
 
 class ExportManyToManyStrWidget(widgets.ManyToManyWidget):
 
-    def render(self, value):
+    def render(self, value, obj=None):
         return self.separator.join([str(obj) for obj in value.all()])
 
 
@@ -124,7 +124,7 @@ class ExportManyToManyStrTroughWidget(ManyToManyThroughWidget):
     Exporter-equivalent of `ManyToManyThroughWidget` - return str of whole
     object instead of pk.
     """
-    def render(self, value):
+    def render(self, value, obj=None):
         return self.separator.join(
             [str(getattr(obj, self.through_field)) for obj in value.all()]
         )
@@ -232,7 +232,7 @@ class AssetServiceEnvWidget(widgets.ForeignKeyWidget):
             value = None
         return value
 
-    def render(self, value):
+    def render(self, value, obj=None):
         if value is None:
             return ""
         return "{}|{}".format(
@@ -259,7 +259,7 @@ class AssetServiceUidWidget(widgets.ForeignKeyWidget):
             value = None
         return value
 
-    def render(self, value):
+    def render(self, value, obj=None):
         if value is None:
             return ""
         return value.service.uid
@@ -280,12 +280,12 @@ class IPManagementWidget(widgets.ManyToManyWidget):
     def clean(self, value):
         return value
 
-    def render(self, value):
+    def render(self, value, obj=None):
         return value or ''
 
 
 class BaseObjectServiceNamesM2MWidget(widgets.ManyToManyWidget):
-    def render(self, value):
+    def render(self, value, obj=None):
         return self.separator.join([
             bo.service.name if bo.service else '-'
             for bo in value.all()
@@ -293,10 +293,10 @@ class BaseObjectServiceNamesM2MWidget(widgets.ManyToManyWidget):
 
 
 class PriceAmountWidget(widgets.Widget):
-    def render(self, value):
+    def render(self, value, obj=None):
         return '{0:.2f}'.format(value.amount)
 
 
 class PriceCurrencyWidget(widgets.Widget):
-    def render(self, value):
+    def render(self, value, obj=None):
         return str(value.currency)

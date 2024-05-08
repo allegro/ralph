@@ -339,7 +339,7 @@ def create_permissions(
             if perms:
                 perms.update(content_type=ctype)
         ctypes.add(ctype)
-        for perm in _get_all_permissions(klass._meta, ctype):
+        for perm in _get_all_permissions(klass._meta):
             searched_perms.append((ctype, perm))
 
     # Find all the Permissions that have a content_type for a model we're

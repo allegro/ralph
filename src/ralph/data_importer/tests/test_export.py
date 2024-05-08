@@ -50,7 +50,7 @@ class SimulateAdminExportTestCase(TestCase):
 
         file_format = RawFormat()
         queryset = admin_class.get_export_queryset(request)
-        export_data = admin_class.get_export_data(file_format, queryset)
+        export_data = admin_class.get_export_data(file_format, queryset, request=request)
         return export_data
 
     def _init(self, num=10):
@@ -118,7 +118,7 @@ class DataCenterAssetExporterTestCase(SimulateAdminExportTestCase):
     def test_data_center_asset_export_with_parent_queries_count(self):
         self._test_queries_count(func=lambda: self._export(
             DataCenterAsset
-        ))
+        ), max_queries=12)
 
     def test_data_center_asset_export_with_parent(self):
         self._init(10)
