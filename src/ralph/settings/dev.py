@@ -59,5 +59,5 @@ if bool_from_env('RALPH_PROFILING'):
             'function': 'DataCenterAssetAdmin.changelist_view'
         },
     ]
-ADMIN_SITE_HEADER = 'Ralph 3.14'
-ADMIN_SITE_TITLE = 'Ralph 3.14'
+ADMIN_SITE_HEADER = 'Ralph DEV'
+ADMIN_SITE_TITLE = 'Ralph DEV'

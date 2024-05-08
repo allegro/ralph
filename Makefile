@@ -52,7 +52,6 @@ build-docker-image:
 
 build-snapshot-docker-image: version = $(shell ./get_version.sh show)
 build-snapshot-docker-image: build-snapshot-package
-	echo "$(version)"
 	docker build \
 		-f docker/Dockerfile-prod \
 		--build-arg RALPH_VERSION="$(version)" \

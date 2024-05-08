@@ -86,6 +86,3 @@ if bool_from_env('COLLECT_METRICS'):
         STATSD_GRAPHS_PREFIX = os.environ.get(
             'STATSD_GRAPHS_PREFIX', 'ralph.graphs'
         )
-
-ADMIN_SITE_HEADER = 'Ralph 3.14'
-ADMIN_SITE_TITLE = 'Ralph 3.14'
