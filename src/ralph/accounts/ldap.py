@@ -3,7 +3,6 @@ import logging
 
 from dj.choices import Country
 from django.conf import settings
-from django.contrib.auth.models import Group
 from django.dispatch import receiver
 from django.utils.encoding import force_text
 from django_auth_ldap.backend import _LDAPUser, LDAPSettings, populate_user
@@ -56,6 +55,7 @@ def mirror_groups(self):
         self._user.groups.values_list('name', flat=True).iterator()
     )
     if target_group_names != current_group_names:
+        from django.contrib.auth.models import Group
         logger.info('Modifing user groups: current = {}, target = {}'.format(
             ', '.join(current_group_names), ', '.join(target_group_names)
         ))
