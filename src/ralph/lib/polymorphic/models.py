@@ -61,7 +61,7 @@ class PolymorphicQuerySet(models.QuerySet):
                 result.append((
                     obj.content_type_id, obj.pk)
                 )
-            except:  # noqa
+            except AttributeError as e:  # noqa
                 pass
 
         # store original order of items by PK
