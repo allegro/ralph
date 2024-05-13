@@ -1,6 +1,6 @@
 -r openstack.txt
 -r hermes.txt
-Django==1.10.1
+Django==1.10.8
 dj.choices==0.11.0
 django-extensions==1.7.5
 django-filter==0.13.0

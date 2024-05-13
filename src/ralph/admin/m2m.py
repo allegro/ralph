@@ -146,7 +146,7 @@ def get_foreign_key_for_m2m(parent_model, m2m):
         parent_model: Django model for which admin inline is created
         m2m: ManyToManyField relation instance
     """
-    for field in m2m.related.through._meta.fields:
+    for field in m2m.remote_field.through._meta.fields:
         if (
             isinstance(field, ForeignKey) and
             issubclass(parent_model, field.rel.to)
