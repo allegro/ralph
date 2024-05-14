@@ -44,7 +44,7 @@ class UserWidget(widgets.ForeignKeyWidget):
 
     """Widget for Ralph User Foreign Key field."""
 
-    def clean(self, value):
+    def clean(self, value, *args, **kwargs):
         result = None
         if value:
             result, created = get_user_model().objects.get_or_create(
@@ -66,7 +66,7 @@ class UserManyToManyWidget(widgets.ManyToManyWidget):
 
     """Widget for many Ralph Users Foreign Key field."""
 
-    def clean(self, value):
+    def clean(self, value, *args, **kwargs):
         if not value:
             return get_user_model().objects.none()
         usernames = value.split(self.separator)
@@ -94,7 +94,7 @@ class ManyToManyThroughWidget(widgets.ManyToManyWidget):
         self.related_model = related_model
         super().__init__(*args, **kwargs)
 
-    def clean(self, value):
+    def clean(self, value, *args, **kwargs):
         if not value:
             return self.related_model.objects.none()
         return self.related_model.objects.filter(
@@ -134,7 +134,7 @@ class BaseObjectManyToManyWidget(widgets.ManyToManyWidget):
 
     """Widget for BO/DC base objects."""
 
-    def clean(self, value):
+    def clean(self, value, *args, **kwargs):
         if not value:
             return self.model.objects.none()
         ids = value.split(self.separator)
@@ -167,7 +167,7 @@ class BaseObjectWidget(widgets.ForeignKeyWidget):
 
     """Widget for BO/DC base objects."""
 
-    def clean(self, value):
+    def clean(self, value, *args, **kwargs):
         if not value:
             return None
         result = None
@@ -193,7 +193,7 @@ class ImportedForeignKeyWidget(widgets.ForeignKeyWidget):
 
     """Widget for ForeignKey fields for which can not define unique."""
 
-    def clean(self, value):
+    def clean(self, value, *args, **kwargs):
         if settings.MAP_IMPORTED_ID_TO_NEW_ID:
             if value:
                 content_type, imported_obj = get_imported_obj(
@@ -205,7 +205,7 @@ class ImportedForeignKeyWidget(widgets.ForeignKeyWidget):
 
 
 class NullStringWidget(widgets.CharWidget):
-    def clean(self, value):
+    def clean(self, value, *args, **kwargs):
         return super().clean(value) or None
 
 
@@ -216,7 +216,7 @@ class AssetServiceEnvWidget(widgets.ForeignKeyWidget):
     CSV field format Service.name|Environment.name
     """
 
-    def clean(self, value):
+    def clean(self, value, *args, **kwargs):
         if not value:
             return None
         try:
@@ -243,7 +243,7 @@ class AssetServiceEnvWidget(widgets.ForeignKeyWidget):
 
 class AssetServiceUidWidget(widgets.ForeignKeyWidget):
 
-    def clean(self, value):
+    def clean(self, value, *args, **kwargs):
         if not value:
             return None
         try:
@@ -277,7 +277,7 @@ class IPManagementWidget(widgets.ManyToManyWidget):
     ip. This because management ip is seperate model which can't be created
     wihtout DataCenterAsset (and DataCenterAsset is the result of importing).
     """
-    def clean(self, value):
+    def clean(self, value, *args, **kwargs):
         return value
 
     def render(self, value, obj=None):
