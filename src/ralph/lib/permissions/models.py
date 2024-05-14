@@ -272,7 +272,7 @@ class PermissionsForObjectMixin(models.Model, metaclass=PermissionsBase):
         user_perms = self._permissions.has_access(user)
         if not user_perms:
             return True
-        return self._default_manager.filter(
+        return self.__class__.objects.filter(
             user_perms,
             pk=self.pk
         ).exists()
