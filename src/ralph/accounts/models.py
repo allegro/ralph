@@ -167,6 +167,8 @@ class RalphUser(
         # set default values if None provided
         for field in ('country',):
             val = getattr(self, field)
+            if isinstance(val, str):
+                val = Country.from_name(val.lower()).id
             if val is None:
                 val = self._meta.get_field_by_name(field)[0].default
                 setattr(self, field, val)
