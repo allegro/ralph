@@ -67,7 +67,8 @@ def baseobject_migration(
     # foreign keys
     # migrated from deprecated get_all_related_objects(local_only=True)
     for relation in Model._meta.get_fields(include_parents=False):
-        if (relation.one_to_many or relation.one_to_one) and relation.auto_created and not relation.concrete:
+        if (relation.one_to_many or relation.one_to_one) and \
+                relation.auto_created and not relation.concrete:
             related_model = relation.related_model
             relation_field = relation.field.attname
             logger.info('Processing relation {}<->{} using field {}'.format(

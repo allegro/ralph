@@ -130,7 +130,8 @@ def get_m2m(parent_model, model):
     # need to check on both sides (m2m field will be defined only in one of the
     # models)
     for rel in parent_model._meta.get_fields(include_hidden=True):
-        if rel.many_to_many and rel.auto_created and issubclass(rel.related_model, model):
+        if rel.many_to_many and rel.auto_created and \
+                issubclass(rel.related_model, model):
             return rel.field
 
     for rel in parent_model._meta.many_to_many:

@@ -4,7 +4,7 @@ Django==1.10.8
 dj.choices==0.11.0
 django-extensions==1.7.5
 django-filter==0.13.0
-django-import-export==1.0.0
+django-import-export==1.2.0
 django-money==0.12
 py-moneyed==1.2
 django-mptt==0.8.7

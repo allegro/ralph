@@ -126,7 +126,7 @@ class TransitionActionTest(TransitionActionTestMixin, TransitionTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.data['user'],
-            ['This field is required.']
+            ['This field may not be blank.']
         )
 
     def test_sync_gui(self):
