@@ -97,3 +97,13 @@ class ImportForeignKeyMixin(object):
                 old_object_pk=self.old_object_pk,
                 defaults={'object_pk': instance.pk}
             )
+
+    def import_field(self, field, obj, data, is_m2m=False):
+        """
+        Calls :meth:`import_export.fields.Field.save` if ``Field.attribute``
+        and ``Field.column_name`` are found in ``data``.
+        """
+        if field.column_name == 'management_ip':
+            field.save(obj, data, is_m2m=False)
+        elif field.attribute and field.column_name in data:
+            field.save(obj, data, is_m2m)

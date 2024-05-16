@@ -4,7 +4,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from djmoney.models.fields import MoneyField
-from taggit.managers import TaggableManager as TaggableManagerOriginal
+from taggit.managers import TaggableManager as TaggableManagerOriginal, _TaggableManager
 
 from ralph.lib.mixins.fields import TaggitTagField
 from ralph.settings import DEFAULT_CURRENCY_CODE
@@ -79,10 +79,22 @@ class AdminAbsoluteUrlMixin(object):
         )
 
 
+class ManagerOfManager(_TaggableManager):
+    def set(self, *tags, **kwargs):
+        def _flatten(nested_list):
+            for item in nested_list:
+                if isinstance(item, (list, models.QuerySet)):
+                    yield from _flatten(item)
+                else:
+                    yield item
+        flattened_tags = list(_flatten(tags))
+        super().set(*flattened_tags, **kwargs)
+
+
 class TaggableManager(TaggableManagerOriginal):
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(manager=ManagerOfManager, *args, **kwargs)
         self.manager.name = 'tags'
 
     def value_from_object(self, instance):
