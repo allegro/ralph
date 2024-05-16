@@ -89,7 +89,14 @@ class ImportForeignKeyMixin(object):
             instance_loader, row
         )
 
-    def after_save_instance(self, instance, using_transactions: bool, dry_run: bool, *args, **kwargs):
+    def after_save_instance(
+        self,
+        instance,
+        using_transactions: bool,
+        dry_run: bool,
+        *args,
+        **kwargs
+    ):
         if not dry_run and self.old_object_pk:
             content_type = ContentType.objects.get_for_model(self._meta.model)
             ImportedObjects.objects.update_or_create(
