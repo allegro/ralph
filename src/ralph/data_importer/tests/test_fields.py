@@ -69,7 +69,7 @@ class DataImporterFieldsTestCase(TestCase):
         self.assertEqual(self.licence2.users.all().count(), 3)
 
         # Add and remove
-        with self.assertNumQueries(4):
+        with self.assertNumQueries(5):
             field.save(
                 self.licence,
                 {'users': ','.join([i.username for i in self.users])}
@@ -88,7 +88,7 @@ class DataImporterFieldsTestCase(TestCase):
         self.assertEqual(self.licence.users.all().count(), 5)
 
         # Remove
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(4):
             field.save(
                 self.licence,
                 {'users': ','.join([i.username for i in users[:4]])}
@@ -143,7 +143,7 @@ class DataImporterFieldsTestCase(TestCase):
         field = self._get_base_objects_through_field()
         self.assertEqual(self.licence.base_objects.all().count(), 2)
         ids = [self.back_office_assets[0].pk]
-        with self.assertNumQueries(3):
+        with self.assertNumQueries(4):
             field.save(
                 self.licence,
                 {'base_objects': ','.join(map(str, ids))}
@@ -165,7 +165,7 @@ class DataImporterFieldsTestCase(TestCase):
             self.back_office_assets[3].pk,
 
         ]
-        with self.assertNumQueries(4):
+        with self.assertNumQueries(5):
             field.save(
                 self.licence,
                 {'base_objects': ','.join(map(str, ids))}

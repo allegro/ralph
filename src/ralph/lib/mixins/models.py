@@ -4,7 +4,8 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from djmoney.models.fields import MoneyField
-from taggit.managers import TaggableManager as TaggableManagerOriginal, _TaggableManager
+from taggit.managers import TaggableManager as TaggableManagerOriginal
+from taggit.managers import _TaggableManager  # noqa
 
 from ralph.lib.mixins.fields import TaggitTagField
 from ralph.settings import DEFAULT_CURRENCY_CODE

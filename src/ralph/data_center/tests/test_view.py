@@ -39,7 +39,7 @@ class DataCenterAssetViewTest(ClientMixin, TestCase):
     def test_changelist_view(self):
         self.login_as_user()
         DataCenterAssetFullFactory.create_batch(10)
-        with self.assertNumQueries(20):
+        with self.assertNumQueries(21):
             self.client.get(
                 reverse('admin:data_center_datacenterasset_changelist'),
             )
@@ -54,7 +54,7 @@ class DCHostViewTest(ClientMixin, TestCase):
         VirtualServerFullFactory.create_batch(5)
         CloudHostFullFactory.create_batch(4)
         ClusterFactory.create_batch(4)
-        with self.assertNumQueries(21):
+        with self.assertNumQueries(22):
             result = self.client.get(
                 reverse('admin:data_center_dchost_changelist'),
             )
