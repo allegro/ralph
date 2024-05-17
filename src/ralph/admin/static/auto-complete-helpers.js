@@ -26,8 +26,6 @@ function dismissChangeRelatedObjectPopup(win, objId, newRepr, newId) {
 function dismissAddRelatedObjectPopup(win, newId, newRepr) {
     // newId and newRepr are expected to have previously been escaped by
     // django.utils.html.escape.
-    newId = html_unescape(newId);
-    newRepr = html_unescape(newRepr);
     var name = windowname_to_id(win.name);
     var elem = document.getElementById(name);
     var o;

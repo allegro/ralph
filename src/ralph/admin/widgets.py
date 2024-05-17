@@ -76,7 +76,7 @@ class PermissionsSelectWidget(forms.Widget):
     def render(self, name, value, attrs=None, choices=()):
         attr_value = ','.join(map(str, value or []))
         final_attrs = self.build_attrs(
-            attrs, type='hidden', name=name, value=attr_value,
+            attrs, extra_attrs={name: attr_value}  # "type": 'hidden', "name": name, "value": attr_value}
         )
         return mark_safe(
             '<a class="expand action-expand">Expand all</a>'
@@ -97,7 +97,7 @@ class PermissionsSelectWidget(forms.Widget):
         attrs = {'id': input_id, 'type': 'checkbox', 'value': option_value}
         if option_value in selected_choices:
             attrs['checked'] = 'checked'
-        attrs = self.build_attrs(**attrs)
+        attrs = self.build_attrs({**attrs})
         return '<input{}><label{}>{}</label>'.format(
             flatatt(attrs), flatatt({'for': input_id}), option_label
         )
@@ -310,4 +310,4 @@ class AutocompleteWidget(forms.TextInput):
         if not is_polymorphic and self.can_add:
             context['add_related_url'] = self.get_related_url(info, 'add')
         template = loader.get_template('admin/widgets/autocomplete.html')
-        return template.render(context)
+        return template.render(context.flatten())
