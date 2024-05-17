@@ -31,7 +31,7 @@ class BarAdmin(RalphAdmin):
 
 
 class BarsM2MInline(RalphTabularM2MInline):
-    model = Bar
+    model = Foo.bars.through
     fields = ('name', 'date', 'price', 'count')
     extra = 1
     verbose_name = _('Bars')
