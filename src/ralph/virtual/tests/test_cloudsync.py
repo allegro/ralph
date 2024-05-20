@@ -1,6 +1,6 @@
 from unittest.mock import Mock
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from ralph.api.tests._base import RalphAPITestCase
 from ralph.virtual import cloudsync

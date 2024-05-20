@@ -4,7 +4,7 @@ from itertools import groupby
 from django import forms
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils.translation import ugettext as _
 
 from ralph.admin.decorators import register

@@ -2,7 +2,7 @@
 from django import forms
 from django.conf.urls import url
 from django.contrib import messages
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import IntegrityError, models, transaction
 from django.forms import ValidationError
 from django.http import HttpResponseForbidden, HttpResponseRedirect

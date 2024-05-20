@@ -4,7 +4,7 @@ from itertools import repeat
 from django import forms
 from django.apps import apps
 from django.contrib import messages
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db.transaction import atomic, non_atomic_requests
 from django.http import (
     Http404,

@@ -2,7 +2,7 @@
 from dj.choices import Country
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.test import Client, TransactionTestCase
 from rest_framework.test import APIClient
 

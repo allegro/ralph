@@ -10,7 +10,7 @@ from django.contrib.admin import SimpleListFilter
 from django.contrib.admin.filters import FieldListFilter
 from django.contrib.admin.options import IncorrectLookupParameters
 from django.contrib.admin.utils import get_model_from_relation
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import models
 from django.db.models import Q
 from django.forms.utils import flatatt

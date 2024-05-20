@@ -1,7 +1,7 @@
 from ddt import data, ddt, unpack
 
 from django.contrib.auth import get_user_model
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.test import Client
 from rest_framework.test import APIClient
 from ralph.assets.models import AssetLastHostname

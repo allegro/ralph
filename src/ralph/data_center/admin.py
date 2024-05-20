@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib.admin import SimpleListFilter
 from django.contrib.admin.views.main import ChangeList, ORDER_VAR
 from django.contrib.contenttypes.models import ContentType
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db.models import Prefetch, Q
 from django.utils.translation import ugettext_lazy as _
 
@@ -710,7 +710,11 @@ class DCHostAdmin(
         return None
 
     def get_hostname(self, obj):
+        # try:
         return obj.hostname
+        # except AttributeError:
+        #     return "HOHOHOHOstname"
+
     get_hostname.short_description = _('Hostname')
     # TODO: simple if hostname would be in one model
     # get_hostname.admin_order_field = 'asset__hostname'

@@ -4,7 +4,7 @@ import logging
 import tablib
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db.models import Count, Prefetch
 from django.http import HttpResponse
 from django.utils.encoding import smart_str

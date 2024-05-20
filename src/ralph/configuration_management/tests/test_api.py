@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from ralph.api.tests._base import RalphAPITestCase
 from ralph.configuration_management.models import SCMCheckResult, SCMStatusCheck

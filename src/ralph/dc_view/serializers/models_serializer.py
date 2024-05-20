@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from rest_framework import serializers
 
 from ralph.data_center.models.choices import RackOrientation

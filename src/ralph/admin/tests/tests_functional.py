@@ -2,7 +2,7 @@
 from ddt import data, ddt, unpack
 from django.contrib.admin.options import IS_POPUP_VAR
 from django.contrib.admin.views.main import SEARCH_VAR
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.test import RequestFactory, TestCase
 from django.views.generic import View
 

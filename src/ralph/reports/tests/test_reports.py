@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import factory
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from ralph.admin.helpers import get_content_type_for_model
 from ralph.assets.models.choices import ObjectModelType

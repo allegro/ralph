@@ -3,7 +3,7 @@ import inspect
 
 from django.contrib.admin import SimpleListFilter
 from rest_framework import filters, permissions, relations, viewsets
-
+from django_filters.rest_framework import DjangoFilterBackend
 from ralph.admin.sites import ralph_site
 from ralph.api.filters import (
     AdditionalDjangoFilterBackend,
@@ -29,7 +29,7 @@ class AdminSearchFieldsMixin(object):
     """
     _skip_admin_search_fields = False
     _skip_admin_list_filter = False
-    filter_backends = [filters.DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
