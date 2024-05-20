@@ -15,7 +15,7 @@ django-taggit==0.22.2
 django-taggit-serializer==0.1.7
 django-threadlocals==0.8
 django-cryptography==0.3
-djangorestframework==3.7.7
+djangorestframework==3.4.1
 djangorestframework_xml==1.2.0
 drf-nested-routers==0.11.1
 Markdown<3.0  # headerid extension removed in 3.0 - see #3313 for details
