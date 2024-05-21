@@ -54,7 +54,7 @@ class CustomFieldValueAdminMaxinTestCase(TestCase):
         # default_value should be selected
         self.assertContains(
             response,
-            '<option value="zxcvbn" selected="selected">zxcvbn</option>'
+            '<option value="zxcvbn" selected>zxcvbn</option>'
         )
 
     def test_get_customfield_formfield_for_string_field(self):
@@ -65,7 +65,7 @@ class CustomFieldValueAdminMaxinTestCase(TestCase):
         # default_value should be placed
         self.assertContains(
             response,
-            '<input name="__empty__" type="text" value="xyz" />'
+            '<input type="text" name="__empty__" value="xyz" />'
         )
 
     def test_add_new_custom_field_value_for_existing_object(self):
