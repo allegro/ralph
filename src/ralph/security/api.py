@@ -88,6 +88,10 @@ class IPFilter(django_filters.FilterSet):
         name='base_object__ethernet_set__ipaddress__address'
     )
 
+    class Meta:
+        model = IPAddress
+        fields = ['ip']
+
 
 class SecurityScanViewSet(RalphAPIViewSet):
     queryset = SecurityScan.objects.all()
