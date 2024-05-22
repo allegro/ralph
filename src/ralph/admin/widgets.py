@@ -75,6 +75,8 @@ class PermissionsSelectWidget(forms.Widget):
 
     def render(self, name, value, attrs=None, choices=()):
         attr_value = ','.join(map(str, value or []))
+        if not attrs:
+            attrs = {}
         final_attrs = self.build_attrs(
             attrs, extra_attrs={name: attr_value}
         )
