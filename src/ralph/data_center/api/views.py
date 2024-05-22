@@ -49,16 +49,21 @@ class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     serializer_class = DataCenterAssetSerializer
     save_serializer_class = DataCenterAssetSaveSerializer
     select_related = DataCenterAssetAdmin.list_select_related + [
-        'service_env', 'service_env__service', 'service_env__environment',
-        'rack', 'rack__server_room', 'rack__server_room__data_center',
+        'service_env__service', 'service_env__environment',
+        'rack__server_room__data_center',
         'property_of', 'budget_info', 'content_type',
         'configuration_path__module',
+        'securityscan',
+        'baseobject_ptr',
+        'asset_ptr',
     ]
     prefetch_related = base_object_descendant_prefetch_related + [
+        'children',
+        'rack__server_room__data_center',
         'connections',
         'tags',
         'memory_set',
-        'children',
+        'children__service_env',
         'cloudhost_set',
         Prefetch(
             'ethernet_set',

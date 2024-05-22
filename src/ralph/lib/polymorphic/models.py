@@ -16,9 +16,7 @@ from collections import defaultdict
 from itertools import groupby
 
 from django.contrib.contenttypes.models import ContentType
-from django.db import models, OperationalError
-
-from ralph.lib.error_handling.exceptions import WrappedOperationalError
+from django.db import models
 
 
 class PolymorphicQuerySet(models.QuerySet):
@@ -32,6 +30,10 @@ class PolymorphicQuerySet(models.QuerySet):
         self._polymorphic_filter_args = []
         self._polymorphic_filter_kwargs = {}
         super().__init__(*args, **kwargs)
+
+    def iterator(self):
+        self._fetch_all()
+        return iter(self)
 
     def __iter__(self):  # noqa
         """
@@ -53,7 +55,7 @@ class PolymorphicQuerySet(models.QuerySet):
         if self.query.select_related:
             select_related = self.query.select_related
             self.query.select_related = False
-        objs = [obj for obj in super().iterator()]
+        objs = [obj for obj in super().__iter__()]
         for obj in objs:
             try:
                 content_types_ids.add(obj.content_type_id)

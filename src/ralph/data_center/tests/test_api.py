@@ -51,7 +51,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
             ethernet=EthernetFactory(base_object=self.dc_asset)
         )
         self.dc_asset.tags.add('db', 'test')
-        self.dc_asset_2 = DataCenterAssetFullFactory()
+        self.dc_asset_2 = DataCenterAssetFullFactory(rack=self.rack)
 
     def test_get_data_center_assets_list(self):
         url = reverse('datacenterasset-list')
