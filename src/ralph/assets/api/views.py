@@ -149,6 +149,7 @@ class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
     def get_object(self):
         return self.get_queryset().filter(pk=self.kwargs['pk']).first()
 
+
 class AssetHolderViewSet(RalphAPIViewSet):
     queryset = models.AssetHolder.objects.all()
     serializer_class = serializers.AssetHolderSerializer

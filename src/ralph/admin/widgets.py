@@ -12,11 +12,11 @@ from django.apps import apps
 from django.contrib.admin.templatetags.admin_static import static
 from django.contrib.admin.views.main import TO_FIELD_VAR
 from django.core.exceptions import FieldDoesNotExist
-from django.urls import reverse
 from django.forms.utils import flatatt
 from django.template import loader
 from django.template.context import RenderContext
 from django.template.defaultfilters import slugify, title
+from django.urls import reverse
 from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _

@@ -9,8 +9,8 @@ from django.contrib.auth.models import Permission
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.urls import reverse
 from django.test import override_settings, RequestFactory, SimpleTestCase
+from django.urls import reverse
 from django.utils import timezone
 
 import ralph.back_office.models
@@ -24,7 +24,6 @@ from ralph.assets.tests.factories import (
     ServiceEnvironmentFactory
 )
 from ralph.attachments.models import Attachment
-
 from ralph.back_office.helpers import EmailContext
 from ralph.back_office.models import (
     _check_assets_owner,

@@ -1,6 +1,6 @@
 from django.contrib.admin.views.main import ORDER_VAR, SEARCH_VAR
-from django.urls import reverse
 from django.db.models import Count, F, Prefetch
+from django.urls import reverse
 from django.utils.html import escape
 from django.utils.translation import ugettext_lazy as _
 

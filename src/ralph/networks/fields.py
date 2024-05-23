@@ -1,7 +1,7 @@
 import ipaddress
 
 from django.core.exceptions import ValidationError
-from django.db.models.fields import CharField, Field
+from django.db.models.fields import CharField
 
 
 MAX_NETWORK_ADDRESS_LENGTH = 44

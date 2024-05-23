@@ -5,8 +5,8 @@ from datetime import date
 from django.conf import settings
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.models import Permission
-from django.urls import reverse
 from django.test import TestCase
+from django.urls import reverse
 from rest_framework import status
 
 from ralph.accounts.ldap import manager_country_attribute_populate

@@ -13,15 +13,14 @@ from django.contrib.auth import get_permission_codename
 from django.contrib.contenttypes.admin import GenericTabularInline
 from django.core import checks
 from django.core.exceptions import FieldDoesNotExist
-from django.urls import reverse
 from django.db import models
 from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
 from django.views.generic import TemplateView
 from import_export.admin import ImportExportModelAdmin
 from import_export.widgets import ForeignKeyWidget
 from mptt.admin import MPTTAdminForm, MPTTModelAdmin
-
 from reversion.admin import VersionAdmin
 
 from ralph.admin import widgets

@@ -4,9 +4,9 @@ from itertools import cycle
 
 from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
-from django.urls import reverse
 from django.db.models import Count, Prefetch, Q, Sum
 from django.template import Library
+from django.urls import reverse
 from django.utils.text import slugify
 from django.utils.translation import ugettext_lazy as _
 
@@ -25,7 +25,6 @@ from ralph.accounts.helpers import (
     get_team_assets_to_accept,
     get_test_asset_acceptance_url,
     get_test_assets_to_accept
-
 )
 from ralph.assets.models import BaseObject, Service, ServiceEnvironment
 from ralph.back_office.models import BackOfficeAsset

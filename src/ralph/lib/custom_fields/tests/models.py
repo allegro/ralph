@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from collections import OrderedDict
 
-from django.urls import reverse
 from django.db import models
+from django.urls import reverse
 
 from ..models import WithCustomFieldsMixin
 

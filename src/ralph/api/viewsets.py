@@ -2,8 +2,9 @@
 import inspect
 
 from django.contrib.admin import SimpleListFilter
-from rest_framework import filters, permissions, relations, viewsets
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, permissions, relations, viewsets
+
 from ralph.admin.sites import ralph_site
 from ralph.api.filters import (
     AdditionalDjangoFilterBackend,

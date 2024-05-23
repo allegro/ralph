@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
-from django.urls import reverse
 from django.test import RequestFactory, TestCase
+from django.urls import reverse
 from rest_framework.status import HTTP_200_OK
 
 from ralph.accounts.tests.factories import GroupFactory
