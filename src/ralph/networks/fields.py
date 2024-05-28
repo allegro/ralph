@@ -34,7 +34,7 @@ class IPNetwork(CharField):
         if value is None:
             return value
         try:
-            return ipaddress.ip_network(value)
+            return value
         except ValueError as exc:
             raise ValidationError(
                 str(exc),
