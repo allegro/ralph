@@ -15,7 +15,7 @@ def network_validator(value):
         raise ValidationError(exc.message)
 
 
-class IPNetwork(Field):
+class IPNetwork(CharField):
     """Field for network with CIDR notation."""
 
     def __init__(self, *args, **kwargs):
