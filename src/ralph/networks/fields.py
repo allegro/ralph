@@ -1,7 +1,7 @@
 import ipaddress
 
 from django.core.exceptions import ValidationError
-from django.db.models.fields import CharField, Field
+from django.db.models.fields import CharField
 
 
 MAX_NETWORK_ADDRESS_LENGTH = 44
@@ -27,20 +27,6 @@ class IPNetwork(CharField):
         return CharField(
             max_length=MAX_NETWORK_ADDRESS_LENGTH
         ).db_type(connection)
-
-    def to_python(self, value):
-        if isinstance(value, ipaddress.IPv4Network):
-            return value
-        if value is None:
-            return value
-        try:
-            return ipaddress.ip_network(value)
-        except ValueError as exc:
-            raise ValidationError(
-                str(exc),
-                code='invalid',
-                params={'value': value},
-            )
 
     def from_db_value(self, value, expression, connection, context):
         if value is None:
