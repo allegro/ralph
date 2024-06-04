@@ -1,7 +1,7 @@
 {% load i18n admin_static %}
 <div class="related-widget-wrapper row">
   <div class="widget">
-    {{ widget }}
+    {{ rendered_widget }}
     {% block links %}
       {% if can_change_related %}
       <a class="related-widget-wrapper-link change-related" id="change_id_{{ name }}"
