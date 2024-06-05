@@ -37,7 +37,7 @@ class GraphForm(RalphAdminForm):
 
     def clean_model(self):
         ct_id = self.cleaned_data.get('model')
-        return ContentType.objects.get(pk=ct_id)
+        return ContentType.objects.get_for_id(id=ct_id)
 
     def clean_params(self):
         params = self.cleaned_data.get('params', '{}')
