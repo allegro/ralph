@@ -7,9 +7,9 @@ except ImportError:
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import FieldDoesNotExist
-from django.urls import reverse
 from django.forms.utils import flatatt
 from django.template.loader import render_to_string
+from django.urls import reverse
 from django.utils.html import escape
 
 from ralph.admin.helpers import (

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from django.urls import reverse
 from django.test import TestCase
 from django.test.utils import override_settings
+from django.urls import reverse
 
 from ralph.admin.sites import ralph_site
 from ralph.back_office.admin import BackOfficeAssetAdmin

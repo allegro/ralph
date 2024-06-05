@@ -1,10 +1,10 @@
 from decimal import Decimal
 
 from ddt import data, ddt, unpack
-from django.urls import reverse
 from django.db import connections
 from django.test import RequestFactory, TestCase
 from django.test.utils import CaptureQueriesContext
+from django.urls import reverse
 
 from ralph.accounts.tests.factories import UserFactory
 from ralph.admin.sites import ralph_site

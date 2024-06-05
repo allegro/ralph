@@ -53,11 +53,10 @@ from django.forms.models import (
     modelformset_factory
 )
 from django.utils.text import get_text_list
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from ralph.admin.mixins import (
     RalphAdminForm,
-    RalphStackedInline,
     RalphTabularInline
 )
 
@@ -150,7 +149,7 @@ def get_foreign_key_for_m2m(parent_model, m2m):
     for field in m2m.remote_field.through._meta.fields:
         if (
             isinstance(field, ForeignKey) and
-            issubclass(parent_model, field.rel.to)
+            issubclass(parent_model, field.remote_field.model)
         ):
             return field
 
@@ -211,35 +210,24 @@ class InlineM2MAdminMixin(object):
             fields = kwargs.pop('fields')
         else:
             fields = flatten_fieldsets(self.get_fieldsets(request, obj))
-        if self.exclude is None:
-            exclude = []
-        else:
-            exclude = list(self.exclude)
+        excluded = self.get_exclude(request, obj)
+        exclude = [] if excluded is None else list(excluded)
         exclude.extend(self.get_readonly_fields(request, obj))
-        if (
-            self.exclude is None and
-            hasattr(self.form, '_meta') and
-            self.form._meta.exclude
-        ):
+        if excluded is None and hasattr(self.form, '_meta') and self.form._meta.exclude:
             # Take the custom ModelForm's Meta.exclude into account only if the
             # InlineModelAdmin doesn't define its own.
             exclude.extend(self.form._meta.exclude)
         # If exclude is an empty list we use None, since that's the actual
         # default.
         exclude = exclude or None
-        can_delete = (
-            self.can_delete and
-            self.has_delete_permission(request, obj)
-        )
+        can_delete = self.can_delete and self.has_delete_permission(request, obj)
         defaults = {
             "form": self.form,
             "formset": self.formset,
             "fk_name": self.fk_name,
             "fields": fields,
             "exclude": exclude,
-            "formfield_callback": partial(
-                self.formfield_for_dbfield, request=request
-            ),
+            "formfield_callback": partial(self.formfield_for_dbfield, request=request),
             "extra": self.get_extra(request, obj, **kwargs),
             "min_num": self.get_min_num(request, obj, **kwargs),
             "max_num": self.get_max_num(request, obj, **kwargs),
@@ -266,26 +254,19 @@ class InlineM2MAdminMixin(object):
                         objs = []
                         for p in collector.protected:
                             objs.append(
-                                # Translators: Model verbose name and instance
-                                # representation, suitable to be an item in a
-                                # list.
+                                # Translators: Model verbose name and instance representation,
+                                # suitable to be an item in a list.
                                 _('%(class_name)s %(instance)s') % {
                                     'class_name': p._meta.verbose_name,
                                     'instance': p}
                             )
-                        params = {
-                            'class_name': self._meta.model._meta.verbose_name,
-                            'instance': self.instance,
-                            'related_objects': get_text_list(objs, _('and'))
-                        }
-                        msg = _(
-                            "Deleting %(class_name)s %(instance)s would require"
-                            " deleting the following protected related objects:"
-                            " %(related_objects)s"
-                        )
-                        raise ValidationError(
-                            msg, code='deleting_protected', params=params
-                        )
+                        params = {'class_name': self._meta.model._meta.verbose_name,
+                                  'instance': self.instance,
+                                  'related_objects': get_text_list(objs, _('and'))}
+                        msg = _("Deleting %(class_name)s %(instance)s would require "
+                                "deleting the following protected related objects: "
+                                "%(related_objects)s")
+                        raise ValidationError(msg, code='deleting_protected', params=params)
 
             def is_valid(self):
                 result = super(DeleteProtectedModelForm, self).is_valid()
@@ -294,14 +275,16 @@ class InlineM2MAdminMixin(object):
 
         defaults['form'] = DeleteProtectedModelForm
 
-        if (
-            defaults['fields'] is None and
-            not modelform_defines_fields(defaults['form'])
-        ):
+        if defaults['fields'] is None and not modelform_defines_fields(defaults['form']):
             defaults['fields'] = forms.ALL_FIELDS
 
         # THE ONLY DIFFERENCE HERE COMPARING TO ORIGINAL \/
         # return m2minlineformset_factory instead of inlineformset_factory
+
+        # dirty fix for through queryset being passed as self.model in init in some cases
+        if hasattr(self.model._meta, 'auto_created') and self.model._meta.auto_created:
+            self.model = self.model._meta.auto_created
+
         return m2minlineformset_factory(
             self.parent_model, self.model, **defaults
         )
@@ -309,7 +292,3 @@ class InlineM2MAdminMixin(object):
 
 class RalphTabularM2MInline(InlineM2MAdminMixin, RalphTabularInline):
     template = 'admin/edit_inline/tabular_m2m.html'
-
-
-class RalphStackedM2MInline(InlineM2MAdminMixin, RalphStackedInline):
-    pass

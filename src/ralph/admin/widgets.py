@@ -12,11 +12,11 @@ from django.apps import apps
 from django.contrib.admin.templatetags.admin_static import static
 from django.contrib.admin.views.main import TO_FIELD_VAR
 from django.core.exceptions import FieldDoesNotExist
-from django.urls import reverse
 from django.forms.utils import flatatt
 from django.template import loader
 from django.template.context import RenderContext
 from django.template.defaultfilters import slugify, title
+from django.urls import reverse
 from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
@@ -75,6 +75,8 @@ class PermissionsSelectWidget(forms.Widget):
 
     def render(self, name, value, attrs=None, choices=()):
         attr_value = ','.join(map(str, value or []))
+        if not attrs:
+            attrs = {}
         final_attrs = self.build_attrs(
             attrs, extra_attrs={name: attr_value}
         )

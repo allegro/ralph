@@ -4,10 +4,10 @@ from importlib import import_module
 from ddt import data, ddt, unpack
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
-from django.urls import reverse
 from django.db import connections
 from django.test import RequestFactory, TestCase
 from django.test.utils import CaptureQueriesContext
+from django.urls import reverse
 
 from ralph.admin.sites import ralph_site
 from ralph.tests.models import Foo

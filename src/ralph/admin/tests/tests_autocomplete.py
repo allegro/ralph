@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import urllib
 
-from django.urls import reverse
 from django.test import TestCase
+from django.urls import reverse
 
 from ralph.accounts.models import RalphUser, Region
 from ralph.accounts.tests.factories import RegionFactory, UserFactory

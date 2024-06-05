@@ -146,6 +146,9 @@ class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
     }
     additional_filter_class = BaseObjectFilterSet
 
+    def get_object(self):
+        return self.get_queryset().filter(pk=self.kwargs['pk']).first()
+
 
 class AssetHolderViewSet(RalphAPIViewSet):
     queryset = models.AssetHolder.objects.all()

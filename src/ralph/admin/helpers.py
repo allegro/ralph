@@ -3,9 +3,9 @@ from urllib.parse import urlencode
 
 from django.contrib.admin.utils import get_fields_from_path
 from django.contrib.contenttypes.models import ContentType
-from django.urls import reverse
 from django.db.models.constants import LOOKUP_SEP
 from django.db.models.expressions import Func
+from django.urls import reverse
 
 
 def get_admin_url(obj, action):

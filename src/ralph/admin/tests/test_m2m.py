@@ -2,8 +2,8 @@
 from datetime import date
 from decimal import Decimal
 
-from django.urls import reverse
 from django.test import RequestFactory, TestCase
+from django.urls import reverse
 from djmoney.money import Money
 from moneyed import PLN
 

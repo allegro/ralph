@@ -2,8 +2,8 @@
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
-from django.urls import reverse
 from django.db.models import Count, Prefetch
+from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.decorators import register

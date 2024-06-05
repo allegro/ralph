@@ -2,11 +2,11 @@
 from django import forms
 from django.conf.urls import url
 from django.contrib import messages
-from django.urls import reverse
 from django.db import IntegrityError, models, transaction
 from django.forms import ValidationError
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
