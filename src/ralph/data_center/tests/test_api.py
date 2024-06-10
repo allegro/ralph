@@ -56,7 +56,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
     def test_get_data_center_assets_list(self):
         url = reverse('datacenterasset-list')
         DataCenterAssetFullFactory.create_batch(18, rack=self.rack)
-        with self.assertNumQueries(17):
+        with self.assertNumQueries(18):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(

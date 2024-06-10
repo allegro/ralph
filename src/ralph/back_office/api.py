@@ -51,7 +51,7 @@ class BackOfficeAssetViewSet(RalphAPIViewSet):
     select_related = BackOfficeAssetAdmin.list_select_related + [
         'service_env', 'service_env__service', 'service_env__environment',
         'user', 'owner', 'property_of', 'office_infrastructure',
-        'budget_info'
+        'budget_info',
     ]
     prefetch_related = base_object_descendant_prefetch_related + [
         'user__groups', 'user__user_permissions',
@@ -59,6 +59,7 @@ class BackOfficeAssetViewSet(RalphAPIViewSet):
         'service_env__service__business_owners',
         'service_env__service__technical_owners',
         'tags',
+        'content_type',
     ]
     queryset = BackOfficeAsset.objects.all()
     serializer_class = BackOfficeAssetSerializer
