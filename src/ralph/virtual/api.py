@@ -150,6 +150,7 @@ class VirtualServerSimpleSerializer(BaseObjectSerializer):
         model = VirtualServer
         fields = ['hostname', 'url']
         _skip_tags_field = True
+        exclude = None
 
 
 # TODO: select related

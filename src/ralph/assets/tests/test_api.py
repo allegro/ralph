@@ -917,7 +917,7 @@ class DCHostAPITests(RalphAPITestCase):
         self.cf = CustomField.objects.create(
             name='test_cf', use_as_configuration_variable=True
         )
-        # is should be skipped in API
+        # BO asset isn't DC Host - will be skipped in API
         self.bo_asset = BackOfficeAssetFactory(
             barcode='12345', hostname='host1'
         )
@@ -954,11 +954,17 @@ class DCHostAPITests(RalphAPITestCase):
         self.cloud_host.update_custom_field('test_cf', 'xyz')
 
     def test_get_dc_hosts_list(self):
+        # create extra 9 DCHosts
+        for _ in range(3):
+            dc_asset = DataCenterAssetFactory()
+            VirtualServerFullFactory(parent=dc_asset)
+            CloudHostFullFactory(hypervisor=dc_asset)
         url = reverse('dchost-list')
-        with self.assertNumQueries(12):
-            response = self.client.get(url, format='json')
+        with self.assertNumQueries(22):
+            response = self.client.get(url + "?limit=20", format='json')
+
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 3)
+        self.assertEqual(response.data['count'], 12)
 
     def test_filter_by_type_dc_asset(self):
         url = '{}?{}'.format(

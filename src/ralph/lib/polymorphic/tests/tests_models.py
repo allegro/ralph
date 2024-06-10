@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 import pprint
-
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
+
 from ralph.lib.polymorphic.models import Polymorphic
 from ralph.lib.polymorphic.tests.models import (
     PolymorphicModelBaseTest,
     PolymorphicModelTest,
     PolymorphicModelTest2,
     SomeM2MModel,
-    SomethingRelated,
+    SomethingRelated
 )
 
 

@@ -90,6 +90,13 @@ class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     additional_filter_class = DataCenterAssetFilterSet
     exclude_filter_fields = ['configuration_path']
 
+    def get_queryset(self):
+        return (
+            DataCenterAsset.polymorphic_objects
+            .select_related(*self.select_related)
+            .polymorphic_prefetch_related(DataCenterAsset=self.prefetch_related)
+        )
+
 
 class AccessoryViewSet(RalphAPIViewSet):
     queryset = Accessory.objects.all()

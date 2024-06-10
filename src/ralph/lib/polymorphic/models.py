@@ -12,6 +12,7 @@ Example:
         <Model3: model3: test>
     ]
 """
+import logging
 from collections import defaultdict
 from itertools import groupby
 from django.core import exceptions
@@ -34,6 +35,7 @@ class PolymorphicQuerySet(models.QuerySet):
         self._polymorphic_filter_kwargs = {}
         super().__init__(*args, **kwargs)
         self._my_cache = None
+        self._pks_order = None
 
     def _fetch_all(self):
         if self._result_cache is not None:
@@ -59,7 +61,6 @@ class PolymorphicQuerySet(models.QuerySet):
     def _subquery_for_children_models(self, result) -> Dict[int, List[object]]:
         result_mapping = defaultdict(list)
         for ct_id, objects_of_type in result:
-
             content_type: ContentType = ContentType.objects.get_for_id(id=ct_id)
             model = content_type.model_class()
             polymorphic_models = getattr(model, "_polymorphic_models", [])
@@ -96,6 +97,7 @@ class PolymorphicQuerySet(models.QuerySet):
         self, query: QuerySet, model_name: str
     ) -> QuerySet:
         if self._polymorphic_select_related.get(model_name):
+            print(f"Model name: {model_name}. Select: {self._polymorphic_select_related[model_name]}")
             return query.select_related(*self._polymorphic_select_related[model_name])
         else:
             return query
@@ -235,6 +237,8 @@ class PolymorphicQuerySet(models.QuerySet):
         clone._extra_kwargs = self._extra_kwargs.copy()
         clone._polymorphic_filter_args = self._polymorphic_filter_args.copy()
         clone._polymorphic_filter_kwargs = self._polymorphic_filter_kwargs.copy()
+        clone._my_cache = self._my_cache.clone() if self._my_cache else None
+        clone._pks_order = self._pks_order.clone() if self._pks_order else None
         return clone
 
     def polymorphic_select_related(self, **kwargs):

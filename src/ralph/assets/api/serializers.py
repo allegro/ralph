@@ -37,6 +37,7 @@ from ralph.assets.models.components import (
     Processor
 )
 from ralph.configuration_management.api import SCMInfoSerializer
+from ralph.data_center.models import DCHost
 from ralph.lib.custom_fields.api import WithCustomFieldsSerializerMixin
 from ralph.licences.api_simple import SimpleBaseObjectLicenceSerializer
 from ralph.networks.api_simple import IPAddressSimpleSerializer
@@ -449,12 +450,22 @@ class DCHostSerializer(ComponentSerializerMixin, BaseObjectSerializer):
     securityscan = SecurityScanField()
 
     class Meta:
-        model = BaseObject
+        model = DCHost
         fields = [
-            'id', 'url', 'ethernet', 'ipaddresses', 'custom_fields',
-            '__str__', 'tags', 'service_env', 'configuration_path', 'hostname',
-            'created', 'modified', 'remarks', 'parent', 'object_type',
-            'configuration_variables', 'securityscan',
+            'id', 'url',
+
+            'ethernet',
+            'ipaddresses',
+            'custom_fields',
+            'tags',
+
+            'securityscan',
+            'object_type',
+            '__str__',
+            'service_env', 'configuration_path',
+            'hostname',
+            'created', 'modified', 'remarks', 'parent',
+            'configuration_variables',
         ]
 
 

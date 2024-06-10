@@ -9,6 +9,8 @@ from ralph.api.utils import PolymorphicViewSetMixin
 from ralph.assets import models
 from ralph.assets.api import serializers
 from ralph.assets.api.filters import NetworkableObjectFilters
+from ralph.assets.models import BaseObject
+from ralph.data_center.models import DCHost
 from ralph.licences.api import BaseObjectLicenceViewSet
 from ralph.licences.models import BaseObjectLicence
 from ralph.networks.models import IPAddress
@@ -239,7 +241,7 @@ class DCHostFilterSet(NetworkableObjectFilters):
 
 # TODO: move to data_center and use DCHost proxy model
 class DCHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
-    queryset = models.BaseObject.polymorphic_objects
+    queryset = BaseObject.polymorphic_objects  #.prefetch_related('ethernet_set')  # models.BaseObject.polymorphic_objects
     serializer_class = serializers.DCHostSerializer
     http_method_names = ['get', 'options', 'head']
     filter_fields = [
@@ -247,23 +249,16 @@ class DCHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         'content_type',
     ]
     select_related = [
-        'service_env', 'service_env__service', 'service_env__environment',
-        'configuration_path', 'configuration_path__module',
+        'service_env__service', 'service_env__environment',
+        'configuration_path__module',
         'parent__cloudproject',
     ]
     prefetch_related = [
         'tags',
         'custom_fields',
-        Prefetch(
-            'ethernet_set',
-            queryset=models.Ethernet.objects.select_related('ipaddress')
-        ),
-        Prefetch(
-            'securityscan',
-            queryset=SecurityScan.objects.prefetch_related(
-                'vulnerabilities', 'tags'
-            )
-        ),
+        'ethernet_set__ipaddress',
+        'securityscan__vulnerabilities',
+        'securityscan__tags',
     ]
     extended_filter_fields = {
         'name': [
@@ -284,4 +279,14 @@ class DCHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     additional_filter_class = DCHostFilterSet
 
     def get_queryset(self):
-        return super().get_queryset().dc_hosts()
+        return (
+            self.queryset
+            .dc_hosts()
+            .select_related(*self.select_related)
+            .polymorphic_prefetch_related(
+                Cluster=[*self.prefetch_related],
+                DataCenterAsset=[*self.prefetch_related],
+                VirtualServer=[*self.prefetch_related],
+                CloudHost=[*self.prefetch_related]
+            )
+        )

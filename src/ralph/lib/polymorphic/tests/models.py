@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging
-
 from django.db import models
 
 from ralph.lib.polymorphic.models import Polymorphic, PolymorphicBase

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
-from django.contrib.contenttypes.models import ContentType
+import logging
 
+from django.contrib.contenttypes.models import ContentType
+from django.db import connection
 from rest_framework import serializers
 
 from ralph.api import RalphAPISerializer
@@ -159,11 +161,12 @@ class DataCenterAssetSerializer(ComponentSerializerMixin, AssetSerializer):
         )
 
     def get_related_hosts(self, obj):
-        related_hosts = {}
-        related_hosts['virtual_servers'] = self._get_virtual_servers(obj)
-        related_hosts['physical_servers'] = self._get_physical_servers(obj)
-        related_hosts['cloud_hosts'] = self._get_cloud_hosts(obj)
-        return related_hosts
+        import pdb; pdb.set_trace()
+        return {
+            "virtual_servers": self._get_virtual_servers(obj),
+            "physical_servers": self._get_physical_servers(obj),
+            "cloud_hosts": self._get_cloud_hosts(obj)
+        }
 
     class Meta(AssetSerializer.Meta):
         model = DataCenterAsset
