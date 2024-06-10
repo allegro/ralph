@@ -9,7 +9,6 @@ from ralph.assets.models.components import ComponentModel
 from ralph.assets.tests.factories import (
     EnvironmentFactory,
     EthernetFactory,
-    ServiceEnvironmentFactory,
     ServiceFactory
 )
 from ralph.data_center.tests.factories import (
@@ -29,6 +28,7 @@ from ralph.virtual.models import (
 from ralph.virtual.tests.factories import (
     CloudFlavorFactory,
     CloudHostFactory,
+    CloudHostFullFactory,
     CloudProjectFactory,
     CloudProviderFactory,
     VirtualServerFullFactory
@@ -97,11 +97,13 @@ class OpenstackModelsTestCase(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_cloudhost_list(self):
+        CloudHostFullFactory.create_batch(100)
         url = reverse('cloudhost-list')
-        with self.assertNumQueries(12):
-            response = self.client.get(url, format='json')
+        with self.assertNumQueries(15):
+            response = self.client.get(url + "?limit=100", format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 2)
+        self.assertEqual(len(response.data['results']), 100)
+        self.assertEqual(response.data['count'], 102)
 
     @unpack
     @data(

@@ -954,17 +954,17 @@ class DCHostAPITests(RalphAPITestCase):
         self.cloud_host.update_custom_field('test_cf', 'xyz')
 
     def test_get_dc_hosts_list(self):
-        # create extra 9 DCHosts
-        for _ in range(3):
-            dc_asset = DataCenterAssetFactory()
-            VirtualServerFullFactory(parent=dc_asset)
-            CloudHostFullFactory(hypervisor=dc_asset)
+        # create extra 60 DCHosts
+        dc_assets = DataCenterAssetFullFactory.create_batch(20)
+        VirtualServerFullFactory.create_batch(20, parent=dc_assets[0])
+        CloudHostFullFactory.create_batch(20, hypervisor=dc_assets[0])
+
         url = reverse('dchost-list')
-        with self.assertNumQueries(22):
-            response = self.client.get(url + "?limit=20", format='json')
+        with self.assertNumQueries(28):
+            response = self.client.get(url + "?limit=100", format='json')
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 12)
+        self.assertEqual(response.data['count'], 63)
 
     def test_filter_by_type_dc_asset(self):
         url = '{}?{}'.format(

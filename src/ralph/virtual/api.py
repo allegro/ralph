@@ -244,16 +244,9 @@ class CloudHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     ]
     prefetch_related = base_object_descendant_prefetch_related + [
         'tags', 'cloudflavor__virtualcomponent_set__model', 'licences',
-        Prefetch(
-            'ethernet_set',
-            queryset=Ethernet.objects.select_related('ipaddress')
-        ),
-        Prefetch(
-            'securityscan',
-            queryset=SecurityScan.objects.prefetch_related(
-                'vulnerabilities', 'tags'
-            )
-        ),
+        'securityscan__vulnerabilities__tags',
+        'securityscan__tags',
+        'ethernet_set__ipaddress',
     ]
 
     filter_fields = [

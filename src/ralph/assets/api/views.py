@@ -272,7 +272,7 @@ class DCHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         "tags",
         "custom_fields",
         "ethernet_set__ipaddress",
-        "securityscan__vulnerabilities",
+        "securityscan__vulnerabilities__tags",
         "securityscan__tags",
     ]
     extended_filter_fields = {

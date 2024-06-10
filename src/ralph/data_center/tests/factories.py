@@ -38,6 +38,7 @@ from ralph.data_center.models.virtual import (
     VIP,
     VIPProtocol
 )
+from ralph.security.tests.factories import SecurityScanFactory
 
 date_now = datetime.now().date()
 
@@ -210,6 +211,7 @@ class DataCenterAssetFullFactory(DataCenterAssetFactory):
         'ralph.configuration_management.tests.factories.SCMStatusCheckFactory',
         'base_object',
     )
+    securityscan = factory.RelatedFactory(SecurityScanFactory, factory_related_name='base_object')
 
     @factory.post_generation
     def post_tags(self, create, extracted, **kwargs):
