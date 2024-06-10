@@ -33,9 +33,9 @@ class PolymorphicQuerySet(models.QuerySet):
         self._extra_kwargs = {}
         self._polymorphic_filter_args = []
         self._polymorphic_filter_kwargs = {}
-        super().__init__(*args, **kwargs)
         self._my_cache = None
         self._pks_order = None
+        super().__init__(*args, **kwargs)
 
     def _fetch_all(self):
         if self._result_cache is not None:
@@ -97,9 +97,6 @@ class PolymorphicQuerySet(models.QuerySet):
         self, query: QuerySet, model_name: str
     ) -> QuerySet:
         if self._polymorphic_select_related.get(model_name):
-            print(
-                f"Model name: {model_name}. Select: {self._polymorphic_select_related[model_name]}"
-            )
             return query.select_related(*self._polymorphic_select_related[model_name])
         else:
             return query
@@ -134,7 +131,7 @@ class PolymorphicQuerySet(models.QuerySet):
         ):
             for select_key, select_db_field in self._iterate_extra_prefetches():
                 through_table_name, column_name = [
-                    s.strip("`") for s in select_db_field.split(".")
+                    s.strip("`").strip('"') for s in select_db_field.split(".")
                 ]
                 through_fields = [
                     o for o in self.model._meta.get_fields() if hasattr(o, "through")
@@ -195,11 +192,11 @@ class PolymorphicQuerySet(models.QuerySet):
                     our_table = field.related_model._meta.db_table
             if our_table and back_column and remote_table:
                 condition_local = (
-                    f"`{our_table}`.`id` = `{through_table_name}`.`{back_column}`"
+                    f'"{our_table}"."id" = "{through_table_name}"."{back_column}"'
                 )
-                condition_remote = f"`{remote_table}`.`id` = `{through_table_name}`.`{target_column_name}`"
+                condition_remote = f'"{remote_table}"."id" = "{through_table_name}"."{target_column_name}"'
                 query = query.extra(
-                    tables=[f"`{remote_table}`", f"`{through_table_name}`"],
+                    tables=[f'"{remote_table}"', f'"{through_table_name}"'],
                     where=[condition_local, condition_remote],
                 )
         return query

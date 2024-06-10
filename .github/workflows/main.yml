@@ -42,7 +42,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        db-engine: ["mysql"]
+        db-engine: ["psql", "mysql"]
     env:
         TEST_DB_ENGINE: ${{ matrix.db-engine }}
     services:
@@ -173,7 +173,7 @@ jobs:
     strategy:
       matrix:
         python-version: [3.6]
-        db-engine: ["mysql"]
+        db-engine: ["psql", "mysql"]
     env:
       TEST_DB_ENGINE: ${{ matrix.db-engine }}
       DATABASE_USER: ralph_ng
