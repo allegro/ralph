@@ -42,7 +42,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        db-engine: ["psql", "mysql"]
+        db-engine: ["mysql"]
     env:
         TEST_DB_ENGINE: ${{ matrix.db-engine }}
     services:

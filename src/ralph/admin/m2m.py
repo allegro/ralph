@@ -39,6 +39,8 @@ class AuthorAdmin(admin.ModelAdmin):
     inlines = [AuthorArticlesM2MInline]
 ```
 """
+from functools import partial
+
 from django import forms
 from django.contrib.admin.utils import flatten_fieldsets, NestedObjects
 from django.core.exceptions import ValidationError
@@ -52,7 +54,6 @@ from django.forms.models import (
 )
 from django.utils.text import get_text_list
 from django.utils.translation import gettext_lazy as _
-from functools import partial
 
 from ralph.admin.mixins import RalphAdminForm, RalphTabularInline
 
