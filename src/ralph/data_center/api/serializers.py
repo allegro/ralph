@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-import logging
 
 from django.contrib.contenttypes.models import ContentType
-from django.db import connection
 from rest_framework import serializers
 
 from ralph.api import RalphAPISerializer
@@ -161,7 +159,6 @@ class DataCenterAssetSerializer(ComponentSerializerMixin, AssetSerializer):
         )
 
     def get_related_hosts(self, obj):
-        import pdb; pdb.set_trace()
         return {
             "virtual_servers": self._get_virtual_servers(obj),
             "physical_servers": self._get_physical_servers(obj),

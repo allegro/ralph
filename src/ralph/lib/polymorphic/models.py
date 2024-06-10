@@ -97,7 +97,9 @@ class PolymorphicQuerySet(models.QuerySet):
         self, query: QuerySet, model_name: str
     ) -> QuerySet:
         if self._polymorphic_select_related.get(model_name):
-            print(f"Model name: {model_name}. Select: {self._polymorphic_select_related[model_name]}")
+            print(
+                f"Model name: {model_name}. Select: {self._polymorphic_select_related[model_name]}"
+            )
             return query.select_related(*self._polymorphic_select_related[model_name])
         else:
             return query
