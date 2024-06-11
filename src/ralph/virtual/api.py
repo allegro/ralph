@@ -24,7 +24,6 @@ from ralph.data_center.api.serializers import DataCenterAssetSimpleSerializer
 from ralph.data_center.models import DCHost
 from ralph.lib.api.exceptions import Conflict
 from ralph.security.api import SecurityScanSerializer
-from ralph.security.models import SecurityScan
 from ralph.virtual.admin import VirtualServerAdmin
 from ralph.virtual.models import (
     CloudFlavor,

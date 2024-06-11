@@ -36,7 +36,6 @@ from ralph.data_center.models import (
     ServerRoom,
     VIP
 )
-from ralph.security.models import SecurityScan
 
 
 class DataCenterAssetFilterSet(NetworkableObjectFilters):

@@ -29,9 +29,10 @@ from ralph.virtual.models import (
 from ralph.virtual.tests.factories import (
     CloudFlavorFactory,
     CloudHostFactory,
+    CloudHostFullFactory,
     CloudProjectFactory,
     CloudProviderFactory,
-    VirtualServerFullFactory, CloudHostFullFactory
+    VirtualServerFullFactory
 )
 
 

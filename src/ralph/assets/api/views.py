@@ -12,7 +12,6 @@ from ralph.assets.api.filters import NetworkableObjectFilters
 from ralph.licences.api import BaseObjectLicenceViewSet
 from ralph.licences.models import BaseObjectLicence
 from ralph.networks.models import IPAddress
-from ralph.security.models import SecurityScan
 
 
 class BusinessSegmentViewSet(RalphAPIViewSet):
