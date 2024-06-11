@@ -241,6 +241,16 @@ class VulnerabilityAPITests(RalphAPITestCase):
             response.data['count'], Vulnerability.objects.count()
         )
 
+    def test_get_vulnerability_list_query_count(self):
+        VulnerabilityFactory.create_batch(99)
+        url = reverse('vulnerability-list')
+        with self.assertNumQueries(5):
+            response = self.client.get(url + "?limit=100", format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(
+            response.data['count'], Vulnerability.objects.count()
+        )
+
     def test_get_vulnerability_details(self):
         url = reverse('vulnerability-detail', args=(self.vulnerability.id,))
         response = self.client.get(url, format='json')
