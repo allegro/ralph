@@ -59,6 +59,7 @@ class BackOfficeAssetViewSet(RalphAPIViewSet):
         'service_env__service__business_owners',
         'service_env__service__technical_owners',
         'tags',
+        'content_type',
     ]
     queryset = BackOfficeAsset.objects.all()
     serializer_class = BackOfficeAssetSerializer

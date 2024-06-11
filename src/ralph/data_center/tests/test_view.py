@@ -127,6 +127,7 @@ class DCHostScanStatusInListingTest(ClientMixin, TestCase):
             rack__name='Rack #1',
             rack__server_room__name='SR1',
             rack__server_room__data_center__name='DC1',
+            securityscan=None,
         )
 
     def test_listing_show_ok_when_scan_succeed_and_no_vulnerabilities(
@@ -219,6 +220,7 @@ class DCHostFilterByPatchDeadline(ClientMixin, TestCase):
             rack__name='Rack #1',
             rack__server_room__name='SR1',
             rack__server_room__data_center__name='DC1',
+            securityscan=None,
         )
         self.scan_no_vuls = SecurityScanFactory(
             base_object=self.asset_no_vuls.baseobject_ptr, vulnerabilities=[],

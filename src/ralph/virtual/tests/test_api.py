@@ -99,7 +99,7 @@ class OpenstackModelsTestCase(RalphAPITestCase):
     def test_get_cloudhost_list(self):
         CloudHostFullFactory.create_batch(100)
         url = reverse('cloudhost-list') + "?limit=100"
-        with self.assertNumQueries(18):
+        with self.assertNumQueries(15):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 102)
@@ -451,11 +451,12 @@ class VirtualServerAPITestCase(RalphAPITestCase):
         )
 
     def test_get_virtual_server_list(self):
-        url = reverse('virtualserver-list')
+        VirtualServerFullFactory.create_batch(20)
+        url = reverse('virtualserver-list') + "?limit=100"
         with self.assertNumQueries(13):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 2)
+        self.assertEqual(response.data['count'], 22)
 
     def test_get_virtual_server_details(self):
         url = reverse('virtualserver-detail', args=(self.virtual_server.id,))
