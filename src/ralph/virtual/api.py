@@ -247,12 +247,6 @@ class CloudHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
             'ethernet_set',
             queryset=Ethernet.objects.select_related('ipaddress')
         ),
-        Prefetch(
-            'securityscan',
-            queryset=SecurityScan.objects.prefetch_related(
-                'vulnerabilities', 'tags'
-            )
-        ),
     ]
 
     filter_fields = [
@@ -297,12 +291,6 @@ class VirtualServerViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         Prefetch(
             'ethernet_set',
             queryset=Ethernet.objects.select_related('ipaddress')
-        ),
-        Prefetch(
-            'securityscan',
-            queryset=SecurityScan.objects.prefetch_related(
-                'vulnerabilities', 'tags'
-            )
         ),
         # TODO: clusters
     ]

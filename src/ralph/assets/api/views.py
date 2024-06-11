@@ -98,6 +98,8 @@ base_object_descendant_prefetch_related = [
     Prefetch('licences', queryset=BaseObjectLicence.objects.select_related(
         *BaseObjectLicenceViewSet.select_related
     )),
+    'securityscan__tags',
+    'securityscan__vulnerabilities__tags',
     'custom_fields',
     'service_env__service__business_owners',
     'service_env__service__technical_owners',
@@ -244,22 +246,18 @@ class DCHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         'content_type',
     ]
     select_related = [
-        'service_env', 'service_env__service', 'service_env__environment',
-        'configuration_path', 'configuration_path__module',
+        'service_env__service', 'service_env__environment',
+        'configuration_path__module',
         'parent__cloudproject',
     ]
     prefetch_related = [
         'tags',
         'custom_fields',
+        'securityscan__vulnerabilities__tags',
+        'securityscan__tags',
         Prefetch(
             'ethernet_set',
             queryset=models.Ethernet.objects.select_related('ipaddress')
-        ),
-        Prefetch(
-            'securityscan',
-            queryset=SecurityScan.objects.prefetch_related(
-                'vulnerabilities', 'tags'
-            )
         ),
     ]
     extended_filter_fields = {

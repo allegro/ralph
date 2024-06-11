@@ -64,12 +64,6 @@ class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
             'ethernet_set',
             queryset=Ethernet.objects.select_related('ipaddress')
         ),
-        Prefetch(
-            'securityscan',
-            queryset=SecurityScan.objects.prefetch_related(
-                'vulnerabilities', 'tags'
-            )
-        ),
         'fibrechannelcard_set',
         'processor_set',
         'disk_set',
