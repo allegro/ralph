@@ -1,3 +1,41 @@
+ralph (20240611.1) bionic; urgency=medium
+
+  * Test example changes
+  * Add workflow to build snapshot
+  * Run on push
+  * Add missing makefile target
+  * Test variables in Makefile
+  * Fix makefile
+  * Fix makefile
+  * Clean up changes. Snapshots should work now
+  * Add missing prefetches. Fix tests
+  * Adjust expected queries count in tests after modifications. Fix securityscan tests
+  * Adjust queries count in tests
+  * Fix flake
+  * Fix cluster factory
+  * Fix last test
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Tue, 11 Jun 2024 12:56:13 +0000
+
+ralph (20240611.1) bionic; urgency=medium
+
+  * Test example changes
+  * Add workflow to build snapshot
+  * Run on push
+  * Add missing makefile target
+  * Test variables in Makefile
+  * Fix makefile
+  * Fix makefile
+  * Clean up changes. Snapshots should work now
+  * Add missing prefetches. Fix tests
+  * Adjust expected queries count in tests after modifications. Fix securityscan tests
+  * Adjust queries count in tests
+  * Fix flake
+  * Fix cluster factory
+  * Fix last test
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Tue, 11 Jun 2024 12:45:08 +0000
+
 ralph (20240307.1) bionic; urgency=medium
 
   [ Aleksander Więckowski ]
