@@ -234,6 +234,7 @@ class DCHostFilterByPatchDeadline(ClientMixin, TestCase):
             rack__name='Rack #1',
             rack__server_room__name='SR1',
             rack__server_room__data_center__name='DC1',
+            securityscan=None,
         )
         self.scan_with_vuls2 = SecurityScanFactory(
             base_object=self.asset_with_today_vul.baseobject_ptr,
@@ -248,6 +249,7 @@ class DCHostFilterByPatchDeadline(ClientMixin, TestCase):
            rack__name='Rack #1',
             rack__server_room__name='SR1',
             rack__server_room__data_center__name='DC1',
+            securityscan=None,
         )
         self.scan_with_vuls2 = SecurityScanFactory(
             base_object=self.asset_vuls2.baseobject_ptr,

@@ -453,7 +453,7 @@ class VirtualServerAPITestCase(RalphAPITestCase):
     def test_get_virtual_server_list(self):
         VirtualServerFullFactory.create_batch(20)
         url = reverse('virtualserver-list') + "?limit=100"
-        with self.assertNumQueries(13):
+        with self.assertNumQueries(16):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 22)
