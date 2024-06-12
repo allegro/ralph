@@ -104,6 +104,8 @@ base_object_descendant_prefetch_related = [
             *BaseObjectLicenceViewSet.select_related
         ),
     ),
+    "securityscan__tags",
+    "securityscan__vulnerabilities__tags",
     "custom_fields",
     "service_env__service__business_owners",
     "service_env__service__technical_owners",

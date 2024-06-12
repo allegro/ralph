@@ -54,9 +54,9 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         self.dc_asset_2 = DataCenterAssetFullFactory(rack=self.rack)
 
     def test_get_data_center_assets_list(self):
-        url = reverse('datacenterasset-list')
-        DataCenterAssetFullFactory.create_batch(18, rack=self.rack)
-        with self.assertNumQueries(18):
+        DataCenterAssetFullFactory.create_batch(100)
+        url = reverse('datacenterasset-list') + "?limit=100"
+        with self.assertNumQueries(20):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
@@ -552,18 +552,19 @@ class ClusterAPITests(RalphAPITestCase):
         })
 
     def test_list_cluster(self):
-        url = reverse('cluster-list')
-        with self.assertNumQueries(12):
+        ClusterFactory.create_batch(20)
+        url = reverse('cluster-list') + "?limit=100"
+        with self.assertNumQueries(13):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(len(response.data['results']), 22)
         for item in response.data['results']:
             if item['id'] == self.cluster_1.id:
                 self.assertEqual(len(item['base_objects']), 2)
 
     def test_get_cluster_details(self):
         url = reverse('cluster-detail', args=(self.cluster_1.id,))
-        with self.assertNumQueries(11):
+        with self.assertNumQueries(12):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['name'], self.cluster_1.name)

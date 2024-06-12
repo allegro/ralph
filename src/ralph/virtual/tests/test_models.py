@@ -249,7 +249,7 @@ class CloudHostTestCase(RalphTestCase, NetworkableBaseObjectTestMixin):
 
 class VirtualServerTestCase(RalphTestCase, NetworkableBaseObjectTestMixin):
     def setUp(self):
-        self.vs = VirtualServerFullFactory()
+        self.vs = VirtualServerFullFactory(securityscan=None)
         self.custom_field_str = CustomField.objects.create(
             name='test str', type=CustomFieldTypes.STRING, default_value='xyz'
         )

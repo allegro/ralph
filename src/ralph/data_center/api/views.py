@@ -36,7 +36,6 @@ from ralph.data_center.models import (
     ServerRoom,
     VIP
 )
-from ralph.security.models import SecurityScan
 
 
 class DataCenterAssetFilterSet(NetworkableObjectFilters):
@@ -68,12 +67,6 @@ class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         Prefetch(
             'ethernet_set',
             queryset=Ethernet.objects.select_related('ipaddress')
-        ),
-        Prefetch(
-            'securityscan',
-            queryset=SecurityScan.objects.prefetch_related(
-                'vulnerabilities', 'tags'
-            )
         ),
         'fibrechannelcard_set',
         'processor_set',

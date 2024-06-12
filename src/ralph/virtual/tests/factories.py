@@ -93,7 +93,8 @@ class CloudHostFactory(DjangoModelFactory):
 
 class CloudHostFullFactory(CloudHostFactory):
     hypervisor = factory.SubFactory(DataCenterAssetFactory)
-    securityscan = factory.RelatedFactory(SecurityScanFactory, factory_related_name='base_object')
+    securityscan = factory.RelatedFactory(SecurityScanFactory, 'base_object')
+
 
     @factory.post_generation
     def post_tags(self, create, extracted, **kwargs):
@@ -143,6 +144,7 @@ class VirtualServerFullFactory(VirtualServerFactory):
     proc2 = factory.RelatedFactory(ProcessorFactory, 'base_object')
     disk1 = factory.RelatedFactory(DiskFactory, 'base_object')
     disk2 = factory.RelatedFactory(DiskFactory, 'base_object')
+    securityscan = factory.RelatedFactory(SecurityScanFactory, 'base_object')
 
     @factory.post_generation
     def post_tags(self, create, extracted, **kwargs):
