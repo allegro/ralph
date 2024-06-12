@@ -11,6 +11,7 @@ from ralph.assets.tests.factories import (
     ServiceEnvironmentFactory
 )
 from ralph.data_center.tests.factories import DataCenterAssetFactory
+from ralph.security.tests.factories import SecurityScanFactory
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
@@ -80,7 +81,7 @@ class CloudHostFactory(DjangoModelFactory):
         CloudProviderFactory,
         name='openstack',
     )
-    host_id = factory.Iterator(['host_id1', 'host_id2', 'host_id3', 'host_id4'])
+    host_id = factory.Sequence(lambda n: f'host_id1{n}.local')
     parent = factory.SubFactory(CloudProjectFactory)
     configuration_path = factory.SubFactory(ConfigurationClassFactory)
     service_env = factory.SubFactory(ServiceEnvironmentFactory)
@@ -92,6 +93,8 @@ class CloudHostFactory(DjangoModelFactory):
 
 class CloudHostFullFactory(CloudHostFactory):
     hypervisor = factory.SubFactory(DataCenterAssetFactory)
+    securityscan = factory.RelatedFactory(SecurityScanFactory, 'base_object')
+
 
     @factory.post_generation
     def post_tags(self, create, extracted, **kwargs):
@@ -141,6 +144,7 @@ class VirtualServerFullFactory(VirtualServerFactory):
     proc2 = factory.RelatedFactory(ProcessorFactory, 'base_object')
     disk1 = factory.RelatedFactory(DiskFactory, 'base_object')
     disk2 = factory.RelatedFactory(DiskFactory, 'base_object')
+    securityscan = factory.RelatedFactory(SecurityScanFactory, 'base_object')
 
     @factory.post_generation
     def post_tags(self, create, extracted, **kwargs):

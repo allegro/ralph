@@ -24,7 +24,6 @@ from ralph.data_center.api.serializers import DataCenterAssetSimpleSerializer
 from ralph.data_center.models import DCHost
 from ralph.lib.api.exceptions import Conflict
 from ralph.security.api import SecurityScanSerializer
-from ralph.security.models import SecurityScan
 from ralph.virtual.admin import VirtualServerAdmin
 from ralph.virtual.models import (
     CloudFlavor,
@@ -247,12 +246,6 @@ class CloudHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
             'ethernet_set',
             queryset=Ethernet.objects.select_related('ipaddress')
         ),
-        Prefetch(
-            'securityscan',
-            queryset=SecurityScan.objects.prefetch_related(
-                'vulnerabilities', 'tags'
-            )
-        ),
     ]
 
     filter_fields = [
@@ -297,12 +290,6 @@ class VirtualServerViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         Prefetch(
             'ethernet_set',
             queryset=Ethernet.objects.select_related('ipaddress')
-        ),
-        Prefetch(
-            'securityscan',
-            queryset=SecurityScan.objects.prefetch_related(
-                'vulnerabilities', 'tags'
-            )
         ),
         # TODO: clusters
     ]

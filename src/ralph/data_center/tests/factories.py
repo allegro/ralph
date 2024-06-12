@@ -38,6 +38,7 @@ from ralph.data_center.models.virtual import (
     VIP,
     VIPProtocol
 )
+from ralph.security.tests.factories import SecurityScanFactory
 
 date_now = datetime.now().date()
 
@@ -70,9 +71,7 @@ class ClusterTypeFactory(DjangoModelFactory):
 
 class ClusterFactory(DjangoModelFactory):
 
-    name = factory.Iterator(
-        ['Databases', 'Applications', 'Switch', 'Load balancer']
-    )
+    name = factory.Sequence(lambda n: f"Cluster {n}")
     type = factory.SubFactory(ClusterTypeFactory)
     configuration_path = factory.SubFactory(ConfigurationClassFactory)
     service_env = factory.SubFactory(ServiceEnvironmentFactory)
@@ -210,6 +209,8 @@ class DataCenterAssetFullFactory(DataCenterAssetFactory):
         'ralph.configuration_management.tests.factories.SCMStatusCheckFactory',
         'base_object',
     )
+
+    securityscan = factory.RelatedFactory(SecurityScanFactory, 'base_object')
 
     @factory.post_generation
     def post_tags(self, create, extracted, **kwargs):
