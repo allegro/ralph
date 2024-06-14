@@ -62,7 +62,7 @@ class PolymorphicQuerySet(models.QuerySet):
     def _subquery_for_children_models(self, result) -> Dict[int, List[object]]:
         result_mapping = defaultdict(list)
         for ct_id, objects_of_type in result:
-            content_type: ContentType = ContentType.objects.get_for_id(id=ct_id)
+            content_type = ContentType.objects.get_for_id(id=ct_id)
             model = content_type.model_class()
             polymorphic_models = getattr(model, "_polymorphic_models", [])
             if not (polymorphic_models and model not in polymorphic_models):
@@ -159,14 +159,18 @@ class PolymorphicQuerySet(models.QuerySet):
     ) -> QuerySet:
         """
         Given a through table we find table and column names to make join
-        We know target column name so, assuming through tables aren't handcrafted, it's easy to find the rest
+        We know target column name so, assuming through tables aren't handcrafted,
+        it's easy to find the rest
         We start with:
         select={
             '_prefetch_related_val_somem2mmodel_id':
                 '''`polymorphic_tests_somem2mmodel_polymorphics`.`somem2mmodel_id`'''
         },
         And want to add missing tables and where clauses:
-        tables=['`polymorphic_tests_somem2mmodel_polymorphics`', '`polymorphic_tests_somem2mmodel`'],
+        tables=[
+            '`polymorphic_tests_somem2mmodel_polymorphics`',
+            '`polymorphic_tests_somem2mmodel`'
+        ],
         where=[
             "`polymorphic_tests_somem2mmodel_polymorphics`.`polymorphicmodelbasetest_id` "
             "= `polymorphic_tests_polymorphicmodelbasetest`.`id`",
@@ -205,7 +209,10 @@ class PolymorphicQuerySet(models.QuerySet):
                 condition_local = (
                     f'{q}{our_table}{q}.{q}id{q} = {q}{through_table_name}{q}.{q}{back_column}{q}'
                 )
-                condition_remote = f'{q}{remote_table}{q}.{q}id{q} = {q}{through_table_name}{q}.{q}{target_column_name}{q}'
+                condition_remote = (
+                    f'{q}{remote_table}{q}.{q}id{q}'
+                    ' = {q}{through_table_name}{q}.{q}{target_column_name}{q}'
+                )
                 query = query.extra(
                     tables=[f'{q}{remote_table}{q}', f'{q}{through_table_name}{q}'],
                     where=[condition_local, condition_remote],
