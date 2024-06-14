@@ -16,6 +16,7 @@ from collections import defaultdict
 from itertools import groupby
 from typing import Dict, Iterable, List, Tuple
 
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core import exceptions
 from django.db import models
@@ -173,6 +174,16 @@ class PolymorphicQuerySet(models.QuerySet):
             "= `polymorphic_tests_somem2mmodel`.`id`",
         ]
         """
+
+        def get_database_quote_type() -> str:
+            db_engine = settings.DATABASES['default']['ENGINE']
+            if 'mysql' in db_engine:
+                return '`'
+            else:
+                return '"'
+        # mysql uses different quotes than postgres
+        q = get_database_quote_type()
+
         through_table_name = through_table._meta.db_table  # type: str
         fields = {
             field for field in through_table._meta.fields
@@ -192,11 +203,11 @@ class PolymorphicQuerySet(models.QuerySet):
                     our_table = field.related_model._meta.db_table
             if our_table and back_column and remote_table:
                 condition_local = (
-                    f'"{our_table}"."id" = "{through_table_name}"."{back_column}"'
+                    f'{q}{our_table}{q}.{q}id{q} = {q}{through_table_name}{q}.{q}{back_column}{q}'
                 )
-                condition_remote = f'"{remote_table}"."id" = "{through_table_name}"."{target_column_name}"'
+                condition_remote = f'{q}{remote_table}{q}.{q}id{q} = {q}{through_table_name}{q}.{q}{target_column_name}{q}'
                 query = query.extra(
-                    tables=[f'"{remote_table}"', f'"{through_table_name}"'],
+                    tables=[f'{q}{remote_table}{q}', f'{q}{through_table_name}{q}'],
                     where=[condition_local, condition_remote],
                 )
         return query
