@@ -119,7 +119,7 @@ class CustomFieldValueQuerySet(models.QuerySet):
         self._prioritize_model_or_instance = model_or_instance
         return self
 
-    def iterator(self):
+    def __iter__(self):
         if self._prioritize:
             # set if to False to not fall into recursion when calling
             # `_prioritize_custom_field_values`
@@ -133,7 +133,7 @@ class CustomFieldValueQuerySet(models.QuerySet):
             ):
                 yield cfv
             return
-        yield from super().iterator()
+        yield from super().__iter__()
 
     def values(self, *fields):
         # TODO: handle values and values_list (need to overwrite `iterator`
@@ -354,7 +354,8 @@ def create_generic_related_manager_with_inheritance(superclass, rel):  # noqa: C
                         # ignore if there is no CustomFieldValue for such
                         # content_type_id and object_id
                         pass
-
+                # import pdb
+                # pdb.set_trace()
                 vals = [
                     v[1] for v in _prioritize_custom_field_values(
                         vals, self.instance, self.content_type
