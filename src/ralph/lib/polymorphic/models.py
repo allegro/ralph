@@ -187,7 +187,6 @@ class PolymorphicQuerySet(models.QuerySet):
                 return '"'
         # mysql uses different quotes than postgres
         q = get_database_quote_type()
-
         through_table_name = through_table._meta.db_table  # type: str
         fields = {
             field for field in through_table._meta.fields
@@ -211,7 +210,7 @@ class PolymorphicQuerySet(models.QuerySet):
                 )
                 condition_remote = (
                     f'{q}{remote_table}{q}.{q}id{q}'
-                    ' = {q}{through_table_name}{q}.{q}{target_column_name}{q}'
+                    f' = {q}{through_table_name}{q}.{q}{target_column_name}{q}'
                 )
                 query = query.extra(
                     tables=[f'{q}{remote_table}{q}', f'{q}{through_table_name}{q}'],
