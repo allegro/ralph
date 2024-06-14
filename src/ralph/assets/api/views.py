@@ -255,7 +255,7 @@ class DCHostFilterSet(NetworkableObjectFilters):
 class DCHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     queryset = (
         BaseObject.polymorphic_objects
-    )  # .prefetch_related('ethernet_set')  # models.BaseObject.polymorphic_objects
+    )
     serializer_class = serializers.DCHostSerializer
     http_method_names = ["get", "options", "head"]
     filter_fields = [
