@@ -79,7 +79,7 @@ class CustomField(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
             "When set, only members of the specified group will be "
             "allowed to set, change or unset values of this custom field "
             "for objects."
-        )
+        ), on_delete=models.CASCADE
     )
     use_as_configuration_variable = models.BooleanField(
         default=False,
@@ -130,7 +130,7 @@ class CustomFieldValue(TimeStampMixin, models.Model):
     # is by-design simple, so it, for example, doesn't allow to filter by range
     # of integers or other Django filters like gte, lte.
     value = models.CharField(max_length=CUSTOM_FIELD_VALUE_MAX_LENGTH)
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField(db_index=True)
     object = fields.GenericForeignKey('content_type', 'object_id')
 

@@ -41,11 +41,12 @@ class ReportTemplate(TimeStampMixin, models.Model):
         upload_to=get_report_file_path,
         blank=False,
     )
-    language = models.ForeignKey(ReportLanguage)
+    language = models.ForeignKey(ReportLanguage, on_delete=models.CASCADE)
     default = models.BooleanField()
     report = models.ForeignKey(
         Report,
         related_name='templates',
+        on_delete=models.CASCADE
     )
 
     class Meta:

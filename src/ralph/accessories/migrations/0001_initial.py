@@ -30,7 +30,7 @@ class Migration(migrations.Migration):
                 ('status', ralph.lib.transitions.fields.TransitionField(default=1, choices=[(1, 'new'), (2, 'in progress'), (3, 'lost'), (4, 'damaged'), (5, 'in use'), (6, 'free'), (7, 'return in progress'), (8, 'liquidated'), (9, 'reserved')], help_text='Accessory status')),
                 ('number_bought', models.IntegerField(verbose_name='number of purchased items')),
                 ('owner', models.ForeignKey(blank=True, null=True, help_text='Accessory owner', related_name='+', on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL)),
-                ('region', models.ForeignKey(to='accounts.Region')),
+                ('region', models.ForeignKey(to='accounts.Region', on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'ordering': ('-modified', '-created'),
@@ -43,8 +43,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
                 ('quantity', models.PositiveIntegerField(default=1)),
-                ('accessory', models.ForeignKey(to='accessories.Accessory')),
-                ('user', models.ForeignKey(related_name='user', to=settings.AUTH_USER_MODEL)),
+                ('accessory', models.ForeignKey(to='accessories.Accessory', on_delete=django.db.models.deletion.CASCADE)),
+                ('user', models.ForeignKey(related_name='user', to=settings.AUTH_USER_MODEL, on_delete=django.db.models.deletion.CASCADE)),
             ],
         ),
         migrations.AddField(

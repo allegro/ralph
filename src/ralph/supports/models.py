@@ -172,7 +172,7 @@ class BaseObjectsSupport(
     AdminAbsoluteUrlMixin,
     models.Model
 ):
-    support = models.ForeignKey(Support)
+    support = models.ForeignKey(Support, on_delete=models.CASCADE)
     baseobject = BaseObjectForeignKey(
         BaseObject,
         verbose_name=_('Asset'),

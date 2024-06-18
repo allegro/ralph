@@ -71,8 +71,8 @@ class Service(
 
     active = models.BooleanField(default=True)
     uid = NullableCharField(max_length=40, unique=True, blank=True, null=True)
-    profit_center = models.ForeignKey(ProfitCenter, null=True, blank=True)
-    business_segment = models.ForeignKey(BusinessSegment, null=True, blank=True)
+    profit_center = models.ForeignKey(ProfitCenter, null=True, blank=True, on_delete=models.CASCADE)
+    business_segment = models.ForeignKey(BusinessSegment, null=True, blank=True, on_delete=models.CASCADE)
     cost_center = models.CharField(max_length=100, blank=True)
     environments = models.ManyToManyField(
         'Environment', through='ServiceEnvironment'
@@ -88,7 +88,7 @@ class Service(
         blank=True,
     )
     support_team = models.ForeignKey(
-        Team, null=True, blank=True, related_name='services',
+        Team, null=True, blank=True, related_name='services', on_delete=models.CASCADE
     )
 
     def __str__(self):
@@ -105,8 +105,8 @@ class ServiceEnvironment(
     BaseObject
 ):
     _allow_in_dashboard = True
-    service = models.ForeignKey(Service)
-    environment = models.ForeignKey(Environment)
+    service = models.ForeignKey(Service, on_delete=models.CASCADE)
+    environment = models.ForeignKey(Environment, on_delete=models.CASCADE)
 
     autocomplete_tooltip_fields = [
         'service__business_owners',
@@ -179,7 +179,7 @@ class AssetModel(
         Manufacturer, on_delete=models.PROTECT, blank=True, null=True
     )
     category = TreeForeignKey(
-        'Category', null=True, related_name='models'
+        'Category', null=True, related_name='models', on_delete=models.CASCADE
     )
     power_consumption = models.PositiveIntegerField(
         verbose_name=_("Power consumption"),
@@ -249,7 +249,8 @@ class Category(
         null=True,
         blank=True,
         related_name='children',
-        db_index=True
+        db_index=True,
+        on_delete=models.CASCADE
     )
     imei_required = models.BooleanField(default=False)
     allow_deployment = models.BooleanField(default=False)

@@ -95,27 +95,31 @@ class Domain(AdminAbsoluteUrlMixin, BaseObject, models.Model):
     )
     business_segment = models.ForeignKey(
         BusinessSegment, blank=True, null=True,
-        help_text=_("Business segment for a domain")
+        help_text=_("Business segment for a domain"),
+        on_delete=models.CASCADE
     )
     business_owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name='domaincontract_business_owner',
         blank=True,
         null=True,
-        help_text=_("Business contact person for a domain")
+        help_text=_("Business contact person for a domain"),
+        on_delete=models.CASCADE
     )
     technical_owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name='domaincontract_technical_owner',
         blank=True,
         null=True,
-        help_text=_("Technical contact person for a domain")
+        help_text=_("Technical contact person for a domain"),
+        on_delete=models.CASCADE
     )
     domain_holder = models.ForeignKey(
         AssetHolder,
         blank=True,
         null=True,
-        help_text=_("Company which receives invoice for the domain")
+        help_text=_("Company which receives invoice for the domain"),
+        on_delete=models.CASCADE
     )
     domain_type = models.PositiveIntegerField(
         default=DomainType.business.id,
@@ -131,11 +135,12 @@ class Domain(AdminAbsoluteUrlMixin, BaseObject, models.Model):
         help_text=_("Website url which website type refers to.")
     )
     domain_category = models.ForeignKey(
-        DomainCategory, blank=True, null=True,
+        DomainCategory, blank=True, null=True, on_delete=models.CASCADE
     )
     dns_provider = models.ForeignKey(
         DNSProvider, blank=True, null=True,
-        help_text=_("Provider which keeps domain's DNS")
+        help_text=_("Provider which keeps domain's DNS"),
+        on_delete=models.CASCADE
     )
     additional_services = models.ManyToManyField(
         DomainProviderAdditionalServices,
@@ -174,9 +179,9 @@ class DomainContract(
     PriceMixin,
     models.Model,
 ):
-    domain = models.ForeignKey(Domain)
+    domain = models.ForeignKey(Domain, on_delete=models.CASCADE)
     expiration_date = models.DateField(null=True, blank=True)
-    registrant = models.ForeignKey('DomainRegistrant', null=True, blank=True)
+    registrant = models.ForeignKey('DomainRegistrant', null=True, blank=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return "{domain_name} - {expiration_date}".format(

@@ -13,3 +13,4 @@ class DemoDataTestCase(TestCase):
         self.assertEqual(DataCenterAsset.objects.count(), 422)
         self.assertEqual(BackOfficeAsset.objects.count(), 280)
         self.assertEqual(get_user_model().objects.count(), 33)
+

@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='accessory',
             name='category',
-            field=mptt.fields.TreeForeignKey(null=True, related_name='+', to='assets.Category'),
+            field=mptt.fields.TreeForeignKey(null=True, related_name='+', to='assets.Category', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.RemoveField(
             model_name='accessory',

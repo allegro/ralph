@@ -3,7 +3,7 @@ import json
 import logging
 from urllib.parse import urlencode
 
-from django.core.urlresolvers import NoReverseMatch, reverse
+from django.urls import NoReverseMatch, reverse
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 

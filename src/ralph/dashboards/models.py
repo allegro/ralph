@@ -186,7 +186,7 @@ class GroupingLabel:
 
 class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
     description = models.CharField('description', max_length=250, blank=True)
-    model = models.ForeignKey(ContentType)
+    model = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     aggregate_type = models.PositiveIntegerField(choices=AggregateType())
     chart_type = models.PositiveIntegerField(choices=ChartType())
     params = JSONField(blank=True)

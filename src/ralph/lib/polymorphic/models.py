@@ -340,7 +340,7 @@ class Polymorphic(models.Model):
                 pass
     """
 
-    content_type = models.ForeignKey(ContentType, blank=True, null=True)
+    content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.CASCADE)
 
     polymorphic_objects = PolymorphicQuerySet.as_manager()
     objects = models.Manager()
