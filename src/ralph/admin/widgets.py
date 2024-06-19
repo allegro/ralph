@@ -291,8 +291,8 @@ class AutocompleteWidget(forms.TextInput):
             'model': str(self.rel_to._meta.verbose_name),
             'data_suggest_url': reverse(
                 'autocomplete-list', kwargs={
-                    'app': self.field.rel.related_model._meta.app_label,
-                    'model': self.field.rel.related_model._meta.model_name,
+                    'app': self.field.remote_field.related_model._meta.app_label,
+                    'model': self.field.remote_field.related_model._meta.model_name,
                     'field': self.field.name
                 }
             ),

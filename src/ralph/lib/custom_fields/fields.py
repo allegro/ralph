@@ -171,7 +171,7 @@ class ReverseGenericRelatedObjectsWithInheritanceDescriptor:
         """
         if instance is None:
             return self
-        rel_model = RelModel(model=self.field.rel.to, field=self.field)
+        rel_model = RelModel(model=self.field.remote_field.model, field=self.field)
         # difference here comparing to Django!
         superclass = rel_model.model.inherited_objects.__class__
         RelatedManager = create_generic_related_manager_with_inheritance(

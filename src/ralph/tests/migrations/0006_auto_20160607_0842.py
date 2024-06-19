@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import django
 from django.db import migrations, models
 import ralph.lib.mixins.models
 import ralph.lib.transitions.fields
@@ -22,14 +23,14 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(max_length=100)),
                 ('counter', models.PositiveSmallIntegerField(default=1)),
                 ('username', models.CharField(max_length=100, blank=True, null=True)),
-                ('foo', models.ForeignKey(blank=True, to='tests.Foo', null=True)),
+                ('foo', models.ForeignKey(blank=True, to='tests.Foo', null=True, on_delete=django.db.models.deletion.CASCADE)),
             ],
             bases=(ralph.lib.mixins.models.AdminAbsoluteUrlMixin, models.Model),
         ),
         migrations.CreateModel(
             name='PolymorphicTestModel',
             fields=[
-                ('baseobject_ptr', models.OneToOneField(auto_created=True, serialize=False, primary_key=True, to='assets.BaseObject', parent_link=True)),
+                ('baseobject_ptr', models.OneToOneField(auto_created=True, serialize=False, primary_key=True, to='assets.BaseObject', parent_link=True, on_delete=django.db.models.deletion.CASCADE)),
                 ('hostname', models.CharField(max_length=50)),
             ],
             options={

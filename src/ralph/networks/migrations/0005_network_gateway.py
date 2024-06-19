@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.contrib.gis.gdal.geomtype.OGRGeomType import django
+import django
 from django.db import migrations, models
 
 

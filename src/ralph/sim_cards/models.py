@@ -33,7 +33,7 @@ from ralph.reports.models import ReportLanguage
 PUK_CODE_VALIDATORS = [
     MinLengthValidator(5),
     RegexValidator(
-        regex='^\d+$',
+        regex=r'^\d+$',
         message=_('Required numeric characters only.')
     ),
 ]
@@ -42,7 +42,7 @@ PUK_CODE_VALIDATORS = [
 PIN_CODE_VALIDATORS = [
     MinLengthValidator(4),
     RegexValidator(
-        regex='^\d+$',
+        regex=r'^\d+$',
         message=_('Required numeric characters only.')
     ),
 ]
@@ -105,7 +105,7 @@ class SIMCard(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model,
             MinLengthValidator(1),
             MaxLengthValidator(22),
             RegexValidator(
-                regex='^\d+$',
+                regex=r'^\d+$',
                 message=_('Required numeric characters only.'),
             )
         ]
@@ -116,7 +116,7 @@ class SIMCard(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model,
             MinLengthValidator(1),
             MaxLengthValidator(16),
             RegexValidator(
-                regex='^\+\d+$',
+                regex=r'^\+\d+$',
                 message='Phone number must have +2920181234 format.'
             )
         ]
