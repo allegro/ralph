@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('model_name', models.CharField(null=True, verbose_name='model name', blank=True, max_length=255)),
                 ('speed', models.PositiveIntegerField(null=True, verbose_name='speed (MHz)', blank=True)),
                 ('cores', models.PositiveIntegerField(null=True, blank=True)),
-                ('base_object', models.ForeignKey(related_name='processor_set', to='assets.BaseObject')),
+                ('base_object', models.ForeignKey(related_name='processor_set', to='assets.BaseObject', on_delete=django.db.models.deletion.CASCADE)),
                 ('model', models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, blank=True, null=True, verbose_name='model', to='assets.ComponentModel', default=None)),
             ],
             options={

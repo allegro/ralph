@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import django
 from django.db import migrations, models
 
 
@@ -15,7 +16,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='dhcpserver',
             name='network_environment',
-            field=models.ForeignKey(to='networks.NetworkEnvironment', null=True, blank=True, default=None),
+            field=models.ForeignKey(to='networks.NetworkEnvironment', null=True, blank=True, default=None, on_delete=django.db.models.deletion.CASCADE),
             preserve_default=False,
         ),
     ]

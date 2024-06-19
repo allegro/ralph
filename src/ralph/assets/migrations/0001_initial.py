@@ -192,8 +192,8 @@ class Migration(migrations.Migration):
                 ('uid', ralph.lib.mixins.fields.NullableCharField(blank=True, null=True, unique=True, max_length=40)),
                 ('cost_center', models.CharField(blank=True, max_length=100)),
                 ('business_owners', models.ManyToManyField(blank=True, to=settings.AUTH_USER_MODEL, related_name='services_business_owner')),
-                ('profit_center', models.ForeignKey(to='assets.ProfitCenter', blank=True, null=True)),
-                ('support_team', models.ForeignKey(to='accounts.Team', blank=True, null=True, related_name='services')),
+                ('profit_center', models.ForeignKey(to='assets.ProfitCenter', blank=True, null=True, on_delete=django.db.models.deletion.CASCADE)),
+                ('support_team', models.ForeignKey(to='accounts.Team', blank=True, null=True, related_name='services', on_delete=django.db.models.deletion.CASCADE)),
                 ('technical_owners', models.ManyToManyField(blank=True, to=settings.AUTH_USER_MODEL, related_name='services_technical_owner')),
             ],
             options={
@@ -203,7 +203,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Asset',
             fields=[
-                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', auto_created=True, parent_link=True, serialize=False)),
+                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', auto_created=True, parent_link=True, serialize=False, on_delete=django.db.models.deletion.CASCADE)),
                 ('hostname', models.CharField(verbose_name='hostname', blank=True, default=None, null=True, max_length=255)),
                 ('sn', ralph.lib.mixins.fields.NullableCharField(verbose_name='SN', blank=True, null=True, unique=True, max_length=200)),
                 ('barcode', ralph.lib.mixins.fields.NullableCharField(default=None, unique=True, max_length=200, verbose_name='barcode', blank=True, null=True)),
@@ -228,16 +228,16 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='ServiceEnvironment',
             fields=[
-                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', auto_created=True, parent_link=True, serialize=False)),
-                ('environment', models.ForeignKey(to='assets.Environment')),
-                ('service', models.ForeignKey(to='assets.Service')),
+                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', auto_created=True, parent_link=True, serialize=False, on_delete=django.db.models.deletion.CASCADE)),
+                ('environment', models.ForeignKey(to='assets.Environment', on_delete=django.db.models.deletion.CASCADE)),
+                ('service', models.ForeignKey(to='assets.Service', on_delete=django.db.models.deletion.CASCADE)),
             ],
             bases=('assets.baseobject',),
         ),
         migrations.AddField(
             model_name='genericcomponent',
             name='base_object',
-            field=models.ForeignKey(to='assets.BaseObject', related_name='genericcomponent'),
+            field=models.ForeignKey(to='assets.BaseObject', related_name='genericcomponent', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='genericcomponent',
@@ -251,12 +251,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='baseobject',
             name='content_type',
-            field=models.ForeignKey(to='contenttypes.ContentType', blank=True, null=True),
+            field=models.ForeignKey(to='contenttypes.ContentType', blank=True, null=True, on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='baseobject',
             name='parent',
-            field=models.ForeignKey(to='assets.BaseObject', blank=True, null=True, related_name='children'),
+            field=models.ForeignKey(to='assets.BaseObject', blank=True, null=True, related_name='children', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='baseobject',
@@ -266,7 +266,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='assetmodel',
             name='category',
-            field=mptt.fields.TreeForeignKey(to='assets.Category', null=True, related_name='models'),
+            field=mptt.fields.TreeForeignKey(to='assets.Category', null=True, related_name='models', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='assetmodel',
@@ -285,12 +285,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='baseobject',
             name='service_env',
-            field=models.ForeignKey(to='assets.ServiceEnvironment', null=True),
+            field=models.ForeignKey(to='assets.ServiceEnvironment', null=True, on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='asset',
             name='model',
-            field=models.ForeignKey(to='assets.AssetModel', related_name='assets'),
+            field=models.ForeignKey(to='assets.AssetModel', related_name='assets', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='asset',

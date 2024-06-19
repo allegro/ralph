@@ -48,7 +48,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='network',
             name='parent',
-            field=mptt.fields.TreeForeignKey(blank=True, null=True, related_name='children', to='data_center.Network', editable=False),
+            field=mptt.fields.TreeForeignKey(blank=True, null=True, related_name='children', to='data_center.Network', editable=False, on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='network',

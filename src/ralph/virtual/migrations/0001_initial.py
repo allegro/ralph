@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import django
 from django.db import migrations, models
 
 
@@ -16,7 +17,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='CloudProject',
             fields=[
-                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', auto_created=True, parent_link=True, serialize=False)),
+                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', auto_created=True, parent_link=True, serialize=False, on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -26,7 +27,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='VirtualServer',
             fields=[
-                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', auto_created=True, parent_link=True, serialize=False)),
+                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', auto_created=True, parent_link=True, serialize=False, on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'verbose_name': 'Virtual server (VM)',

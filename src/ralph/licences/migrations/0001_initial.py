@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Licence',
             fields=[
-                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', auto_created=True, parent_link=True, serialize=False)),
+                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', auto_created=True, parent_link=True, serialize=False, on_delete=django.db.models.deletion.CASCADE)),
                 ('number_bought', models.IntegerField(verbose_name='Number of purchased items')),
                 ('sn', models.TextField(verbose_name='SN / Key', blank=True, null=True)),
                 ('niw', models.CharField(verbose_name='Inventory number', default='N/A', unique=True, max_length=200)),
@@ -62,8 +62,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('quantity', models.PositiveIntegerField(default=1)),
-                ('licence', models.ForeignKey(to='licences.Licence')),
-                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='licences')),
+                ('licence', models.ForeignKey(to='licences.Licence', on_delete=django.db.models.deletion.CASCADE)),
+                ('user', models.ForeignKey(to=settings.AUTH_USER_MODEL, related_name='licences', on_delete=django.db.models.deletion.CASCADE)),
             ],
         ),
         migrations.CreateModel(
@@ -90,7 +90,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='licence',
             name='office_infrastructure',
-            field=models.ForeignKey(to='back_office.OfficeInfrastructure', blank=True, null=True),
+            field=models.ForeignKey(to='back_office.OfficeInfrastructure', blank=True, null=True, on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='licence',
@@ -100,7 +100,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='licence',
             name='region',
-            field=models.ForeignKey(to='accounts.Region'),
+            field=models.ForeignKey(to='accounts.Region', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='licence',
@@ -115,12 +115,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='baseobjectlicence',
             name='base_object',
-            field=models.ForeignKey(verbose_name='Asset', to='assets.BaseObject', related_name='licences'),
+            field=models.ForeignKey(verbose_name='Asset', to='assets.BaseObject', related_name='licences', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='baseobjectlicence',
             name='licence',
-            field=models.ForeignKey(to='licences.Licence'),
+            field=models.ForeignKey(to='licences.Licence', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AlterUniqueTogether(
             name='licenceuser',

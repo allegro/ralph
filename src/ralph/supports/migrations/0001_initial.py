@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Support',
             fields=[
-                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', auto_created=True, parent_link=True, serialize=False)),
+                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', auto_created=True, parent_link=True, serialize=False, on_delete=django.db.models.deletion.CASCADE)),
                 ('name', models.CharField(verbose_name='name', max_length=75)),
                 ('asset_type', models.PositiveSmallIntegerField(choices=[(1, 'back office'), (2, 'data center'), (3, 'part'), (4, 'all')], default=4)),
                 ('contract_id', models.CharField(max_length=50)),
@@ -38,7 +38,7 @@ class Migration(migrations.Migration):
                 ('base_objects', models.ManyToManyField(to='assets.BaseObject', related_name='supports')),
                 ('budget_info', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, default=None, to='assets.BudgetInfo', blank=True, null=True)),
                 ('property_of', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='assets.AssetHolder', blank=True, null=True)),
-                ('region', models.ForeignKey(to='accounts.Region')),
+                ('region', models.ForeignKey(to='accounts.Region', on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'abstract': False,

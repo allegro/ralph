@@ -41,7 +41,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='network',
             name='service_env',
-            field=models.ForeignKey(to='assets.ServiceEnvironment', related_name='networks', default=None, blank=True, null=True),
+            field=models.ForeignKey(to='assets.ServiceEnvironment', related_name='networks', default=None, blank=True, null=True, on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='networkenvironment',

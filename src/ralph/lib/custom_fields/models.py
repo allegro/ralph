@@ -9,7 +9,7 @@ from django.contrib.contenttypes import fields
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models.fields.related import add_lazy_relation
+from django.db.models.fields.related import lazy_related_operation
 from django.utils.text import capfirst, slugify
 from django.utils.translation import ugettext_lazy as _
 
@@ -196,9 +196,10 @@ class CustomFieldMeta(models.base.ModelBase):
         # `add_custom_field_inheritance` - it will be called lazy, only when
         # model will be loaded
         for field_path, model in new_cls.custom_fields_inheritance.items():
-            add_lazy_relation(
-                new_cls, field_path, model, add_custom_field_inheritance
-            )
+            def function(local, related, field):
+                return add_custom_field_inheritance(field, related, local)
+
+            lazy_related_operation(function, new_cls, model, field=field_path)
         return new_cls
 
 

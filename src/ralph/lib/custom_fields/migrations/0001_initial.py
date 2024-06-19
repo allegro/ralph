@@ -37,7 +37,7 @@ class Migration(migrations.Migration):
                 ('modified', models.DateTimeField(verbose_name='last modified', auto_now=True)),
                 ('value', models.CharField(max_length=1000)),
                 ('object_id', models.PositiveIntegerField()),
-                ('content_type', models.ForeignKey(to='contenttypes.ContentType')),
+                ('content_type', models.ForeignKey(to='contenttypes.ContentType', on_delete=django.db.models.deletion.CASCADE)),
                 ('custom_field', models.ForeignKey(verbose_name='key', on_delete=django.db.models.deletion.PROTECT, to='custom_fields.CustomField')),
             ],
         ),
