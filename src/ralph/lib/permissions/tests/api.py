@@ -27,6 +27,7 @@ class ArticleSerializer(
 ):
     class Meta:
         model = Article
+        fields = "__all__"
 
 
 class ArticleViewSet(viewsets.ModelViewSet):

@@ -28,6 +28,7 @@ class LicenceUserSerializer(RalphAPISerializer):
 
     class Meta:
         model = LicenceUser
+        fields = "__all__"
 
 
 class BaseObjectLicenceSerializer(
@@ -37,6 +38,7 @@ class BaseObjectLicenceSerializer(
 
     class Meta:
         model = BaseObjectLicence
+        fields = "__all__"
 
     def validate(self, data):
         base_object_licence = BaseObjectLicence(**data)

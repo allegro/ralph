@@ -8,6 +8,7 @@ from django.contrib.admin.views.main import ChangeList, ORDER_VAR
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Prefetch, Q
 from django.urls import reverse
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import filters
@@ -727,12 +728,12 @@ class DCHostAdmin(
     def _initialize_search_form(self, extra_context, fields_from_model=True):
         return super()._initialize_search_form(extra_context)
 
+    @mark_safe
     def show_location(self, obj):
         if hasattr(obj, 'get_location'):
             return ' / '.join(obj.get_location())
         return ''
     show_location.short_description = _('Location')
-    show_location.allow_tags = True
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)

@@ -169,7 +169,7 @@ class AutocompleteList(SuggestView):
             return HttpResponseBadRequest('Model not found')
 
         self.field = model._meta.get_field(kwargs['field'])
-        self.model = self.field.rel.to
+        self.model = self.field.remote_field.model
         self.query = request.GET.get(QUERY_PARAM, None)
         if not self.query:
             return HttpResponseBadRequest()

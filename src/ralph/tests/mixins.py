@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
-from imp import reload
 from importlib import import_module
+from importlib import reload
 
 from django.conf import settings
 from django.core.urlresolvers import clear_url_caches

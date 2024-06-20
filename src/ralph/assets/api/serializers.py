@@ -61,6 +61,7 @@ class OwnersFromServiceEnvSerializerMixin(RalphAPISerializer):
 class BusinessSegmentSerializer(RalphAPISerializer):
     class Meta:
         model = BusinessSegment
+        fields = "__all__"
 
 
 class BudgetInfoSerializer(RalphAPISerializer):
@@ -78,6 +79,7 @@ class ProfitCenterSerializer(RalphAPISerializer):
 class EnvironmentSerializer(RalphAPISerializer):
     class Meta:
         model = Environment
+        fields = "__all__"
 
 
 class SaveServiceSerializer(
@@ -115,6 +117,7 @@ class SaveServiceSerializer(
 
     class Meta:
         model = Service
+        fields = "__all__"
 
     @transaction.atomic
     def _save_environments(self, instance, environments):
@@ -161,6 +164,7 @@ class ServiceSerializer(RalphAPISerializer):
     class Meta:
         model = Service
         depth = 1
+        fields = "__all__"
 
 
 class ServiceEnvironmentSimpleSerializer(RalphAPISerializer):
@@ -200,6 +204,7 @@ class ServiceEnvironmentSerializer(
 class ManufacturerSerializer(RalphAPISerializer):
     class Meta:
         model = Manufacturer
+        fields = "__all__"
 
 
 class ManufacturerKindSerializer(RalphAPISerializer):
@@ -215,6 +220,7 @@ class CategorySerializer(RalphAPISerializer):
 
     class Meta:
         model = Category
+        fields = "__all__"
 
 
 class AssetModelSerializer(WithCustomFieldsSerializerMixin, RalphAPISerializer):
@@ -237,6 +243,7 @@ class AssetModelSaveSerializer(RalphAPISaveSerializer):
 
     class Meta:
         model = AssetModel
+        fields = "__all__"
 
 
 class BaseObjectPolymorphicSerializer(
@@ -351,6 +358,7 @@ class EthernetSerializer(EthernetSimpleSerializer):
     class Meta:
         model = Ethernet
         depth = 1
+        fields = "__all__"
 
 
 class MemorySimpleSerializer(RalphAPISerializer):

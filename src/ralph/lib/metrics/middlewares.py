@@ -7,7 +7,7 @@ from resource import getrusage, RUSAGE_SELF
 
 from django.conf import settings
 from django.db.backends.utils import CursorWrapper
-
+from django.utils.deprecation import MiddlewareMixin
 from .collector import statsd
 
 PROCESSING_TIME_METRIC_PREFIX = getattr(
@@ -110,12 +110,12 @@ def get_per_query_stat(query_stats):
     return "\n".join(str(stat) for stat in query_stats)
 
 
-class RequestMetricsMiddleware(object):
+class RequestMetricsMiddleware(MiddlewareMixin):
     """
     Middleware reporting request metrics (such as processing time) to statsd
 
     How to use it:
-    * add this middleware at the beginning of MIDDLEWARE_CLASSES in your
+    * add this middleware at the beginning of MIDDLEWARE in your
       settings
     * configure statsd in your settings:
       http://statsd.readthedocs.io/en/v3.2.1/configure.html#in-django

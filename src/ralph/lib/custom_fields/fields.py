@@ -67,7 +67,7 @@ def _get_content_type_from_field_path(model, field_path):
     if isinstance(field, OneToOneRel):
         related_model = field.related_model
     else:
-        related_model = field.rel.to
+        related_model = field.remote_field.model
     content_type = ContentType.objects.get_for_model(related_model)
     return content_type
 

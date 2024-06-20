@@ -41,7 +41,7 @@ class Manufacturer(AdminAbsoluteUrlMixin, models.Model):
 class Car(AdminAbsoluteUrlMixin, models.Model):
     name = models.CharField(max_length=50)
     year = models.PositiveSmallIntegerField()
-    manufacturer = models.ForeignKey(Manufacturer)
+    manufacturer = models.ForeignKey(Manufacturer, on_delete=models.CASCADE)
     manufacturer._autocomplete = False
     manufacturer._filter_title = 'test'
     foos = models.ManyToManyField(Foo)
@@ -52,7 +52,7 @@ class Car(AdminAbsoluteUrlMixin, models.Model):
 
 
 class Car2(AdminAbsoluteUrlMixin, models.Model):
-    manufacturer = models.ForeignKey(Manufacturer)
+    manufacturer = models.ForeignKey(Manufacturer, on_delete=models.CASCADE)
 
 
 class Bar(AdminAbsoluteUrlMixin, PriceMixin, models.Model):
@@ -118,7 +118,7 @@ class AsyncOrder(
     name = models.CharField(max_length=100)
     counter = models.PositiveSmallIntegerField(default=1)
     username = models.CharField(max_length=100, null=True, blank=True)
-    foo = models.ForeignKey(Foo, null=True, blank=True)
+    foo = models.ForeignKey(Foo, null=True, blank=True, on_delete=models.CASCADE)
 
     @classmethod
     @transition_action(

@@ -16,6 +16,7 @@ class VulnerabilitySerializer(RalphAPISerializer):
     class Meta:
         model = Vulnerability
         depth = 1
+        fields = "__all__"
 
 
 class VulnerabilityViewSet(RalphAPIViewSet):
@@ -31,12 +32,14 @@ class SecurityScanSerializer(RalphAPISerializer):
 
     class Meta:
         model = SecurityScan
+        fields = "__all__"
 
 
 class SaveSecurityScanSerializer(RalphAPISaveSerializer):
 
     class Meta:
         model = SecurityScan
+        fields = "__all__"
 
     def to_internal_value(self, data):
         errors = OrderedDict()

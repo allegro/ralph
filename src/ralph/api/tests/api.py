@@ -19,6 +19,7 @@ class FooSerializer(RalphAPISerializer):
                 'view_name': 'test-ralph-api:foo-detail'
             }
         }
+        fields = "__all__"
 
 
 class BarSerializer(RalphAPISerializer):

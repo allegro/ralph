@@ -46,8 +46,8 @@ class OpenstackModelsTestCase(RalphAPITestCase):
             self.service_env.append(ServiceEnvironment.objects.create(
                 service=self.services[i], environment=self.envs[i]
             ))
-        self.service_env[0].service.business_owners = [self.user1]
-        self.service_env[0].service.technical_owners = [self.user2]
+        self.service_env[0].service.business_owners.set([self.user1])
+        self.service_env[0].service.technical_owners.set([self.user2])
         self.service_env[0].save()
         self.cloud_provider = CloudProviderFactory(name='openstack')
         self.cloud_flavor = CloudFlavorFactory()
@@ -443,8 +443,8 @@ class VirtualServerAPITestCase(RalphAPITestCase):
         )
         self.virtual_server.parent.service_env.service.uid = 's-12345'
         self.virtual_server.parent.service_env.service.save()
-        self.virtual_server.service_env.service.business_owners = [self.user1]
-        self.virtual_server.service_env.service.technical_owners = [self.user2]
+        self.virtual_server.service_env.service.business_owners.set([self.user1])
+        self.virtual_server.service_env.service.technical_owners.set([self.user2])
         self.virtual_server.service_env.save()
         self.virtual_server2 = VirtualServerFullFactory()
         self.ip = IPAddressFactory(

@@ -87,6 +87,7 @@ class ServerRoomSerializer(RalphAPISerializer):
 class AccessorySerializer(RalphAPISerializer):
     class Meta:
         model = Accessory
+        fields = "__all__"
 
 
 class RackAccessorySerializer(RalphAPISerializer):
@@ -94,6 +95,7 @@ class RackAccessorySerializer(RalphAPISerializer):
 
     class Meta:
         model = RackAccessory
+        fields = "__all__"
 
 
 class SimpleRackSerializer(RalphAPISerializer):
@@ -119,6 +121,7 @@ class DataCenterAssetSimpleSerializer(RalphAPISerializer):
         model = DataCenterAsset
         fields = ['hostname', 'url']
         _skip_tags_field = True
+        fields = "__all__"
 
 
 class DataCenterAssetSerializer(ComponentSerializerMixin, AssetSerializer):
@@ -177,8 +180,9 @@ class DataCenterAssetSaveSerializer(RalphAPISaveSerializer):
         queryset=Rack.objects.all()
     )
 
-    class Meta(object):
+    class Meta:
         model = DataCenterAsset
+        fields = "__all__"
 
 
 class DatabaseSerializer(BaseObjectSerializer):

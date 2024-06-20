@@ -2,6 +2,7 @@
 from django import forms
 from django.apps import apps
 from django.conf import settings
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.decorators import register
@@ -283,6 +284,7 @@ class BackOfficeAssetAdmin(
             )
         return multi_add_fields
 
+    @mark_safe
     def get_user(self, obj):
         if not obj.user_id:
             return '-'
@@ -294,7 +296,6 @@ class BackOfficeAssetAdmin(
         )
     get_user.short_description = _('User')
     get_user.admin_order_field = 'get_user'
-    get_user.allow_tags = True
 
 
 @register(Warehouse)

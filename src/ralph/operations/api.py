@@ -50,6 +50,7 @@ class OperationSerializer(RalphAPISerializer):
     class Meta:
         model = Operation
         depth = 1
+        fields = "__all__"
 
 
 class OperationViewSet(RalphAPIViewSet):

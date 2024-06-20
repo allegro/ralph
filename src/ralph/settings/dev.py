@@ -12,7 +12,7 @@ INSTALLED_APPS = INSTALLED_APPS + (
     'django_extensions',
 )
 
-MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES + (
+MIDDLEWARE = MIDDLEWARE + (
     'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
 
@@ -47,7 +47,7 @@ for logger in LOGGING['loggers']:
 
 if bool_from_env('RALPH_PROFILING'):
     SILKY_PYTHON_PROFILER = True
-    MIDDLEWARE_CLASSES = MIDDLEWARE_CLASSES + (
+    MIDDLEWARE = MIDDLEWARE + (
         'silk.middleware.SilkyMiddleware',
     )
     INSTALLED_APPS = INSTALLED_APPS + (

@@ -378,7 +378,7 @@ class RalphGroupAdmin(EditPermissionsFormMixin, GroupAdmin, RalphAdmin):
 
     def formfield_for_manytomany(self, db_field, request=None, **kwargs):
         if db_field.name == 'permissions':
-            qs = kwargs.get('queryset', db_field.rel.to.objects)
+            qs = kwargs.get('queryset', db_field.remote_field.model.objects)
             if qs:
                 qs = self._simplify_permissions(qs)
             kwargs['queryset'] = qs

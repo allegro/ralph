@@ -215,7 +215,7 @@ class StockTakingTests(TestCase, ClientMixin):
             }, follow=True
         )
 
-        self.assertEquals(response.status_code, 200)
+        self.assertEqual(response.status_code, 200)
         for t in self.tags:
             self.assertIn(t, self.asset.tags.names())
 
@@ -229,7 +229,7 @@ class StockTakingTests(TestCase, ClientMixin):
                 'answer': 'yes'
             }, follow=True
         )
-        self.assertEquals(response.status_code, 403)
+        self.assertEqual(response.status_code, 403)
 
 
 class RalphUserAdminTests(TestCase, ClientMixin):

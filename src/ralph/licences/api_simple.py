@@ -21,6 +21,7 @@ class SimpleLicenceUserSerializer(RalphAPISerializer):
 
     class Meta:
         model = LicenceUser
+        fields = "__all__"
 
 
 class SimpleBaseObjectLicenceSerializer(RalphAPISerializer):
@@ -28,3 +29,4 @@ class SimpleBaseObjectLicenceSerializer(RalphAPISerializer):
 
     class Meta:
         model = BaseObjectLicence
+        fields = "__all__"

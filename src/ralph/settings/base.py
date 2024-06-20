@@ -112,7 +112,7 @@ INSTALLED_APPS = (
     'djmoney',
 )
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -122,8 +122,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'threadlocals.middleware.ThreadLocalMiddleware',
-    'ralph.lib.error_handling.middleware.OperationalErrorHandlerMiddleware',
+    'ralph.lib.threadlocal.middleware.ThreadLocalMiddleware',
     'ralph.lib.metrics.middlewares.RequestMetricsMiddleware'
 )
 

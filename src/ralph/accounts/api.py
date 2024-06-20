@@ -72,6 +72,7 @@ class RalphUserViewSet(RalphAPIViewSet):
 class RegionSerializer(RalphAPISerializer):
     class Meta:
         model = Region
+        fields = "__all__"
 
 
 class RegionViewSet(RalphAPIViewSet):

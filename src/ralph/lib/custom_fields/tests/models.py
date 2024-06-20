@@ -31,14 +31,14 @@ class ModelA(
 class ModelB(
     CustomFieldAdminAbsoluteUrlMixin, WithCustomFieldsMixin, models.Model
 ):
-    a = models.ForeignKey(ModelA, null=False)
+    a = models.ForeignKey(ModelA, null=False, on_delete=models.CASCADE)
 
 
 class SomeModel(
     CustomFieldAdminAbsoluteUrlMixin, WithCustomFieldsMixin, models.Model
 ):
     name = models.CharField(max_length=20)
-    b = models.ForeignKey(ModelB, null=True, blank=True)
+    b = models.ForeignKey(ModelB, null=True, blank=True, on_delete=models.CASCADE)
     custom_fields_inheritance = OrderedDict([
         ('b', 'ModelB'),
         ('b__a', 'ModelA'),

@@ -44,9 +44,8 @@ class DataCenterAssetAPITests(RalphAPITestCase):
             model=self.model,
             service_env__environment__name='some_env'
         )
-        self.dc_asset.service_env.service.business_owners = [self.user1]
-        self.dc_asset.service_env.service.technical_owners = [self.user2]
-        self.dc_asset.service_env.save()
+        self.dc_asset.service_env.service.business_owners.set([self.user1])
+        self.dc_asset.service_env.service.technical_owners.set([self.user2])
         self.ip = IPAddressFactory(
             ethernet=EthernetFactory(base_object=self.dc_asset)
         )
@@ -509,9 +508,8 @@ class ClusterAPITests(RalphAPITestCase):
             is_master=True
         )
         self.cluster_2 = ClusterFactory()
-        self.cluster_1.service_env.service.business_owners = [self.user1]
-        self.cluster_1.service_env.service.technical_owners = [self.user2]
-        self.cluster_1.service_env.save()
+        self.cluster_1.service_env.service.business_owners.set([self.user1])
+        self.cluster_1.service_env.service.technical_owners.set([self.user2])
         self.cluster_1.management_ip = '10.20.30.40'
 
     def test_create_cluster(self):

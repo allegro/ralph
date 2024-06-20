@@ -45,6 +45,7 @@ class NetworkSerializer(RalphAPISerializer):
     class Meta:
         model = Network
         depth = 1
+        fields = "__all__"
 
 
 class IPAddressSerializer(RalphAPISerializer):
@@ -60,6 +61,7 @@ class IPAddressSerializer(RalphAPISerializer):
 class IPAddressSaveSerializer(RalphAPISaveSerializer):
     class Meta:
         model = IPAddress
+        fields = "__all__"
 
     def validate_dhcp_expose(self, value):
         """

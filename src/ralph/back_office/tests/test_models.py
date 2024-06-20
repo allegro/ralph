@@ -244,7 +244,7 @@ class TestBackOfficeAsset(RalphTestCase):
 
     def test_get_autocomplete_queryset(self):
         queryset = BackOfficeAsset.get_autocomplete_queryset()
-        self.assertEquals(1, queryset.count())
+        self.assertEqual(1, queryset.count())
 
     def test_buyout_date(self):
         self.assertEqual(
@@ -490,7 +490,7 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             target=BackOfficeAssetStatus.used.id,
             actions=['assign_hostname_if_empty_or_country_not_match']
         )
-        self.assertEquals(self.bo_asset.hostname, hostname)
+        self.assertEqual(self.bo_asset.hostname, hostname)
 
         run_field_transition(
             [self.bo_asset],
@@ -517,7 +517,7 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             target=BackOfficeAssetStatus.used.id,
             actions=['assign_hostname_if_empty_or_country_not_match']
         )
-        self.assertEquals(self.bo_asset.hostname, hostname)
+        self.assertEqual(self.bo_asset.hostname, hostname)
 
         run_field_transition(
             [self.bo_asset],
@@ -544,7 +544,7 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             target=BackOfficeAssetStatus.used.id,
             actions=['assign_hostname_if_empty_or_country_not_match']
         )
-        self.assertEquals(self.bo_asset.hostname, hostname)
+        self.assertEqual(self.bo_asset.hostname, hostname)
 
         run_field_transition(
             [self.bo_asset],
@@ -554,7 +554,7 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             requester=self.request.user
         )
 
-        self.assertEquals(self.bo_asset.hostname, hostname)
+        self.assertEqual(self.bo_asset.hostname, hostname)
 
     def test_return_report_when_user_not_assigned(self):
         _, transition, _ = self._create_transition(

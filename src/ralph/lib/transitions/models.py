@@ -119,7 +119,7 @@ def _get_history_dict(data, instance, runned_funcs):
             try:
                 field = get_field_by_relation_path(instance, k)
                 if isinstance(field, models.ForeignKey):
-                    value = str(field.rel.to.objects.get(pk=v))
+                    value = str(field.remote_field.model.objects.get(pk=v))
                     field_name = field.verbose_name
                 elif isinstance(field, models.ManyToOneRel):
                     value = ', '.join(map(str, v))

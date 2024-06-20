@@ -68,7 +68,7 @@ class SimpleNetworkTest(RalphTestCase):
         ('net2', 17),
     )
     def test_get_netmask(self, net, netmask):
-        self.assertEquals(getattr(self, net).netmask, netmask)
+        self.assertEqual(getattr(self, net).netmask, netmask)
 
     @unpack
     @data(
@@ -78,7 +78,7 @@ class SimpleNetworkTest(RalphTestCase):
     def test_get_subnetworks(self, net, correct):
         net_obj = getattr(self, net)
         res = Network.objects.get(pk=net_obj.pk).get_subnetworks()
-        self.assertEquals(
+        self.assertEqual(
             list(res), list(Network.objects.filter(name__in=correct))
         )
 
@@ -102,7 +102,7 @@ class NetworkTest(RalphTestCase):
     def test_ip_is_public_or_no(self, ip, is_public):
         new_ip_address = IPAddress(address=ip)
         new_ip_address.save()
-        self.assertEquals(new_ip_address.is_public, is_public)
+        self.assertEqual(new_ip_address.is_public, is_public)
 
     @unpack
     @data(

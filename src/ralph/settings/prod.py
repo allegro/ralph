@@ -75,9 +75,9 @@ if bool_from_env('COLLECT_METRICS'):
     STATSD_PORT = os.environ.get('STATSD_PORT')
     STATSD_PREFIX = os.environ.get('STATSD_PREFIX')
     STATSD_MAXUDPSIZE = int(os.environ.get('STATSD_MAXUDPSIZE', 512))
-    MIDDLEWARE_CLASSES = (
+    MIDDLEWARE = (
         'ralph.lib.metrics.middlewares.RequestMetricsMiddleware',
-    ) + MIDDLEWARE_CLASSES
+    ) + MIDDLEWARE
 
     ALLOW_PUSH_GRAPHS_DATA_TO_STATSD = bool_from_env(
         'ALLOW_PUSH_GRAPHS_DATA_TO_STATSD'

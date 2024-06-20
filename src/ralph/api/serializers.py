@@ -79,7 +79,7 @@ class DeclaredFieldsMetaclass(serializers.SerializerMetaclass):
 
         if model and issubclass(model, AdminAbsoluteUrlMixin):
             attrs['ui_url'] = AbsoluteUrlField()
-            if fields:
+            if fields and isinstance(fields, (list, tuple)):
                 meta.fields += ('ui_url',)
         return super().__new__(cls, name, bases, attrs)
 

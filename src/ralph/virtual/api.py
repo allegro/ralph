@@ -132,16 +132,19 @@ class CloudProjectSerializer(BaseObjectSerializer):
 class CloudImageSerializer(RalphAPISerializer):
     class Meta:
         model = CloudImage
+        fields = "__all__"
 
 
 class CloudProviderSerializer(RalphAPISerializer):
     class Meta:
         model = CloudProvider
+        fields = "__all__"
 
 
 class VirtualServerTypeSerializer(RalphAPISerializer):
     class Meta:
         model = VirtualServerType
+        fields = "__all__"
 
 
 class VirtualServerSimpleSerializer(BaseObjectSerializer):
@@ -152,7 +155,6 @@ class VirtualServerSimpleSerializer(BaseObjectSerializer):
         exclude = None
 
 
-# TODO: select related
 class VirtualServerSerializer(ComponentSerializerMixin, BaseObjectSerializer):
     type = VirtualServerTypeSerializer()
     # TODO: cast BaseObject to DataCenterAsset for hypervisor field
