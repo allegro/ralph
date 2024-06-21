@@ -121,7 +121,6 @@ class DataCenterAssetSimpleSerializer(RalphAPISerializer):
         model = DataCenterAsset
         fields = ['hostname', 'url']
         _skip_tags_field = True
-        fields = "__all__"
 
 
 class DataCenterAssetSerializer(ComponentSerializerMixin, AssetSerializer):
