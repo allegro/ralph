@@ -72,7 +72,12 @@ class Service(
     active = models.BooleanField(default=True)
     uid = NullableCharField(max_length=40, unique=True, blank=True, null=True)
     profit_center = models.ForeignKey(ProfitCenter, null=True, blank=True, on_delete=models.CASCADE)
-    business_segment = models.ForeignKey(BusinessSegment, null=True, blank=True, on_delete=models.CASCADE)
+    business_segment = models.ForeignKey(
+        BusinessSegment,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE
+    )
     cost_center = models.CharField(max_length=100, blank=True)
     environments = models.ManyToManyField(
         'Environment', through='ServiceEnvironment'

@@ -203,7 +203,11 @@ class CloudHost(PreviousStateMixin,
             pass
         super(CloudHost, self).save(*args, **kwargs)
 
-    cloudflavor = models.ForeignKey(CloudFlavor, verbose_name='Instance Type', on_delete=models.CASCADE)
+    cloudflavor = models.ForeignKey(
+        CloudFlavor,
+        verbose_name='Instance Type',
+        on_delete=models.CASCADE
+    )
     cloudprovider = models.ForeignKey(CloudProvider, on_delete=models.CASCADE)
     cloudprovider._autocomplete = False
 
@@ -346,7 +350,11 @@ class VirtualServer(
         default=VirtualServerStatus.new.id,
         choices=VirtualServerStatus(),
     )
-    type = models.ForeignKey(VirtualServerType, related_name='virtual_servers', on_delete=models.CASCADE)
+    type = models.ForeignKey(
+        VirtualServerType,
+        related_name='virtual_servers',
+        on_delete=models.CASCADE
+    )
     hostname = NullableCharField(
         blank=True,
         default=None,

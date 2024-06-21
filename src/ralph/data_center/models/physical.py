@@ -192,7 +192,11 @@ class ServerRoomManager(models.Manager):
 class ServerRoom(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
     _allow_in_dashboard = True
 
-    data_center = models.ForeignKey(DataCenter, verbose_name=_("data center"), on_delete=models.CASCADE)
+    data_center = models.ForeignKey(
+        DataCenter,
+        verbose_name=_("data center"),
+        on_delete=models.CASCADE
+    )
     data_center._autocomplete = False
     data_center._filter_title = _('data center')
     visualization_cols_num = models.PositiveIntegerField(

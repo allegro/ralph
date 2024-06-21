@@ -8,7 +8,6 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import BaseObject
 from ralph.assets.models.assets import AssetHolder, BusinessSegment
-from ralph.assets.models.base import BaseObjectPolymorphicQuerySet
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
     NamedMixin,
@@ -182,7 +181,12 @@ class DomainContract(
 ):
     domain = models.ForeignKey(Domain, on_delete=models.CASCADE)
     expiration_date = models.DateField(null=True, blank=True)
-    registrant = models.ForeignKey('DomainRegistrant', null=True, blank=True, on_delete=models.CASCADE)
+    registrant = models.ForeignKey(
+        'DomainRegistrant',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE
+    )
 
     def __str__(self):
         return "{domain_name} - {expiration_date}".format(

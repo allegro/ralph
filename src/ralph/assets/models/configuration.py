@@ -40,7 +40,7 @@ class ConfigurationModule(
         blank=True,
         default=None,
         related_name='children_modules',
-        on_delete = models.CASCADE
+        on_delete=models.CASCADE
     )
     # TODO: is this necessary?
     support_team = models.ForeignKey(

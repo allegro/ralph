@@ -46,7 +46,7 @@ def check_configuration(**kwargs):
             variants.append(ep.name)
             try:
                 ep.load()
-            except ImportError as e:
+            except ImportError:
                 errors.append(ERRORS[Codes.IMPORT_ERROR](key))
             if active_variant == ep.name:
                 found = True
