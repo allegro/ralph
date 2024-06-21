@@ -35,9 +35,8 @@ def _update_service_owners(service, business_owners, technical_owners):
     technical_owners = get_user_model().objects.filter(
         username__in=[i['username'] for i in technical_owners]
     )
-
-    service.business_owners.set([business_owners])
-    service.technical_owners.set([technical_owners])
+    service.business_owners.set(business_owners)
+    service.technical_owners.set(technical_owners)
 
 
 def _update_service_environments(service, environments):
