@@ -31,7 +31,6 @@ from ralph.lib.mixins.models import (
     NamedMixin,
     TimeStampMixin
 )
-from ralph.lib.polymorphic.models import PolymorphicQuerySet
 from ralph.lib.transitions.conf import get_report_name_for_transition_id
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.fields import TransitionField

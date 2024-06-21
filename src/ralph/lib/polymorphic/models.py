@@ -243,8 +243,8 @@ class PolymorphicQuerySet(models.QuerySet):
         self._extra_kwargs.update(kwargs)
         return super().extra(*args, **kwargs)
 
-    def _clone(self, *args, **kwargs):
-        clone = super()._clone(*args, **kwargs)
+    def _clone(self):
+        clone = super()._clone()
         clone._polymorphic_select_related = self._polymorphic_select_related.copy()
         clone._polymorphic_prefetch_related = self._polymorphic_prefetch_related.copy()
         clone._annotate_kwargs = self._annotate_kwargs.copy()
