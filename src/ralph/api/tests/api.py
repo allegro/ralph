@@ -53,6 +53,7 @@ class CarSerializer(RalphAPISerializer):
             }
         }
         depth = 1
+        fields = "__all__"
 
 
 class CarSerializer2(CarSerializer):

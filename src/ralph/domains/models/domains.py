@@ -8,6 +8,7 @@ from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import BaseObject
 from ralph.assets.models.assets import AssetHolder, BusinessSegment
+from ralph.assets.models.base import BaseObjectPolymorphicQuerySet
 from ralph.lib.mixins.models import (
     AdminAbsoluteUrlMixin,
     NamedMixin,
@@ -82,7 +83,7 @@ class DomainProviderAdditionalServices(
     pass
 
 
-class Domain(AdminAbsoluteUrlMixin, BaseObject, models.Model):
+class Domain(BaseObject, AdminAbsoluteUrlMixin, models.Model):
     name = models.CharField(
         verbose_name=_('domain name'),
         help_text=_('Full domain name'),

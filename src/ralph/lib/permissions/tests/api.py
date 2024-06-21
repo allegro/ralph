@@ -70,6 +70,7 @@ class LibraryViewSet(viewsets.ModelViewSet):
 class FooSerializer(serializers.ModelSerializer):
     class Meta:
         model = Foo
+        fields = "__all__"
 
 
 class FooViewSet(viewsets.ModelViewSet):
