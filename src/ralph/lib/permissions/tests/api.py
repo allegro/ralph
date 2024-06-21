@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.conf.urls import include, url
+from django.urls import path
 from rest_framework import permissions, routers, serializers, viewsets
 
 from ralph.lib.permissions.api import (
@@ -78,11 +79,12 @@ class FooViewSet(viewsets.ModelViewSet):
     serializer_class = FooSerializer
 
 
+app_name = 'test-api'
 router = routers.DefaultRouter()
 router.register(r'articles', ArticleViewSet)
 router.register(r'long-articles', LongArticleViewSet)
 router.register(r'library', LibraryViewSet)
 router.register(r'foo', FooViewSet)
 urlpatterns = [
-    url(r'^test-api/', include(router.urls, namespace='test-api')),
+    url(r'^test-api/', include((router.urls, app_name), namespace='test-api')),
 ]

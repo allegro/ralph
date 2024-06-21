@@ -552,6 +552,7 @@ class DataCenterAsset(
     class Meta:
         verbose_name = _('data center asset')
         verbose_name_plural = _('data center assets')
+        abstract = False
 
     def __str__(self):
         return '{} (BC: {} / SN: {})'.format(

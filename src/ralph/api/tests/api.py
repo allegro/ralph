@@ -86,11 +86,12 @@ class BarViewSet(RalphAPIViewSet):
     filter_fields = ['id']
 
 
+app_name = "test-ralph-api"
 router = RalphRouter()
 router.register(r'foos', FooViewSet)
 router.register(r'manufacturers', ManufacturerViewSet)
 router.register(r'cars', CarViewSet)
 router.register(r'bars', BarViewSet)
 urlpatterns = [
-    url(r'^test-ralph-api/', include(router.urls, namespace='test-ralph-api')),
+    url(r'test-ralph-api/', include((router.urls, app_name), namespace='test-ralph-api')),
 ]
