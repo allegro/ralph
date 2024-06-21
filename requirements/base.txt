@@ -1,6 +1,6 @@
 -r openstack.txt
 -r hermes.txt
-Django==1.11.8
+Django==2.0.13
 Faker==0.9.0
 Markdown<3.0  # headerid extension removed in 3.0 - see #3313 for details
 Pillow==6.2.2
