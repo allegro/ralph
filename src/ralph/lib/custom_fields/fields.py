@@ -384,7 +384,8 @@ def create_generic_related_manager_with_inheritance(superclass, rel):  # noqa: C
                 # cache_name is also changed to not assign empty result
                 # to `custom_fields` (and overwrite prefetched custom fields
                 # assigned above)
-                self.prefetch_cache_name + '__empty'
+                self.prefetch_cache_name + '__empty',
+                True
             )
 
     return GenericRelatedObjectWithInheritanceManager
