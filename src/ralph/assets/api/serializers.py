@@ -306,6 +306,8 @@ class ConfigurationModuleSerializer(
 
 class ConfigurationClassSimpleSerializer(RalphAPISerializer):
     module = ConfigurationModuleSimpleSerializer()
+    tags = None
+    service_env = None
 
     class Meta:
         model = ConfigurationClass

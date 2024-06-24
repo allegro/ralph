@@ -99,6 +99,7 @@ class CloudFlavorSerializer(BaseObjectSerializer):
     cores = serializers.IntegerField()
     memory = serializers.IntegerField()
     disk = serializers.IntegerField()
+    service_env = None
 
     class Meta(BaseObjectSerializer.Meta):
         model = CloudFlavor

@@ -44,7 +44,7 @@ class DataCenterAssetFilterSet(NetworkableObjectFilters):
 
 
 class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
-    queryset = DataCenterAsset.objects.all()
+    queryset = DataCenterAsset.polymorphic_objects.all()
     serializer_class = DataCenterAssetSerializer
     save_serializer_class = DataCenterAssetSaveSerializer
     select_related = DataCenterAssetAdmin.list_select_related + [
@@ -62,7 +62,6 @@ class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         'connections',
         'tags',
         'memory_set',
-        'children__service_env',
         'cloudhost_set',
         Prefetch(
             'ethernet_set',

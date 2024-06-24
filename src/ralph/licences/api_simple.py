@@ -7,6 +7,8 @@ from ralph.licences.models import BaseObjectLicence, Licence, LicenceUser
 # SIMPLE SERIALIZERS
 # ==================
 class SimpleLicenceSerializer(RalphAPISerializer):
+    tags = None
+
     class Meta:
         model = Licence
         depth = 1
