@@ -306,15 +306,16 @@ class ConfigurationModuleSerializer(
 
 class ConfigurationClassSimpleSerializer(RalphAPISerializer):
     module = ConfigurationModuleSimpleSerializer()
-    tags = None
-    service_env = None
 
     class Meta:
         model = ConfigurationClass
         exclude = (
-            'content_type', 'tags', 'service_env', 'configuration_path',
+            'content_type', 'configuration_path',
             'parent'
         )
+
+# TODO: Is there a better way to make it work since drf 3.5?
+del ConfigurationClassSimpleSerializer._declared_fields['tags']
 
 
 class ConfigurationClassSerializer(

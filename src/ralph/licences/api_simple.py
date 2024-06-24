@@ -7,15 +7,17 @@ from ralph.licences.models import BaseObjectLicence, Licence, LicenceUser
 # SIMPLE SERIALIZERS
 # ==================
 class SimpleLicenceSerializer(RalphAPISerializer):
-    tags = None
-
     class Meta:
         model = Licence
         depth = 1
         exclude = (
             'base_objects', 'users', 'content_type', 'service_env', 'parent',
-            'configuration_path', 'tags'
+            'configuration_path'
         )
+
+
+# FIXME
+del SimpleLicenceSerializer._declared_fields['tags']
 
 
 class SimpleLicenceUserSerializer(RalphAPISerializer):
