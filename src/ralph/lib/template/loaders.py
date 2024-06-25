@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import io
 from os.path import abspath, dirname, join
 
 from django.apps import apps

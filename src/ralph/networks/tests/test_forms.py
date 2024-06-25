@@ -437,7 +437,7 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
             follow=True
         )
         self.assertEqual(response.status_code, 200)
-        msg = 'Hostname &quot;{hostname}&quot; is already exposed in DHCP in {dc}'.format( # noqa
+        msg = 'Hostname "{hostname}" is already exposed in DHCP in {dc}.'.format( # noqa
                 hostname=self.ip1.hostname,
                 dc=network.network_environment.data_center
             )
@@ -488,7 +488,7 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
             data,
             follow=True
         )
-        msg = 'Hostname &quot;{hostname}&quot; is already exposed in DHCP in {dc}'.format( # noqa
+        msg = 'Hostname "{hostname}" is already exposed in DHCP in {dc}.'.format( # noqa
                 hostname=self.ip1.hostname,
                 dc=network.network_environment.data_center
             )
@@ -578,7 +578,7 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
         self.assertEqual(response.status_code, 200)
         error_messages = [
             'Cannot expose in DHCP without IP address',
-            'Address {} already exist'.format(self.ip1.address)
+            'Address {} already exist.'.format(self.ip1.address)
         ]
         for msg in error_messages:
             self.assertTrue(
