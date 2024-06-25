@@ -52,7 +52,11 @@ class PolymorphicQuerySet(models.QuerySet):
             self._select_related = None
 
         super()._fetch_all()
-        self._pks_order = [obj.pk for obj in self._result_cache]  # type: ignore
+        try:
+            self._pks_order = [obj.pk for obj in self._result_cache]  # type: ignore
+        except AttributeError:
+            return self._result_cache
+
         result = groupby(
             sorted(self._result_cache, key=lambda x: x.content_type_id),
             lambda x: x.content_type_id,

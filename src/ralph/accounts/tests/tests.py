@@ -36,9 +36,9 @@ NO_LDAP_MODULE = not ldap_module_exists
 class LdapSyncTest(TestCase):
 
     def test_long_surname_is_truncated(self):
-        too_long_surname = 'this-is-to-long-surname-so-it-should-be-truncated'
+        too_long_surname = 'long-surname' * 50
         ldap_dict = {'sn': [too_long_surname]}
-        default_django_surname_length = 30
+        default_django_surname_length = 150
         _truncate('sn', 'last_name', ldap_dict)
         self.assertEqual(
             ldap_dict['sn'],

@@ -310,12 +310,7 @@ class DataCenterAssetResource(ResourceWithPrice, RalphModelResource):
             'rack__server_room__data_center',
         )
         prefetch_related = (
-            Prefetch(
-                'parent',
-                queryset=BaseObject.polymorphic_objects.prefetch_related(
-                    'ethernet_set__ipaddress'
-                )
-            ),
+            'parent__ethernet_set__ipaddress',
             'tags',
             'ethernet_set__ipaddress',
         )

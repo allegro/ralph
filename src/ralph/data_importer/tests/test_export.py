@@ -59,20 +59,24 @@ class SimulateAdminExportTestCase(TestCase):
     def _test_queries_count(self, func, nums=(10, 20), max_queries=10):
         # usually here we cannot specify exact number of queries since there is
         # a lot of dependencies (permissions etc), so we're going to check if
-        # the number of queries do not change if the number of created objects
-        # change
-        queries_counts = set()
-        for num in nums:
-            self._init(num)
-            with CaptureQueriesContext(connections['default']) as cqc:
-                func()
-                queries_counts.add(len(cqc))
+        # the number of queries do not change
+        # when the number of created objects changes
+        first, second = nums
+
+        self._init(first)
+        with CaptureQueriesContext(connections['default']) as cqc:
+            func()
+            first_queries = len(cqc)
+
+        self._init(second)
+        with CaptureQueriesContext(connections['default']) as cqc:
+            func()
+            second_queries = len(cqc)
         self.assertEqual(
-            len(queries_counts),
-            1,
-            msg='Different queries count: {}'.format(queries_counts)
+            first_queries, second_queries,
+            msg=f'Different queries count. First: {first_queries}, second {second_queries}'
         )
-        self.assertLessEqual(queries_counts.pop(), max_queries)
+        self.assertLessEqual(second_queries, max_queries)
 
 
 class LicenceExporterTestCase(SimulateAdminExportTestCase):

@@ -32,9 +32,11 @@ class OfficeInfrastructureViewSet(RalphAPIViewSet):
 
 
 class BackOfficeAssetSimpleSerializer(AssetSerializer):
+    licenses = None
+
     class Meta(AssetSerializer.Meta):
         model = BackOfficeAsset
-        exclude = AssetSerializer.Meta.exclude + ('licences', )
+        exclude = AssetSerializer.Meta.exclude
         depth = 0
 
 
