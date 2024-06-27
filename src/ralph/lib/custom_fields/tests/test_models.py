@@ -132,7 +132,7 @@ class CustomFieldInheritanceModelsTestCase(TestCase):
             },
             {
                 'name': 'test str 2',
-                'object': 'model a: ModelA object (1)',
+                'object': f'model a: ModelA object ({self.a1.pk})',
                 'object_url': self.a1.get_absolute_url(),
                 'value': 'sample_value2'
             }
