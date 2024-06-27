@@ -309,12 +309,8 @@ class DataCenterAssetResource(ResourceWithPrice, RalphModelResource):
             'service_env__service', 'service_env__environment',
             'rack__server_room__data_center',
         )
-        prefetch_related = (
-            'parent__ethernet_set__ipaddress',
-            'tags',
-            'ethernet_set__ipaddress',
-        )
         exclude = ('content_type', 'asset_ptr', 'baseobject_ptr', 'connections')
+
 
     def dehydrate_depreciation_rate(self, dc_asset):
         return str(dc_asset.depreciation_rate)

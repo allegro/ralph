@@ -54,7 +54,7 @@ class SimulateAdminExportTestCase(TestCase):
         return export_data
 
     def _init(self, num=10):
-        pass
+        raise NotImplementedError()
 
     def _test_queries_count(self, func, nums=(10, 20), max_queries=10):
         # usually here we cannot specify exact number of queries since there is
@@ -103,6 +103,19 @@ class SupportExporterTestCase(SimulateAdminExportTestCase):
 
 
 class DataCenterAssetExporterTestCase(SimulateAdminExportTestCase):
+    def _init(self, num=10):
+        self.data_center_assets = DataCenterAssetFullFactory.create_batch(num)
+        self.data_center_assets_map = {}
+        for dca in self.data_center_assets:
+            self.data_center_assets_map[dca.id] = dca
+
+    def test_data_center_asset_export_queries_count(self):
+        self._test_queries_count(func=lambda: self._export(
+            DataCenterAsset
+        ), max_queries=12)
+
+
+class DataCenterAssetExporterTestCaseWithParent(DataCenterAssetExporterTestCase):
     def _init(self, num=10):
         self.data_center_assets = DataCenterAssetFullFactory.create_batch(num)
         self.data_center_assets_map = {}

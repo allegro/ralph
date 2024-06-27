@@ -467,6 +467,7 @@ class DataCenterAssetAdmin(
         'configuration_path',
         'property_of',
         'parent',
+        'budget_info',
     ]
     raw_id_fields = [
         'model', 'rack', 'service_env', 'parent', 'budget_info',
@@ -506,6 +507,16 @@ class DataCenterAssetAdmin(
             )
         }),
     )
+
+    def get_queryset(self, request):
+        return super().get_queryset(request)
+
+    def get_export_queryset(self, request):
+        return DataCenterAsset.polymorphic_objects.select_related(
+            *self.list_select_related
+        ).polymorphic_prefetch_related(
+            DataCenterAsset=['tags', 'ethernet_set__ipaddress']
+        )
 
     def get_multiadd_fields(self, obj=None):
         multiadd_fields = [
@@ -712,10 +723,7 @@ class DCHostAdmin(
         return None
 
     def get_hostname(self, obj):
-        # try:
         return obj.hostname
-        # except AttributeError:
-        #     return "HOHOHOHOstname"
 
     get_hostname.short_description = _('Hostname')
     # TODO: simple if hostname would be in one model
