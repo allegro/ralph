@@ -311,7 +311,6 @@ class DataCenterAssetResource(ResourceWithPrice, RalphModelResource):
         )
         exclude = ('content_type', 'asset_ptr', 'baseobject_ptr', 'connections')
 
-
     def dehydrate_depreciation_rate(self, dc_asset):
         return str(dc_asset.depreciation_rate)
 
