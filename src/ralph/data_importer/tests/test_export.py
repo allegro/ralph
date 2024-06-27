@@ -147,7 +147,7 @@ class DataCenterAssetExporterTestCaseWithParent(DataCenterAssetExporterTestCase)
         dca_0_parent = self.data_center_assets_map[
             int(export_data.dict[0]['parent'])
         ]
-        self.assertEqual(export_data.dict[0]['parent_str'], str(dca_0_parent))
+        self.assertEqual(export_data.dict[0]['parent_str'], dca_0_parent.baseobject_ptr._str_with_type)
 
 
 @ddt

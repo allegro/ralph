@@ -327,6 +327,12 @@ class DataCenterAssetResource(ResourceWithPrice, RalphModelResource):
                 except physical.IPAddress.DoesNotExist:
                     pass
 
+    def dehydrate_parent_str(self, dc_asset) -> str:
+        try:
+            return dc_asset.parent._str_with_type
+        except AttributeError:
+            return ''
+
     def dehydrate_management_ip(self, dc_asset):
         return str(self._get_management_ip(dc_asset))
 

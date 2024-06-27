@@ -508,9 +508,6 @@ class DataCenterAssetAdmin(
         }),
     )
 
-    def get_queryset(self, request):
-        return super().get_queryset(request)
-
     def get_export_queryset(self, request):
         return DataCenterAsset.polymorphic_objects.select_related(
             *self.list_select_related
