@@ -144,9 +144,8 @@ class DataCenterAssetExporterTestCaseWithParent(DataCenterAssetExporterTestCase)
         )
         # check if parent management ip is properly exported
         self.assertNotEqual(export_data.dict[0]['parent_management_ip'], '')
-        dca_0_parent = self.data_center_assets_map[
-            int(export_data.dict[0]['parent'])
-        ]
+        dca_with_parent = next(dca for dca in export_data.dict if dca['parent'])
+        dca_0_parent = self.data_center_assets_map[dca_with_parent['parent']]
         self.assertEqual(export_data.dict[0]['parent_str'], dca_0_parent.baseobject_ptr._str_with_type)
 
 
