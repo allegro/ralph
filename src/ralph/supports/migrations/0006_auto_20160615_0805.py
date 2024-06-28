@@ -26,7 +26,7 @@ class Migration(migrations.Migration):
                 migrations.AddField(
                     model_name='baseobjectssupport',
                     name='baseobject',
-                    field=ralph.lib.mixins.fields.BaseObjectForeignKey(default=0, verbose_name='Asset', to='assets.BaseObject', related_name='supports'),
+                    field=ralph.lib.mixins.fields.BaseObjectForeignKey(default=0, verbose_name='Asset', to='assets.BaseObject', related_name='supports', on_delete=django.db.models.deletion.CASCADE),
                     preserve_default=False,
                 ),
                 migrations.AddField(

@@ -180,7 +180,8 @@ class BaseObjectsSupport(
         limit_models=[
             'back_office.BackOfficeAsset',
             'data_center.DataCenterAsset'
-        ]
+        ],
+        on_delete=models.CASCADE
     )
 
     class Meta:

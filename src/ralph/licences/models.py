@@ -325,7 +325,8 @@ class BaseObjectLicence(models.Model):
             'data_center.DataCenterAsset',
             'virtual.VirtualServer',
             'data_center.Cluster',
-        ]
+        ],
+        on_delete=models.CASCADE
     )
     quantity = models.PositiveIntegerField(default=1)
 

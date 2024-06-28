@@ -52,7 +52,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='baseobjectcluster',
             name='base_object',
-            field=ralph.lib.mixins.fields.BaseObjectForeignKey(to='assets.BaseObject', related_name='clusters'),
+            field=ralph.lib.mixins.fields.BaseObjectForeignKey(to='assets.BaseObject', related_name='clusters', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='baseobjectcluster',

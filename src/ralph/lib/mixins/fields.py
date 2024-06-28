@@ -220,7 +220,6 @@ class BaseObjectForeignKey(models.ForeignKey):
     """
     def __init__(self, *args, **kwargs):
         kwargs['limit_choices_to'] = self.limit_choices
-        kwargs['on_delete'] = kwargs.get('on_delete', models.CASCADE)
         self.limit_models = kwargs.pop('limit_models', [])
         super().__init__(*args, **kwargs)
 
