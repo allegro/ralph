@@ -219,9 +219,18 @@ class BaseObjectForeignKey(models.ForeignKey):
     `DataCenterAsset` (and not other models inherited from `BaseObject`).
     """
     def __init__(self, *args, **kwargs):
-        kwargs['limit_choices_to'] = self.limit_choices
         self.limit_models = kwargs.pop('limit_models', [])
         super().__init__(*args, **kwargs)
+
+    def deconstruct(self):
+        name, path, args, kwargs = super().deconstruct()
+        # Otherwise the migrations won't be created if limit_models changes
+        if self.limit_models:
+            kwargs['limit_models'] = self.limit_models
+        return name, path, args, kwargs
+
+    def limit_choices_to(self):
+        return self.limit_choices()
 
     def limit_choices(self):
         """

@@ -23,6 +23,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='baseobjectforeignkeymodel',
             name='base_object',
-            field=ralph.lib.mixins.fields.BaseObjectForeignKey(to='assets.BaseObject'),
+            field=ralph.lib.mixins.fields.BaseObjectForeignKey(to='assets.BaseObject', on_delete=django.db.models.deletion.CASCADE),
         ),
     ]

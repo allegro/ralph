@@ -65,7 +65,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, serialize=False, primary_key=True, verbose_name='ID')),
                 ('base_object', ralph.lib.mixins.fields.BaseObjectForeignKey(
                     verbose_name='Asset', related_name='licences',
-                    to='assets.BaseObject')
+                    to='assets.BaseObject', on_delete=django.db.models.deletion.CASCADE)
                 )
             ],
         ),
