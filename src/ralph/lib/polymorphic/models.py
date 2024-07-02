@@ -18,8 +18,6 @@ from itertools import groupby
 from django.contrib.contenttypes.models import ContentType
 from django.db import models, OperationalError
 
-from ralph.lib.error_handling.exceptions import WrappedOperationalError
-
 
 class PolymorphicQuerySet(models.QuerySet):
     def __init__(self, *args, **kwargs):
