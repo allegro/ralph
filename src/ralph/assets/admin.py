@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db.models import Count
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.decorators import register
@@ -90,6 +91,7 @@ class ConfigurationModuleAdmin(CustomFieldValueAdminMixin, RalphMPTTAdmin):
     )
     show_custom_fields_values_summary = False
 
+    @mark_safe
     def show_children_modules(self, module):
         if not module or not module.pk:
             return '&ndash;'
@@ -98,9 +100,9 @@ class ConfigurationModuleAdmin(CustomFieldValueAdminMixin, RalphMPTTAdmin):
             ['name'],
             url_field='name'
         ).render()
-    show_children_modules.allow_tags = True
     show_children_modules.short_description = _('Children modules')
 
+    @mark_safe
     def show_children_classes(self, module):
         if not module or not module.pk:
             return '&ndash;'
@@ -109,7 +111,6 @@ class ConfigurationModuleAdmin(CustomFieldValueAdminMixin, RalphMPTTAdmin):
             ['class_name'],
             url_field='class_name'
         ).render()
-    show_children_classes.allow_tags = True
     show_children_classes.short_description = _('Children classes')
 
     def get_readonly_fields(self, request, obj=None):

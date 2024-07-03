@@ -5,6 +5,7 @@ from django import forms
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
 
 from ralph.admin.decorators import register
@@ -88,6 +89,7 @@ class GraphAdmin(RalphAdmin):
         }),
     )
 
+    @mark_safe
     def get_readonly_fields(self, *args, **kwargs):
         readonly_fields = super().get_readonly_fields(*args, **kwargs)
         allow_push_graphs_data_to_statsd = (
@@ -101,7 +103,6 @@ class GraphAdmin(RalphAdmin):
     def get_preview(self, obj):
         return obj.render(name='preview')
 
-    get_preview.allow_tags = True
     get_preview.short_description = _('Graph')
 
 
@@ -109,9 +110,9 @@ class GraphAdmin(RalphAdmin):
 class DashboardAdmin(RalphAdmin):
     list_display = ['name', 'description', 'active', 'get_link']
 
+    @mark_safe
     def get_link(self, obj):
         return _('<a href="{}" target="_blank">Dashboard</a>'.format(reverse(
             'dashboard_view', args=(obj.pk,)
         )))
     get_link.short_description = _('Link')
-    get_link.allow_tags = True

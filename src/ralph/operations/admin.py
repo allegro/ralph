@@ -3,6 +3,7 @@ from collections import Counter
 
 from django.db.models import DateTimeField, Prefetch
 from django.utils import timezone
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.decorators import register
@@ -87,14 +88,15 @@ class ServiceEnvironmentAndConfigurationPathMixin(object):
             for name, count in objects.most_common()
         ])
 
+
+    @mark_safe
     def get_services(self, obj):
         return self._get_related_objects(obj, 'service_env')
-    get_services.allow_tags = True
     get_services.short_description = _('services')
 
+    @mark_safe
     def get_configuration_path(self, obj):
         return self._get_related_objects(obj=obj, field='configuration_path')
-    get_configuration_path.allow_tags = True
     get_configuration_path.short_description = _('configuration path')
 
     def get_queryset(self, request):
@@ -148,12 +150,12 @@ class OperationAdmin(
         }),
     )
 
+    @mark_safe
     def get_ticket_url(self, obj):
         return '<a href="{ticket_url}" target="_blank">{ticket_id}</a>'.format(
             ticket_url=obj.ticket_url,
             ticket_id=obj.ticket_id
         )
-    get_ticket_url.allow_tags = True
     get_ticket_url.short_description = _('ticket ID')
     get_ticket_url.admin_order_field = 'ticket_id'
 

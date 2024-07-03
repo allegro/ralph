@@ -2,6 +2,7 @@
 from django.db.models import Count
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.decorators import register
@@ -176,6 +177,7 @@ class BaseObjectsSupportAdmin(RalphAdmin):
 
     # list display fields (django admin does not support __ convention there,
     # so they have to be fetched "manually")
+    @mark_safe
     def _get_support_type(self, obj):
         return generate_html_link(
             obj.support.get_absolute_url(),
@@ -184,7 +186,6 @@ class BaseObjectsSupportAdmin(RalphAdmin):
         )
     _get_support_type.short_description = _('support type')
     _get_support_type.admin_order_field = 'support__support_type'
-    _get_support_type.allow_tags = True
 
     def _get_support_contract_id(self, obj):
         return obj.support.contract_id
@@ -211,6 +212,7 @@ class BaseObjectsSupportAdmin(RalphAdmin):
     _get_support_date_to.short_description = _('support date to')
     _get_support_date_to.admin_order_field = 'support__date_to'
 
+    @mark_safe
     def _get_asset_hostname(self, obj):
         return generate_html_link(
             obj.baseobject.get_absolute_url(),
@@ -219,7 +221,6 @@ class BaseObjectsSupportAdmin(RalphAdmin):
         )
     _get_asset_hostname.short_description = _('asset hostname')
     _get_asset_hostname.admin_order_field = 'baseobject__asset__hostname'
-    _get_asset_hostname.allow_tags = True
 
     def _get_asset_service_env(self, obj):
         return obj.baseobject.service_env

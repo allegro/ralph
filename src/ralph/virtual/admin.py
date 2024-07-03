@@ -4,6 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db.models import Count, Prefetch
 from django.urls import reverse
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.decorators import register
@@ -172,14 +173,13 @@ class VirtualServerAdmin(
             ),
         )
 
+    @mark_safe
     def get_parent(self, obj):
         if not obj.parent_id:
             return '-'
         return '<a href="{}">{}</a>'.format(
             obj.parent.get_absolute_url(), obj.parent.hostname
         )
-    get_parent.short_description = _('Parent')
-    get_parent.allow_tags = True
 
 
 class CloudHostTabularInline(RalphTabularInline):
@@ -190,14 +190,15 @@ class CloudHostTabularInline(RalphTabularInline):
               'tags', 'remarks']
     readonly_fields = fields
 
+    @mark_safe
     def get_hostname(self, obj):
         return '<a href="{}">{}</a>'.format(
             reverse("admin:virtual_cloudhost_change", args=(obj.id,)),
             obj.hostname
         )
     get_hostname.short_description = _('Hostname')
-    get_hostname.allow_tags = True
 
+    @mark_safe
     def get_hypervisor(self, obj):
         if obj.hypervisor is None:
             return _('Not set')
@@ -209,8 +210,8 @@ class CloudHostTabularInline(RalphTabularInline):
             obj.hypervisor.hostname
         )
     get_hypervisor.short_description = _('Hypervisor')
-    get_hypervisor.allow_tags = True
 
+    @mark_safe
     def get_ip_addresses(self, obj):
         ips = obj.ethernet_set.values_list(
             'ipaddress__address', flat=True
@@ -219,7 +220,6 @@ class CloudHostTabularInline(RalphTabularInline):
             return '&ndash;'
         return '\n'.join(ips)
     get_ip_addresses.short_description = _('IP Addresses')
-    get_ip_addresses.allow_tags = True
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -262,7 +262,7 @@ class CloudHostAdmin(
     SCMStatusCheckInChangeListMixin, ScanStatusInChangeListMixin,
     CustomFieldValueAdminMixin, RalphAdmin
 ):
-    list_display = ['hostname', 'get_ip_addresses', 'service_env',
+    list_display = ['get_hostname', 'get_ip_addresses', 'service_env',
                     'get_cloudproject', 'cloudflavor_name', 'host_id',
                     'created', 'image_name', 'get_tags', 'scan_status',
                     'scm_status_check']
@@ -329,13 +329,11 @@ class CloudHostAdmin(
     get_cloudprovider.admin_order_field = 'cloudprovider__name'
 
     def get_hostname(self, obj):
-        return '<a href="{}">{}</a>'.format(
-            reverse("admin:virtual_cloudhost_change", args=(obj.id,)),
-            obj.hostname
-        )
-    get_hostname.short_description = _('Hostname')
-    get_hostname.allow_tags = True
+        return obj.hostname if len(obj.hostname) > 1 else '–'
 
+    get_hostname.short_description = _('Hostname')
+
+    @mark_safe
     def get_hypervisor(self, obj):
         if obj.hypervisor is None:
             return _('Not set')
@@ -346,8 +344,8 @@ class CloudHostAdmin(
         )
     get_hypervisor.short_description = _('Hypervisor')
     get_hypervisor.admin_order_field = 'hypervisor__hostname'
-    get_hypervisor.allow_tags = True
 
+    @mark_safe
     def cloudflavor_name(self, obj):
         return '<a href="{}">{}</a>'.format(
             reverse("admin:virtual_cloudflavor_change",
@@ -356,8 +354,8 @@ class CloudHostAdmin(
         )
     cloudflavor_name.short_description = _('Cloud Flavor')
     cloudflavor_name.admin_order_field = 'cloudflavor__name'
-    cloudflavor_name.allow_tags = True
 
+    @mark_safe
     def get_ip_addresses(self, obj):
         ips = [
             eth.ipaddress.address
@@ -368,8 +366,8 @@ class CloudHostAdmin(
             return '&ndash;'
         return '\n'.join(ips)
     get_ip_addresses.short_description = _('IP Addresses')
-    get_ip_addresses.allow_tags = True
 
+    @mark_safe
     def get_cloudproject(self, obj):
         return '<a href="{}">{}</a>'.format(
             reverse(
@@ -380,9 +378,9 @@ class CloudHostAdmin(
         )
     get_cloudproject.short_description = _('Cloud Project')
     get_cloudproject.admin_order_field = 'parent'
-    get_cloudproject.allow_tags = True
     get_cloudproject._permission_field = 'parent'
 
+    @mark_safe
     def get_service(self, obj):
         if obj.service_env_id:
             return '<a href="{}">{}</a>'.format(
@@ -395,9 +393,9 @@ class CloudHostAdmin(
         return ''
     get_service.short_description = _('Service env')
     get_service.admin_order_field = 'service_env'
-    get_service.allow_tags = True
     get_service._permission_field = 'service_env'
 
+    @mark_safe
     def get_configuration_path(self, obj):
         if obj.configuration_path_id:
             return '<a href="{}">{}</a>'.format(
@@ -409,7 +407,6 @@ class CloudHostAdmin(
             )
         return ''
     get_configuration_path.short_description = _('Configuration path')
-    get_configuration_path.allow_tags = True
     get_configuration_path._permission_field = 'configuration_path'
 
     def get_cpu(self, obj):

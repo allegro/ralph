@@ -247,6 +247,7 @@ class ClusterAdmin(CustomFieldValueAdminMixin, RalphAdmin):
             ),)
         return fieldsets
 
+    @mark_safe
     def get_masters_summary(self, obj):
         masters = obj.masters
         if not masters:
@@ -256,7 +257,6 @@ class ClusterAdmin(CustomFieldValueAdminMixin, RalphAdmin):
             getattr(masters[0], '_summary_fields', []),
             transpose=True,
         ).render()
-    get_masters_summary.allow_tags = True
     get_masters_summary.short_description = _('Master info')
 
 
@@ -524,6 +524,7 @@ class DataCenterAssetAdmin(
             settings, 'MULTIADD_DATA_CENTER_ASSET_FIELDS', None
         ) or multiadd_fields
 
+    @mark_safe
     def go_to_visualization(self, obj):
         if not obj.rack:
             return '&mdash;'
@@ -535,12 +536,11 @@ class DataCenterAssetAdmin(
         label = '&nbsp;/&nbsp;'.join(obj.get_location())
         return generate_html_link(url, label=label, params={})
     go_to_visualization.short_description = _('Visualization')
-    go_to_visualization.allow_tags = True
 
+    @mark_safe
     def show_location(self, obj):
         return obj.location
     show_location.short_description = _('Location')
-    show_location.allow_tags = True
 
     # NOTE(romcheg): Django Admin can only order custom fields by one field.
     #                The rest of the ordering is configured in
