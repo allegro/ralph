@@ -104,6 +104,7 @@ class GraphAdmin(RalphAdmin):
 
     get_preview.short_description = _('Graph')
 
+
 @register(Dashboard)
 class DashboardAdmin(RalphAdmin):
     list_display = ['name', 'description', 'active', 'get_link']

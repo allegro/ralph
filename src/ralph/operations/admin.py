@@ -88,7 +88,6 @@ class ServiceEnvironmentAndConfigurationPathMixin(object):
             for name, count in objects.most_common()
         ])
 
-
     @mark_safe
     def get_services(self, obj):
         return self._get_related_objects(obj, 'service_env')
