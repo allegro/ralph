@@ -64,5 +64,23 @@
         }
       })
     })(ralph.jQuery);
+
+    document.addEventListener('DOMContentLoaded', function() {
+    const prebootSelect = document.getElementById('preboot-select');
+    prebootSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex].text;
+        if (selectedOption.startsWith('[CRITICAL!]')) {
+          // TODO(HAL-2734) A proper info
+          alert("You selected: CRITICAL");
+        }
+        else if (selectedOption.startsWith('[WARNING!]')) {
+          {
+            // TODO(HAL-2734) A proper info
+            alert("You selected: WARNING");
+          }
+        }
+    });
+
+});
   </script>
 {% endblock %}
