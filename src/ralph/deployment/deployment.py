@@ -27,6 +27,7 @@ from functools import partial
 from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.db import ProgrammingError
 from django.db.models import Q
 from django.utils.translation import ugettext_lazy as _
 
@@ -768,13 +769,35 @@ def assign_configuration_path(cls, instances, configuration_path, **kwargs):
         instance.save()
 
 
+def get_preboots():
+    try:
+        criticals = [
+            (p.id, "[CRITICAL!]" + p.name) for p in Preboot.active_objects
+            .filter(critical_after__lt=timezone.now())
+        ]
+        warnings = [
+            (p.id, "[WARNING!]" + p.name) for p in Preboot.active_objects
+            .exclude(id__in=[p[0] for p in criticals])
+            .filter(warning_after__lt=timezone.now())
+        ]
+        good = [
+            (p.id, p.name) for p in Preboot.active_objects
+            .exclude(id__in=[p[0] for p in warnings + criticals])
+        ]
+        yield from good + warnings + criticals
+    except ProgrammingError:
+        # This is weird, but because of the time get_preboots() is called it's needed
+        # to make everything work
+        return Preboot.objects.all()
+
+
 @deployment_action(
     verbose_name=_('Apply preboot'),
     form_fields={
         'preboot': {
             'field': forms.ModelChoiceField(
                 label=_('Preboot'),
-                queryset=Preboot.objects.all(),
+                queryset=get_preboots(),
                 empty_label=None
             ),
         }
