@@ -89,7 +89,6 @@ class GraphAdmin(RalphAdmin):
         }),
     )
 
-    @mark_safe
     def get_readonly_fields(self, *args, **kwargs):
         readonly_fields = super().get_readonly_fields(*args, **kwargs)
         allow_push_graphs_data_to_statsd = (
