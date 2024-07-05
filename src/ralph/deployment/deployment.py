@@ -29,6 +29,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import ProgrammingError
 from django.db.models import Q
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import ConfigurationClass, Ethernet
