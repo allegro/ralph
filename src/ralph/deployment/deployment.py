@@ -27,7 +27,6 @@ from functools import partial
 from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.db import ProgrammingError
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
@@ -770,35 +769,31 @@ def assign_configuration_path(cls, instances, configuration_path, **kwargs):
         instance.save()
 
 
-def get_preboots():
-    try:
-        criticals = [
-            (p.id, "[CRITICAL!]" + p.name) for p in Preboot.active_objects
-            .filter(critical_after__lt=timezone.now())
-        ]
-        warnings = [
-            (p.id, "[WARNING!]" + p.name) for p in Preboot.active_objects
-            .exclude(id__in=[p[0] for p in criticals])
-            .filter(warning_after__lt=timezone.now())
-        ]
-        good = [
-            (p.id, p.name) for p in Preboot.active_objects
-            .exclude(id__in=[p[0] for p in warnings + criticals])
-        ]
-        return good + warnings + criticals
-    except ProgrammingError:
-        # This is weird, but because of the time get_preboots() is called it's needed
-        # to make everything work
-        return [(p.id, p.name) for p in Preboot.objects.all()]
+class PrebootChoiceField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        if obj.critical_after and obj.critical_after < timezone.now().date():
+            return f"[CRITICAL!]{obj.name}"
+        elif obj.warning_after and obj.warning_after < timezone.now().date():
+            return f"[WARNING!]{obj.name}"
+        else:
+            return obj.name
 
 
 @deployment_action(
     verbose_name=_('Apply preboot'),
     form_fields={
         'preboot': {
-            'field': forms.ChoiceField(
+            'field': PrebootChoiceField(
                 label=_('Preboot'),
-                choices=get_preboots()
+                queryset=Preboot.active_objects.order_by(
+                    "-disappears_after",
+                    "-critical_after",
+                    "-warning_after",
+                    "name",
+                ),
+                widget=forms.Select(
+                    attrs={"id": "preboot-select"}
+                )
             ),
         }
     },
