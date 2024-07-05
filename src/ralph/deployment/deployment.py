@@ -785,21 +785,20 @@ def get_preboots():
             (p.id, p.name) for p in Preboot.active_objects
             .exclude(id__in=[p[0] for p in warnings + criticals])
         ]
-        yield from good + warnings + criticals
+        return good + warnings + criticals
     except ProgrammingError:
         # This is weird, but because of the time get_preboots() is called it's needed
         # to make everything work
-        return Preboot.objects.all()
+        return [(p.id, p.name) for p in Preboot.objects.all()]
 
 
 @deployment_action(
     verbose_name=_('Apply preboot'),
     form_fields={
         'preboot': {
-            'field': forms.ModelChoiceField(
+            'field': forms.ChoiceField(
                 label=_('Preboot'),
-                queryset=get_preboots(),
-                empty_label=None
+                choices=get_preboots()
             ),
         }
     },
