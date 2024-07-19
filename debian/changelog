@@ -1,5 +1,12 @@
 ralph (20240719.1) bionic; urgency=medium
 
+  [ root ]
+  * UNRELEASED
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Fri, 19 Jul 2024 10:57:02 +0000
+
+ralph (20240719.1) bionic; urgency=medium
+
   [ Olga Matyla ]
   * Update to Django 1.9
   * Fix some tests
