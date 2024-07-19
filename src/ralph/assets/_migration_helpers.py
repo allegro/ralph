@@ -65,23 +65,26 @@ def baseobject_migration(
         obj.save()
 
     # foreign keys
-    for relation in Model._meta.get_all_related_objects(local_only=True):
-        related_model = relation.related_model
-        relation_field = relation.field.attname
-        logger.info('Processing relation {}<->{} using field {}'.format(
-            model_str, related_model, relation_field
-        ))
-        relation_mapping = defaultdict(list)
-        for related_object in related_model._default_manager.values_list(
-            'pk', relation_field
-        ):
-            relation_mapping[related_object[1]].append(related_object[0])
-        for old_id, new_id in id_mapping.items():
-            related_model._default_manager.filter(
-                pk__in=relation_mapping.get(old_id, [])
-            ).update(
-                **{relation_field: new_id}
-            )
+    # migrated from deprecated get_all_related_objects(local_only=True)
+    for relation in Model._meta.get_fields(include_parents=False):
+        if (relation.one_to_many or relation.one_to_one) and \
+                relation.auto_created and not relation.concrete:
+            related_model = relation.related_model
+            relation_field = relation.field.attname
+            logger.info('Processing relation {}<->{} using field {}'.format(
+                model_str, related_model, relation_field
+            ))
+            relation_mapping = defaultdict(list)
+            for related_object in related_model._default_manager.values_list(
+                'pk', relation_field
+            ):
+                relation_mapping[related_object[1]].append(related_object[0])
+            for old_id, new_id in id_mapping.items():
+                related_model._default_manager.filter(
+                    pk__in=relation_mapping.get(old_id, [])
+                ).update(
+                    **{relation_field: new_id}
+                )
 
     # ImportedObjects
     ImportedObjects = apps.get_model('data_importer', 'ImportedObjects')

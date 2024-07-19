@@ -5,8 +5,8 @@ from django.db.models import DateTimeField, Prefetch
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, RalphMPTTAdmin, register
-from ralph.admin.mixins import RalphAdminForm
+from ralph.admin.decorators import register
+from ralph.admin.mixins import RalphAdmin, RalphAdminForm, RalphMPTTAdmin
 from ralph.admin.views.main import RalphChangeList
 from ralph.admin.widgets import AdminDateTimeWidget
 from ralph.assets.models import BaseObject

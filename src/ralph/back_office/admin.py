@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
 from django import forms
+from django.apps import apps
 from django.conf import settings
-from django.db.models.loading import get_model
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, RalphTabularInline, register
+from ralph.admin.decorators import register
 from ralph.admin.filters import LiquidatedStatusFilter, TagsListFilter
-from ralph.admin.mixins import BulkEditChangeListMixin
+from ralph.admin.mixins import (
+    BulkEditChangeListMixin,
+    RalphAdmin,
+    RalphTabularInline
+)
 from ralph.admin.sites import ralph_site
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
@@ -217,7 +221,7 @@ class BackOfficeAssetAdmin(
                 queryset=Licence.objects.all(), label=_('licences'),
                 required=False,
                 widget=AutocompleteWidget(
-                    field=get_model(
+                    field=apps.get_model(
                         'licences.BaseObjectLicence'
                     )._meta.get_field('licence'),
                     admin_site=ralph_site,

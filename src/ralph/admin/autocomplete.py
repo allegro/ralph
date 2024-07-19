@@ -4,10 +4,10 @@ import re
 from functools import reduce
 
 from dj.choices import Choices
+from django.apps import apps
 from django.conf.urls import url
 from django.core.exceptions import FieldDoesNotExist
 from django.db.models import Manager, Q
-from django.db.models.loading import get_model
 from django.http import Http404, HttpResponseBadRequest, JsonResponse
 from django.views.generic import View
 
@@ -164,7 +164,7 @@ class AutocompleteList(SuggestView):
 
     def dispatch(self, request, *args, **kwargs):
         try:
-            model = get_model(kwargs['app'], kwargs['model'])
+            model = apps.get_model(kwargs['app'], kwargs['model'])
         except LookupError:
             return HttpResponseBadRequest('Model not found')
 

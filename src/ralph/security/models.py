@@ -11,7 +11,7 @@ from ralph.lib.mixins.models import (
     TaggableMixin,
     TimeStampMixin
 )
-from ralph.lib.permissions import PermByFieldMixin
+from ralph.lib.permissions.models import PermByFieldMixin
 
 
 def any_exceeded(vulnerabilties):

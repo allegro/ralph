@@ -6,8 +6,9 @@ from django.core.urlresolvers import reverse
 from django.db.models import Count, Prefetch
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, RalphAdminForm, RalphTabularInline, register
+from ralph.admin.decorators import register
 from ralph.admin.filters import BaseObjectHostnameFilter, TagsListFilter
+from ralph.admin.mixins import RalphAdmin, RalphAdminForm, RalphTabularInline
 from ralph.assets.models import BaseObject
 from ralph.assets.models.components import Ethernet
 from ralph.assets.views import ComponentsAdminView, RalphDetailViewAdmin
@@ -33,7 +34,8 @@ from ralph.virtual.models import (
     CloudProject,
     CloudProvider,
     VirtualServer,
-    VirtualServerType)
+    VirtualServerType
+)
 
 if settings.ENABLE_DNSAAS_INTEGRATION:
     from ralph.dns.views import DNSView
@@ -476,7 +478,8 @@ class CloudProjectAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     fields = ['name', 'project_id', 'cloudprovider', 'service_env', 'tags',
               'remarks', 'instances_count']
     list_display = ['name', 'service_env', 'instances_count']
-    list_select_related = ['cloudprovider__name', 'service_env__environment',
+    list_select_related = ['cloudprovider',
+                           'service_env__environment',
                            'service_env__service']
     list_filter = ['service_env', 'cloudprovider', TagsListFilter]
     readonly_fields = ['name', 'project_id', 'cloudprovider', 'created',

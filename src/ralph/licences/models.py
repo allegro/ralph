@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """SAM module models."""
-import reversion
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Prefetch, Sum
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
+from reversion import revisions as reversion
 
 from ralph.accounts.models import Regionalizable
 from ralph.admin.helpers import getattr_dunder
@@ -19,7 +19,7 @@ from ralph.lib.mixins.models import (
     NamedMixin,
     PriceMixin
 )
-from ralph.lib.permissions import PermByFieldMixin
+from ralph.lib.permissions.models import PermByFieldMixin
 from ralph.lib.polymorphic.models import PolymorphicQuerySet
 
 

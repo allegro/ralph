@@ -4,7 +4,7 @@ import six
 from dj.choices import Choices
 from django import forms
 from django.contrib.auth.models import Group
-from django.contrib.contenttypes import generic
+from django.contrib.contenttypes import fields
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
@@ -132,7 +132,7 @@ class CustomFieldValue(TimeStampMixin, models.Model):
     value = models.CharField(max_length=CUSTOM_FIELD_VALUE_MAX_LENGTH)
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField(db_index=True)
-    object = generic.GenericForeignKey('content_type', 'object_id')
+    object = fields.GenericForeignKey('content_type', 'object_id')
 
     objects = models.Manager()
     # generic relation has to use specific manager (queryset)

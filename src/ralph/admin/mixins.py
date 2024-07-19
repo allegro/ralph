@@ -21,7 +21,8 @@ from django.views.generic import TemplateView
 from import_export.admin import ImportExportModelAdmin
 from import_export.widgets import ForeignKeyWidget
 from mptt.admin import MPTTAdminForm, MPTTModelAdmin
-from reversion import VersionAdmin
+
+from reversion.admin import VersionAdmin
 
 from ralph.admin import widgets
 from ralph.admin.autocomplete import AjaxAutocompleteMixin
@@ -168,29 +169,29 @@ class RalphAdminChecks(admin.checks.ModelAdminChecks):
         ('contenttypes', 'ContentType'.lower())
     )
 
-    def check(self, cls, model, **kwargs):
-        errors = super().check(cls, model, **kwargs)
-        errors.extend(self._check_absolute_url(cls, model))
+    def check(self, model, **kwargs):
+        errors = super().check(model, **kwargs)
+        errors.extend(self._check_absolute_url(model.model))
         return errors
 
-    def _check_form(self, cls, model):
+    def _check_form(self, model):
         """
         Check if form subclasses RalphAdminFormMixin
         """
-        result = super()._check_form(cls, model)
+        result = super()._check_form(model)
         if (
-            hasattr(cls, 'form') and
-            not issubclass(cls.form, RalphAdminFormMixin)
+            hasattr(model, 'form') and
+            not issubclass(model.form, RalphAdminFormMixin)
         ):
             result += admin.checks.must_inherit_from(
                 parent='RalphAdminFormMixin',
                 option='form',
-                obj=cls,
+                obj=model,
                 id='admin.E016'
             )
         return result
 
-    def _check_absolute_url(self, cls, model):
+    def _check_absolute_url(self, model):
         """
         Check if model inherit from AdminAbsoluteUrlMixin
         """
@@ -212,6 +213,10 @@ class RalphAdminChecks(admin.checks.ModelAdminChecks):
 
 
 class DashboardChangelistMixin(object):
+    # TODO(Django-1.11) remove and check if
+    # test_patch_deadline_filters_hosts passes
+    def lookup_allowed(self, *args, **kwargs):
+        return True
 
     def _is_graph_preview_view(self, request):
         return request.GET.get('graph-query', '')
@@ -474,7 +479,7 @@ class RalphAdmin(
     RalphAdminImportExportMixin,
     AjaxAutocompleteMixin,
     RalphAdminMixin,
-    VersionAdmin
+    VersionAdmin,
 ):
     @property
     def media(self):

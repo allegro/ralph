@@ -44,7 +44,7 @@ class UserWidget(widgets.ForeignKeyWidget):
 
     """Widget for Ralph User Foreign Key field."""
 
-    def clean(self, value):
+    def clean(self, value, *args, **kwargs):
         result = None
         if value:
             result, created = get_user_model().objects.get_or_create(
@@ -56,7 +56,7 @@ class UserWidget(widgets.ForeignKeyWidget):
                 )
         return result
 
-    def render(self, value):
+    def render(self, value, obj=None):
         if value:
             return value.username
         return ''
@@ -66,13 +66,13 @@ class UserManyToManyWidget(widgets.ManyToManyWidget):
 
     """Widget for many Ralph Users Foreign Key field."""
 
-    def clean(self, value):
+    def clean(self, value, *args, **kwargs):
         if not value:
             return get_user_model().objects.none()
         usernames = value.split(self.separator)
         return get_user_model().objects.filter(username__in=usernames)
 
-    def render(self, value):
+    def render(self, value, obj=None):
         return self.separator.join([obj.username for obj in value.all()])
 
 
@@ -94,14 +94,14 @@ class ManyToManyThroughWidget(widgets.ManyToManyWidget):
         self.related_model = related_model
         super().__init__(*args, **kwargs)
 
-    def clean(self, value):
+    def clean(self, value, *args, **kwargs):
         if not value:
             return self.related_model.objects.none()
         return self.related_model.objects.filter(
             pk__in=value.split(self.separator)
         )
 
-    def render(self, value):
+    def render(self, value, obj=None):
         return self.separator.join(
             [str(getattr(obj, self.through_field).pk) for obj in value.all()]
         )
@@ -109,13 +109,13 @@ class ManyToManyThroughWidget(widgets.ManyToManyWidget):
 
 class ExportForeignKeyStrWidget(widgets.Widget):
 
-    def render(self, value):
+    def render(self, value, obj=None):
         return str(value)
 
 
 class ExportManyToManyStrWidget(widgets.ManyToManyWidget):
 
-    def render(self, value):
+    def render(self, value, obj=None):
         return self.separator.join([str(obj) for obj in value.all()])
 
 
@@ -124,7 +124,7 @@ class ExportManyToManyStrTroughWidget(ManyToManyThroughWidget):
     Exporter-equivalent of `ManyToManyThroughWidget` - return str of whole
     object instead of pk.
     """
-    def render(self, value):
+    def render(self, value, obj=None):
         return self.separator.join(
             [str(getattr(obj, self.through_field)) for obj in value.all()]
         )
@@ -134,7 +134,7 @@ class BaseObjectManyToManyWidget(widgets.ManyToManyWidget):
 
     """Widget for BO/DC base objects."""
 
-    def clean(self, value):
+    def clean(self, value, *args, **kwargs):
         if not value:
             return self.model.objects.none()
         ids = value.split(self.separator)
@@ -167,7 +167,7 @@ class BaseObjectWidget(widgets.ForeignKeyWidget):
 
     """Widget for BO/DC base objects."""
 
-    def clean(self, value):
+    def clean(self, value, *args, **kwargs):
         if not value:
             return None
         result = None
@@ -193,7 +193,7 @@ class ImportedForeignKeyWidget(widgets.ForeignKeyWidget):
 
     """Widget for ForeignKey fields for which can not define unique."""
 
-    def clean(self, value):
+    def clean(self, value, *args, **kwargs):
         if settings.MAP_IMPORTED_ID_TO_NEW_ID:
             if value:
                 content_type, imported_obj = get_imported_obj(
@@ -205,7 +205,7 @@ class ImportedForeignKeyWidget(widgets.ForeignKeyWidget):
 
 
 class NullStringWidget(widgets.CharWidget):
-    def clean(self, value):
+    def clean(self, value, *args, **kwargs):
         return super().clean(value) or None
 
 
@@ -216,7 +216,7 @@ class AssetServiceEnvWidget(widgets.ForeignKeyWidget):
     CSV field format Service.name|Environment.name
     """
 
-    def clean(self, value):
+    def clean(self, value, *args, **kwargs):
         if not value:
             return None
         try:
@@ -232,7 +232,7 @@ class AssetServiceEnvWidget(widgets.ForeignKeyWidget):
             value = None
         return value
 
-    def render(self, value):
+    def render(self, value, obj=None):
         if value is None:
             return ""
         return "{}|{}".format(
@@ -243,7 +243,7 @@ class AssetServiceEnvWidget(widgets.ForeignKeyWidget):
 
 class AssetServiceUidWidget(widgets.ForeignKeyWidget):
 
-    def clean(self, value):
+    def clean(self, value, *args, **kwargs):
         if not value:
             return None
         try:
@@ -259,7 +259,7 @@ class AssetServiceUidWidget(widgets.ForeignKeyWidget):
             value = None
         return value
 
-    def render(self, value):
+    def render(self, value, obj=None):
         if value is None:
             return ""
         return value.service.uid
@@ -277,15 +277,15 @@ class IPManagementWidget(widgets.ManyToManyWidget):
     ip. This because management ip is seperate model which can't be created
     wihtout DataCenterAsset (and DataCenterAsset is the result of importing).
     """
-    def clean(self, value):
+    def clean(self, value, *args, **kwargs):
         return value
 
-    def render(self, value):
+    def render(self, value, obj=None):
         return value or ''
 
 
 class BaseObjectServiceNamesM2MWidget(widgets.ManyToManyWidget):
-    def render(self, value):
+    def render(self, value, obj=None):
         return self.separator.join([
             bo.service.name if bo.service else '-'
             for bo in value.all()
@@ -293,10 +293,10 @@ class BaseObjectServiceNamesM2MWidget(widgets.ManyToManyWidget):
 
 
 class PriceAmountWidget(widgets.Widget):
-    def render(self, value):
+    def render(self, value, obj=None):
         return '{0:.2f}'.format(value.amount)
 
 
 class PriceCurrencyWidget(widgets.Widget):
-    def render(self, value):
+    def render(self, value, obj=None):
         return str(value.currency)

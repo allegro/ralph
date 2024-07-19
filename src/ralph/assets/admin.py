@@ -2,7 +2,8 @@
 from django.db.models import Count
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, RalphMPTTAdmin, RalphTabularInline, register
+from ralph.admin.decorators import register
+from ralph.admin.mixins import RalphAdmin, RalphMPTTAdmin, RalphTabularInline
 from ralph.admin.views.extra import RalphDetailView
 from ralph.assets.models.assets import (
     Asset,
@@ -34,7 +35,7 @@ from ralph.assets.models.configuration import (
 )
 from ralph.data_importer import resources
 from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
-from ralph.lib.table import Table, TableWithUrl
+from ralph.lib.table.table import Table, TableWithUrl
 from ralph.security.views import ScanStatusInTableMixin
 
 

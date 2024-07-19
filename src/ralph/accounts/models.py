@@ -13,7 +13,7 @@ from rest_framework.authtoken.models import Token
 
 from ralph.admin.autocomplete import AutocompleteTooltipMixin
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
-from ralph.lib.permissions import (
+from ralph.lib.permissions.models import (
     PermByFieldMixin,
     PermissionsForObjectMixin,
     user_permission
@@ -164,12 +164,10 @@ class RalphUser(
         return any([self.has_perm(p, obj=obj) for p in perms])
 
     def save(self, *args, **kwargs):
-        # set default values if None provided
-        for field in ('country',):
-            val = getattr(self, field)
-            if val is None:
-                val = self._meta.get_field_by_name(field)[0].default
-                setattr(self, field, val)
+        if isinstance(self.country, str):
+            self.country = Country.from_name(self.country.lower()).id
+        elif self.country is None:
+            self.country = Country.pl.id
         return super().save(*args, **kwargs)
 
     @property

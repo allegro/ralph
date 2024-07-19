@@ -1,7 +1,8 @@
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, register
+from ralph.admin.decorators import register
 from ralph.admin.filters import DateListFilter
+from ralph.admin.mixins import RalphAdmin
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.ssl_certificates.forms import SSLCertificateForm
 from ralph.ssl_certificates.models import SSLCertificate

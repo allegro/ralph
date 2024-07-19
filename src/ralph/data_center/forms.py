@@ -13,7 +13,7 @@ from ralph.networks.models import IPAddress
 
 class DataCenterAssetForm(PriceFormMixin, AssetFormMixin, RalphAdminForm):
     MODEL_TYPE = ObjectModelType.data_center
-    management_ip = forms.IPAddressField(required=False)
+    management_ip = forms.GenericIPAddressField(required=False, protocol='IPv4')
     management_hostname = CharFormFieldWithAutoStrip(required=False)
 
     ip_fields = ['management_ip', 'management_hostname']

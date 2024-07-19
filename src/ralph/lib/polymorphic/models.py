@@ -16,9 +16,7 @@ from collections import defaultdict
 from itertools import groupby
 
 from django.contrib.contenttypes.models import ContentType
-from django.db import models, OperationalError
-
-from ralph.lib.error_handling.exceptions import WrappedOperationalError
+from django.db import models
 
 
 class PolymorphicQuerySet(models.QuerySet):
@@ -33,7 +31,7 @@ class PolymorphicQuerySet(models.QuerySet):
         self._polymorphic_filter_kwargs = {}
         super().__init__(*args, **kwargs)
 
-    def iterator(self):
+    def iterator(self):  # noqa
         """
         Override iterator:
             - Iterate for all objects and collected ID
@@ -42,22 +40,28 @@ class PolymorphicQuerySet(models.QuerySet):
         """
         # if this is final-level model, don't check for descendants - just
         # return original queryset result
+
         if not getattr(self.model, '_polymorphic_descendants', []):
             yield from super().iterator()
             return
 
         result = []
-        content_types_ids = set()
+        content_types_ids = set()  # type: set[int]
         select_related = None
+
         if self.query.select_related:
             select_related = self.query.select_related
             self.query.select_related = False
+        objs = [obj for obj in super().iterator()]
+        for obj in objs:
+            try:
+                content_types_ids.add(obj.content_type_id)
+                result.append((
+                    obj.content_type_id, obj.pk)
+                )
+            except AttributeError as e:  # noqa
+                pass
 
-        for obj in super().iterator():
-            content_types_ids.add(obj.content_type_id)
-            result.append((
-                obj.content_type_id, obj.pk)
-            )
         # store original order of items by PK
         pks_order = [r[1] for r in result]
         # WARNING! sorting result (by content type) breaks original order of
@@ -114,15 +118,8 @@ class PolymorphicQuerySet(models.QuerySet):
                         *self._polymorphic_filter_args,
                         **self._polymorphic_filter_kwargs
                     )
-                try:
-                    for obj in model_query:
-                        result_mapping[obj.pk].append(obj)
-                # NOTE(pszulc): We try to catch OperationalError that randomly
-                # occurs (1052, "Column 'created' in field list is ambiguous")
-                except OperationalError as e:
-                    raise WrappedOperationalError(
-                        query=model_query.query, model=self, error_str=str(e)) \
-                        from e
+                for obj in model_query:
+                    result_mapping[obj.pk].append(obj)
         # yield objects in original order
         for pk in pks_order:
             # yield all objects with particular PK

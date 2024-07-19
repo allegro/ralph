@@ -9,6 +9,9 @@ from moneyed import CURRENCIES
 
 from ralph.settings.hooks import HOOKS_CONFIGURATION  # noqa: F401
 
+SILENCED_SYSTEM_CHECKS = []
+SILENCED_SYSTEM_CHECKS += ['models.E006', ]  # TODO fix
+
 
 def bool_from_env(var, default: bool=False) -> bool:
     """Helper for converting env string into boolean.
@@ -56,10 +59,11 @@ RALPH_INSTANCE = os.environ.get('RALPH_INSTANCE', 'http://127.0.0.1:8000')
 # Application definition
 
 INSTALLED_APPS = (
+    'django.contrib.contenttypes',
+    'taggit',
+    'django.contrib.auth',
     'ralph.admin',
     'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
     'django.contrib.humanize',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -103,7 +107,6 @@ INSTALLED_APPS = (
     'ralph.ssl_certificates',
     'rest_framework',
     'rest_framework.authtoken',
-    'taggit',
     'taggit_serializer',
     'djmoney',
 )
@@ -119,7 +122,6 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'threadlocals.middleware.ThreadLocalMiddleware',
-    'ralph.lib.error_handling.middleware.OperationalErrorHandlerMiddleware',
     'ralph.lib.metrics.middlewares.RequestMetricsMiddleware'
 )
 
@@ -169,7 +171,7 @@ if DATABASE_SSL_CA:
 
 DATABASES = {
     'default': {
-        'ENGINE': os.environ.get('DATABASE_ENGINE', 'transaction_hooks.backends.mysql'),  # noqa
+        'ENGINE': os.environ.get('DATABASE_ENGINE', 'django.db.backends.mysql'),  # noqa
         'NAME': os.environ.get('DATABASE_NAME', 'ralph_ng'),
         'USER': os.environ.get('DATABASE_USER', 'ralph_ng'),
         'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'ralph_ng') or None,
@@ -271,11 +273,6 @@ LOGGING = {
             'handlers': ['file'],
             'level': os.environ.get('LOGGING_RALPH_LEVEL', 'WARNING'),
             'propagate': True,
-        },
-        'ralph.lib.error_handling.middleware': {
-            'handlers': ['file'],
-            'level': os.environ.get('LOGGING_RALPH_LEVEL', 'WARNING'),
-            'propagate': False,
         },
         'rq.worker': {
             'level': os.environ.get('LOGGING_RQ_LEVEL', 'WARNING'),

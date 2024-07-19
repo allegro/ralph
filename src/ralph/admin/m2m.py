@@ -55,8 +55,11 @@ from django.forms.models import (
 from django.utils.text import get_text_list
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphStackedInline, RalphTabularInline
-from ralph.admin.mixins import RalphAdminForm
+from ralph.admin.mixins import (
+    RalphAdminForm,
+    RalphStackedInline,
+    RalphTabularInline
+)
 
 
 class BaseInlineM2MFormset(BaseInlineFormSet):
@@ -126,8 +129,9 @@ def get_m2m(parent_model, model):
     """
     # need to check on both sides (m2m field will be defined only in one of the
     # models)
-    for rel in parent_model._meta.get_all_related_many_to_many_objects():
-        if issubclass(rel.related_model, model):
+    for rel in parent_model._meta.get_fields(include_hidden=True):
+        if rel.many_to_many and rel.auto_created and \
+                issubclass(rel.related_model, model):
             return rel.field
 
     for rel in parent_model._meta.many_to_many:
@@ -143,7 +147,7 @@ def get_foreign_key_for_m2m(parent_model, m2m):
         parent_model: Django model for which admin inline is created
         m2m: ManyToManyField relation instance
     """
-    for field in m2m.related.through._meta.fields:
+    for field in m2m.remote_field.through._meta.fields:
         if (
             isinstance(field, ForeignKey) and
             issubclass(parent_model, field.rel.to)

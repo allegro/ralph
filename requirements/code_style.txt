@@ -1,2 +1,3 @@
 flake8==3.0.4
 isort==4.2.5
+pyflakes==1.5.0

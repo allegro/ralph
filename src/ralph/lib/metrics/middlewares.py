@@ -53,8 +53,8 @@ old_executemany = CursorWrapper.executemany
 
 
 class QueryLogEntry:
-    sql: str
-    duration: float
+    sql: str  # noqa
+    duration: float  # noqa
 
     def __init__(self, sql: str, duration: float):
         self.sql = sql,
@@ -164,8 +164,8 @@ class RequestMetricsMiddleware(object):
         # processing time
         end_resources, end_time = getrusage(RUSAGE_SELF), time.monotonic()
         real_time = (end_time - request._request_start_time) * 1000
-        sys_time = (end_resources.ru_stime - request._start_resources.ru_stime) * 1000
-        user_time = (end_resources.ru_utime - request._start_resources.ru_utime) * 1000
+        sys_time = (end_resources.ru_stime - request._start_resources.ru_stime) * 1000  # noqa
+        user_time = (end_resources.ru_utime - request._start_resources.ru_utime) * 1000  # noqa
         cpu_time = sys_time + user_time
         queries_time = sum(stat.duration for stat in query_stats) * 1000
 

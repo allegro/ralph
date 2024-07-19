@@ -272,7 +272,7 @@ class PermissionsForObjectMixin(models.Model, metaclass=PermissionsBase):
         user_perms = self._permissions.has_access(user)
         if not user_perms:
             return True
-        return self._default_manager.filter(
+        return self.__class__.objects.filter(
             user_perms,
             pk=self.pk
         ).exists()
@@ -339,7 +339,7 @@ def create_permissions(
             if perms:
                 perms.update(content_type=ctype)
         ctypes.add(ctype)
-        for perm in _get_all_permissions(klass._meta, ctype):
+        for perm in _get_all_permissions(klass._meta):
             searched_perms.append((ctype, perm))
 
     # Find all the Permissions that have a content_type for a model we're

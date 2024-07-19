@@ -3,7 +3,6 @@ import logging
 import operator
 from functools import reduce
 
-import reversion
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.core.exceptions import NON_FIELD_ERRORS, ObjectDoesNotExist
 from django.db import transaction
@@ -14,10 +13,12 @@ from rest_framework.exceptions import \
     ValidationError as RestFrameworkValidationError
 from rest_framework.settings import api_settings
 from rest_framework.utils import model_meta
+from reversion import revisions as reversion
 from taggit_serializer.serializers import (
     TaggitSerializer,
     TagListSerializerField
 )
+
 from ralph.api.fields import AbsoluteUrlField, ReversedChoiceField
 from ralph.api.relations import RalphHyperlinkedRelatedField, RalphRelatedField
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TaggableMixin
@@ -175,7 +176,7 @@ class RalphAPISerializerMixin(
         # exclude some fields from nested serializer
         for field in NESTED_SERIALIZER_FIELDS_BLACKLIST:
             try:
-                relation_info.related_model._meta.get_field_by_name(field)
+                relation_info.related_model._meta.get_field(field)
             except exceptions.FieldDoesNotExist:
                 pass
             else:

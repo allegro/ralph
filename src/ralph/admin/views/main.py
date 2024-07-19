@@ -35,7 +35,7 @@ class RalphChangeList(ChangeList):
             return fields
         try:
             model_admin = admin_site._registry[field.field.rel.to]
-        except AttributeError:
+        except (AttributeError, KeyError):
             pass
         else:
             if all([model_admin, model_admin.ordering]):

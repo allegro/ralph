@@ -12,14 +12,15 @@ from django.db.models import Q
 from django.forms.models import model_to_dict
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
+from reversion import revisions as reversion
 
 from ralph.accounts.models import RalphUser, Region, Team
-from ralph.admin import RalphAdmin, register
+from ralph.admin.decorators import register
 from ralph.admin.helpers import getattr_dunder
-from ralph.admin.mixins import RalphAdminFormMixin
+from ralph.admin.mixins import RalphAdmin, RalphAdminFormMixin
 from ralph.admin.views.extra import RalphDetailView
 from ralph.back_office.models import BackOfficeAsset, BackOfficeAssetStatus
-from ralph.lib.table import Table
+from ralph.lib.table.table import Table
 from ralph.lib.transitions.models import TransitionsHistory
 from ralph.licences.models import Licence
 from ralph.sim_cards.models import SIMCard
@@ -338,8 +339,8 @@ class RalphUserAdmin(UserAdmin, RalphAdmin):
 
         if not self.has_change_permission(request, obj=user):
             raise PermissionDenied
-
-        return super().user_change_password(request, id, form_url)
+        with reversion.create_revision():
+            return super().user_change_password(request, id, form_url)
 
 
 @register(Group)

@@ -10,7 +10,7 @@ DEBUG = False
 TEST_DB_ENGINE = os.environ.get('TEST_DB_ENGINE', 'mysql')
 if TEST_DB_ENGINE == 'psql':
     DATABASES['default'].update({
-        'ENGINE': 'transaction_hooks.backends.postgresql_psycopg2',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'PORT': os.environ.get('DATABASE_PORT', 5432),
         'OPTIONS': {},
     })

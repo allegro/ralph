@@ -1,14 +1,14 @@
 import operator
 from collections import defaultdict
 from functools import reduce
+from typing import Any
 
 from django.contrib.contenttypes.fields import (
     create_generic_related_manager,
-    GenericRelation,
-    ReverseGenericRelatedObjectsDescriptor
+    GenericRelation
 )
 from django.contrib.contenttypes.models import ContentType
-from django.db import connection, models
+from django.db import models
 from django.db.models.fields.related import OneToOneRel
 
 from ralph.admin.helpers import get_field_by_relation_path, getattr_dunder
@@ -112,7 +112,7 @@ class CustomFieldValueQuerySet(models.QuerySet):
             '_prioritize': self._prioritize,
             '_prioritize_model_or_instance': self._prioritize_model_or_instance,
         })
-        return super()._clone(klass, setup, **kwargs)
+        return super()._clone(**kwargs)
 
     def prioritize(self, model_or_instance):
         self._prioritize = True
@@ -148,9 +148,20 @@ class CustomFieldValueQuerySet(models.QuerySet):
         )
 
 
-class ReverseGenericRelatedObjectsWithInheritanceDescriptor(
-    ReverseGenericRelatedObjectsDescriptor
-):
+class RelModel:
+    def __init__(self, model: Any, field: CustomFieldsWithInheritanceRelation):
+        self.model = model
+        self.field = field
+
+
+class ReverseGenericRelatedObjectsWithInheritanceDescriptor:
+    def __init__(self, field, for_concrete_model=True):
+        """
+        imported from ReverseGenericRelatedObjectsDescriptor
+        """
+        self.field = field
+        self.for_concrete_model = for_concrete_model
+
     def __get__(self, instance, instance_type=None):
         """
         Overwrite of ReverseGenericRelatedObjectsDescriptor's __get__
@@ -160,35 +171,21 @@ class ReverseGenericRelatedObjectsWithInheritanceDescriptor(
         """
         if instance is None:
             return self
-        rel_model = self.field.rel.to
+        rel_model = RelModel(model=self.field.rel.to, field=self.field)
         # difference here comparing to Django!
-        superclass = rel_model.inherited_objects.__class__
+        superclass = rel_model.model.inherited_objects.__class__
         RelatedManager = create_generic_related_manager_with_inheritance(
-            superclass
+            superclass, rel_model
         )
 
-        qn = connection.ops.quote_name
-        content_type = ContentType.objects.db_manager(
-            instance._state.db
-        ).get_for_model(
-            instance, for_concrete_model=self.for_concrete_model)
-
-        join_cols = self.field.get_joining_columns(reverse_join=True)[0]
         manager = RelatedManager(
-            model=rel_model,
             instance=instance,
-            source_col_name=qn(join_cols[0]),
-            target_col_name=qn(join_cols[1]),
-            content_type=content_type,
-            content_type_field_name=self.field.content_type_field_name,
-            object_id_field_name=self.field.object_id_field_name,
-            prefetch_cache_name=self.field.attname,
         )
 
         return manager
 
 
-def create_generic_related_manager_with_inheritance(superclass):  # noqa: C901
+def create_generic_related_manager_with_inheritance(superclass, rel):  # noqa: C901
     """
     Extension to Django's create_generic_related_manager.
 
@@ -199,7 +196,7 @@ def create_generic_related_manager_with_inheritance(superclass):  # noqa: C901
     with inheritance  of more than one instance
     """
     # get Django's GenericRelatedObject manager first
-    manager = create_generic_related_manager(superclass)
+    manager = create_generic_related_manager(superclass, rel)
 
     class GenericRelatedObjectWithInheritanceManager(manager):
         def __init__(self, *args, **kwargs):

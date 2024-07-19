@@ -5,7 +5,6 @@ name: CI
 #                push or pull request events but only for the ng branch
 on:
   push:
-    branches: [ ng ]
   pull_request:
     branches: [ ng ]
 

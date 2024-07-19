@@ -89,7 +89,14 @@ class ImportForeignKeyMixin(object):
             instance_loader, row
         )
 
-    def after_save_instance(self, instance, dry_run):
+    def after_save_instance(
+        self,
+        instance,
+        using_transactions: bool,
+        dry_run: bool,
+        *args,
+        **kwargs
+    ):
         if not dry_run and self.old_object_pk:
             content_type = ContentType.objects.get_for_model(self._meta.model)
             ImportedObjects.objects.update_or_create(
@@ -97,3 +104,13 @@ class ImportForeignKeyMixin(object):
                 old_object_pk=self.old_object_pk,
                 defaults={'object_pk': instance.pk}
             )
+
+    def import_field(self, field, obj, data, is_m2m=False):
+        """
+        Calls :meth:`import_export.fields.Field.save` if ``Field.attribute``
+        and ``Field.column_name`` are found in ``data``.
+        """
+        if field.column_name == 'management_ip':
+            field.save(obj, data, is_m2m=False)
+        elif field.attribute and field.column_name in data:
+            field.save(obj, data, is_m2m)

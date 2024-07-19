@@ -3,13 +3,14 @@ from django.contrib import admin
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
-from ralph.admin import RalphAdmin, RalphTabularInline, register
+from ralph.admin.decorators import register
 from ralph.admin.filters import (
     ChoicesListFilter,
     custom_title_filter,
     DateListFilter,
     RelatedAutocompleteFieldListFilter
 )
+from ralph.admin.mixins import RalphAdmin, RalphTabularInline
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.trade_marks.forms import (

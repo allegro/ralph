@@ -2,9 +2,9 @@ from copy import deepcopy
 from itertools import repeat
 
 from django import forms
+from django.apps import apps
 from django.contrib import messages
 from django.core.urlresolvers import reverse
-from django.db.models.loading import get_model
 from django.db.transaction import atomic, non_atomic_requests
 from django.http import (
     Http404,
@@ -76,7 +76,7 @@ class TransitionViewMixin(NonAtomicView, object):
 
     def get_template_names(self):
         template_names = super().get_template_names()
-        template_names.insert(0, self.transition.template_name)
+        template_names.insert(1, self.transition.template_name)
         return template_names
 
     @property
@@ -95,7 +95,7 @@ class TransitionViewMixin(NonAtomicView, object):
                 autocomplete_model = options.get('autocomplete_model', False)
                 model = self.obj
                 if autocomplete_model:
-                    model = get_model(autocomplete_model)
+                    model = apps.get_model(autocomplete_model)
 
                 if autocomplete_field:
                     field = model._meta.get_field(autocomplete_field)

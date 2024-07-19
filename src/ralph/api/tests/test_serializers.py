@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import reversion
 from dj.choices import Choices
 from django.contrib.auth import get_user_model
 from django.core.urlresolvers import reverse
 from rest_framework.test import APIClient, APIRequestFactory
+from reversion.models import Version
 
 from ralph.accounts.tests.factories import RegionFactory
 from ralph.api.relations import RalphHyperlinkedRelatedField, RalphRelatedField
@@ -99,7 +99,7 @@ class TestRalphSerializer(RalphAPITestCase):
             '/test-ralph-api/foos/', data={'bar': 'bar_name'}
         )
         foo = Foo.objects.get(pk=response.data['id'])
-        history = reversion.get_for_object(foo)
+        history = Version.objects.get_for_object(foo)
         self.assertEqual(len(history), 1)
         self.assertIn('bar_name', history[0].serialized_data)
 
@@ -108,7 +108,7 @@ class TestRalphSerializer(RalphAPITestCase):
             data={'bar': 'new_bar'}
         )
         foo = Foo.objects.get(pk=response.data['id'])
-        history = reversion.get_for_object(foo)
+        history = Version.objects.get_for_object(foo)
         self.assertEqual(len(history), 2)
         self.assertIn('new_bar', history[0].serialized_data)
 
@@ -124,7 +124,7 @@ class TestRalphSerializer(RalphAPITestCase):
         base_object_licence = BaseObjectLicence.objects.get(
             pk=response.data['id']
         )
-        history = reversion.get_for_object(base_object_licence)
+        history = Version.objects.get_for_object(base_object_licence)
         self.assertEqual(len(history), 1)
         self.assertIn(
             '"licence": {}'.format(licence.id), history[0].serialized_data

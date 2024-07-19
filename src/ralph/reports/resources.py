@@ -17,7 +17,7 @@ class ChoiceWidget(Widget):
     def __init__(self, choice: Type[Choices]) -> None:
         self.choice = choice
 
-    def render(self, value):
+    def render(self, value, obj=None):
         if value:
             return self.choice.from_id(value).name
         else:

@@ -7,7 +7,7 @@ from django.test import RequestFactory, TestCase
 from django.test.utils import CaptureQueriesContext
 
 from ralph.accounts.tests.factories import UserFactory
-from ralph.admin import ralph_site
+from ralph.admin.sites import ralph_site
 from ralph.data_center.models import DataCenterAsset
 from ralph.data_center.tests.factories import DataCenterAssetFullFactory
 from ralph.licences.models import Licence
@@ -50,7 +50,7 @@ class SimulateAdminExportTestCase(TestCase):
 
         file_format = RawFormat()
         queryset = admin_class.get_export_queryset(request)
-        export_data = admin_class.get_export_data(file_format, queryset)
+        export_data = admin_class.get_export_data(file_format, queryset, request=request)
         return export_data
 
     def _init(self, num=10):
@@ -118,7 +118,7 @@ class DataCenterAssetExporterTestCase(SimulateAdminExportTestCase):
     def test_data_center_asset_export_with_parent_queries_count(self):
         self._test_queries_count(func=lambda: self._export(
             DataCenterAsset
-        ))
+        ), max_queries=12)
 
     def test_data_center_asset_export_with_parent(self):
         self._init(10)
