@@ -5,6 +5,7 @@ from django.core.urlresolvers import NoReverseMatch
 from django.utils.encoding import force_text
 from rest_framework.metadata import SimpleMetadata
 from rest_framework.relations import ManyRelatedField, RelatedField
+from rest_framework.renderers import BrowsableAPIRenderer
 from rest_framework.reverse import reverse
 
 logger = logging.getLogger(__name__)
@@ -101,3 +102,8 @@ class RalphApiMetadata(SimpleMetadata):
             ]
 
         return field_info
+
+
+class NoFiltersBrowsableAPIRenderer(BrowsableAPIRenderer):
+    def get_filter_form(self, data, view, request):
+        return None
