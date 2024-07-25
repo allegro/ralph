@@ -71,7 +71,6 @@ FACTORY_MAP = {
     'ralph.licences.models.Licence': 'ralph.licences.tests.factories.LicenceFactory',  # noqa
     'ralph.licences.models.LicenceType': 'ralph.licences.tests.factories.LicenceTypeFactory',  # noqa
     'ralph.licences.models.Software': 'ralph.licences.tests.factories.SoftwareFactory',  # noqa
-    'ralph.networks.models.networks.DiscoveryQueue': 'ralph.networks.tests.factories.DiscoveryQueueFactory',  # noqa
     'ralph.networks.models.networks.IPAddress': 'ralph.networks.tests.factories.IPAddressFactory',  # noqa
     'ralph.networks.models.networks.NetworkEnvironment': 'ralph.networks.tests.factories.NetworkEnvironmentFactory',  # noqa
     'ralph.networks.models.networks.NetworkKind': 'ralph.networks.tests.factories.NetworkKindFactory',  # noqa
@@ -100,7 +99,6 @@ FACTORY_MAP = {
     'ralph.virtual.models.CloudImage': 'ralph.virtual.tests.factories.CloudImageFactory',  # noqa
     'ralph.virtual.models.CloudProject': 'ralph.virtual.tests.factories.CloudProjectFactory',  # noqa
     'ralph.virtual.models.CloudProvider': 'ralph.virtual.tests.factories.CloudProviderFactory',  # noqa
-    'ralph.virtual.models.CloudSyncProcessor': 'ralph.virtual.tests.factories.CloudSyncProcessorFactory',  # noqa
     'ralph.virtual.models.VirtualServer': 'ralph.virtual.tests.factories.VirtualServerFullFactory',  # noqa
     'ralph.virtual.models.VirtualServerType': 'ralph.virtual.tests.factories.VirtualServerTypeFactory',  # noqa
     'ralph.security.models.Vulnerability': 'ralph.security.tests.factories.VulnerabilityFactory',  # noqa
