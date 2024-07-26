@@ -119,10 +119,8 @@ class RalphAPIRenderingTests(APIPermissionsTestMixin, APITestCase):
             )
             module = import_module(module_path)
             factory_model = getattr(module, factory_class)
-            try:
-                factory_model.create_batch(20)
-            except Exception as exc_:
-                import pdb; pdb.set_trace()
+            factory_model.create_batch(20)
+        cls.user = UserFactory(is_staff=True, is_superuser=True)
 
     def test_rendering(self):
         url = reverse('test-ralph-api:api-root')
@@ -134,9 +132,19 @@ class RalphAPIRenderingTests(APIPermissionsTestMixin, APITestCase):
         *ALL_API_ENDPOINTS.values()
     )
     def test_browsable_endpoint(self, endpoint):
-        user = UserFactory(is_staff=True, is_superuser=True)
-        self.client.force_authenticate(user)
+        self.client.force_authenticate(self.user)
         with CaptureQueriesContext(connections['default']) as cqc:
             response = self.client.get(endpoint, HTTP_ACCEPT='text/html')
-        self.assertLessEqual(len(cqc.captured_queries), 30)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertLessEqual(len(cqc.captured_queries), 30)
+
+    @data(
+        *ALL_API_ENDPOINTS.values()
+    )
+    def test_json_endpoint(self, endpoint):
+        self.client.force_authenticate(self.user)
+        with CaptureQueriesContext(connections['default']) as cqc:
+            response = self.client.get(endpoint, HTTP_ACCEPT='application/json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertLessEqual(len(cqc.captured_queries), 30)
+
