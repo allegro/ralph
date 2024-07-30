@@ -15,6 +15,7 @@ from ralph.data_center.tests.factories import (
     ClusterFactory,
     DataCenterAssetFactory
 )
+from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
 from ralph.networks.tests.factories import IPAddressFactory
 from ralph.virtual.models import (
     CloudFlavor,
@@ -533,6 +534,18 @@ class VirtualServerAPITestCase(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.virtual_server.refresh_from_db()
         self.assertEqual(self.virtual_server.hostname, 's111111.local')
+
+    def test_add_custom_field_to_virtual_server(self):
+        cf = CustomField.objects.create(
+            name='test str', type=CustomFieldTypes.STRING, default_value='xyz'
+        )
+        url = reverse('virtualserver-detail', args=(self.virtual_server.id,)) + "customfields/"
+        data = {
+            'custom_field': cf.id,
+            'value': 'new_value',
+        }
+        response = self.client.post(url, data=data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_filter_by_configuration_path(self):
         url = reverse('virtualserver-list') + '?configuration_path={}'.format(
