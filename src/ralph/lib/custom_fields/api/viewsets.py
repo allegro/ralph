@@ -57,7 +57,11 @@ class ObjectCustomFieldsViewSet(viewsets.ModelViewSet):
     def get_serializer(self, *args, **kwargs):
         kwargs['related_model'] = self.related_model
         if kwargs.get('data') is not None:
-            kwargs['data'].update(self._get_related_model_info())
+            # Make a copy so we can modify it
+            # https://docs.djangoproject.com/en/2.0/ref/request-response/#django.http.QueryDict.copy
+            data = kwargs['data'].copy()
+            data.update(self._get_related_model_info())
+            kwargs['data'] = data
         return super().get_serializer(*args, **kwargs)
 
     def create(self, request, *args, **kwargs):
