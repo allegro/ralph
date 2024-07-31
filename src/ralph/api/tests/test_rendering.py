@@ -124,6 +124,18 @@ class RalphAPIRenderingTests(APIPermissionsTestMixin, APITestCase):
             except Exception as exc_:
                 import pdb; pdb.set_trace()
 
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        for factory in FACTORY_MAP.values():
+            module_path, factory_class = factory.rsplit(
+                '.', 1
+            )
+            module = import_module(module_path)
+            factory_model = getattr(module, factory_class)
+            factory_model.create_batch(20)
+        cls.user = UserFactory(is_staff=True, is_superuser=True)
+
     def test_rendering(self):
         url = reverse('test-ralph-api:api-root')
         self.client.force_authenticate(self.user1)
@@ -140,3 +152,24 @@ class RalphAPIRenderingTests(APIPermissionsTestMixin, APITestCase):
             response = self.client.get(endpoint, HTTP_ACCEPT='text/html')
         self.assertLessEqual(len(cqc.captured_queries), 30)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    @data(
+        *ALL_API_ENDPOINTS.values()
+    )
+    def test_browsable_endpoint(self, endpoint):
+        self.client.force_authenticate(self.user)
+        with CaptureQueriesContext(connections['default']) as cqc:
+            response = self.client.get(endpoint, HTTP_ACCEPT='text/html')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertLessEqual(len(cqc.captured_queries), 30)
+
+    @data(
+        *ALL_API_ENDPOINTS.values()
+    )
+    def test_json_endpoint(self, endpoint):
+        self.client.force_authenticate(self.user)
+        with CaptureQueriesContext(connections['default']) as cqc:
+            response = self.client.get(endpoint, HTTP_ACCEPT='application/json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertLessEqual(len(cqc.captured_queries), 30)
+
