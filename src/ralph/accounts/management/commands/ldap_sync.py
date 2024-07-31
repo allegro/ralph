@@ -278,7 +278,11 @@ class Command(BaseCommand):
                 try:
                     ldap_dict['c'] = [v.decode('utf-8') for v in ldap_dict['c']]
                 except UnicodeDecodeError:
-                    logger.error("Can't decode country %s for user %s", ldap_dict['c'], user_dn)
+                    logger.error(
+                        "Can't decode country %s for user %s",
+                        ldap_dict['c'],
+                        user_dn
+                    )
                     continue
             _truncate('sn', 'last_name', ldap_dict)
             user = self._create_or_update_user(user_dn, ldap_dict)
