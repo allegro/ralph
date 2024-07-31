@@ -1,3 +1,178 @@
+ralph (20240731.1) bionic; urgency=medium
+
+  * Fix error when changing custom fields of some hosts
+  * Fix error with ldap sync
+  * Fix flake
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Wed, 31 Jul 2024 10:41:18 +0000
+
+ralph (20240723.1) bionic; urgency=medium
+
+  [ Olga Matyla ]
+  * Fix BrowsableAPIRenderer
+
+  [ Paweł Szulc ]
+  * Delete sitetree cache
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Tue, 23 Jul 2024 11:30:56 +0000
+
+ralph (20240719.1) bionic; urgency=medium
+
+  [ root ]
+  * UNRELEASED
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Fri, 19 Jul 2024 10:57:02 +0000
+
+ralph (20240719.1) bionic; urgency=medium
+
+  [ Olga Matyla ]
+  * Update to Django 1.9
+  * Fix some tests
+  * Fix sitetree
+  * Fix permissions
+  * Fix RalphAdminChecks
+  * Fix isort
+  * Fix user_password_change and bump pyflakes
+  * Fix some tests and flake
+
+  [ Paweł Szulc ]
+  * Fix lookup
+  * Add missing migrations
+  * Fix flake
+  * Fix managers in migrations. Fix error with content type id
+  * Fix
+  * Fix data_importer tests
+  * Clean up migrations
+  * WIP - migrate from deprectated get_...
+
+  [ awieckowski ]
+  * cleanup
+  * cleanup
+  * cleanup
+
+  [ Paweł Szulc ]
+  * Bump dependencies
+  * Adjust import-export
+  * Adjust django-money ver
+  * Fix render
+
+  [ Olga Matyla ]
+  * Fix imports
+  * Fix ldap imports
+  * Fix reversion import and bump Django
+
+  [ awieckowski ]
+  * fix PermissionsForObjectMixin
+
+  [ Paweł Szulc ]
+  * Fix 500 when sorting ContentType
+
+  [ Olga Matyla ]
+  * Fix icon-unknown
+
+  [ Paweł Szulc ]
+  * Fix invalid literal for int() with base 10: 'PL'
+  * Fix set country
+
+  [ awieckowski ]
+  * fix flake, fix ImportForeignKeyMixin
+  * fix data importer widgets
+
+  [ Paweł Szulc ]
+  * Fix django-import-export compatibility
+  * Build for any push
+  * Fix non-relational field in select_related
+  * Fix bad manager by making them even worse
+  * Adjust num queries
+  * Fix line length
+
+  [ Olga Matyla ]
+  * Fix popup_response
+  * Fix network terminators
+  * Fix IPNetwork to_python
+
+  [ Paweł Szulc ]
+  * Add test for dhcp config format
+  * remove removed middleware imports
+  * Remove WrappedOperationalError occurrence
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Fri, 19 Jul 2024 10:55:53 +0000
+
+ralph (20240719.1) bionic; urgency=medium
+
+  [ Olga Matyla ]
+  * Update to Django 1.9
+  * Fix some tests
+  * Fix sitetree
+  * Fix permissions
+  * Fix RalphAdminChecks
+  * Fix isort
+  * Fix user_password_change and bump pyflakes
+  * Fix some tests and flake
+
+  [ Paweł Szulc ]
+  * Fix lookup
+  * Add missing migrations
+  * Fix flake
+  * Fix managers in migrations. Fix error with content type id
+  * Fix
+  * Fix data_importer tests
+  * Clean up migrations
+  * WIP - migrate from deprectated get_...
+
+  [ awieckowski ]
+  * cleanup
+  * cleanup
+  * cleanup
+
+  [ Paweł Szulc ]
+  * Bump dependencies
+  * Adjust import-export
+  * Adjust django-money ver
+  * Fix render
+
+  [ Olga Matyla ]
+  * Fix imports
+  * Fix ldap imports
+  * Fix reversion import and bump Django
+
+  [ awieckowski ]
+  * fix PermissionsForObjectMixin
+
+  [ Paweł Szulc ]
+  * Fix 500 when sorting ContentType
+
+  [ Olga Matyla ]
+  * Fix icon-unknown
+
+  [ Paweł Szulc ]
+  * Fix invalid literal for int() with base 10: 'PL'
+  * Fix set country
+
+  [ awieckowski ]
+  * fix flake, fix ImportForeignKeyMixin
+  * fix data importer widgets
+
+  [ Paweł Szulc ]
+  * Fix django-import-export compatibility
+  * Build for any push
+  * Fix non-relational field in select_related
+  * Fix bad manager by making them even worse
+  * Adjust num queries
+  * Fix line length
+
+  [ Olga Matyla ]
+  * Fix popup_response
+  * Fix network terminators
+  * Fix IPNetwork to_python
+
+  [ Paweł Szulc ]
+  * Add test for dhcp config format
+  * remove removed middleware imports
+  * Remove WrappedOperationalError occurrence
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Fri, 19 Jul 2024 10:35:35 +0000
+
 ralph (20240611.1) bionic; urgency=medium
 
   * Test example changes
