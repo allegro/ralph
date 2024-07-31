@@ -1,11 +1,11 @@
 from importlib import import_module
 
+from ddt import data, ddt, unpack
+from django.db import connections
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
-from ddt import data, unpack, ddt
-from django.db import connections
 
 from ralph.admin.tests.tests_views import FACTORY_MAP
 from ralph.api.tests._base import APIPermissionsTestMixin
@@ -172,4 +172,3 @@ class RalphAPIRenderingTests(APIPermissionsTestMixin, APITestCase):
             response = self.client.get(endpoint, HTTP_ACCEPT='application/json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertLessEqual(len(cqc.captured_queries), 30)
-
