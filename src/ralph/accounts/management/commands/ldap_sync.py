@@ -274,6 +274,16 @@ class Command(BaseCommand):
         """Load users from ldap and populate them. Returns number of users."""
         synced = 0
         for user_dn, ldap_dict in self._get_users():
+            if ldap_dict.get('c'):
+                try:
+                    ldap_dict['c'] = [v.decode('utf-8') for v in ldap_dict['c']]
+                except UnicodeDecodeError:
+                    logger.error(
+                        "Can't decode country %s for user %s",
+                        ldap_dict['c'],
+                        user_dn
+                    )
+                    continue
             _truncate('sn', 'last_name', ldap_dict)
             user = self._create_or_update_user(user_dn, ldap_dict)
             self.nested_groups.handle(user)
