@@ -1,4 +1,8 @@
-from django.forms.widgets import ChoiceInput, CheckboxFieldRenderer, CheckboxSelectMultiple
+from django.forms.widgets import (
+    CheckboxFieldRenderer,
+    CheckboxSelectMultiple,
+    ChoiceInput
+)
 
 
 class _CheckboxQuerySetChoiceInput(ChoiceInput):
@@ -18,4 +22,3 @@ class _QuerySetCheckboxRenderer(CheckboxFieldRenderer):
 
 class ActionSelectWidget(CheckboxSelectMultiple):
     renderer = _QuerySetCheckboxRenderer
-
