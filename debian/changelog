@@ -1,3 +1,10 @@
+ralph (20240802.2) bionic; urgency=medium
+
+  * Fix bad template
+  * Fix bad template
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Fri, 02 Aug 2024 11:21:44 +0000
+
 ralph (20240802.1) bionic; urgency=medium
 
   * Fix other option
