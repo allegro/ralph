@@ -40,14 +40,15 @@ class SelectWithOtherOpitonWidget(forms.Select):
             name=OTHER_NAME.format(name), value=value.get(OTHER) or ''
         )
 
-    def render(self, name, value, attrs=None, choices=()):
+    def render(self, name, value, attrs=None):
         show_other = value and value.get('value') == OTHER
         choice_value = (value.get('value') if value else '') or ''
-        self.choices = choices
-        return '<div class="{}">{}{}</div>'.format(
-            self.css_class,
-            super().render(name, choice_value, attrs=attrs),
-            self._get_other_field(name, value) if show_other else ''
+        return mark_safe(
+            '<div class="{}">{}{}</div>'.format(
+                self.css_class,
+                super().render(name, choice_value, attrs=attrs),
+                self._get_other_field(name, value) if show_other else ''
+            )
         )
 
     def value_from_datadict(self, data, files, name):
