@@ -28,6 +28,7 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db.models import Q
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models import ConfigurationClass, Ethernet
@@ -768,14 +769,28 @@ def assign_configuration_path(cls, instances, configuration_path, **kwargs):
         instance.save()
 
 
+class PrebootChoiceField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        if obj.critical_after and obj.critical_after < timezone.now().date():
+            return f"[CRITICAL!]{obj.name}"
+        elif obj.warning_after and obj.warning_after < timezone.now().date():
+            return f"[WARNING!]{obj.name}"
+        else:
+            return obj.name
+
+
 @deployment_action(
     verbose_name=_('Apply preboot'),
     form_fields={
         'preboot': {
-            'field': forms.ModelChoiceField(
+            'field': PrebootChoiceField(
                 label=_('Preboot'),
-                queryset=Preboot.objects.all(),
-                empty_label=None
+                queryset=Preboot.active_objects.order_by(
+                    "name",
+                ),
+                widget=forms.Select(
+                    attrs={"id": "preboot-select"}
+                )
             ),
         }
     },

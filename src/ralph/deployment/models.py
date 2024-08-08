@@ -4,8 +4,9 @@ import os
 from dj.choices import Choices
 from django.conf import settings
 from django.db import models
-from django.db.models import F
+from django.db.models import F, Q
 from django.db.models.manager import Manager
+from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.translation import ugettext_lazy as _
 
@@ -137,7 +138,17 @@ class PrebootFile(PrebootItem):
         verbose_name_plural = _('preboot files')
 
 
+class ActiveObjectsManager(Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(
+            Q(disappears_after__isnull=True)
+            | Q(disappears_after__gte=timezone.now()))
+
+
 class Preboot(AdminAbsoluteUrlMixin, NamedMixin):
+    objects = Manager()
+    active_objects = ActiveObjectsManager()
+
     items = models.ManyToManyField(
         PrebootItem,
         blank=True,
@@ -148,6 +159,9 @@ class Preboot(AdminAbsoluteUrlMixin, NamedMixin):
         blank=True,
         default='',
     )
+    warning_after = models.DateField(null=True, blank=False)
+    critical_after = models.DateField(null=True, blank=False)
+    disappears_after = models.DateField(null=True, blank=False)
 
     used_counter = models.PositiveIntegerField(default=0, editable=False)
 
