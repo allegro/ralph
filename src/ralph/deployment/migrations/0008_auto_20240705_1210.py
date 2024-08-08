@@ -13,16 +13,16 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='preboot',
             name='critical_after',
-            field=models.DateField(blank=True, null=True),
+            field=models.DateField(blank=False, null=True),
         ),
         migrations.AddField(
             model_name='preboot',
             name='disappears_after',
-            field=models.DateField(blank=True, null=True),
+            field=models.DateField(blank=False, null=True),
         ),
         migrations.AddField(
             model_name='preboot',
             name='warning_after',
-            field=models.DateField(blank=True, null=True),
+            field=models.DateField(blank=False, null=True),
         ),
     ]

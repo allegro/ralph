@@ -159,9 +159,9 @@ class Preboot(AdminAbsoluteUrlMixin, NamedMixin):
         blank=True,
         default='',
     )
-    warning_after = models.DateField(null=True, blank=True)
-    critical_after = models.DateField(null=True, blank=True)
-    disappears_after = models.DateField(null=True, blank=True)
+    warning_after = models.DateField(null=True, blank=False)
+    critical_after = models.DateField(null=True, blank=False)
+    disappears_after = models.DateField(null=True, blank=False)
 
     used_counter = models.PositiveIntegerField(default=0, editable=False)
 

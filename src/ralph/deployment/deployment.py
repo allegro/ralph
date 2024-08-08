@@ -786,9 +786,6 @@ class PrebootChoiceField(forms.ModelChoiceField):
             'field': PrebootChoiceField(
                 label=_('Preboot'),
                 queryset=Preboot.active_objects.order_by(
-                    "-disappears_after",
-                    "-critical_after",
-                    "-warning_after",
                     "name",
                 ),
                 widget=forms.Select(

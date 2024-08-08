@@ -70,13 +70,11 @@
     prebootSelect.addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex].text;
         if (selectedOption.startsWith('[CRITICAL!]')) {
-          // TODO(HAL-2734) A proper info
-          alert("You selected: CRITICAL");
+          alert("The image should no longer be used - it has been deprecated. Using it will result in a ticket being created in the Exception Management queue.");
         }
         else if (selectedOption.startsWith('[WARNING!]')) {
           {
-            // TODO(HAL-2734) A proper info
-            alert("You selected: WARNING");
+            alert("The image will soon be deprecated, we recommend selecting a higher version.");
           }
         }
     });
