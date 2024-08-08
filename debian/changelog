@@ -1,3 +1,16 @@
+ralph (20240808.1) bionic; urgency=medium
+
+  * Show preboots with warnings and criticals
+  * Add missing import
+  * Format preboot list
+  * WIP - Warnings and criticals added to preboot selection
+  * Add fields to preboots
+  * Add preboot end of life features
+  * Fix flake
+  * Random fix so the test passes
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Thu, 08 Aug 2024 12:21:24 +0000
+
 ralph (20240802.3) bionic; urgency=medium
 
   [ root ]
