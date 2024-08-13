@@ -1,3 +1,9 @@
+ralph (20240813.1) bionic; urgency=medium
+
+  * Increase the value of DATA_UPLOAD_MAX_NUMBER_FIELDS (#3831)
+
+ -- Olga Matyla <olga.matyla@allegro.com>  Tue, 13 Aug 2024 08:49:06 +0000
+
 ralph (20240808.1) bionic; urgency=medium
 
   * Show preboots with warnings and criticals
