@@ -9,4 +9,5 @@ class AccountsConfig(RalphAppConfig):
     verbose_name = _('Accounts')
 
     def ready(self):
-        import ralph.accounts.ldap
+        super().ready()
+        import ralph.accounts.ldap # noqa
