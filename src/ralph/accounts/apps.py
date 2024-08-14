@@ -7,3 +7,6 @@ from ralph.apps import RalphAppConfig
 class AccountsConfig(RalphAppConfig):
     name = 'ralph.accounts'
     verbose_name = _('Accounts')
+
+    def ready(self):
+        import ralph.accounts.ldap
