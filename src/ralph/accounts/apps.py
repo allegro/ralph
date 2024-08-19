@@ -7,3 +7,7 @@ from ralph.apps import RalphAppConfig
 class AccountsConfig(RalphAppConfig):
     name = 'ralph.accounts'
     verbose_name = _('Accounts')
+
+    def ready(self):
+        super().ready()
+        import ralph.accounts.ldap # noqa
