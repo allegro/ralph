@@ -771,16 +771,16 @@ def assign_configuration_path(cls, instances, configuration_path, **kwargs):
 
 def get_preboot_choices(actions, objects):
     choices = []
-    for preboot in Preboot.active_objects.order_by(
+    for obj in Preboot.active_objects.order_by(
         "name",
     ):
-        if preboot.critical_after and preboot.critical_after < timezone.now().date():
-            label = f"[CRITICAL!]{preboot.name}"
-        elif preboot.warning_after and preboot.warning_after < timezone.now().date():
-            label = f"[WARNING!]{preboot.name}"
+        if obj.critical_after and obj.critical_after < timezone.now().date():
+            label = f"[CRITICAL!]{obj.name}"
+        elif obj.warning_after and obj.warning_after < timezone.now().date():
+            label = f"[WARNING!]{obj.name}"
         else:
-            label = preboot.name
-        choices.append((preboot.id, label))
+            label = obj.name
+        choices.append((obj.id, label))
     return choices
 
 
