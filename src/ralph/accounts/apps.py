@@ -10,4 +10,7 @@ class AccountsConfig(RalphAppConfig):
 
     def ready(self):
         super().ready()
-        import ralph.accounts.ldap # noqa
+        try:
+            import ralph.accounts.ldap # noqa
+        except ImportError:
+            pass
