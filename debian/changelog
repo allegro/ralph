@@ -1,3 +1,10 @@
+ralph (20240822.1) bionic; urgency=medium
+
+  * Fix ldap signals (#3834)
+  * Change preboot field type in deployment action (#3835)
+
+ -- Olga Matyla <olga.matyla@allegro.com>  Thu, 22 Aug 2024 08:05:52 +0000
+
 ralph (20240813.1) bionic; urgency=medium
 
   * Increase the value of DATA_UPLOAD_MAX_NUMBER_FIELDS (#3831)
