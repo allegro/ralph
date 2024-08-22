@@ -769,29 +769,32 @@ def assign_configuration_path(cls, instances, configuration_path, **kwargs):
         instance.save()
 
 
-class PrebootChoiceField(forms.ModelChoiceField):
-    def label_from_instance(self, obj):
-        if obj.critical_after and obj.critical_after < timezone.now().date():
-            return f"[CRITICAL!]{obj.name}"
-        elif obj.warning_after and obj.warning_after < timezone.now().date():
-            return f"[WARNING!]{obj.name}"
+def get_preboot_choices(actions, objects):
+    choices = []
+    for preboot in Preboot.active_objects.order_by(
+        "name",
+    ):
+        if preboot.critical_after and preboot.critical_after < timezone.now().date():
+            label = f"[CRITICAL!]{preboot.name}"
+        elif preboot.warning_after and preboot.warning_after < timezone.now().date():
+            label = f"[WARNING!]{preboot.name}"
         else:
-            return obj.name
+            label = preboot.name
+        choices.append((preboot.id, label))
+    return choices
 
 
 @deployment_action(
     verbose_name=_('Apply preboot'),
     form_fields={
         'preboot': {
-            'field': PrebootChoiceField(
+            'field': forms.ChoiceField(
                 label=_('Preboot'),
-                queryset=Preboot.active_objects.order_by(
-                    "name",
-                ),
                 widget=forms.Select(
                     attrs={"id": "preboot-select"}
                 )
             ),
+            'choices': get_preboot_choices,
         }
     },
     is_async=True,
