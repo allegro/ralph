@@ -61,7 +61,11 @@ class PrebootAdmin(RalphAdmin):
     fieldsets = (
         (_('Basic info'), {
             'fields': (
-                'name', 'items'
+                'name',
+                'items',
+                'warning_after',
+                'critical_after',
+                'disappears_after'
             )
         }),
         (_('Additional info'), {

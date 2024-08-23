@@ -1,3 +1,35 @@
+ralph (20240822.2) bionic; urgency=medium
+
+  * Fix import of ldap
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Thu, 22 Aug 2024 13:46:33 +0000
+
+ralph (20240822.1) bionic; urgency=medium
+
+  * Fix ldap signals (#3834)
+  * Change preboot field type in deployment action (#3835)
+
+ -- Olga Matyla <olga.matyla@allegro.com>  Thu, 22 Aug 2024 08:05:52 +0000
+
+ralph (20240813.1) bionic; urgency=medium
+
+  * Increase the value of DATA_UPLOAD_MAX_NUMBER_FIELDS (#3831)
+
+ -- Olga Matyla <olga.matyla@allegro.com>  Tue, 13 Aug 2024 08:49:06 +0000
+
+ralph (20240808.1) bionic; urgency=medium
+
+  * Show preboots with warnings and criticals
+  * Add missing import
+  * Format preboot list
+  * WIP - Warnings and criticals added to preboot selection
+  * Add fields to preboots
+  * Add preboot end of life features
+  * Fix flake
+  * Random fix so the test passes
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Thu, 08 Aug 2024 12:21:24 +0000
+
 ralph (20240802.3) bionic; urgency=medium
 
   [ root ]
