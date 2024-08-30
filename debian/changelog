@@ -1,3 +1,10 @@
+ralph (20240830.1) bionic; urgency=medium
+
+  * Fix debian package (#3838)
+  * Fix _get_preboot (#3839)
+
+ -- Olga Matyla <olga.matyla@allegro.com>  Fri, 30 Aug 2024 08:38:39 +0000
+
 ralph (20240822.2) bionic; urgency=medium
 
   * Fix import of ldap
