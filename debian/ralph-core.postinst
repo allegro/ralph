@@ -18,7 +18,7 @@ fix_ownerships () {
 db_configuration () {
     if [ ! -e "/etc/ralph/conf.d/database.conf" ] ; then
 
-        DATABASE_ENGINE_DRIVER=transaction_hooks.backends.mysql
+        DATABASE_ENGINE_DRIVER=django.db.backends.mysql
 
         db_get ralphsrv/use_default
         if [ "$RET" = "false" ] ; then
@@ -36,7 +36,7 @@ db_configuration () {
             DATABASE_NAME=$RET
 
             if [ $DATABASE_ENGINE = "postgresql" ] ; then
-                DATABASE_ENGINE_DRIVER=transaction_hooks.backends.postgresql_psycopg2
+                DATABASE_ENGINE_DRIVER=django.db.backends.postgresql_psycopg2
             fi
 
         else
@@ -71,7 +71,7 @@ case "$1" in
       ;;
 
   abort-upgrade|abort-remove|abort-deconfigure)
-      ;;	
+      ;;
 
   *)
     echo "postinst called with unknown argument \`$1'" >&2
