@@ -60,8 +60,9 @@ def ipxe(request, deployment_id=None):
     except Deployment.DoesNotExist:
         logger.warning(DEPLOYMENT_404_MSG, deployment_id)
         raise Http404
+    preboot = _get_preboot(deployment_id)
     configuration = _render_configuration(
-        deployment.preboot.get_configuration('ipxe'), deployment
+        preboot.get_configuration('ipxe'), deployment
     )
     return HttpResponse(configuration, content_type='text/plain')
 
