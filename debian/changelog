@@ -1,3 +1,9 @@
+ralph (20240903.1) bionic; urgency=medium
+
+  * Fix ipxe for deploy (#3840)
+
+ -- Olga Matyla <olga.matyla@allegro.com>  Tue, 03 Sep 2024 09:57:16 +0000
+
 ralph (20240830.2) bionic; urgency=medium
 
   [ root ]
