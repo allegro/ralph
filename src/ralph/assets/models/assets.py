@@ -523,14 +523,24 @@ class Asset(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
         return liquidated_history and liquidated_history[0].date.date() <= date
 
     def clean(self):
+        errors = {}
         if not self.sn and not self.barcode:
             error_message = [_('SN or BARCODE field is required')]
-            raise ValidationError(
+            errors.update(
                 {
                     'sn': error_message,
                     'barcode': error_message
                 }
             )
+        if not self.property_of:
+            error_message = [_('Property of field is required')]
+            errors.update(
+                {
+                    'property_of': error_message,
+                }
+            )
+        if errors:
+            raise ValidationError(errors)
 
     def save(self, *args, **kwargs):
         # if you save barcode as empty string (instead of None) you could have
