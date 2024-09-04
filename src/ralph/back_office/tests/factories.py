@@ -7,6 +7,7 @@ from factory.fuzzy import FuzzyDecimal
 
 from ralph.accounts.tests.factories import RegionFactory
 from ralph.assets.tests.factories import (
+    AssetHolderFactory,
     BackOfficeAssetModelFactory,
     BudgetInfoFactory
 )
@@ -59,6 +60,7 @@ class BackOfficeAssetFactory(DjangoModelFactory):
     invoice_no = factory.Sequence(lambda n: 'Invoice number ' + str(n))
     price = FuzzyDecimal(10, 300)
     securityscan = factory.RelatedFactory(SecurityScanFactory, 'base_object')
+    property_of = factory.SubFactory(AssetHolderFactory)
 
     class Meta:
         model = BackOfficeAsset

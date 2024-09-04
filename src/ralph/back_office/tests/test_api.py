@@ -5,6 +5,7 @@ from rest_framework import status
 from ralph.accounts.models import Region
 from ralph.api.tests._base import RalphAPITestCase
 from ralph.assets.tests.factories import (
+    AssetHolderFactory,
     BackOfficeAssetModelFactory,
     ServiceEnvironmentFactory
 )
@@ -21,6 +22,7 @@ class BackOfficeAssetAPITests(RalphAPITestCase):
         self.service_env = ServiceEnvironmentFactory()
         self.model = BackOfficeAssetModelFactory()
         self.warehouse = WarehouseFactory()
+        self.assetHolder = AssetHolderFactory()
         self.bo_asset = BackOfficeAssetFactory(
             warehouse=self.warehouse,
             model=self.model,
@@ -66,6 +68,7 @@ class BackOfficeAssetAPITests(RalphAPITestCase):
             'model': self.model.id,
             'service_env': self.service_env.id,
             'force_depreciation': False,
+            'property_of': self.assetHolder.id,
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -89,12 +92,33 @@ class BackOfficeAssetAPITests(RalphAPITestCase):
             'model': self.model.id,
             'service_env': self.service_env.id,
             'force_depreciation': False,
+            'property_of': self.assetHolder.id,
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data, {
             'sn': ['SN or BARCODE field is required'],
             'barcode': ['SN or BARCODE field is required'],
+        })
+
+    def test_create_back_office_asset_without_property_of(self):
+        region = Region.objects.create(name='EU')
+        url = reverse('backofficeasset-list')
+        data = {
+            'hostname': '12345',
+            'user': self.user1.id,
+            'owner': self.superuser.id,
+            'region': region.id,
+            'warehouse': self.warehouse.id,
+            'model': self.model.id,
+            'service_env': self.service_env.id,
+            'force_depreciation': False,
+            'sn': 'sn',
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, {
+            'property_of': ['Property of field is required'],
         })
 
     def test_patch_back_office_asset(self):

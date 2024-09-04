@@ -700,6 +700,7 @@ class BackOfficeAssetFormTest(TransitionTestCase, ClientMixin):
             'region': self.asset.region.pk,
             'barcode': self.asset.barcode,
             'depreciation_rate': 0,
+            'property_of': self.asset.property_of.id,
             'custom_fields-customfieldvalue-content_type-object_id-INITIAL_FORMS': '0',  # noqa: E501
             'custom_fields-customfieldvalue-content_type-object_id-MAX_NUM_FORMS': '1000',  # noqa: E501
             'custom_fields-customfieldvalue-content_type-object_id-MIN_NUM_FORMS': '0',  # noqa: E501
