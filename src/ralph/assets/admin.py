@@ -132,6 +132,7 @@ class ServiceEnvironmentInline(RalphTabularInline):
     model = ServiceEnvironment
     raw_id_fields = ['environment']
     fields = ('environment',)
+    min_num = 1
 
 
 class BaseObjectsList(ScanStatusInTableMixin, Table):
