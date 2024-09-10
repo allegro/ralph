@@ -70,6 +70,7 @@ class TestDataCenterAssetForm(RalphTestCase):
             'position': dca.position,
             'service_env': dca.service_env.pk,
             'sn': dca.sn,
+            'property_of': dca.property_of.id,
             'status': 1,
             'custom_fields-customfieldvalue-content_type-object_id-INITIAL_FORMS': '0',
             'custom_fields-customfieldvalue-content_type-object_id-MAX_NUM_FORMS': '1000',

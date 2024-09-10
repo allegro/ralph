@@ -62,6 +62,7 @@ class DataCenterAssetAdminTest(TransactionTestCase):
             'service_env': self.dca.service_env_id,
             'status': self.dca.status,
             'depreciation_rate': self.dca.depreciation_rate,
+            'property_of': self.dca.property_of.id
         }
         data.update(dca_data or {})
         if inline_data:

@@ -4,7 +4,7 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect
 
 from ralph.admin.helpers import get_client_ip
 from ralph.assets.models import Ethernet
-from ralph.deployment.models import Deployment
+from ralph.deployment.models import Deployment, Preboot
 from ralph.deployment.utils import _render_configuration
 
 logger = logging.getLogger(__name__)
@@ -24,12 +24,13 @@ def get_object_or_404_with_message(model, msg, logger_args, **kwargs):
 def _get_preboot(deployment_id):
     error_msg = 'Deployment with UUID: %s doesn\'t exist'
     try:
-        return get_object_or_404_with_message(
+        preboot_id = get_object_or_404_with_message(
             model=Deployment,
             msg=error_msg,
             logger_args=[deployment_id],
             id=deployment_id
         ).preboot
+        return Preboot.objects.get(id=preboot_id)
     except ValueError:
         logger.warning('Incorrect UUID: %s', deployment_id)
         raise SuspiciousOperation('Malformed UUID')
@@ -59,8 +60,9 @@ def ipxe(request, deployment_id=None):
     except Deployment.DoesNotExist:
         logger.warning(DEPLOYMENT_404_MSG, deployment_id)
         raise Http404
+    preboot = _get_preboot(deployment.id)
     configuration = _render_configuration(
-        deployment.preboot.get_configuration('ipxe'), deployment
+        preboot.get_configuration('ipxe'), deployment
     )
     return HttpResponse(configuration, content_type='text/plain')
 

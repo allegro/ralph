@@ -1,3 +1,29 @@
+ralph (20240903.2) bionic; urgency=medium
+
+  * Fix ipxe (#3841)
+
+ -- Olga Matyla <olga.matyla@allegro.com>  Tue, 03 Sep 2024 12:20:17 +0000
+
+ralph (20240903.1) bionic; urgency=medium
+
+  * Fix ipxe for deploy (#3840)
+
+ -- Olga Matyla <olga.matyla@allegro.com>  Tue, 03 Sep 2024 09:57:16 +0000
+
+ralph (20240830.2) bionic; urgency=medium
+
+  [ root ]
+  * UNRELEASED
+
+ -- Olga Matyla <olga.matyla@allegro.com>  Fri, 30 Aug 2024 13:27:59 +0000
+
+ralph (20240830.1) bionic; urgency=medium
+
+  * Fix debian package (#3838)
+  * Fix _get_preboot (#3839)
+
+ -- Olga Matyla <olga.matyla@allegro.com>  Fri, 30 Aug 2024 08:38:39 +0000
+
 ralph (20240822.2) bionic; urgency=medium
 
   * Fix import of ldap
