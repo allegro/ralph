@@ -5,7 +5,7 @@ import logging
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
@@ -374,6 +374,12 @@ class Asset(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
         null=True,
         verbose_name=_('SN'),
         unique=True,
+        validators=[RegexValidator(
+            r'\s',
+            _('No spaces allowed'),
+            inverse_match=True,
+            code="no_spaces_allowed",
+        )]
     )
     barcode = NullableCharField(
         blank=True,
@@ -381,7 +387,13 @@ class Asset(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
         max_length=200,
         null=True,
         unique=True,
-        verbose_name=_('barcode')
+        verbose_name=_('barcode'),
+        validators=[RegexValidator(
+            r'\s',
+            _('No spaces allowed'),
+            inverse_match=True,
+            code="no_spaces_allowed",
+        )]
     )
     niw = NullableCharField(
         blank=True,
