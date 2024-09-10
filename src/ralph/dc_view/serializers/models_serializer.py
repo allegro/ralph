@@ -164,7 +164,7 @@ class RackSerializer(AdminLinkMixin, RackBaseSerializer):
 
 
 class SRSerializer(AdminLinkMixin, serializers.ModelSerializer):
-    rack_set = RackSerializer(many=True, source='racks')
+    rack_set = RackSerializer(source='racks', many=True)
     admin_link = serializers.SerializerMethodField('admin_link')
 
     class Meta:

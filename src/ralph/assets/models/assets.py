@@ -5,7 +5,7 @@ import logging
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
@@ -380,6 +380,12 @@ class Asset(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
         null=True,
         verbose_name=_('SN'),
         unique=True,
+        validators=[RegexValidator(
+            r'\s',
+            _('No spaces allowed'),
+            inverse_match=True,
+            code="no_spaces_allowed",
+        )]
     )
     barcode = NullableCharField(
         blank=True,
@@ -387,7 +393,13 @@ class Asset(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
         max_length=200,
         null=True,
         unique=True,
-        verbose_name=_('barcode')
+        verbose_name=_('barcode'),
+        validators=[RegexValidator(
+            r'\s',
+            _('No spaces allowed'),
+            inverse_match=True,
+            code="no_spaces_allowed",
+        )]
     )
     niw = NullableCharField(
         blank=True,
@@ -529,14 +541,24 @@ class Asset(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
         return liquidated_history and liquidated_history[0].date.date() <= date
 
     def clean(self):
+        errors = {}
         if not self.sn and not self.barcode:
             error_message = [_('SN or BARCODE field is required')]
-            raise ValidationError(
+            errors.update(
                 {
                     'sn': error_message,
                     'barcode': error_message
                 }
             )
+        if not self.property_of:
+            error_message = [_('Property of field is required')]
+            errors.update(
+                {
+                    'property_of': error_message,
+                }
+            )
+        if errors:
+            raise ValidationError(errors)
 
     def save(self, *args, **kwargs):
         # if you save barcode as empty string (instead of None) you could have
