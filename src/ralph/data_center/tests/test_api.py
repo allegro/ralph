@@ -4,6 +4,7 @@ from rest_framework import status
 
 from ralph.api.tests._base import RalphAPITestCase
 from ralph.assets.tests.factories import (
+    AssetHolderFactory,
     DataCenterAssetModelFactory,
     EthernetFactory,
     ServiceEnvironmentFactory
@@ -37,6 +38,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         super().setUp()
         self.service_env = ServiceEnvironmentFactory()
         self.model = DataCenterAssetModelFactory()
+        self.assetHolder = AssetHolderFactory()
         self.rack = RackFactory()
         self.dc_asset = DataCenterAssetFullFactory(
             rack=self.rack,
@@ -142,6 +144,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
             'position': 12,
             'service_env': self.service_env.id,
             'force_depreciation': False,
+            'property_of': self.assetHolder.id,
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -193,7 +196,8 @@ class DataCenterAssetAPITests(RalphAPITestCase):
             'position': 12,
             'service_env': self.service_env.id,
             'force_depreciation': False,
-            'tags': ['prod', 'db']
+            'tags': ['prod', 'db'],
+            'property_of': self.assetHolder.id,
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -212,13 +216,33 @@ class DataCenterAssetAPITests(RalphAPITestCase):
             'position': 12,
             'service_env': self.service_env.id,
             'force_depreciation': False,
-            'tags': ['prod', 'db']
+            'tags': ['prod', 'db'],
+            'property_of': self.assetHolder.id
         }
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data, {
             'sn': ['SN or BARCODE field is required'],
             'barcode': ['SN or BARCODE field is required'],
+        })
+
+
+    def test_create_data_center_without_property_of(self):
+        url = reverse('datacenterasset-list')
+        data = {
+            'hostname': '12345',
+            'model': self.model.id,
+            'rack': self.rack.id,
+            'position': 12,
+            'service_env': self.service_env.id,
+            'force_depreciation': False,
+            'tags': ['prod', 'db'],
+            'sn': 'sn',
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data, {
+            'property_of': ['Property of field is required'],
         })
 
     def test_patch_data_center_asset(self):
