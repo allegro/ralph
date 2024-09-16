@@ -77,7 +77,9 @@ class PermissionsSelectWidget(forms.Widget):
         attr_value = ','.join(map(str, value or []))
         if not attrs:
             attrs = {}
-        final_attrs = self.build_attrs(attrs, {'type': 'hidden', 'name': name, 'value': attr_value})
+        final_attrs = self.build_attrs(
+            attrs, extra_attrs={'type': 'hidden', 'name': name, 'value': attr_value}
+        )
         return mark_safe(
             '<a class="expand action-expand">Expand all</a>'
             '<ul class="accordion" data-multi="{}" data-accordion>{}</ul>'
