@@ -242,7 +242,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data, {
-            'property_of': ['Property of field is required'],
+            '__all__': ['Property of field is required'],
         })
 
     def test_patch_data_center_asset(self):
