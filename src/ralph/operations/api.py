@@ -4,6 +4,7 @@ from rest_framework.serializers import SlugRelatedField
 from ralph.accounts.models import RalphUser
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.assets.models import BaseObject
+from ralph.lib.api.utils import renderer_classes_without_form
 from ralph.operations.models import Operation, OperationStatus, OperationType
 
 
@@ -56,6 +57,7 @@ class OperationSerializer(RalphAPISerializer):
 
 
 class OperationViewSet(RalphAPIViewSet):
+    renderer_classes = renderer_classes_without_form(RalphAPIViewSet.renderer_classes)
     queryset = Operation.objects.all().prefetch_related(
         Prefetch(
             lookup='base_objects',
@@ -65,6 +67,7 @@ class OperationViewSet(RalphAPIViewSet):
     serializer_class = OperationSerializer
     save_serializer_class = OperationSerializer
     select_related = ['type', 'assignee', 'reporter', 'status']
+    prefetch_related = ["tags", "base_objects__tags"]
     filter_fields = [
         'id', 'title', 'description', 'status', 'status', 'ticket_id',
         'created_date', 'update_date', 'resolved_date', 'type',

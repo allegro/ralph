@@ -23,6 +23,8 @@ class SSLCertificateViewSet(RalphAPIViewSet):
     select_related = [
         'service_env__service', 'service_env__environment'
     ]
+    prefetch_related = ("licences__tags", "tags", "custom_fields", "content_type")
+
 
 router.register(r'sslcertificates', SSLCertificateViewSet)
 urlpatterns = []

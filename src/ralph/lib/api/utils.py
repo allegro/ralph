@@ -105,10 +105,22 @@ class RalphApiMetadata(SimpleMetadata):
 
 
 class NoFiltersBrowsableAPIRenderer(BrowsableAPIRenderer):
+    """
+    Filters are loaded directly into HTML
+    It's slow, and we don't want that
+    """
     def get_filter_form(self, data, view, request):
         return None
 
 
-class NoFiltersNoHtmlFormBrowsableAPIRenderer(NoFiltersBrowsableAPIRenderer):
+class OnlyRawBrowsableAPIRenderer(NoFiltersBrowsableAPIRenderer):
+    """For some views HTML form loads many objects and it's really slow."""
     def render_form_for_serializer(self, serializer):
         return ""
+
+
+def renderer_classes_without_form(renderer_classes):
+    return [OnlyRawBrowsableAPIRenderer] + [
+        rc for rc in renderer_classes
+        if not isinstance(rc(), BrowsableAPIRenderer)
+    ]

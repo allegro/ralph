@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from rest_framework.renderers import JSONRenderer
-from rest_framework_xml.renderers import XMLRenderer
 
 from ralph.accounts.api_simple import ExtendedRalphUserSerializer
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
@@ -9,7 +7,7 @@ from ralph.assets.api.serializers import (
     BaseObjectSimpleSerializer,
     ServiceEnvironmentSimpleSerializer
 )
-from ralph.lib.api.utils import NoFiltersBrowsableAPIRenderer, NoFiltersNoHtmlFormBrowsableAPIRenderer
+from ralph.lib.api.utils import renderer_classes_without_form
 from ralph.licences.models import (
     BaseObjectLicence,
     Licence,
@@ -76,11 +74,7 @@ class SoftwareSerializer(RalphAPISerializer):
 # VIEWSETS
 # ========
 class BaseObjectLicenceViewSet(RalphAPIViewSet):
-    renderer_classes = [
-        JSONRenderer,
-        NoFiltersNoHtmlFormBrowsableAPIRenderer,
-        XMLRenderer
-    ]
+    renderer_classes = renderer_classes_without_form(RalphAPIViewSet.renderer_classes)
     queryset = BaseObjectLicence.objects.all()
     serializer_class = BaseObjectLicenceSerializer
     select_related = [
@@ -100,16 +94,17 @@ class LicenceTypeViewSet(RalphAPIViewSet):
 
 
 class LicenceViewSet(RalphAPIViewSet):
+    renderer_classes = renderer_classes_without_form(RalphAPIViewSet.renderer_classes)
     queryset = Licence.objects.all()
     serializer_class = LicenceSerializer
     select_related = [
         'region', 'manufacturer', 'office_infrastructure', 'licence_type',
         'software', 'service_env', 'service_env__service',
-        'service_env__environment'
+        'service_env__environment', 'budget_info', 'property_of',
     ]
     prefetch_related = [
         'tags', 'users', 'licenceuser_set__user',
-        'baseobjectlicence_set__base_object',
+        'baseobjectlicence_set__base_object', 'custom_fields', 'content_type'
     ]
 
 

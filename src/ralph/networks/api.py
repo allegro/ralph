@@ -124,6 +124,7 @@ class NetworkKindViewSet(RalphAPIViewSet):
     queryset = NetworkKind.objects.all()
     serializer_class = NetworkKindSerializer
 
+
 router.register(r'ipaddresses', IPAddressViewSet)
 router.register(r'networks', NetworkViewSet)
 router.register(r'network-environments', NetworkEnvironmentViewSet)

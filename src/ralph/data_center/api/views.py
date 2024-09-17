@@ -119,6 +119,10 @@ class DataCenterViewSet(RalphAPIViewSet):
 class DatabaseViewSet(RalphAPIViewSet):
     queryset = Database.objects.all()
     serializer_class = DatabaseSerializer
+    prefetch_related = (
+        'tags', 'licences', 'custom_fields', 'content_type',
+        'service_env__service', 'service_env__environment'
+    )
 
 
 class VIPViewSet(RalphAPIViewSet):

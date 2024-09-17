@@ -102,6 +102,7 @@ class SecurityScanViewSet(RalphAPIViewSet):
     save_serializer_class = SaveSecurityScanSerializer
 
     additional_filter_class = IPFilter
+    prefetch_related = ("tags", "vulnerabilities__tags")
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
