@@ -19,6 +19,7 @@ class APIBrowsableClient(APIClient):
     default_format = 'text/html'
 
 
+DEFAULT_MAX_QUERIES = 20
 # To get this just visit /api in your browser
 ALL_API_ENDPOINTS = {
     "access-card": "/api/access-card/",
@@ -44,7 +45,7 @@ ALL_API_ENDPOINTS = {
     "configuration-classes": "/api/configuration-classes/",
     "configuration-modules": "/api/configuration-modules/",
     "custom-fields": "/api/custom-fields/",
-    "data-center-assets": "/api/data-center-assets/",
+    "data-center-assets": ("/api/data-center-assets/", 22),
     "data-centers": "/api/data-centers/",
     "databases": "/api/databases/",
     "dc-hosts": "/api/dc-hosts/",
@@ -129,21 +130,27 @@ class RalphAPIRenderingTests(APIPermissionsTestMixin, APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     @data(
-        *ALL_API_ENDPOINTS.values()
+        *ALL_API_ENDPOINTS.keys()
     )
-    def test_browsable_endpoint(self, endpoint):
+    def test_browsable_endpoint(self, model_name):
+        endpoint, max_queries = ALL_API_ENDPOINTS[model_name] \
+            if isinstance(ALL_API_ENDPOINTS[model_name], tuple) \
+            else (ALL_API_ENDPOINTS[model_name], DEFAULT_MAX_QUERIES)
         self.client.force_authenticate(self.user)
         with CaptureQueriesContext(connections['default']) as cqc:
             response = self.client.get(endpoint, HTTP_ACCEPT='text/html')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertLessEqual(len(cqc.captured_queries), 30)
+        self.assertLessEqual(len(cqc.captured_queries), max_queries)
 
     @data(
-        *ALL_API_ENDPOINTS.values()
+        *ALL_API_ENDPOINTS.keys()
     )
-    def test_json_endpoint(self, endpoint):
+    def test_json_endpoint(self, model_name):
+        endpoint, max_queries = ALL_API_ENDPOINTS[model_name] \
+            if isinstance(ALL_API_ENDPOINTS[model_name], tuple) \
+            else (ALL_API_ENDPOINTS[model_name], DEFAULT_MAX_QUERIES)
         self.client.force_authenticate(self.user)
         with CaptureQueriesContext(connections['default']) as cqc:
             response = self.client.get(endpoint, HTTP_ACCEPT='application/json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertLessEqual(len(cqc.captured_queries), 30)
+        self.assertLessEqual(len(cqc.captured_queries), max_queries)

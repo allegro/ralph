@@ -90,6 +90,7 @@ class AssetModelViewSet(RalphAPIViewSet):
     serializer_class = serializers.AssetModelSerializer
     save_serializer_class = serializers.AssetModelSaveSerializer
     select_related = ["manufacturer"]
+    prefetch_related = ["custom_fields"]
 
 
 class BaseObjectFilterSet(NetworkableObjectFilters):
