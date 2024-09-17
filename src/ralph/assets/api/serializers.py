@@ -67,6 +67,7 @@ class BusinessSegmentSerializer(RalphAPISerializer):
 class BudgetInfoSerializer(RalphAPISerializer):
     class Meta:
         model = BudgetInfo
+        fields = "__all__"
 
 
 class ProfitCenterSerializer(RalphAPISerializer):
@@ -210,6 +211,7 @@ class ManufacturerSerializer(RalphAPISerializer):
 class ManufacturerKindSerializer(RalphAPISerializer):
     class Meta:
         model = ManufacturerKind
+        fields = "__all__"
 
 
 class CategorySerializer(RalphAPISerializer):
@@ -267,6 +269,7 @@ class BaseObjectPolymorphicSerializer(
 class AssetHolderSerializer(RalphAPISerializer):
     class Meta:
         model = AssetHolder
+        fields = "__all__"
 
 
 class BaseObjectSimpleSerializer(

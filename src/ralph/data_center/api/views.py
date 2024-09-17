@@ -122,6 +122,7 @@ class DatabaseViewSet(RalphAPIViewSet):
 
 
 class VIPViewSet(RalphAPIViewSet):
+    prefetch_related = ("licences__tags", "tags", "custom_fields", "content_type")
     queryset = VIP.objects.all()
     serializer_class = VIPSerializer
 

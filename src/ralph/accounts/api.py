@@ -83,6 +83,7 @@ class RegionViewSet(RalphAPIViewSet):
 class TeamSerializer(RalphAPISerializer):
     class Meta:
         model = Team
+        fields = "__all__"
 
 
 class TeamViewSet(RalphAPIViewSet):

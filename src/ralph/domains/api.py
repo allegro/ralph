@@ -10,6 +10,7 @@ class DomainProviderAdditionalServicesSerializer(RalphAPISerializer):
 
     class Meta:
         model = DomainProviderAdditionalServices
+        fields = "__all__"
 
 
 class DomainProviderAdditionalServicesViewSet(RalphAPIViewSet):
@@ -40,6 +41,7 @@ class DomainViewSet(RalphAPIViewSet):
 class DNSProviderSerializer(RalphAPISerializer):
     class Meta:
         model = DNSProvider
+        fields = "__all__"
 
 
 class DNSProviderViewSet(RalphAPIViewSet):
@@ -50,6 +52,7 @@ class DNSProviderViewSet(RalphAPIViewSet):
 class DomainCategorySerializer(RalphAPISerializer):
     class Meta:
         model = DomainCategory
+        fields = "__all__"
 
 
 class DomainCategoryViewSet(RalphAPIViewSet):

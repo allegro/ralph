@@ -107,3 +107,8 @@ class RalphApiMetadata(SimpleMetadata):
 class NoFiltersBrowsableAPIRenderer(BrowsableAPIRenderer):
     def get_filter_form(self, data, view, request):
         return None
+
+
+class NoFiltersNoHtmlFormBrowsableAPIRenderer(NoFiltersBrowsableAPIRenderer):
+    def render_form_for_serializer(self, serializer):
+        return ""

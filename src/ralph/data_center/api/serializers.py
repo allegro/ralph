@@ -34,6 +34,7 @@ class ClusterTypeSerializer(RalphAPISerializer):
     class Meta:
         model = ClusterType
         depth = 1
+        fields = "__all__"
 
 
 class ClusterSimpleSerializer(BaseObjectSerializer):
@@ -76,12 +77,14 @@ class DataCenterSerializer(RalphAPISerializer):
     class Meta:
         model = DataCenter
         depth = 1
+        fields = "__all__"
 
 
 class ServerRoomSerializer(RalphAPISerializer):
     class Meta:
         model = ServerRoom
         depth = 1
+        fields = "__all__"
 
 
 class AccessorySerializer(RalphAPISerializer):

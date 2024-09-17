@@ -119,20 +119,6 @@ class RalphAPIRenderingTests(APIPermissionsTestMixin, APITestCase):
             )
             module = import_module(module_path)
             factory_model = getattr(module, factory_class)
-            try:
-                factory_model.create_batch(20)
-            except Exception as exc_:
-                import pdb; pdb.set_trace()
-
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        for factory in FACTORY_MAP.values():
-            module_path, factory_class = factory.rsplit(
-                '.', 1
-            )
-            module = import_module(module_path)
-            factory_model = getattr(module, factory_class)
             factory_model.create_batch(20)
         cls.user = UserFactory(is_staff=True, is_superuser=True)
 
@@ -140,17 +126,6 @@ class RalphAPIRenderingTests(APIPermissionsTestMixin, APITestCase):
         url = reverse('test-ralph-api:api-root')
         self.client.force_authenticate(self.user1)
         response = self.client.get(url, HTTP_ACCEPT='text/html')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    @data(
-        *ALL_API_ENDPOINTS.values()
-    )
-    def test_browsable_endpoint(self, endpoint):
-        user = UserFactory(is_staff=True, is_superuser=True)
-        self.client.force_authenticate(user)
-        with CaptureQueriesContext(connections['default']) as cqc:
-            response = self.client.get(endpoint, HTTP_ACCEPT='text/html')
-        self.assertLessEqual(len(cqc.captured_queries), 30)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     @data(

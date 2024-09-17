@@ -12,6 +12,7 @@ class OperationTypeSerializer(RalphAPISerializer):
     class Meta:
         model = OperationType
         depth = 1
+        fields = "__all__"
 
 
 class OperationStatusSerializer(RalphAPISerializer):
@@ -19,6 +20,7 @@ class OperationStatusSerializer(RalphAPISerializer):
     class Meta:
         model = OperationStatus
         depth = 1
+        fields = "__all__"
 
 
 class OperationSerializer(RalphAPISerializer):

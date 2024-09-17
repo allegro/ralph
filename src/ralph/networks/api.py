@@ -17,12 +17,14 @@ class NetworkEnvironmentSerializer(RalphAPISerializer):
     class Meta:
         model = NetworkEnvironment
         depth = 1
+        fields = "__all__"
 
 
 class NetworkKindSerializer(RalphAPISerializer):
     class Meta:
         model = NetworkKind
         depth = 1
+        fields = "__all__"
 
 
 class NetworkSimpleSerializer(RalphAPISerializer):
