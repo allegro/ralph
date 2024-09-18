@@ -1,3 +1,23 @@
+ralph (20240916.1) bionic; urgency=medium
+
+  [ Olga Matyla ]
+  * Add missing error message for property of field
+
+ -- Olga Matyla <olga.matyla@allegro.com>  Mon, 16 Sep 2024 14:01:15 +0000
+
+ralph (20240910.1) bionic; urgency=medium
+
+  [ Paweł Szulc ]
+  * Spaces in serial number and barcode are now forbidden
+  * Add missing migration
+
+  [ Olga Matyla ]
+  * Require field property_of
+  * Fix clean method
+  * Require service environment
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Tue, 10 Sep 2024 11:24:19 +0000
+
 ralph (20240903.2) bionic; urgency=medium
 
   * Fix ipxe (#3841)
