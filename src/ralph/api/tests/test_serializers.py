@@ -13,7 +13,7 @@ from ralph.api.tests.api import CarSerializer, CarSerializer2, FooSerializer
 from ralph.back_office.tests.factories import BackOfficeAssetFactory
 from ralph.licences.models import BaseObjectLicence
 from ralph.licences.tests.factories import LicenceFactory
-from ralph.tests.models import Car, Foo, Manufacturer
+from ralph.tests.models import Car, Foo, TestManufacturer
 
 
 class TestChoices(Choices):
@@ -44,7 +44,7 @@ class TestStrSerialization(RalphAPITestCase):
 
 class TestRalphSerializer(RalphAPITestCase):
     def setUp(self):
-        self.manufacturer = Manufacturer(name="Tesla", country="USA")
+        self.manufacturer = TestManufacturer(name="Tesla", country="USA")
         self.car = Car(manufacturer=self.manufacturer, name="S", year=2012)
         self.request_factory = APIRequestFactory()
 

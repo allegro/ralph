@@ -1,7 +1,7 @@
 import factory
 from django.contrib.auth import get_user_model
 
-from ralph.tests.models import Manufacturer
+from ralph.tests.models import TestManufacturer
 
 
 class UserFactory(factory.Factory):
@@ -35,11 +35,11 @@ class UserFactory(factory.Factory):
         return user
 
 
-class ManufacturerFactory(factory.django.DjangoModelFactory):
+class TestManufacturerFactory(factory.django.DjangoModelFactory):
 
     name = factory.Iterator(['Foxconn', 'Brother', 'Nokia', 'HTC'])
     country = factory.Iterator(['Poland', 'Germany', 'Italy'])
 
     class Meta:
-        model = Manufacturer
+        model = TestManufacturer
         django_get_or_create = ['name', 'country']

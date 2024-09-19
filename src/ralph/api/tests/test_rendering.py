@@ -1,6 +1,6 @@
 from importlib import import_module
 
-from ddt import data, ddt, unpack
+from ddt import data, ddt
 from django.db import connections
 from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
@@ -153,4 +153,5 @@ class RalphAPIRenderingTests(APIPermissionsTestMixin, APITestCase):
         with CaptureQueriesContext(connections['default']) as cqc:
             response = self.client.get(endpoint, HTTP_ACCEPT='application/json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreater(len(response.json()['results']), 0)
         self.assertLessEqual(len(cqc.captured_queries), max_queries)

@@ -19,6 +19,7 @@ from ralph.assets.tests.factories import (
     ProcessorFactory,
     ServiceEnvironmentFactory
 )
+from ralph.data_center.models import BaseObjectCluster
 from ralph.data_center.models.choices import ConnectionType
 from ralph.data_center.models.components import DiskShare, DiskShareMount
 from ralph.data_center.models.physical import (
@@ -83,6 +84,15 @@ class ClusterFactory(DjangoModelFactory):
     @factory.post_generation
     def post_tags(self, create, extracted, **kwargs):
         self.tags.add('abc, cde', 'xyz')
+
+
+class BaseObjectClusterFactory(DjangoModelFactory):
+    cluster = factory.SubFactory(ClusterFactory)
+    base_object = factory.SubFactory(BaseObjectFactory)
+
+    class Meta:
+        model = BaseObjectCluster
+        django_get_or_create = ['cluster', 'base_object']
 
 
 class DataCenterFactory(DjangoModelFactory):

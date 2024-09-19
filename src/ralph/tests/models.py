@@ -34,7 +34,7 @@ class Foo(AdminAbsoluteUrlMixin, models.Model):
         return 'Foo: {} / {}'.format(self.id, self.bar)
 
 
-class Manufacturer(AdminAbsoluteUrlMixin, models.Model):
+class TestManufacturer(AdminAbsoluteUrlMixin, models.Model):
     name = models.CharField(max_length=50)
     country = models.CharField(max_length=50)
 
@@ -42,7 +42,7 @@ class Manufacturer(AdminAbsoluteUrlMixin, models.Model):
 class Car(AdminAbsoluteUrlMixin, models.Model):
     name = models.CharField(max_length=50)
     year = models.PositiveSmallIntegerField()
-    manufacturer = models.ForeignKey(Manufacturer, on_delete=models.CASCADE)
+    manufacturer = models.ForeignKey(TestManufacturer, on_delete=models.CASCADE)
     manufacturer._autocomplete = False
     manufacturer._filter_title = 'test'
     foos = models.ManyToManyField(Foo)
@@ -53,7 +53,7 @@ class Car(AdminAbsoluteUrlMixin, models.Model):
 
 
 class Car2(AdminAbsoluteUrlMixin, models.Model):
-    manufacturer = models.ForeignKey(Manufacturer, on_delete=models.CASCADE)
+    manufacturer = models.ForeignKey(TestManufacturer, on_delete=models.CASCADE)
 
 
 class Bar(AdminAbsoluteUrlMixin, PriceMixin, models.Model):

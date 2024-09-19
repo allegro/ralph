@@ -16,7 +16,7 @@ from ralph.api.tests.api import (
 )
 from ralph.api.viewsets import RalphAPIViewSet
 from ralph.tests import RalphTestCase
-from ralph.tests.factories import ManufacturerFactory
+from ralph.tests.factories import TestManufacturerFactory
 
 
 class ViewsetWithoutRalphPermission(RalphAPIViewSet):
@@ -31,10 +31,10 @@ class TestRalphViewset(RalphTestCase):
     def setUp(self):
         super().setUp()
         self.request_factory = APIRequestFactory()
-        self.manufacture_1 = ManufacturerFactory(
+        self.manufacture_1 = TestManufacturerFactory(
             name='test', country='Poland'
         )
-        self.manufacture_2 = ManufacturerFactory(
+        self.manufacture_2 = TestManufacturerFactory(
             name='test2', country='test'
         )
         get_user_model().objects.create_superuser(

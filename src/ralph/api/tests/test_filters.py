@@ -16,21 +16,21 @@ from ralph.api.filters import (
 from ralph.api.tests.api import (
     Bar,
     BarViewSet,
-    Manufacturer,
+    TestManufacturer,
     ManufacturerViewSet
 )
 from ralph.tests import RalphTestCase
-from ralph.tests.factories import ManufacturerFactory
+from ralph.tests.factories import TestManufacturerFactory
 
 
 class TestExtendedFiltersBackend(RalphTestCase):
     def setUp(self):
         super().setUp()
         self.request_factory = APIRequestFactory()
-        self.manufacture_1 = ManufacturerFactory(
+        self.manufacture_1 = TestManufacturerFactory(
             name='test', country='Poland'
         )
-        self.manufacture_2 = ManufacturerFactory(
+        self.manufacture_2 = TestManufacturerFactory(
             name='test2', country='test'
         )
         get_user_model().objects.create_superuser(
@@ -46,13 +46,13 @@ class TestExtendedFiltersBackend(RalphTestCase):
         mvs = ManufacturerViewSet()
         mvs.request = request
         self.assertEqual(len(self.extended_filters_backend.filter_queryset(
-            request, Manufacturer.objects.all(), mvs)
+            request, TestManufacturer.objects.all(), mvs)
         ), 2)
 
         request.query_params = QueryDict(urlencode({'some_field': 'test2'}))
         mvs.request = request
         self.assertEqual(len(self.extended_filters_backend.filter_queryset(
-            request, Manufacturer.objects.all(), mvs)
+            request, TestManufacturer.objects.all(), mvs)
         ), 1)
 
 

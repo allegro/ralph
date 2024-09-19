@@ -4,7 +4,7 @@ from django.conf.urls import include, url
 from ralph.api import RalphAPISerializer, RalphAPIViewSet
 from ralph.api.fields import StrField
 from ralph.api.routers import RalphRouter
-from ralph.tests.models import Bar, Car, Foo, Manufacturer
+from ralph.tests.models import Bar, Car, Foo, TestManufacturer
 
 
 class FooSerializer(RalphAPISerializer):
@@ -29,7 +29,7 @@ class BarSerializer(RalphAPISerializer):
 
 class ManufacturerSerializer(RalphAPISerializer):
     class Meta:
-        model = Manufacturer
+        model = TestManufacturer
         # include view namespace for hyperlinked field
         extra_kwargs = {
             'url': {
@@ -66,7 +66,7 @@ class FooViewSet(RalphAPIViewSet):
 
 
 class ManufacturerViewSet(RalphAPIViewSet):
-    queryset = Manufacturer.objects.all()
+    queryset = TestManufacturer.objects.all()
     serializer_class = ManufacturerSerializer
     save_serializer_class = ManufacturerSerializer2
     extended_filter_fields = {

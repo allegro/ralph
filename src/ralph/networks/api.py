@@ -108,7 +108,7 @@ class NetworkViewSet(RalphAPIViewSet):
     serializer_class = NetworkSerializer
     save_serializer_class = NetworkSaveSerializer
     select_related = ['network_environment', 'kind']
-    prefetch_related = ['racks']
+    prefetch_related = ['racks__accessories', 'terminators']
     extended_filter_fields = {
         # workaround for custom field for address field defined in admin
         'address': ['address'],
