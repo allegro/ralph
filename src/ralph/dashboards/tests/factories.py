@@ -35,4 +35,3 @@ class GraphFactory(DjangoModelFactory):
 
     class Meta:
         model = Graph
-
