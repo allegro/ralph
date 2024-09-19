@@ -1,5 +1,5 @@
+from factory import post_generation, Sequence, SubFactory
 from factory.django import DjangoModelFactory
-from factory import SubFactory, Sequence, post_generation
 
 from ralph.accessories.models import AccessoryStatus
 from ralph.assets.tests.factories import CategoryFactory, ManufacturerFactory

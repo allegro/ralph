@@ -12,9 +12,9 @@ from ralph.tests.models import (
     Car,
     Car2,
     Foo,
-    TestManufacturer,
     Order,
-    PolymorphicTestModel
+    PolymorphicTestModel,
+    TestManufacturer
 )
 
 

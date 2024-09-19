@@ -16,8 +16,8 @@ from ralph.api.filters import (
 from ralph.api.tests.api import (
     Bar,
     BarViewSet,
-    TestManufacturer,
-    ManufacturerViewSet
+    ManufacturerViewSet,
+    TestManufacturer
 )
 from ralph.tests import RalphTestCase
 from ralph.tests.factories import TestManufacturerFactory
