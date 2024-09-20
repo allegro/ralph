@@ -70,6 +70,8 @@ FACTORY_MAP = {
     'ralph.domains.models.domains.DomainContract': 'ralph.domains.tests.factories.DomainContractFactory',  # noqa
     'ralph.domains.models.domains.DomainRegistrant': 'ralph.domains.tests.factories.DomainRegistrantFactory',  # noqa
     'ralph.domains.models.domains.DomainProviderAdditionalServices': 'ralph.domains.tests.factories.DomainProviderAdditionalServicesFactory',  # noqa
+    'ralph.lib.custom_fields.models.CustomField': 'ralph.lib.custom_fields.tests.factories.CustomFieldFactory',  # noqa
+    'ralph.lib.transitions.models.Transition': 'ralph.lib.transitions.tests.factories.TransitionFactory',  # noqa
     'ralph.licences.models.Licence': 'ralph.licences.tests.factories.LicenceFactory',  # noqa
     'ralph.licences.models.LicenceType': 'ralph.licences.tests.factories.LicenceTypeFactory',  # noqa
     'ralph.licences.models.Software': 'ralph.licences.tests.factories.SoftwareFactory',  # noqa
@@ -116,7 +118,6 @@ FACTORY_MAP = {
 
 EXCLUDE_MODELS = [
     'django.contrib.contenttypes.models.ContentType',
-    # 'ralph.accessories.models.Accessory',  # TODO: Add in the future
     'ralph.assets.models.assets.Asset',
     'ralph.assets.models.base.BaseObject',  # TODO: Add in the future
     'ralph.assets.models.components.GenericComponent',
@@ -127,7 +128,6 @@ EXCLUDE_MODELS = [
     'ralph.lib.custom_fields.models.CustomField',
     'ralph.lib.transitions.models.TransitionModel',
     'ralph.networks.models.networks.DiscoveryQueue',
-    # 'ralph.networks.models.networks.Network',  # TODO: Add in the future
     'ralph.tests.models.Bar',
     'ralph.tests.models.Car',
     'ralph.tests.models.Car2',
