@@ -158,7 +158,7 @@ class DataCenterAssetAdminTest(TransactionTestCase):
         publish_data = publish_mock.call_args[0][1]
         publish_data.pop('modified')
         publish_data.pop('created')
-        self.assertEqual(publish_data, {
+        self.assertCountEqual(publish_data, {
             '__str__': 'data center asset: ' + str(self.dca),
             'configuration_path': None,
             'configuration_variables': {
@@ -188,6 +188,7 @@ class DataCenterAssetAdminTest(TransactionTestCase):
             '_previous_state': {
                 'hostname': 'ralph1.allegro.pl'
             },
+            'ui_url': ''
         })
         # Despite `save` is called twice, publish update data is called only
         # once

@@ -209,6 +209,7 @@ class DataCenterAssetFullFactory(DataCenterAssetFactory):
         'ralph.configuration_management.tests.factories.SCMStatusCheckFactory',
         'base_object',
     )
+    securityscan = factory.RelatedFactory(SecurityScanFactory, factory_related_name='base_object')
 
     securityscan = factory.RelatedFactory(SecurityScanFactory, 'base_object')
 

@@ -1,5 +1,5 @@
 from ddt import data, ddt, unpack
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from rest_framework import status
 
 from ralph.api.tests._base import RalphAPITestCase
@@ -9,7 +9,6 @@ from ralph.assets.models.components import ComponentModel
 from ralph.assets.tests.factories import (
     EnvironmentFactory,
     EthernetFactory,
-    ServiceEnvironmentFactory,
     ServiceFactory
 )
 from ralph.data_center.tests.factories import (
@@ -104,6 +103,7 @@ class OpenstackModelsTestCase(RalphAPITestCase):
         with self.assertNumQueries(15):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['results']), 100)
         self.assertEqual(response.data['count'], 102)
 
     @unpack

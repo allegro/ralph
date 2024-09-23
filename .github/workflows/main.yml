@@ -40,6 +40,7 @@ jobs:
     name: Missing migrations
     runs-on: ubuntu-20.04
     strategy:
+      fail-fast: false
       matrix:
         db-engine: ["psql", "mysql"]
     env:
@@ -117,7 +118,7 @@ jobs:
         run: pip3 install psycopg2-binary
 
       # Runs a set of commands using the runners shell
-      - name: Check missings migrations
+      - name: Check missing migrations
         run: "${GITHUB_WORKSPACE}/scripts/check_missing_migrations.sh"
 
   settings_test:

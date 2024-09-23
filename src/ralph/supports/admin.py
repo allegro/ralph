@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from django.core.urlresolvers import reverse
 from django.db.models import Count
 from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.decorators import register

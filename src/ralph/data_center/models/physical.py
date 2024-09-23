@@ -8,7 +8,6 @@ from dj.choices import Choices, Country
 from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse
 from django.core.validators import (
     MaxValueValidator,
     MinValueValidator,
@@ -16,6 +15,7 @@ from django.core.validators import (
 )
 from django.db import models, transaction
 from django.db.models import Q
+from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
@@ -181,7 +181,12 @@ class DataCenter(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
 
 class ServerRoomManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().select_related('data_center')
+        return (
+            super()
+            .get_queryset()
+            .select_related('data_center')
+            .prefetch_related('racks')
+        )
 
 
 class ServerRoom(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
@@ -247,13 +252,23 @@ class RackAccessory(AdminAbsoluteUrlMixin, models.Model):
         )
 
 
+class RackManager(models.Manager):
+    pass
+
+    def get_queryset(self):
+        return super().get_queryset().select_related('server_room__data_center')
+
+
 class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
     _allow_in_dashboard = True
+
+    objects = RackManager()
 
     server_room = models.ForeignKey(
         ServerRoom, verbose_name=_('server room'),
         null=True,
         blank=False,
+        related_name='racks'
     )
     server_room._autocomplete = False
     server_room._filter_title = _('server room')
@@ -318,7 +333,7 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
                 Orientation.front, Orientation.back
             ]
         return DataCenterAsset.objects.select_related(
-            'model', 'model__category'
+            'model__category'
         ).filter(
             Q(slot_no='') | Q(slot_no=None), **filter_kwargs
         ).exclude(model__has_parent=True)
@@ -447,6 +462,7 @@ class DataCenterAsset(
     Asset
 ):
     _allow_in_dashboard = True
+
     previous_dc_host_update_fields = ['hostname']
 
     rack = models.ForeignKey(

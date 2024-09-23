@@ -12,11 +12,11 @@ from django.apps import apps
 from django.contrib.admin.templatetags.admin_static import static
 from django.contrib.admin.views.main import TO_FIELD_VAR
 from django.core.exceptions import FieldDoesNotExist
-from django.core.urlresolvers import reverse
 from django.forms.utils import flatatt
 from django.template import loader
 from django.template.context import RenderContext
 from django.template.defaultfilters import slugify, title
+from django.urls import reverse
 from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext as _
@@ -75,8 +75,10 @@ class PermissionsSelectWidget(forms.Widget):
 
     def render(self, name, value, attrs=None, choices=()):
         attr_value = ','.join(map(str, value or []))
+        if not attrs:
+            attrs = {}
         final_attrs = self.build_attrs(
-            attrs, type='hidden', name=name, value=attr_value,
+            attrs, extra_attrs={'type': 'hidden', 'name': name, 'value': attr_value}
         )
         return mark_safe(
             '<a class="expand action-expand">Expand all</a>'
@@ -97,7 +99,7 @@ class PermissionsSelectWidget(forms.Widget):
         attrs = {'id': input_id, 'type': 'checkbox', 'value': option_value}
         if option_value in selected_choices:
             attrs['checked'] = 'checked'
-        attrs = self.build_attrs(**attrs)
+        attrs = self.build_attrs({**attrs})
         return '<input{}><label{}>{}</label>'.format(
             flatatt(attrs), flatatt({'for': input_id}), option_label
         )
@@ -310,4 +312,4 @@ class AutocompleteWidget(forms.TextInput):
         if not is_polymorphic and self.can_add:
             context['add_related_url'] = self.get_related_url(info, 'add')
         template = loader.get_template('admin/widgets/autocomplete.html')
-        return template.render(context)
+        return template.render(context.flatten())

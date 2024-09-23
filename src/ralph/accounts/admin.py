@@ -7,9 +7,9 @@ from django.contrib.admin.utils import unquote
 from django.contrib.auth.admin import GroupAdmin, UserAdmin
 from django.contrib.auth.models import Group
 from django.core.exceptions import PermissionDenied
-from django.core.urlresolvers import reverse
 from django.db.models import Q
 from django.forms.models import model_to_dict
+from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 from reversion import revisions as reversion

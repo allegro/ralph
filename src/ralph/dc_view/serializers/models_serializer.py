@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from rest_framework import serializers
 
 from ralph.data_center.models.choices import RackOrientation
@@ -164,7 +164,7 @@ class RackSerializer(AdminLinkMixin, RackBaseSerializer):
 
 
 class SRSerializer(AdminLinkMixin, serializers.ModelSerializer):
-    rack_set = RackSerializer(many=True)
+    rack_set = RackSerializer(source='racks', many=True)
     admin_link = serializers.SerializerMethodField('admin_link')
 
     class Meta:

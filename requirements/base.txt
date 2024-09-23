@@ -1,21 +1,21 @@
 -r openstack.txt
 -r hermes.txt
-Django==1.10.8
+Django==1.11.8
 dj.choices==0.11.0
 django-extensions==1.7.5
-django-filter==0.13.0
+django-filter==1.0.4
 django-import-export==1.2.0
 django-money==0.12
 py-moneyed==1.2
 django-mptt==0.8.7
 django-reversion==2.0
 django-rq==2.0
-django-sitetree==1.7.0
+django-sitetree==1.13.0
 django-taggit==0.22.2
 django-taggit-serializer==0.1.7
 django-threadlocals==0.8
 django-cryptography==0.3
-djangorestframework==3.4.0
+djangorestframework==3.4.1
 djangorestframework_xml==1.2.0
 drf-nested-routers==0.11.1
 Markdown<3.0  # headerid extension removed in 3.0 - see #3313 for details

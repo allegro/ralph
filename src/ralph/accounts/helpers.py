@@ -2,7 +2,7 @@ from functools import partial
 from urllib.parse import urlencode
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from ralph.access_cards.models import AccessCard
 from ralph.admin.sites import ralph_site

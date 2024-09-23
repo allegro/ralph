@@ -2,8 +2,8 @@ from datetime import datetime, timedelta
 from urllib.parse import urlencode
 
 from django.contrib.contenttypes.models import ContentType
-from django.core.urlresolvers import reverse
 from django.test import TestCase
+from django.urls import reverse
 
 from ralph.data_center.models import BaseObjectCluster, Cluster, DataCenterAsset
 from ralph.data_center.tests.factories import (
@@ -39,7 +39,7 @@ class DataCenterAssetViewTest(ClientMixin, TestCase):
     def test_changelist_view(self):
         self.login_as_user()
         DataCenterAssetFullFactory.create_batch(10)
-        with self.assertNumQueries(21):
+        with self.assertNumQueries(22):
             self.client.get(
                 reverse('admin:data_center_datacenterasset_changelist'),
             )
@@ -54,7 +54,7 @@ class DCHostViewTest(ClientMixin, TestCase):
         VirtualServerFullFactory.create_batch(5)
         CloudHostFullFactory.create_batch(4)
         ClusterFactory.create_batch(4)
-        with self.assertNumQueries(22):
+        with self.assertNumQueries(21):
             result = self.client.get(
                 reverse('admin:data_center_dchost_changelist'),
             )
@@ -273,9 +273,8 @@ class DCHostFilterByPatchDeadline(ClientMixin, TestCase):
         )
 
         response = self.client.get(url, follow=True)
-
         self.assertEqual(
-            int(response.context_data['object_id']),
+            int(response.context_data['cl'].result_list[0].id),
             self.asset_with_today_vul.id,
         )
 

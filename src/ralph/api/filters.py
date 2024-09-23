@@ -8,7 +8,8 @@ from django.core.exceptions import FieldDoesNotExist
 from django.db import models
 from django.forms import Widget
 from django_filters import Filter
-from rest_framework.filters import BaseFilterBackend, DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import BaseFilterBackend
 
 from ralph.admin.helpers import get_field_by_relation_path
 from ralph.admin.sites import ralph_site

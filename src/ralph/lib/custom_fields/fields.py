@@ -119,7 +119,7 @@ class CustomFieldValueQuerySet(models.QuerySet):
         self._prioritize_model_or_instance = model_or_instance
         return self
 
-    def iterator(self):
+    def __iter__(self):
         if self._prioritize:
             # set if to False to not fall into recursion when calling
             # `_prioritize_custom_field_values`
@@ -133,7 +133,7 @@ class CustomFieldValueQuerySet(models.QuerySet):
             ):
                 yield cfv
             return
-        yield from super().iterator()
+        yield from super().__iter__()
 
     def values(self, *fields):
         # TODO: handle values and values_list (need to overwrite `iterator`

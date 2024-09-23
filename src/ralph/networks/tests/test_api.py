@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from rest_framework import status
 
 from ralph.api.tests._base import RalphAPITestCase
@@ -96,7 +96,7 @@ class IPAddressAPITests(RalphAPITestCase):
         url = reverse('ipaddress-detail', args=(self.ip1.id,))
         response = self.client.patch(url, format='json', data=data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('IPAddress with this IP address already exists.', response.data['address'])
+        self.assertIn('IP address with this IP address already exists.', response.data['address'])
 
     def test_change_ip_address_with_dhcp_exposition_should_not_pass(self):
         data = {'address': '127.0.0.3'}

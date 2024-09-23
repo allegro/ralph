@@ -34,7 +34,7 @@ class SecurityScanFactory(DjangoModelFactory):
             vulnerability = VulnerabilityFactory()
             self.vulnerabilities.add(vulnerability)
         else:
-            # allow creating scans without vulnerabilites
+            # allow creating scans without vulnerabilities
             pass
         self.update_is_patched()
 

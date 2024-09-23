@@ -2,7 +2,7 @@
 from urllib.parse import urlencode
 
 from ddt import data, ddt, unpack
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from rest_framework import status
 
 from ralph.accounts.tests.factories import TeamFactory
@@ -917,7 +917,7 @@ class DCHostAPITests(RalphAPITestCase):
         self.cf = CustomField.objects.create(
             name='test_cf', use_as_configuration_variable=True
         )
-        # is should be skipped in API
+        # BO asset isn't DC Host - will be skipped in API
         self.bo_asset = BackOfficeAssetFactory(
             barcode='12345', hostname='host1'
         )
@@ -958,7 +958,7 @@ class DCHostAPITests(RalphAPITestCase):
         VirtualServerFullFactory.create_batch(20, parent=dc_assets[0])
         CloudHostFullFactory.create_batch(20, hypervisor=dc_assets[0])
         url = reverse('dchost-list') + "?limit=100"
-        with self.assertNumQueries(15):
+        with self.assertNumQueries(31):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 63)

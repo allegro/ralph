@@ -4,7 +4,7 @@ from itertools import groupby
 from django import forms
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils.translation import ugettext as _
 
 from ralph.admin.decorators import register
@@ -37,7 +37,7 @@ class GraphForm(RalphAdminForm):
 
     def clean_model(self):
         ct_id = self.cleaned_data.get('model')
-        return ContentType.objects.get(pk=ct_id)
+        return ContentType.objects.get_for_id(id=ct_id)
 
     def clean_params(self):
         params = self.cleaned_data.get('params', '{}')

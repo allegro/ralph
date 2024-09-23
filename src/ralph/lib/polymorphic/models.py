@@ -14,9 +14,14 @@ Example:
 """
 from collections import defaultdict
 from itertools import groupby
+from typing import Dict, Iterable, List, Tuple
 
+from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
+from django.core import exceptions
 from django.db import models
+from django.db.models import QuerySet
+from django.db.models.base import ModelBase
 
 
 class PolymorphicQuerySet(models.QuerySet):
@@ -29,107 +34,204 @@ class PolymorphicQuerySet(models.QuerySet):
         self._extra_kwargs = {}
         self._polymorphic_filter_args = []
         self._polymorphic_filter_kwargs = {}
+        self._my_cache = None
+        self._pks_order = None
         super().__init__(*args, **kwargs)
 
-    def iterator(self):  # noqa
-        """
-        Override iterator:
-            - Iterate for all objects and collected ID
-            - For each ContentType generates additional queryset
-            - Returns iterator with different models
-        """
-        # if this is final-level model, don't check for descendants - just
-        # return original queryset result
-
-        if not getattr(self.model, '_polymorphic_descendants', []):
-            yield from super().iterator()
+    def _fetch_all(self):
+        if self._result_cache is not None:
             return
-
-        result = []
-        content_types_ids = set()  # type: set[int]
-        select_related = None
+        self._result_cache = None
+        self._my_cache = None
+        self._pks_order = None
 
         if self.query.select_related:
-            select_related = self.query.select_related
+            self._select_related = self.query.select_related
             self.query.select_related = False
-        objs = [obj for obj in super().iterator()]
-        for obj in objs:
-            try:
-                content_types_ids.add(obj.content_type_id)
-                result.append((
-                    obj.content_type_id, obj.pk)
-                )
-            except AttributeError as e:  # noqa
-                pass
+        else:
+            self._select_related = None
 
-        # store original order of items by PK
-        pks_order = [r[1] for r in result]
-        # WARNING! sorting result (by content type) breaks original order of
-        # items - we need to restore it at the end of this function
-        result = groupby(sorted(result), lambda x: x[0])
+        super()._fetch_all()
+        self._pks_order = [obj.pk for obj in self._result_cache]  # type: ignore
+        result = groupby(
+            sorted(self._result_cache, key=lambda x: x.content_type_id),
+            lambda x: x.content_type_id,
+        )  # type: Iterable[Tuple[int, object]]
+        self._my_cache = self._subquery_for_children_models(result)
 
-        content_type_model_map = {
-            ct.id: ct.model_class() for ct in ContentType.objects.filter(
-                pk__in=list(content_types_ids)
-            )
-        }
-        # NOTICE: there might be multiple objects with the same ct_id and
-        # pk!! (ex. because of filters causing joins - ex. for prefetch related,
-        # when one object is attached to many others). We need to group them
-        # and return all of them (order is rather irrelevant then, because
-        # it's the same object).
+    def _subquery_for_children_models(self, result) -> Dict[int, List[object]]:
         result_mapping = defaultdict(list)
-        for k, v in result:
-            model = content_type_model_map[k]
-            polymorphic_models = getattr(model, '_polymorphic_models', [])
-            if polymorphic_models and model not in polymorphic_models:
-                model_query = model.objects.filter(pk__in=[i[1] for i in v])
-                model_name = model._meta.object_name
-                # first check if select_related/prefetch_related is present for
-                # this model to not trigger selecting/prefetching all related
-                # or reset select_related accidentally
-                # see https://docs.djangoproject.com/en/1.8/ref/models/querysets/#select-related  # noqa
-                # for details
-                if select_related:
-                    model_query.query.select_related = select_related.copy()
+        for ct_id, objects_of_type in result:
+            content_type = ContentType.objects.get_for_id(id=ct_id)
+            model = content_type.model_class()
+            polymorphic_models = getattr(model, "_polymorphic_models", [])
+            if not (polymorphic_models and model not in polymorphic_models):
+                continue
+            model_name = model._meta.object_name
+            ids = {obj.id for obj in objects_of_type}  # type: set[int]
+            model_query = model.objects.filter(pk__in=ids)
+            model_query = self._add_select_related_to_subquery(model_query)
+            model_query = self._add_polymorphic_select_related_to_subquery(
+                model_query, model_name
+            )
+            model_query = self._add_polymorphic_prefetch_related_to_subquery(
+                model_query, model_name
+            )
+            model_query = self._add_polymorphic_filter_to_subquery(model_query)
+            model_query = model_query.annotate(
+                *self._annotate_args, **self._annotate_kwargs
+            )
+            model_query = self._add_extra_to_subquery(model_query)
 
-                if self._polymorphic_select_related.get(model_name):
-                    model_query = model_query.select_related(
-                        *self._polymorphic_select_related[model_name]
-                    )
-                if self._polymorphic_prefetch_related.get(model_name):
-                    model_query = model_query.prefetch_related(
-                        *self._polymorphic_prefetch_related[model_name]
-                    )
-                model_query = model_query.annotate(
-                    *self._annotate_args, **self._annotate_kwargs
-                ).extra(*self._extra_args, **self._extra_kwargs)
+            for obj in model_query:
+                result_mapping[obj.pk].append(obj)
+        return result_mapping
 
-                # rewrite filters to properly handle joins between tables
-                # TODO(mkurek): handle it better since it will produce
-                # additional (unnecessary) WHERE conditions. Consider for
-                # example extracting (somehow) joined tables from filter
-                # fields and put them into `select_related`
-                if (
-                    self._polymorphic_filter_args or
-                    self._polymorphic_filter_kwargs
-                ):
-                    model_query = model_query.filter(
-                        *self._polymorphic_filter_args,
-                        **self._polymorphic_filter_kwargs
-                    )
-                for obj in model_query:
-                    result_mapping[obj.pk].append(obj)
-        # yield objects in original order
-        for pk in pks_order:
-            # yield all objects with particular PK
-            # it might happen that there will be additional objects with
-            # particular PK comparing to original query. This might happen when
-            # "broad" polymorphic_filter is used with prefetch_related (and
-            # original model is filtered to get only subset of all objects)
-            # see test cases in `PolymorphicTestCase` for examples.
-            while result_mapping[pk]:
-                yield result_mapping[pk].pop()
+    def _add_select_related_to_subquery(self, query: QuerySet):
+        if self._select_related:
+            query.query.select_related = self._select_related.copy()
+            return query
+        else:
+            return query
+
+    def _add_polymorphic_select_related_to_subquery(
+        self, query: QuerySet, model_name: str
+    ) -> QuerySet:
+        if self._polymorphic_select_related.get(model_name):
+            return query.select_related(*self._polymorphic_select_related[model_name])
+        else:
+            return query
+
+    def _add_polymorphic_prefetch_related_to_subquery(
+        self, query: QuerySet, model_name: str
+    ) -> QuerySet:
+        if self._polymorphic_prefetch_related.get(model_name):
+            return query.prefetch_related(
+                *self._polymorphic_prefetch_related[model_name]
+            )
+        else:
+            return query
+
+    def _add_polymorphic_filter_to_subquery(self, query: QuerySet) -> QuerySet:
+        try:
+            return query.filter(
+                *self._polymorphic_filter_args, **self._polymorphic_filter_kwargs
+            )
+        except exceptions.FieldError:
+            # This is expected
+            # if a model doesn't have a field we don't want any object of that type
+            return query.none()
+
+    def _add_extra_to_subquery(self, query: QuerySet) -> QuerySet:
+        query = query.extra(*self._extra_args, **self._extra_kwargs)
+        if (
+            self._annotate_args
+            or self._annotate_kwargs
+            or self._extra_args
+            or self._extra_kwargs
+        ):
+            for select_key, select_db_field in self._iterate_extra_prefetches():
+                through_table_name, column_name = [
+                    s.strip("`").strip('"') for s in select_db_field.split(".")
+                ]
+                through_fields = [
+                    o for o in self.model._meta.get_fields() if hasattr(o, "through")
+                ]
+                for through_field in through_fields:
+                    if through_field.through._meta.db_table == through_table_name:
+                        query = self._add_where_conditions(
+                            query, through_field.through, column_name
+                        )
+        return query
+
+    def _iterate_extra_prefetches(self) -> Iterable[Tuple[str, str]]:
+        """
+        When making prefetch, select is added to the query
+        Key is the name of the attribute to be added to the row
+        Value is a `table_name`.`column_name` from where the value will come
+        """
+        for select_key, select_value in self._extra_kwargs.get("select", {}).items():
+            if "_prefetch_related_val_" in select_key:
+                yield select_key, select_value
+
+    def _add_where_conditions(
+        self, query: QuerySet, through_table: ModelBase, target_column_name: str
+    ) -> QuerySet:
+        """
+        Given a through table we find table and column names to make join
+        We know target column name so, assuming through tables aren't handcrafted,
+        it's easy to find the rest
+        We start with:
+        select={
+            '_prefetch_related_val_somem2mmodel_id':
+                '''`polymorphic_tests_somem2mmodel_polymorphics`.`somem2mmodel_id`'''
+        },
+        And want to add missing tables and where clauses:
+        tables=[
+            '`polymorphic_tests_somem2mmodel_polymorphics`',
+            '`polymorphic_tests_somem2mmodel`'
+        ],
+        where=[
+            "`polymorphic_tests_somem2mmodel_polymorphics`.`polymorphicmodelbasetest_id` "
+            "= `polymorphic_tests_polymorphicmodelbasetest`.`id`",
+            "`polymorphic_tests_somem2mmodel_polymorphics`.`somem2mmodel_id` "
+            "= `polymorphic_tests_somem2mmodel`.`id`",
+        ]
+        """
+
+        def get_database_quote_type() -> str:
+            db_engine = settings.DATABASES['default']['ENGINE']
+            if 'mysql' in db_engine:
+                return '`'
+            else:
+                return '"'
+        # mysql uses different quotes than postgres
+        q = get_database_quote_type()
+        through_table_name = through_table._meta.db_table  # type: str
+        fields = {
+            field for field in through_table._meta.fields
+        }  # type: set[models.Field]
+        if target_column_name in {field.column for field in fields}:
+            our_table = None  # type: str | None
+            back_column = None  # type: str | None
+            remote_table = None  # type: str | None
+
+            for field in fields:
+                if not field.is_relation:
+                    continue
+                elif field.column == target_column_name:
+                    remote_table = field.related_model._meta.db_table
+                else:
+                    back_column = field.column
+                    our_table = field.related_model._meta.db_table
+            if our_table and back_column and remote_table:
+                condition_local = (
+                    f'{q}{our_table}{q}.{q}id{q} = {q}{through_table_name}{q}.{q}{back_column}{q}'
+                )
+                condition_remote = (
+                    f'{q}{remote_table}{q}.{q}id{q}'
+                    f' = {q}{through_table_name}{q}.{q}{target_column_name}{q}'
+                )
+                query = query.extra(
+                    tables=[f'{q}{remote_table}{q}', f'{q}{through_table_name}{q}'],
+                    where=[condition_local, condition_remote],
+                )
+        return query
+
+    def __iter__(self):
+        self._fetch_all()
+        try:
+            cache_ = self._my_cache.copy()
+            pks = [pk for pk in self._pks_order]
+        except AttributeError as e:
+            yield from self._result_cache
+        else:
+            for pk in pks:
+                while cache_[pk]:
+                    yield cache_[pk].pop()
+
+    def iterator(self):
+        yield from self.__iter__()
 
     def annotate(self, *args, **kwargs):
         self._annotate_args.extend(args)
@@ -143,24 +245,16 @@ class PolymorphicQuerySet(models.QuerySet):
 
     def _clone(self, *args, **kwargs):
         clone = super()._clone(*args, **kwargs)
-        clone._polymorphic_select_related = (
-            self._polymorphic_select_related.copy()
-        )
-        clone._polymorphic_prefetch_related = (
-            self._polymorphic_prefetch_related.copy()
-        )
-        clone._annotate_kwargs = (
-            self._annotate_kwargs.copy()
-        )
-        clone._annotate_args = (
-            self._annotate_args.copy()
-        )
+        clone._polymorphic_select_related = self._polymorphic_select_related.copy()
+        clone._polymorphic_prefetch_related = self._polymorphic_prefetch_related.copy()
+        clone._annotate_kwargs = self._annotate_kwargs.copy()
+        clone._annotate_args = self._annotate_args.copy()
         clone._extra_args = self._extra_args.copy()
         clone._extra_kwargs = self._extra_kwargs.copy()
         clone._polymorphic_filter_args = self._polymorphic_filter_args.copy()
-        clone._polymorphic_filter_kwargs = (
-            self._polymorphic_filter_kwargs.copy()
-        )
+        clone._polymorphic_filter_kwargs = self._polymorphic_filter_kwargs.copy()
+        clone._my_cache = self._my_cache.clone() if self._my_cache else None
+        clone._pks_order = self._pks_order.clone() if self._pks_order else None
         return clone
 
     def polymorphic_select_related(self, **kwargs):
@@ -192,7 +286,7 @@ class PolymorphicQuerySet(models.QuerySet):
 
     def polymorphic_filter(self, *args, **kwargs):
         """
-        Extra filter for descendat model
+        Extra filter for descendant model
 
         Might be useful (as a workaround) for forcing join on descendant model
         in some cases with prefetch_related with queryset with polymorphic
@@ -216,14 +310,10 @@ class PolymorphicBase(models.base.ModelBase):
     """
 
     def __new__(cls, name, bases, attrs):
-        full_mro = set(
-            tuple([mro for b in bases for mro in b.__mro__]) + bases
-        )
-        base_polymorphic = set(
-            [b for b in full_mro if issubclass(b, Polymorphic)]
-        )
-        attrs['_polymorphic_descendants'] = []
-        attrs['_polymorphic_models'] = base_polymorphic
+        full_mro = set(tuple([mro for b in bases for mro in b.__mro__]) + bases)
+        base_polymorphic = set([b for b in full_mro if issubclass(b, Polymorphic)])
+        attrs["_polymorphic_descendants"] = []
+        attrs["_polymorphic_models"] = base_polymorphic
         new_class = super().__new__(cls, name, bases, attrs)
         for polymorphic_class in base_polymorphic:
             # Set is_polymorphic flag for classes that use polymorphic

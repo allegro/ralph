@@ -11,7 +11,6 @@ from ralph.lib.transitions.models import (
     TRANSITION_ORIGINAL_STATUS,
     TransitionModel
 )
-from ralph.lib.transitions.widgets import ActionSelectWidget
 
 TRANSITION_TEMPLATES = settings.TRANSITION_TEMPLATES
 
@@ -70,8 +69,8 @@ class TransitionForm(forms.ModelForm):
                 content_type=self._transition_model_instance.content_type
             )
         ]
-        self.fields['actions'] = forms.MultipleChoiceField(
-            choices=actions_choices, widget=ActionSelectWidget()
+        self.fields['actions'].widget = forms.CheckboxSelectMultiple(
+            choices=actions_choices
         )
         self.fields['actions'].required = False
         self.fields['template_name'] = forms.ChoiceField(

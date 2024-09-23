@@ -53,19 +53,16 @@ from django.forms.models import (
     modelformset_factory
 )
 from django.utils.text import get_text_list
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
-from ralph.admin.mixins import (
-    RalphAdminForm,
-    RalphStackedInline,
-    RalphTabularInline
-)
+from ralph.admin.mixins import RalphAdminForm, RalphTabularInline
 
 
 class BaseInlineM2MFormset(BaseInlineFormSet):
     """
     Adjust Django's BaseInlineFormSet to cooperate with M2M relations
     """
+
     def __init__(self, *args, **kwargs):
         self._fk = self.fk
         # m2m is assigned by m2minlineformset_factory
@@ -87,7 +84,7 @@ class BaseInlineM2MFormset(BaseInlineFormSet):
 
     @classmethod
     def get_default_prefix(cls):
-        return cls.m2m.rel.get_accessor_name(model=cls.model).replace('+', '')
+        return cls.m2m.rel.get_accessor_name(model=cls.model).replace("+", "")
 
     def save_existing_objects(self, commit=True):
         """
@@ -115,9 +112,7 @@ class BaseInlineM2MFormset(BaseInlineFormSet):
                 getattr(obj, self.m2m.attname).remove(self.instance)
             elif form.has_changed():
                 self.changed_objects.append((obj, form.changed_data))
-                saved_instances.append(
-                    self.save_existing(form, obj, commit=commit)
-                )
+                saved_instances.append(self.save_existing(form, obj, commit=commit))
                 if not commit:
                     self.saved_forms.append(form)
         return saved_instances
@@ -130,8 +125,11 @@ def get_m2m(parent_model, model):
     # need to check on both sides (m2m field will be defined only in one of the
     # models)
     for rel in parent_model._meta.get_fields(include_hidden=True):
-        if rel.many_to_many and rel.auto_created and \
-                issubclass(rel.related_model, model):
+        if (
+            rel.many_to_many
+            and rel.auto_created
+            and issubclass(rel.related_model, model)
+        ):
             return rel.field
 
     for rel in parent_model._meta.many_to_many:
@@ -148,21 +146,33 @@ def get_foreign_key_for_m2m(parent_model, m2m):
         m2m: ManyToManyField relation instance
     """
     for field in m2m.remote_field.through._meta.fields:
-        if (
-            isinstance(field, ForeignKey) and
-            issubclass(parent_model, field.rel.to)
+        if isinstance(field, ForeignKey) and issubclass(
+            parent_model, field.remote_field.model
         ):
             return field
 
 
 def m2minlineformset_factory(
-    parent_model, model, form=RalphAdminForm,
-    formset=BaseInlineM2MFormset, fk_name=None,
-    fields=None, exclude=None, extra=3, can_order=False,
-    can_delete=True, max_num=None, formfield_callback=None,
-    widgets=None, validate_max=False, localized_fields=None,
-    labels=None, help_texts=None, error_messages=None,
-    min_num=None, validate_min=False
+    parent_model,
+    model,
+    form=RalphAdminForm,
+    formset=BaseInlineM2MFormset,
+    fk_name=None,
+    fields=None,
+    exclude=None,
+    extra=3,
+    can_order=False,
+    can_delete=True,
+    max_num=None,
+    formfield_callback=None,
+    widgets=None,
+    validate_max=False,
+    localized_fields=None,
+    labels=None,
+    help_texts=None,
+    error_messages=None,
+    min_num=None,
+    validate_min=False,
 ):
     """
     Creates m2m formset. This function is very similar to
@@ -173,23 +183,23 @@ def m2minlineformset_factory(
     m2m = get_m2m(parent_model, model)
     fk = get_foreign_key_for_m2m(parent_model, m2m)
     kwargs = {
-        'form': form,
-        'formfield_callback': formfield_callback,
-        'formset': formset,
-        'extra': extra,
-        'can_delete': can_delete,
-        'can_order': can_order,
-        'fields': fields,
-        'exclude': exclude,
-        'min_num': min_num,
-        'max_num': max_num,
-        'widgets': widgets,
-        'validate_min': validate_min,
-        'validate_max': validate_max,
-        'localized_fields': localized_fields,
-        'labels': labels,
-        'help_texts': help_texts,
-        'error_messages': error_messages,
+        "form": form,
+        "formfield_callback": formfield_callback,
+        "formset": formset,
+        "extra": extra,
+        "can_delete": can_delete,
+        "can_order": can_order,
+        "fields": fields,
+        "exclude": exclude,
+        "min_num": min_num,
+        "max_num": max_num,
+        "widgets": widgets,
+        "validate_min": validate_min,
+        "validate_max": validate_max,
+        "localized_fields": localized_fields,
+        "labels": labels,
+        "help_texts": help_texts,
+        "error_messages": error_messages,
     }
     FormSet = modelformset_factory(model, **kwargs)
     FormSet.m2m = m2m
@@ -207,39 +217,28 @@ class InlineM2MAdminMixin(object):
         The only difference here comparing to the original one is in the last
         line.
         """
-        if 'fields' in kwargs:
-            fields = kwargs.pop('fields')
+        if "fields" in kwargs:
+            fields = kwargs.pop("fields")
         else:
             fields = flatten_fieldsets(self.get_fieldsets(request, obj))
-        if self.exclude is None:
-            exclude = []
-        else:
-            exclude = list(self.exclude)
+        excluded = self.get_exclude(request, obj)
+        exclude = [] if excluded is None else list(excluded)
         exclude.extend(self.get_readonly_fields(request, obj))
-        if (
-            self.exclude is None and
-            hasattr(self.form, '_meta') and
-            self.form._meta.exclude
-        ):
+        if excluded is None and hasattr(self.form, "_meta") and self.form._meta.exclude:
             # Take the custom ModelForm's Meta.exclude into account only if the
             # InlineModelAdmin doesn't define its own.
             exclude.extend(self.form._meta.exclude)
         # If exclude is an empty list we use None, since that's the actual
         # default.
         exclude = exclude or None
-        can_delete = (
-            self.can_delete and
-            self.has_delete_permission(request, obj)
-        )
+        can_delete = self.can_delete and self.has_delete_permission(request, obj)
         defaults = {
             "form": self.form,
             "formset": self.formset,
             "fk_name": self.fk_name,
             "fields": fields,
             "exclude": exclude,
-            "formfield_callback": partial(
-                self.formfield_for_dbfield, request=request
-            ),
+            "formfield_callback": partial(self.formfield_for_dbfield, request=request),
             "extra": self.get_extra(request, obj, **kwargs),
             "min_num": self.get_min_num(request, obj, **kwargs),
             "max_num": self.get_max_num(request, obj, **kwargs),
@@ -247,7 +246,7 @@ class InlineM2MAdminMixin(object):
         }
 
         defaults.update(kwargs)
-        base_model_form = defaults['form']
+        base_model_form = defaults["form"]
 
         class DeleteProtectedModelForm(base_model_form):
             def hand_clean_DELETE(self):
@@ -266,25 +265,23 @@ class InlineM2MAdminMixin(object):
                         objs = []
                         for p in collector.protected:
                             objs.append(
-                                # Translators: Model verbose name and instance
-                                # representation, suitable to be an item in a
-                                # list.
-                                _('%(class_name)s %(instance)s') % {
-                                    'class_name': p._meta.verbose_name,
-                                    'instance': p}
+                                # Translators: Model verbose name and instance representation,
+                                # suitable to be an item in a list.
+                                _("%(class_name)s %(instance)s")
+                                % {"class_name": p._meta.verbose_name, "instance": p}
                             )
                         params = {
-                            'class_name': self._meta.model._meta.verbose_name,
-                            'instance': self.instance,
-                            'related_objects': get_text_list(objs, _('and'))
+                            "class_name": self._meta.model._meta.verbose_name,
+                            "instance": self.instance,
+                            "related_objects": get_text_list(objs, _("and")),
                         }
                         msg = _(
-                            "Deleting %(class_name)s %(instance)s would require"
-                            " deleting the following protected related objects:"
-                            " %(related_objects)s"
+                            "Deleting %(class_name)s %(instance)s would require "
+                            "deleting the following protected related objects: "
+                            "%(related_objects)s"
                         )
                         raise ValidationError(
-                            msg, code='deleting_protected', params=params
+                            msg, code="deleting_protected", params=params
                         )
 
             def is_valid(self):
@@ -292,24 +289,22 @@ class InlineM2MAdminMixin(object):
                 self.hand_clean_DELETE()
                 return result
 
-        defaults['form'] = DeleteProtectedModelForm
+        defaults["form"] = DeleteProtectedModelForm
 
-        if (
-            defaults['fields'] is None and
-            not modelform_defines_fields(defaults['form'])
+        if defaults["fields"] is None and not modelform_defines_fields(
+            defaults["form"]
         ):
-            defaults['fields'] = forms.ALL_FIELDS
+            defaults["fields"] = forms.ALL_FIELDS
 
         # THE ONLY DIFFERENCE HERE COMPARING TO ORIGINAL \/
         # return m2minlineformset_factory instead of inlineformset_factory
-        return m2minlineformset_factory(
-            self.parent_model, self.model, **defaults
-        )
+
+        # dirty fix for through queryset being passed as self.model in init in some cases
+        if hasattr(self.model._meta, "auto_created") and self.model._meta.auto_created:
+            self.model = self.model._meta.auto_created
+
+        return m2minlineformset_factory(self.parent_model, self.model, **defaults)
 
 
 class RalphTabularM2MInline(InlineM2MAdminMixin, RalphTabularInline):
-    template = 'admin/edit_inline/tabular_m2m.html'
-
-
-class RalphStackedM2MInline(InlineM2MAdminMixin, RalphStackedInline):
-    pass
+    template = "admin/edit_inline/tabular_m2m.html"

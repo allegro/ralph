@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from rest_framework import status
 
 from ralph.api.tests._base import RalphAPITestCase
@@ -53,12 +53,12 @@ class DataCenterAssetAPITests(RalphAPITestCase):
             ethernet=EthernetFactory(base_object=self.dc_asset)
         )
         self.dc_asset.tags.add('db', 'test')
-        self.dc_asset_2 = DataCenterAssetFullFactory()
+        self.dc_asset_2 = DataCenterAssetFullFactory(rack=self.rack)
 
     def test_get_data_center_assets_list(self):
         DataCenterAssetFullFactory.create_batch(100)
         url = reverse('datacenterasset-list') + "?limit=100"
-        with self.assertNumQueries(20):
+        with self.assertNumQueries(21):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(

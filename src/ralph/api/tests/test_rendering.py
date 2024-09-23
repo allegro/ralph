@@ -1,4 +1,4 @@
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
 
@@ -20,3 +20,4 @@ class RalphAPIRenderingTests(APIPermissionsTestMixin, APITestCase):
         self.client.force_authenticate(self.user1)
         response = self.client.get(url, HTTP_ACCEPT='text/html')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+

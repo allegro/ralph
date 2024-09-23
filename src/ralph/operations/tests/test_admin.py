@@ -1,9 +1,8 @@
-from django.core.urlresolvers import reverse
 from django.test import TestCase
+from django.urls import reverse
 
 from ralph.operations.models import OperationType
 from ralph.operations.tests.factories import OperationFactory
-
 from ralph.tests.mixins import ClientMixin
 
 

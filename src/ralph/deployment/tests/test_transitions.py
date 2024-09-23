@@ -1,9 +1,9 @@
 from ddt import data, ddt, unpack
-
 from django.contrib.auth import get_user_model
-from django.core.urlresolvers import reverse
 from django.test import Client
+from django.urls import reverse
 from rest_framework.test import APIClient
+
 from ralph.assets.models import AssetLastHostname
 from ralph.assets.tests.factories import EthernetFactory
 from ralph.data_center.models import DataCenterAsset

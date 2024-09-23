@@ -33,12 +33,12 @@ class Foo(AdminAbsoluteUrlMixin, models.Model):
         return 'Foo: {} / {}'.format(self.id, self.bar)
 
 
-class Manufacturer(models.Model):
+class Manufacturer(AdminAbsoluteUrlMixin, models.Model):
     name = models.CharField(max_length=50)
     country = models.CharField(max_length=50)
 
 
-class Car(models.Model):
+class Car(AdminAbsoluteUrlMixin, models.Model):
     name = models.CharField(max_length=50)
     year = models.PositiveSmallIntegerField()
     manufacturer = models.ForeignKey(Manufacturer)
@@ -51,11 +51,11 @@ class Car(models.Model):
         return cls.objects.filter(year=2015)
 
 
-class Car2(models.Model):
+class Car2(AdminAbsoluteUrlMixin, models.Model):
     manufacturer = models.ForeignKey(Manufacturer)
 
 
-class Bar(PriceMixin, models.Model):
+class Bar(AdminAbsoluteUrlMixin, PriceMixin, models.Model):
     name = models.CharField(max_length=255)
     created = models.DateTimeField(auto_now_add=True)
     date = models.DateField(blank=True, null=True)
