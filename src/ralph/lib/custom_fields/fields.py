@@ -354,8 +354,7 @@ def create_generic_related_manager_with_inheritance(superclass, rel):  # noqa: C
                         # ignore if there is no CustomFieldValue for such
                         # content_type_id and object_id
                         pass
-                # import pdb
-                # pdb.set_trace()
+
                 vals = [
                     v[1] for v in _prioritize_custom_field_values(
                         vals, self.instance, self.content_type
