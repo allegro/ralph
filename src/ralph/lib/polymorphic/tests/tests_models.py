@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import pprint
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 

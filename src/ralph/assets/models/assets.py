@@ -554,7 +554,7 @@ class Asset(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
             error_message = [_('Property of field is required')]
             errors.update(
                 {
-                    'property_of': error_message,
+                    '__all__': error_message,
                 }
             )
         if errors:

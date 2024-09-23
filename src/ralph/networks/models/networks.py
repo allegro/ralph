@@ -659,11 +659,12 @@ class IPAddress(
         default=False,
         verbose_name=_('Expose in DHCP'),
     )
-    objects = IPAddressQuerySet.as_manager()
 
     class Meta:
         verbose_name = _('IP address')
         verbose_name_plural = _('IP addresses')
+
+    objects = IPAddressQuerySet.as_manager()
 
     def __str__(self):
         return self.address

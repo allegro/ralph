@@ -157,10 +157,8 @@ class NetworkAdmin(RalphMPTTAdmin):
     )
 
     def save_model(self, request, obj, form, change):
+        form.cleaned_data['terminators'] = form.cleaned_data['terminators'][:]
         super(NetworkAdmin, self).save_model(request, obj, form, change)
-        terminator = form.cleaned_data['terminators']
-        if terminator:
-            obj.terminators.set(terminator, clear=True)
 
     def get_changelist(self, request, **kwargs):
         return NetworkRalphChangeList
