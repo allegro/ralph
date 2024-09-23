@@ -38,6 +38,13 @@ class PolymorphicQuerySet(models.QuerySet):
         self._pks_order = None
         super().__init__(*args, **kwargs)
 
+    def values_list(self, *fields, **kwargs):
+        flat = kwargs.pop('flat', False)
+        if flat:
+            return [getattr(obj, fields[0]) for obj in self[:]]
+        else:
+            return super().values_list(*fields, **kwargs)
+
     def _fetch_all(self):
         if self._result_cache is not None:
             return
