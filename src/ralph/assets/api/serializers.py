@@ -452,13 +452,12 @@ class DCHostSerializer(ComponentSerializerMixin, BaseObjectSerializer):
     class Meta:
         model = DCHost
         fields = [
-            'id', 'url',
-
+            'id',
+            'url',
             'ethernet',
             'ipaddresses',
             'custom_fields',
             'tags',
-
             'securityscan',
             'object_type',
             '__str__',

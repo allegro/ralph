@@ -710,10 +710,7 @@ class DCHostAdmin(
         return None
 
     def get_hostname(self, obj):
-        # try:
         return obj.hostname
-        # except AttributeError:
-        #     return "HOHOHOHOstname"
 
     get_hostname.short_description = _('Hostname')
     # TODO: simple if hostname would be in one model
