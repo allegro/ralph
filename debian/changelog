@@ -1,3 +1,11 @@
+ralph (20240924.2) bionic; urgency=medium
+
+  * Add PolymorphicManyToManyField
+  * Remove bad migrations
+  * Fix flake
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Tue, 24 Sep 2024 11:40:01 +0000
+
 ralph (20240924.1) bionic; urgency=medium
 
   * Fix polymorphic queryset when saving m2m relation
