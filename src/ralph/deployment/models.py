@@ -199,6 +199,7 @@ class Preboot(AdminAbsoluteUrlMixin, NamedMixin):
         if item is not None:
             return item.configuration
 
+
 class DeploymentManager(Manager.from_queryset(JobQuerySet)):
     def get_queryset(self):
         from ralph.deployment.deployment import deploy
