@@ -14,6 +14,7 @@ from ralph.assets.models import Ethernet
 from ralph.lib.external_services.models import JobQuerySet
 from ralph.lib.mixins.fields import NUMP
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin
+from ralph.lib.polymorphic.fields import PolymorphicManyToManyField
 from ralph.lib.polymorphic.models import Polymorphic, PolymorphicBase
 from ralph.lib.transitions.models import TransitionJob
 
@@ -149,7 +150,7 @@ class Preboot(AdminAbsoluteUrlMixin, NamedMixin):
     objects = Manager()
     active_objects = ActiveObjectsManager()
 
-    items = models.ManyToManyField(
+    items = PolymorphicManyToManyField(
         PrebootItem,
         blank=True,
         verbose_name=_('files'),
@@ -197,7 +198,6 @@ class Preboot(AdminAbsoluteUrlMixin, NamedMixin):
         )
         if item is not None:
             return item.configuration
-
 
 class DeploymentManager(Manager.from_queryset(JobQuerySet)):
     def get_queryset(self):

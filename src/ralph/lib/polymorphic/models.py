@@ -39,7 +39,7 @@ class PolymorphicQuerySet(models.QuerySet):
         super().__init__(*args, **kwargs)
 
     def values_list(self, *fields, **kwargs):
-        flat = kwargs.pop('flat', False)
+        flat = kwargs.get('flat', False)
         if flat:
             return [getattr(obj, fields[0]) for obj in self[:]]
         else:
