@@ -2,6 +2,7 @@
 import logging
 from django.db import models
 
+from ralph.lib.polymorphic.fields import PolymorphicManyToManyField
 from ralph.lib.polymorphic.models import Polymorphic, PolymorphicBase
 
 
@@ -35,6 +36,6 @@ class PolymorphicModelTest2(PolymorphicModelBaseTest):
 
 class SomeM2MModel(models.Model):
     name = models.CharField(max_length=50)
-    polymorphics = models.ManyToManyField(
+    polymorphics = PolymorphicManyToManyField(
         PolymorphicModelBaseTest, related_name="some_m2m"
     )

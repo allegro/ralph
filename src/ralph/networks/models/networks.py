@@ -27,6 +27,7 @@ from ralph.lib.mixins.models import (
     PreviousStateMixin,
     TimeStampMixin
 )
+from ralph.lib.polymorphic.fields import PolymorphicManyToManyField
 from ralph.networks.fields import IPNetwork
 from ralph.networks.models.choices import IPAddressStatus
 
@@ -270,7 +271,7 @@ class Network(
         default='',
     )
     # TODO: create ManyToManyBaseObjectField to avoid through table
-    terminators = models.ManyToManyField(
+    terminators = PolymorphicManyToManyField(
         'assets.BaseObject',
         verbose_name=_('network terminators'),
         blank=True
