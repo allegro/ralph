@@ -154,4 +154,8 @@ class RalphAPIRenderingTests(APIPermissionsTestMixin, APITestCase):
             response = self.client.get(endpoint, HTTP_ACCEPT='application/json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertGreater(len(response.json()['results']), 0)
-        self.assertLessEqual(len(cqc.captured_queries), max_queries)
+        self.assertLessEqual(len(cqc.captured_queries), max_queries,
+                             msg=f"Too many queries when getting {endpoint}."
+                                 f"\nQueries count: {len(cqc.captured_queries)}."
+                                 "\nQueries:\n" + "\n".join(query['sql'] for query in cqc.captured_queries)
+        )
