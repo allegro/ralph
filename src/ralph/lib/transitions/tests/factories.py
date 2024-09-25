@@ -1,11 +1,5 @@
 from django.contrib.contenttypes.models import ContentType
-from factory import (
-    DjangoModelFactory,
-    Iterator,
-    LazyAttribute,
-    Sequence,
-    SubFactory
-)
+from factory import DjangoModelFactory, Sequence, SubFactory
 from factory.fuzzy import FuzzyText
 
 from ralph.accounts.tests.factories import UserFactory
@@ -15,6 +9,7 @@ from ralph.data_center.models import DataCenterAsset
 from ralph.data_center.tests.factories import DataCenterAssetFullFactory
 from ralph.lib.transitions.models import (
     Transition,
+    TransitionJob,
     TransitionModel,
     TransitionsHistory
 )
@@ -38,6 +33,15 @@ class TransitionFactory(DjangoModelFactory):
     class Meta:
         model = Transition
         django_get_or_create = ['name', ]
+
+
+class TransitionJobFactory(DjangoModelFactory):
+    content_type = Sequence(lambda n: ContentType.objects.get_for_model([BackOfficeAsset, DataCenterAsset][n % 2]))
+    object_id = Sequence(lambda n: [BackOfficeAssetFactory, DataCenterAssetFullFactory][n % 2]().id)
+    transition = SubFactory(TransitionFactory)
+
+    class Meta:
+        model = TransitionJob
 
 
 class TransitionsHistoryFactory(DjangoModelFactory):

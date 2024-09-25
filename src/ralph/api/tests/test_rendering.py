@@ -115,15 +115,12 @@ class RalphAPIRenderingTests(APIPermissionsTestMixin, APITestCase):
     def setUpClass(cls):
         super().setUpClass()
         for factory in FACTORY_MAP.values():
-            try:
-                module_path, factory_class = factory.rsplit(
-                    '.', 1
-                )
-                module = import_module(module_path)
-                factory_model = getattr(module, factory_class)
-                factory_model.create_batch(20)
-            except:
-                import pdb; pdb.set_trace()
+            module_path, factory_class = factory.rsplit(
+                '.', 1
+            )
+            module = import_module(module_path)
+            factory_model = getattr(module, factory_class)
+            factory_model.create_batch(20)
         cls.user = UserFactory(is_staff=True, is_superuser=True)
 
     def test_rendering(self):
