@@ -29,7 +29,7 @@ ALL_API_ENDPOINTS = {
     "assetmodels": "/api/assetmodels/",
     "back-office-assets": "/api/back-office-assets/",
     "base-object-clusters": "/api/base-object-clusters/",
-    "base-objects": "/api/base-objects/",
+    "base-objects": ("/api/base-objects/", 50),
     "base-objects-licences": "/api/base-objects-licences/",
     "base-objects-supports": "/api/base-objects-supports/",
     "budget-info": "/api/budget-info/",
