@@ -25,7 +25,6 @@ from ralph.admin.filters import (
     VulnerabilitesByPatchDeadline
 )
 from ralph.admin.helpers import generate_html_link
-from ralph.admin.m2m import RalphTabularM2MInline
 from ralph.admin.mixins import (
     BulkEditChangeListMixin,
     RalphAdmin,
@@ -70,7 +69,6 @@ from ralph.lib.table.table import Table
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.licences.models import BaseObjectLicence
 from ralph.networks.forms import SimpleNetworkWithManagementIPForm
-from ralph.networks.models.networks import Network
 from ralph.networks.views import NetworkWithTerminatorsView
 from ralph.operations.views import OperationViewReadOnlyForExisiting
 from ralph.security.views import ScanStatusInChangeListMixin, SecurityInfo

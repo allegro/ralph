@@ -1,9 +1,9 @@
 from django.contrib.contenttypes.models import ContentType
-from factory import DjangoModelFactory, SubFactory, Sequence, Iterator
+from factory import DjangoModelFactory, Iterator, Sequence, SubFactory
 from factory.fuzzy import FuzzyText
 
 from ralph.back_office.models import BackOfficeAsset
-from ralph.data_center.models import DataCenterAsset, Accessory
+from ralph.data_center.models import Accessory, DataCenterAsset
 from ralph.lib.transitions.models import Transition, TransitionModel
 
 
