@@ -72,6 +72,8 @@ FACTORY_MAP = {
     'ralph.domains.models.domains.DomainProviderAdditionalServices': 'ralph.domains.tests.factories.DomainProviderAdditionalServicesFactory',  # noqa
     'ralph.lib.custom_fields.models.CustomField': 'ralph.lib.custom_fields.tests.factories.CustomFieldFactory',  # noqa
     'ralph.lib.transitions.models.Transition': 'ralph.lib.transitions.tests.factories.TransitionFactory',  # noqa
+    'ralph.lib.transitions.models.TransitionModel': 'ralph.lib.transitions.tests.factories.TransitionModelFactory',  # noqa
+    'ralph.lib.transitions.models.TransitionsHistory': 'ralph.lib.transitions.tests.factories.TransitionsHistoryFactory',  # noqa
     'ralph.licences.models.Licence': 'ralph.licences.tests.factories.LicenceFactory',  # noqa
     'ralph.licences.models.LicenceType': 'ralph.licences.tests.factories.LicenceTypeFactory',  # noqa
     'ralph.licences.models.Software': 'ralph.licences.tests.factories.SoftwareFactory',  # noqa
@@ -126,7 +128,6 @@ EXCLUDE_MODELS = [
     'ralph.deployment.models.PrebootFile',
     'ralph.deployment.models.PrebootItem',
     'ralph.lib.custom_fields.models.CustomField',
-    'ralph.lib.transitions.models.TransitionModel',
     'ralph.networks.models.networks.DiscoveryQueue',
     'ralph.tests.models.Bar',
     'ralph.tests.models.Car',
