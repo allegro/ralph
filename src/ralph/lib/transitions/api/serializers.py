@@ -35,6 +35,7 @@ class TransitionSerializer(RalphAPISerializer):
 
     class Meta:
         model = Transition
+        fields = "__all__"
 
     def get_source(self, obj):
         choices = obj.model.content_type.model_class()._meta.get_field(

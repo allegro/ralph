@@ -15,6 +15,19 @@ services:
       - ./volumes/media:/opt/media
       - ./volumes/mysql:/var/lib/mysql
     command: mysqld --character-set-server=utf8 --collation-server=utf8_general_ci
+  postgres:
+    container_name: "postgres"
+    image: postgres:14.8
+    environment:
+      POSTGRES_PASSWORD: 'ralph_ng'
+      POSTGRES_USER: 'ralph_ng'
+      POSTGRES_DB: 'ralph_ng'
+      PGDATA: '/var/lib/postgresql/data/pgdata'
+    volumes:
+      - ./volumes/psql:/var/lib/postgresql/data/pgdata
+    command: "postgres -c log_statement='all'"
+    ports:
+      - "54320:5432"
   redis:
     platform: linux/amd64
     image: redis:3.0
