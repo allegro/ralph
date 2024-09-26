@@ -78,7 +78,7 @@ class PermissionsSelectWidget(forms.Widget):
         if not attrs:
             attrs = {}
         final_attrs = self.build_attrs(
-            attrs, extra_attrs={name: attr_value}
+            attrs, extra_attrs={'type': 'hidden', 'name': name, 'value': attr_value}
         )
         return mark_safe(
             '<a class="expand action-expand">Expand all</a>'

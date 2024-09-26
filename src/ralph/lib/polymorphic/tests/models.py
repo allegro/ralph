@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import logging
 from django.db import models
 
 from ralph.lib.polymorphic.fields import PolymorphicManyToManyField
