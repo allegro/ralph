@@ -100,6 +100,7 @@ class PolymorphicListSerializer(serializers.ListSerializer):
 
     def to_representation(self, data):
         iterable = data.all() if isinstance(data, models.Manager) else data
+
         def iterate():
             for item in iterable:
                 if self.child_serializers.get(item.__class__):
