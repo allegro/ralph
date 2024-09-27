@@ -112,8 +112,9 @@ class LicenceUserViewSet(RalphAPIViewSet):
     queryset = LicenceUser.objects.all()
     serializer_class = LicenceUserSerializer
     select_related = [
-        'licence', 'licence__region', 'licence__manufacturer',
-        'licence__licence_type', 'licence__software', 'user'
+        'licence__region', 'licence__manufacturer', 'licence__office_infrastructure',
+        'licence__licence_type', 'licence__software', 'licence__budget_info',
+        'user'
     ]
 
 

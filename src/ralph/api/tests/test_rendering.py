@@ -1,3 +1,4 @@
+import os
 from importlib import import_module
 
 from ddt import data, ddt
@@ -19,6 +20,8 @@ class APIBrowsableClient(APIClient):
     default_format = 'text/html'
 
 
+# If you want to test all items in the API, set BROWSE_ALL_API_ITEMS=1 env
+BROWSE_ALL_API_ITEMS = os.environ.get('BROWSE_ALL_API_ITEMS', False)
 DEFAULT_MAX_QUERIES = 20
 # To get this just visit /api in your browser
 ALL_API_ENDPOINTS = {
@@ -29,7 +32,9 @@ ALL_API_ENDPOINTS = {
     "assetmodels": "/api/assetmodels/",
     "back-office-assets": "/api/back-office-assets/",
     "base-object-clusters": "/api/base-object-clusters/",
-    "base-objects": ("/api/base-objects/", 50),
+    # BaseObjectViewSet is a polymorphic viewset and in worst case it can generate many SQL queries
+    # (some number per each different model) but not really N+1 for larger Ns.
+    "base-objects": ("/api/base-objects/", 60),
     "base-objects-licences": "/api/base-objects-licences/",
     "base-objects-supports": "/api/base-objects-supports/",
     "budget-info": "/api/budget-info/",
@@ -150,12 +155,17 @@ class RalphAPIRenderingTests(APIPermissionsTestMixin, APITestCase):
             if isinstance(ALL_API_ENDPOINTS[model_name], tuple) \
             else (ALL_API_ENDPOINTS[model_name], DEFAULT_MAX_QUERIES)
         self.client.force_authenticate(self.user)
-        with CaptureQueriesContext(connections['default']) as cqc:
-            response = self.client.get(endpoint, HTTP_ACCEPT='application/json')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertGreater(len(response.json()['results']), 0)
-        self.assertLessEqual(len(cqc.captured_queries), max_queries,
-                             msg=f"Too many queries when getting {endpoint}."
-                                 f"\nQueries count: {len(cqc.captured_queries)}."
-                                 "\nQueries:\n" + "\n".join(query['sql'] for query in cqc.captured_queries)
-        )
+        while True:
+            with CaptureQueriesContext(connections['default']) as cqc:
+                response = self.client.get(endpoint, HTTP_ACCEPT='application/json')
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertGreater(len(response.json()['results']), 0)
+            self.assertLessEqual(
+                len(cqc.captured_queries), max_queries,
+                msg=f"Too many queries when getting {endpoint}."
+                f"\nQueries count: {len(cqc.captured_queries)}."
+                "\nQueries:\n" + "\n".join(query['sql'] for query in cqc.captured_queries)
+            )
+            endpoint = response.json()['next']
+            if not BROWSE_ALL_API_ITEMS or endpoint is None:
+                break
