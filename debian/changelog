@@ -1,3 +1,11 @@
+ralph (20241001.1) bionic; urgency=medium
+
+  * Fix get for polymorphic queryset
+  * Fix get for polymorphic queryset another attempt
+  * Add test making sure polymorphic queryset get works correctly
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Tue, 01 Oct 2024 11:50:11 +0000
+
 ralph (20240924.2) bionic; urgency=medium
 
   * Add PolymorphicManyToManyField
