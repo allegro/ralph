@@ -265,11 +265,10 @@ class PolymorphicQuerySet(models.QuerySet):
         return clone
 
     def get(self, *args, **kwargs):
-        item = self.filter(*args, **kwargs).first()
-        if item is None:
-            raise self.model.ObjectDoesNotExist
-        else:
-            return item
+        obj = super().get(*args, **kwargs)
+        if hasattr(obj, 'content_type'):
+            obj = obj.content_type.get_object_for_this_type(pk=obj.pk)
+        return obj
 
     def polymorphic_select_related(self, **kwargs):
         """
