@@ -256,7 +256,6 @@ class Licence(Regionalizable, AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
         )
     )
 
-    objects = models.Manager()
     polymorphic_objects = PolymorphicQuerySet.as_manager()
     objects_used_free = LicencesUsedFreeManager()
     objects_with_related = LicencesRelatedObjectsManager()
