@@ -299,9 +299,7 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
         )
 
     def build_queryset(self, annotated=True, queryset=None):
-        model = self.model.model_class()
-        model_manager = model._default_manager
-        queryset = queryset or model_manager.all()
+        queryset = queryset or self.model.model_class().objects.all()
 
         grouping_label = GroupingLabel(connection, self.params['labels'])
         if annotated:
