@@ -1,3 +1,11 @@
+ralph (20241008.2) bionic; urgency=medium
+
+  * Migrate to polymorphic manytomany field
+  * Change default manager for licences
+  * Use objects manager in graphs
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Tue, 08 Oct 2024 08:53:52 +0000
+
 ralph (20241008.1) bionic; urgency=medium
 
   [ root ]
