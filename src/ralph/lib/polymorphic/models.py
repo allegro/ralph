@@ -261,6 +261,12 @@ class PolymorphicQuerySet(models.QuerySet):
         clone._pks_order = self._pks_order.clone() if self._pks_order else None
         return clone
 
+    def get(self, *args, **kwargs):
+        obj = super().get(*args, **kwargs)
+        if hasattr(obj, 'content_type'):
+            obj = obj.content_type.get_object_for_this_type(pk=obj.pk)
+        return obj
+
     def polymorphic_select_related(self, **kwargs):
         """
         Apply select related on descendant model (passed as model name). Usage:

@@ -963,6 +963,14 @@ class DCHostAPITests(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 63)
 
+    def test_get_dc_host_details(self):
+        dc_asset = DataCenterAssetFullFactory()
+        VirtualServerFullFactory.create_batch(2, parent=dc_asset)
+        CloudHostFullFactory.create_batch(2, hypervisor=dc_asset)
+        url = reverse('dchost-detail', args=(dc_asset.pk,))
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_filter_by_type_dc_asset(self):
         url = '{}?{}'.format(
             reverse('dchost-list'),

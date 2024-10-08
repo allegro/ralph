@@ -17,6 +17,7 @@ from ralph.lib.mixins.models import (
     NamedMixin,
     PriceMixin
 )
+from ralph.lib.polymorphic.fields import PolymorphicManyToManyField
 from ralph.lib.polymorphic.models import PolymorphicQuerySet
 
 
@@ -131,7 +132,7 @@ class Support(
         default=None,
         null=True,
     )
-    base_objects = models.ManyToManyField(
+    base_objects = PolymorphicManyToManyField(
         BaseObject,
         related_name='+',
         through='BaseObjectsSupport',

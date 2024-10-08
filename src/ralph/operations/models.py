@@ -16,6 +16,7 @@ from ralph.lib.mixins.models import (
     NamedMixin,
     TaggableMixin
 )
+from ralph.lib.polymorphic.fields import PolymorphicManyToManyField
 
 
 class OperationStatus(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
@@ -97,7 +98,7 @@ class Operation(AdminAbsoluteUrlMixin, TaggableMixin, models.Model):
     resolved_date = models.DateTimeField(
         null=True, blank=True, verbose_name=_('resolved date'),
     )
-    base_objects = models.ManyToManyField(
+    base_objects = PolymorphicManyToManyField(
         BaseObject, related_name='operations', verbose_name=_('objects'),
         blank=True,
     )
