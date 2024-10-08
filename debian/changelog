@@ -1,3 +1,9 @@
+ralph (20241008.3) bionic; urgency=medium
+
+  * Add new ethernet speed (#3853)
+
+ -- Olga Matyla <olga.matyla@allegro.com>  Tue, 08 Oct 2024 09:24:06 +0000
+
 ralph (20241008.2) bionic; urgency=medium
 
   * Migrate to polymorphic manytomany field
