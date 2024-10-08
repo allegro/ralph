@@ -76,6 +76,7 @@ class EthernetSpeed(Choices):
     s10gbit = _('10 Gbps')
     s40gbit = _('40 Gbps')
     s100gbit = _('100 Gbps')
+    s25gbit = _('25 Gbps')
 
     UNKNOWN_GROUP = Choices.Group(10)
     unknown = _('unknown speed')
