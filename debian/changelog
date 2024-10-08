@@ -1,3 +1,10 @@
+ralph (20241008.1) bionic; urgency=medium
+
+  [ root ]
+  * UNRELEASED
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Tue, 08 Oct 2024 07:44:36 +0000
+
 ralph (20241001.1) bionic; urgency=medium
 
   * Fix get for polymorphic queryset
