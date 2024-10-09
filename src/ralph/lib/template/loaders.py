@@ -4,10 +4,10 @@ from os.path import abspath, dirname, join
 from django.apps import apps
 from django.template import Origin
 from django.template.loader import TemplateDoesNotExist
-from django.template.loaders.base import Loader as BaseLoader
+from django.template.loaders.filesystem import Loader
 
 
-class AppTemplateLoader(BaseLoader):
+class AppTemplateLoader(Loader):
     """
     Template loader which allow to specify application label from which
     template should be used (for example when extending).
