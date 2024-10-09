@@ -2,6 +2,7 @@
 from os.path import abspath, dirname, join
 
 from django.apps import apps
+from django.template import Origin
 from django.template.loader import TemplateDoesNotExist
 from django.template.loaders.base import Loader as BaseLoader
 
@@ -59,4 +60,4 @@ class AppTemplateLoader(BaseLoader):
 
     def get_template_sources(self, template_name):
         filepath = self.get_template_path(template_name)
-        return filepath,
+        yield Origin(name=filepath, template_name=template_name, loader=self)
