@@ -211,8 +211,8 @@ class ReversionHistoryAPISerializerMixin(serializers.ModelSerializer):
 
 
 class RalphAPISaveSerializer(
-    ReversionHistoryAPISerializerMixin,
     TaggitSerializer,
+    ReversionHistoryAPISerializerMixin,
     metaclass=DeclaredFieldsMetaclass
 ):
     serializer_choice_field = ReversedChoiceField

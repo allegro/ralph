@@ -12,13 +12,11 @@ from ralph.security.models import any_exceeded, SecurityScan, Vulnerability
 
 
 class VulnerabilitySerializer(RalphAPISerializer):
-
     class Meta:
         model = Vulnerability
         depth = 1
         fields = "__all__"
         save_history = False
-
 
 
 class VulnerabilityViewSet(RalphAPIViewSet):
