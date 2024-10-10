@@ -192,22 +192,27 @@ class RalphAPISerializerMixin(
         return field_class, field_kwargs
 
 
-class ReversionHistoryAPISerializerMixin(object):
+class ReversionHistoryAPISerializerMixin(serializers.ModelSerializer):
+    @property
+    def _save_history(self) -> bool:
+        try:
+            return self.Meta.save_history
+        except AttributeError:
+            return True
 
     def save(self):
-        instance = None
-        with transaction.atomic(), reversion.create_revision():
-            reversion.set_comment('API Save')
-            reversion.set_user(self.context['request'].user)
-            instance = super().save()
-
-        return instance
+        if self._save_history:
+            with transaction.atomic(), reversion.create_revision():
+                reversion.set_comment('API Save')
+                reversion.set_user(self.context['request'].user)
+                return super().save()
+        else:
+            return super().save()
 
 
 class RalphAPISaveSerializer(
     ReversionHistoryAPISerializerMixin,
     TaggitSerializer,
-    serializers.ModelSerializer,
     metaclass=DeclaredFieldsMetaclass
 ):
     serializer_choice_field = ReversedChoiceField
