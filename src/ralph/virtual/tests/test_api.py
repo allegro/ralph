@@ -47,8 +47,8 @@ class OpenstackModelsTestCase(RalphAPITestCase):
             self.service_env.append(ServiceEnvironment.objects.create(
                 service=self.services[i], environment=self.envs[i]
             ))
-        self.service_env[0].service.business_owners = [self.user1]
-        self.service_env[0].service.technical_owners = [self.user2]
+        self.service_env[0].service.business_owners.set([self.user1])
+        self.service_env[0].service.technical_owners.set([self.user2])
         self.service_env[0].save()
         self.cloud_provider = CloudProviderFactory(name='openstack')
         self.cloud_flavor = CloudFlavorFactory()
@@ -100,7 +100,7 @@ class OpenstackModelsTestCase(RalphAPITestCase):
     def test_get_cloudhost_list(self):
         CloudHostFullFactory.create_batch(100)
         url = reverse('cloudhost-list') + "?limit=100"
-        with self.assertNumQueries(15):
+        with self.assertQueriesMoreOrLess(14, plus_minus=1):
             response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['results']), 100)
@@ -444,8 +444,8 @@ class VirtualServerAPITestCase(RalphAPITestCase):
         )
         self.virtual_server.parent.service_env.service.uid = 's-12345'
         self.virtual_server.parent.service_env.service.save()
-        self.virtual_server.service_env.service.business_owners = [self.user1]
-        self.virtual_server.service_env.service.technical_owners = [self.user2]
+        self.virtual_server.service_env.service.business_owners.set([self.user1])
+        self.virtual_server.service_env.service.technical_owners.set([self.user2])
         self.virtual_server.service_env.save()
         self.virtual_server2 = VirtualServerFullFactory()
         self.ip = IPAddressFactory(

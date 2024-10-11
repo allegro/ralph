@@ -106,7 +106,7 @@ class TestDataCenterAssetForm(RalphTestCase):
         self.dca.refresh_from_db()
         self.assertIn(
             'Management IP is already assigned to',
-            response.context['errors'][0]
+            response.context['errors'][0][0]
         )
 
     def test_enter_duplicated_mgmt_hostname_should_not_pass(self):
@@ -124,7 +124,7 @@ class TestDataCenterAssetForm(RalphTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(
             'Management hostname is already assigned to',
-            response.context['errors'][0]
+            response.context['errors'][0][0]
         )
 
     def test_reenter_mgmt_ip_should_pass(self):
@@ -191,7 +191,7 @@ class TestDataCenterAssetForm(RalphTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(
             'Management IP could not be empty when management hostname is passed',  # noqa
-            response.context['errors'][0]
+            response.context['errors'][0][0]
         )
 
     def test_delete_mgmt(self):

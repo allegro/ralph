@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import django
 from django.db import migrations, models
 import taggit.managers
 
@@ -24,7 +25,7 @@ class Migration(migrations.Migration):
                 ('next_scan_date', models.DateTimeField()),
                 ('details_url', models.URLField(max_length=255, blank=True)),
                 ('rescan_url', models.URLField(verbose_name='Rescan url', blank=True)),
-                ('base_object', models.ForeignKey(to='assets.BaseObject')),
+                ('base_object', models.ForeignKey(to='assets.BaseObject', on_delete=django.db.models.deletion.CASCADE)),
                 ('tags', taggit.managers.TaggableManager(help_text='A comma-separated list of tags.', verbose_name='Tags', to='taggit.Tag', through='taggit.TaggedItem', blank=True)),
             ],
             options={

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import django
 from django.db import migrations, models
 import ralph.lib.mixins.models
 
@@ -51,17 +52,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='trademarkadditionalcountry',
             name='country',
-            field=models.ForeignKey(to='trade_marks.TradeMarkCountry'),
+            field=models.ForeignKey(to='trade_marks.TradeMarkCountry', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='trademarkadditionalcountry',
             name='trade_mark',
-            field=models.ForeignKey(to='trade_marks.TradeMark'),
+            field=models.ForeignKey(to='trade_marks.TradeMark', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='trademark',
             name='registrar_institution',
-            field=models.ForeignKey(to='trade_marks.TradeMarkRegistrarInstitution', null=True),
+            field=models.ForeignKey(to='trade_marks.TradeMarkRegistrarInstitution', null=True, on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AlterUniqueTogether(
             name='trademarkadditionalcountry',

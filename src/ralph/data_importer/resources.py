@@ -309,16 +309,6 @@ class DataCenterAssetResource(ResourceWithPrice, RalphModelResource):
             'service_env__service', 'service_env__environment',
             'rack__server_room__data_center',
         )
-        prefetch_related = (
-            Prefetch(
-                'parent',
-                queryset=BaseObject.polymorphic_objects.prefetch_related(
-                    'ethernet_set__ipaddress'
-                )
-            ),
-            'tags',
-            'ethernet_set__ipaddress',
-        )
         exclude = ('content_type', 'asset_ptr', 'baseobject_ptr', 'connections')
 
     def dehydrate_depreciation_rate(self, dc_asset):
@@ -335,6 +325,12 @@ class DataCenterAssetResource(ResourceWithPrice, RalphModelResource):
                         return eth.ipaddress
                 except physical.IPAddress.DoesNotExist:
                     pass
+
+    def dehydrate_parent_str(self, dc_asset) -> str:
+        try:
+            return dc_asset.parent._str_with_type
+        except AttributeError:
+            return ''
 
     def dehydrate_management_ip(self, dc_asset):
         return str(self._get_management_ip(dc_asset))

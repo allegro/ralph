@@ -38,13 +38,6 @@ class PolymorphicQuerySet(models.QuerySet):
         self._pks_order = None
         super().__init__(*args, **kwargs)
 
-    def values_list(self, *fields, **kwargs):
-        flat = kwargs.get('flat', False)
-        if flat:
-            return [getattr(obj, fields[0]) for obj in self[:]]
-        else:
-            return super().values_list(*fields, **kwargs)
-
     def _fetch_all(self):
         if self._result_cache is not None:
             return
@@ -59,7 +52,11 @@ class PolymorphicQuerySet(models.QuerySet):
             self._select_related = None
 
         super()._fetch_all()
-        self._pks_order = [obj.pk for obj in self._result_cache]  # type: ignore
+        try:
+            self._pks_order = [obj.pk for obj in self._result_cache]  # type: ignore
+        except AttributeError:
+            return self._result_cache
+
         result = groupby(
             sorted(self._result_cache, key=lambda x: x.content_type_id),
             lambda x: x.content_type_id,
@@ -250,8 +247,8 @@ class PolymorphicQuerySet(models.QuerySet):
         self._extra_kwargs.update(kwargs)
         return super().extra(*args, **kwargs)
 
-    def _clone(self, *args, **kwargs):
-        clone = super()._clone(*args, **kwargs)
+    def _clone(self):
+        clone = super()._clone()
         clone._polymorphic_select_related = self._polymorphic_select_related.copy()
         clone._polymorphic_prefetch_related = self._polymorphic_prefetch_related.copy()
         clone._annotate_kwargs = self._annotate_kwargs.copy()
@@ -353,13 +350,14 @@ class Polymorphic(models.Model):
                 pass
     """
 
-    content_type = models.ForeignKey(ContentType, blank=True, null=True)
+    content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.CASCADE)
 
     polymorphic_objects = PolymorphicQuerySet.as_manager()
     objects = models.Manager()
 
     class Meta:
         abstract = True
+        manager_inheritance_from_future = True
 
     def save(self, *args, **kwargs):
         """

@@ -10,6 +10,7 @@ class DomainProviderAdditionalServicesSerializer(RalphAPISerializer):
 
     class Meta:
         model = DomainProviderAdditionalServices
+        fields = "__all__"
 
 
 class DomainProviderAdditionalServicesViewSet(RalphAPIViewSet):
@@ -34,12 +35,16 @@ class DomainViewSet(RalphAPIViewSet):
         'service_env__service', 'service_env__environment', 'business_segment',
         'business_owner', 'technical_owner', 'domain_holder'
     ]
-    prefetch_related = ['tags']
+    prefetch_related = [
+        'tags', 'custom_fields', 'content_type',
+        'additional_services', 'licences__baseobjectlicence_set'
+    ]
 
 
 class DNSProviderSerializer(RalphAPISerializer):
     class Meta:
         model = DNSProvider
+        fields = "__all__"
 
 
 class DNSProviderViewSet(RalphAPIViewSet):
@@ -50,6 +55,7 @@ class DNSProviderViewSet(RalphAPIViewSet):
 class DomainCategorySerializer(RalphAPISerializer):
     class Meta:
         model = DomainCategory
+        fields = "__all__"
 
 
 class DomainCategoryViewSet(RalphAPIViewSet):

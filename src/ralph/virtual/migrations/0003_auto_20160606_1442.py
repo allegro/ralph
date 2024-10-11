@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import django
 from django.db import migrations, models
 import datetime
 import ralph.lib.mixins.fields
@@ -42,7 +43,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='virtualserver',
             name='cluster',
-            field=models.ForeignKey(blank=True, to='data_center.Cluster', null=True),
+            field=models.ForeignKey(blank=True, to='data_center.Cluster', null=True, on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='virtualserver',
@@ -58,7 +59,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='virtualserver',
             name='type',
-            field=models.ForeignKey(default=1, to='virtual.VirtualServerType', related_name='virtual_servers'),
+            field=models.ForeignKey(default=1, to='virtual.VirtualServerType', related_name='virtual_servers', on_delete=django.db.models.deletion.CASCADE),
             preserve_default=False,
         ),
     ]

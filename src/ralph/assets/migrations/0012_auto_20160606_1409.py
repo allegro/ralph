@@ -45,7 +45,7 @@ class Migration(migrations.Migration):
                 ('rght', models.PositiveIntegerField(editable=False, db_index=True)),
                 ('tree_id', models.PositiveIntegerField(editable=False, db_index=True)),
                 ('level', models.PositiveIntegerField(editable=False, db_index=True)),
-                ('parent', mptt.fields.TreeForeignKey(related_name='children_modules', verbose_name='parent module', to='assets.ConfigurationModule', default=None, blank=True, null=True)),
+                ('parent', mptt.fields.TreeForeignKey(related_name='children_modules', verbose_name='parent module', to='assets.ConfigurationModule', default=None, blank=True, null=True, on_delete=django.db.models.deletion.CASCADE)),
                 ('support_team', models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, verbose_name='team', to='accounts.Team', default=None, blank=True, null=True)),
             ],
             options={
@@ -63,7 +63,7 @@ class Migration(migrations.Migration):
                 ('label', ralph.lib.mixins.fields.NullableCharField(verbose_name='name', max_length=255, blank=True, null=True)),
                 ('mac', ralph.lib.mixins.fields.NullableCharField(verbose_name='MAC address', validators=[django.core.validators.RegexValidator(message="'%(value)s' is not a valid MAC address.", regex=re.compile('^\\s*([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}\\s*$', 32))], unique=True, max_length=24, blank=True, null=True)),
                 ('speed', models.PositiveIntegerField(verbose_name='speed', default=11, choices=[(1, '10 Mbps'), (2, '100 Mbps'), (3, '1 Gbps'), (4, '10 Gbps'), (5, '40 Gbps'), (6, '100 Gbps'), (11, 'unknown speed')])),
-                ('base_object', models.ForeignKey(related_name='ethernet', to='assets.BaseObject')),
+                ('base_object', models.ForeignKey(related_name='ethernet', to='assets.BaseObject', on_delete=django.db.models.deletion.CASCADE)),
                 ('model', models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, verbose_name='model', to='assets.ComponentModel', default=None, blank=True, null=True)),
             ],
             options={
@@ -97,12 +97,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='configurationclass',
             name='module',
-            field=models.ForeignKey(related_name='configuration_classes', to='assets.ConfigurationModule'),
+            field=models.ForeignKey(related_name='configuration_classes', to='assets.ConfigurationModule', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='baseobject',
             name='configuration_path',
-            field=models.ForeignKey(to='assets.ConfigurationClass', verbose_name='configuration path', help_text='path to configuration for this object, for example path to puppet class', blank=True, null=True),
+            field=models.ForeignKey(to='assets.ConfigurationClass', verbose_name='configuration path', help_text='path to configuration for this object, for example path to puppet class', blank=True, null=True, on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AlterUniqueTogether(
             name='configurationmodule',

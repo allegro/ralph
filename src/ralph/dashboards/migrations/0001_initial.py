@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import django
 from django.db import migrations, models
 import django_extensions.db.fields.json
 
@@ -40,7 +41,7 @@ class Migration(migrations.Migration):
                 ('chart_type', models.PositiveIntegerField(choices=[(1, 'Verical Bar'), (2, 'Horizontal Bar'), (3, 'Pie Chart')])),
                 ('params', django_extensions.db.fields.json.JSONField(blank=True)),
                 ('active', models.BooleanField(default=True)),
-                ('model', models.ForeignKey(to='contenttypes.ContentType')),
+                ('model', models.ForeignKey(to='contenttypes.ContentType', on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'abstract': False,

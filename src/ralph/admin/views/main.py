@@ -34,7 +34,7 @@ class RalphChangeList(ChangeList):
         if not field:
             return fields
         try:
-            model_admin = admin_site._registry[field.field.rel.to]
+            model_admin = admin_site._registry[field.field.remote_field.model]
         except (AttributeError, KeyError):
             pass
         else:

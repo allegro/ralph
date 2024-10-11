@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import django
 from django.db import migrations, models
 
 
@@ -63,7 +64,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='network',
             name='dns_servers_group',
-            field=models.ForeignKey(to='dhcp.DNSServerGroup', blank=True, null=True),
+            field=models.ForeignKey(to='dhcp.DNSServerGroup', blank=True, null=True, on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.RunPython(
             move_m2m_to_dns_server_group,

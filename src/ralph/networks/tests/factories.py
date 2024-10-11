@@ -5,7 +5,7 @@ from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyText
 
 from ralph.assets.tests.factories import EthernetFactory
-from ralph.data_center.tests.factories import DataCenterFactory
+from ralph.data_center.tests.factories import DataCenterFactory, RackFactory
 from ralph.networks.models.networks import (
     IPAddress,
     Network,
@@ -34,8 +34,19 @@ class NetworkEnvironmentFactory(DjangoModelFactory):
 
 
 class NetworkFactory(DjangoModelFactory):
-    name = factory.Sequence(lambda n: 'Network #' + str(n))
+    address = factory.Sequence(lambda n: '{}.{}.{}.0/24'.format(n // 256**2 + 1, n // 256, n % 256))
+    name = factory.Sequence(lambda n: 'Net ' + str(n))
     network_environment = factory.SubFactory(NetworkEnvironmentFactory)
+
+    @factory.post_generation
+    def racks(self, create, extracted, **kwargs):
+        if not create:
+            return
+        if extracted:
+            for rack in extracted:
+                self.racks.add(rack)
+        else:
+            self.racks.add(RackFactory())
 
     class Meta:
         model = Network

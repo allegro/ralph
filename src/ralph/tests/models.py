@@ -9,6 +9,7 @@ from ralph.assets.models.base import BaseObject
 from ralph.attachments.helpers import add_attachment_from_disk
 from ralph.lib.mixins.fields import BaseObjectForeignKey
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, PriceMixin
+from ralph.lib.polymorphic.models import PolymorphicQuerySet
 from ralph.lib.transitions.decorators import transition_action
 from ralph.lib.transitions.exceptions import (
     FreezeAsyncTransition,
@@ -33,7 +34,7 @@ class Foo(AdminAbsoluteUrlMixin, models.Model):
         return 'Foo: {} / {}'.format(self.id, self.bar)
 
 
-class Manufacturer(AdminAbsoluteUrlMixin, models.Model):
+class TestManufacturer(AdminAbsoluteUrlMixin, models.Model):
     name = models.CharField(max_length=50)
     country = models.CharField(max_length=50)
 
@@ -41,7 +42,7 @@ class Manufacturer(AdminAbsoluteUrlMixin, models.Model):
 class Car(AdminAbsoluteUrlMixin, models.Model):
     name = models.CharField(max_length=50)
     year = models.PositiveSmallIntegerField()
-    manufacturer = models.ForeignKey(Manufacturer)
+    manufacturer = models.ForeignKey(TestManufacturer, on_delete=models.CASCADE)
     manufacturer._autocomplete = False
     manufacturer._filter_title = 'test'
     foos = models.ManyToManyField(Foo)
@@ -52,7 +53,7 @@ class Car(AdminAbsoluteUrlMixin, models.Model):
 
 
 class Car2(AdminAbsoluteUrlMixin, models.Model):
-    manufacturer = models.ForeignKey(Manufacturer)
+    manufacturer = models.ForeignKey(TestManufacturer, on_delete=models.CASCADE)
 
 
 class Bar(AdminAbsoluteUrlMixin, PriceMixin, models.Model):
@@ -118,7 +119,7 @@ class AsyncOrder(
     name = models.CharField(max_length=100)
     counter = models.PositiveSmallIntegerField(default=1)
     username = models.CharField(max_length=100, null=True, blank=True)
-    foo = models.ForeignKey(Foo, null=True, blank=True)
+    foo = models.ForeignKey(Foo, null=True, blank=True, on_delete=models.CASCADE)
 
     @classmethod
     @transition_action(
@@ -203,7 +204,8 @@ class BaseObjectForeignKeyModel(models.Model):
         limit_models=[
             'back_office.BackOfficeAsset',
             'data_center.DataCenterAsset'
-        ]
+        ],
+        on_delete=models.CASCADE
     )
 
 

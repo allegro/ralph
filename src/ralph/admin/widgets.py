@@ -148,10 +148,10 @@ class AutocompleteWidget(forms.TextInput):
 
     def __init__(self, field, admin_site, attrs=None, using=None, **kwargs):
         self.field = field
-        self.rel = self.field.rel
+        self.rel = self.field.remote_field
         self.multi = kwargs.get('multi', False)
         self.request = kwargs.get('request', None)
-        self.rel_to = kwargs.get('rel_to') or field.rel.to
+        self.rel_to = kwargs.get('rel_to') or field.remote_field.model
         self.admin_site = admin_site
         self.db = using
         super().__init__(attrs)
@@ -291,8 +291,8 @@ class AutocompleteWidget(forms.TextInput):
             'model': str(self.rel_to._meta.verbose_name),
             'data_suggest_url': reverse(
                 'autocomplete-list', kwargs={
-                    'app': self.field.rel.related_model._meta.app_label,
-                    'model': self.field.rel.related_model._meta.model_name,
+                    'app': self.field.remote_field.related_model._meta.app_label,
+                    'model': self.field.remote_field.related_model._meta.model_name,
                     'field': self.field.name
                 }
             ),

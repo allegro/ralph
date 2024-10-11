@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 import ipaddress
 
+import django
 from django.db import migrations, models
 
 
@@ -46,6 +47,12 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AlterModelManagers(
+            name='datacenterasset',
+            managers=[
+                ('objects', django.db.models.manager.Manager()),
+            ],
+        ),
         # rename first to `management_ip_old` because there is now property
         # `management_ip` in DataCenterAsset which "hides" database field
         # thus should not be used directly

@@ -1,4 +1,5 @@
 from django import forms
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.m2m import RalphTabularM2MInline
@@ -37,12 +38,12 @@ class OperationInlineReadOnlyForExisting(OperationInline):
     def has_add_permission(self, request):
         return False
 
+    @mark_safe
     def get_ticket_url(self, obj):
         return '<a href="{ticket_url}" target="_blank">{ticket_id}</a>'.format(
             ticket_url=obj.ticket_url,
             ticket_id=obj.ticket_id
         )
-    get_ticket_url.allow_tags = True
     get_ticket_url.short_description = _('ticket ID')
 
 

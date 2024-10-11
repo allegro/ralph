@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import django
 from django.db import migrations, models
 import datetime
 
@@ -18,5 +19,11 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AlterModelManagers(
+            name='backofficeasset',
+            managers=[
+                ('objects', django.db.models.manager.Manager()),
+            ],
+        ),
         migrations.RunPython(forwards_func),
     ]

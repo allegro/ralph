@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
+from django.db import connections, DEFAULT_DB_ALIAS
+from django.test.utils import CaptureQueriesContext  # noqa
 from rest_framework.test import APITestCase
 
 from ralph.tests.models import Foo
@@ -38,6 +41,26 @@ class APIPermissionsTestMixin(object):
         add_perm(cls.user_not_staff, 'change_foo')
 
 
+class _AssertNumQueriesMoreOrLessContext(CaptureQueriesContext):
+    def __init__(self, test_case, number, plus_minus, connection):
+        self.test_case = test_case
+        self.range = range(number - plus_minus, number + plus_minus + 1)
+        super().__init__(connection)
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        super().__exit__(exc_type, exc_value, traceback)
+        if exc_type is not None:
+            return
+        executed = len(self)
+        self.test_case.assertIn(
+            executed, self.range,
+            "%d queries executed, %s expected\nCaptured queries were:\n%s" % (
+                executed, self.range,
+                '\n'.join(
+                    '%d. %s' % (i, query['sql']) for i, query in enumerate(self.captured_queries, start=1)
+                )
+            )
+        )
 class RalphAPITestCase(APITestCase):
     """
     Base test for Ralph API Test Case.
@@ -78,3 +101,13 @@ class RalphAPITestCase(APITestCase):
         # testserver is default name of server using by Django test client
         # see django/test/client.py for details
         return 'http://testserver{}'.format(url)
+
+    def assertQueriesMoreOrLess(self, number: int, plus_minus: int, func=None, *args, using=DEFAULT_DB_ALIAS, **kwargs):
+        conn = connections[using]
+
+        context = _AssertNumQueriesMoreOrLessContext(self, number, plus_minus, conn)
+        if func is None:
+            return context
+
+        with context:
+            func(*args, **kwargs)

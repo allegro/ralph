@@ -57,7 +57,7 @@ class TestVirtualServerForm(RalphTestCase):
         form_data = self._get_basic_form_data()
         form_data['parent'] = DataCenterAssetFactory().pk
         response = self.client.post(self.url, form_data)
-        self.assertEquals(
+        self.assertEqual(
             response.status_code,
             302,
             (
@@ -70,7 +70,7 @@ class TestVirtualServerForm(RalphTestCase):
         form_data = self._get_basic_form_data()
         form_data['parent'] = CloudHostFactory().pk
         response = self.client.post(self.url, form_data)
-        self.assertEquals(
+        self.assertEqual(
             response.status_code,
             302,
             (
@@ -91,13 +91,13 @@ class TestVirtualServerForm(RalphTestCase):
             response = self.client.post(self.url, form_data)
             self.assertTrue(response.context and response.context['errors'])
             errors = response.context['form'].errors
-            self.assertEquals(
+            self.assertEqual(
                 response.status_code,
                 200,
                 repr(errors)
             )
             self.assertIn('parent', errors.keys())
-            self.assertEquals(
+            self.assertEqual(
                 errors['parent'],
                 ["Hypervisor must be one of DataCenterAsset or CloudHost"]
             )

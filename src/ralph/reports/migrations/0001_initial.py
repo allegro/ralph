@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import django
 from django.db import migrations, models
 import ralph.reports.models
 
@@ -43,8 +44,8 @@ class Migration(migrations.Migration):
                 ('modified', models.DateTimeField(verbose_name='last modified', auto_now_add=True)),
                 ('template', models.FileField(upload_to=ralph.reports.models.get_report_file_path)),
                 ('default', models.BooleanField()),
-                ('language', models.ForeignKey(to='reports.ReportLanguage')),
-                ('report', models.ForeignKey(to='reports.Report', related_name='templates')),
+                ('language', models.ForeignKey(to='reports.ReportLanguage', on_delete=django.db.models.deletion.CASCADE)),
+                ('report', models.ForeignKey(to='reports.Report', related_name='templates', on_delete=django.db.models.deletion.CASCADE)),
             ],
         ),
         migrations.AlterUniqueTogether(

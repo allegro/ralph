@@ -229,7 +229,8 @@ class InheritFromBaseObject(migrations.SeparateDatabaseAndState):
                     to='assets.BaseObject',
                     serialize=False,
                     primary_key=True,
-                    parent_link=True
+                    parent_link=True,
+                    on_delete=models.CASCADE
                 ),
                 preserve_default=False,
             ),

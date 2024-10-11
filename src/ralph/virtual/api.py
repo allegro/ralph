@@ -23,6 +23,7 @@ from ralph.configuration_management.api import SCMInfoSerializer
 from ralph.data_center.api.serializers import DataCenterAssetSimpleSerializer
 from ralph.data_center.models import DCHost
 from ralph.lib.api.exceptions import Conflict
+from ralph.lib.api.utils import renderer_classes_without_form
 from ralph.security.api import SecurityScanSerializer
 from ralph.virtual.admin import VirtualServerAdmin
 from ralph.virtual.models import (
@@ -99,6 +100,7 @@ class CloudFlavorSerializer(BaseObjectSerializer):
     cores = serializers.IntegerField()
     memory = serializers.IntegerField()
     disk = serializers.IntegerField()
+    service_env = None
 
     class Meta(BaseObjectSerializer.Meta):
         model = CloudFlavor
@@ -132,16 +134,19 @@ class CloudProjectSerializer(BaseObjectSerializer):
 class CloudImageSerializer(RalphAPISerializer):
     class Meta:
         model = CloudImage
+        fields = "__all__"
 
 
 class CloudProviderSerializer(RalphAPISerializer):
     class Meta:
         model = CloudProvider
+        fields = "__all__"
 
 
 class VirtualServerTypeSerializer(RalphAPISerializer):
     class Meta:
         model = VirtualServerType
+        fields = "__all__"
 
 
 class VirtualServerSimpleSerializer(BaseObjectSerializer):
@@ -152,7 +157,6 @@ class VirtualServerSimpleSerializer(BaseObjectSerializer):
         exclude = None
 
 
-# TODO: select related
 class VirtualServerSerializer(ComponentSerializerMixin, BaseObjectSerializer):
     type = VirtualServerTypeSerializer()
     # TODO: cast BaseObject to DataCenterAsset for hypervisor field
@@ -276,12 +280,13 @@ class VirtualServerFilterSet(NetworkableObjectFilters):
 
 
 class VirtualServerViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
+    renderer_classes = renderer_classes_without_form(RalphAPIViewSet.renderer_classes)
     queryset = VirtualServer.objects.all()
     serializer_class = VirtualServerSerializer
     save_serializer_class = VirtualServerSaveSerializer
     select_related = VirtualServerAdmin.list_select_related + [
         'parent', 'service_env__service', 'service_env__environment',
-        'configuration_path', 'content_type'
+        'configuration_path', 'content_type', 'parent__cluster__type'
     ]
     prefetch_related = base_object_descendant_prefetch_related + [
         'tags',
@@ -292,7 +297,6 @@ class VirtualServerViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
             'ethernet_set',
             queryset=Ethernet.objects.select_related('ipaddress')
         ),
-        # TODO: clusters
     ]
     filter_fields = [
         'service_env__service__uid',

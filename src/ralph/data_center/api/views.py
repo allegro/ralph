@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import Prefetch
 
 from ralph.api import RalphAPIViewSet
@@ -7,7 +8,12 @@ from ralph.assets.api.views import (
     base_object_descendant_prefetch_related,
     BaseObjectViewSetMixin
 )
-from ralph.assets.models import Ethernet
+from ralph.assets.models import (
+    ConfigurationClass,
+    ConfigurationModule,
+    Ethernet,
+    ServiceEnvironment
+)
 from ralph.data_center.admin import DataCenterAssetAdmin
 from ralph.data_center.api.serializers import (
     AccessorySerializer,
@@ -44,11 +50,10 @@ class DataCenterAssetFilterSet(NetworkableObjectFilters):
 
 
 class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
-    queryset = DataCenterAsset.objects.all()
+    queryset = DataCenterAsset.polymorphic_objects.all()
     serializer_class = DataCenterAssetSerializer
     save_serializer_class = DataCenterAssetSaveSerializer
     select_related = DataCenterAssetAdmin.list_select_related + [
-        'service_env__service', 'service_env__environment',
         'rack__server_room__data_center',
         'property_of', 'budget_info', 'content_type',
         'configuration_path__module',
@@ -62,7 +67,6 @@ class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         'connections',
         'tags',
         'memory_set',
-        'children__service_env',
         'cloudhost_set',
         Prefetch(
             'ethernet_set',
@@ -84,6 +88,13 @@ class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     exclude_filter_fields = ['configuration_path']
 
     def get_queryset(self):
+        # precache content types, this can save 3 db queries occasionally
+        ContentType.objects.get_for_models(
+            DataCenterAsset,
+            ConfigurationClass,
+            ConfigurationModule,
+            ServiceEnvironment
+        )
         return (
             DataCenterAsset.polymorphic_objects
             .select_related(*self.select_related)
@@ -120,9 +131,14 @@ class DataCenterViewSet(RalphAPIViewSet):
 class DatabaseViewSet(RalphAPIViewSet):
     queryset = Database.objects.all()
     serializer_class = DatabaseSerializer
+    prefetch_related = (
+        'tags', 'licences', 'custom_fields', 'content_type',
+        'service_env__service', 'service_env__environment'
+    )
 
 
 class VIPViewSet(RalphAPIViewSet):
+    prefetch_related = ("licences__tags", "tags", "custom_fields", "content_type")
     queryset = VIP.objects.all()
     serializer_class = VIPSerializer
 

@@ -9,8 +9,8 @@ from moneyed import CURRENCIES
 
 from ralph.settings.hooks import HOOKS_CONFIGURATION  # noqa: F401
 
-SILENCED_SYSTEM_CHECKS = []
-SILENCED_SYSTEM_CHECKS += ['models.E006', ]  # TODO fix
+
+SILENCED_SYSTEM_CHECKS = ['models.E006', ]  # TODO fix
 
 
 def bool_from_env(var, default: bool=False) -> bool:
@@ -112,17 +112,16 @@ INSTALLED_APPS = (
     'djmoney',
 )
 
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'threadlocals.middleware.ThreadLocalMiddleware',
+    'ralph.lib.threadlocal.middleware.ThreadLocalMiddleware',
     'ralph.lib.metrics.middlewares.RequestMetricsMiddleware'
 )
 
@@ -215,6 +214,7 @@ MESSAGE_TAGS = {
     messages.DEBUG: 'info',
     messages.ERROR: 'alert',
 }
+FILE_UPLOAD_PERMISSIONS = 0o644
 
 DEFAULT_DEPRECIATION_RATE = int(os.environ.get('DEFAULT_DEPRECIATION_RATE', 25))  # noqa
 DEFAULT_LICENCE_DEPRECIATION_RATE = int(os.environ.get('DEFAULT_LICENCE_DEPRECIATION_RATE', 50))  # noqa

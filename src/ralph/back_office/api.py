@@ -14,6 +14,7 @@ from ralph.back_office.models import (
 class WarehouseSerializer(RalphAPISerializer):
     class Meta:
         model = Warehouse
+        fields = "__all__"
 
 
 class WarehouseViewSet(RalphAPIViewSet):
@@ -24,6 +25,7 @@ class WarehouseViewSet(RalphAPIViewSet):
 class OfficeInfrastructureSerializer(RalphAPISerializer):
     class Meta:
         model = OfficeInfrastructure
+        fields = "__all__"
 
 
 class OfficeInfrastructureViewSet(RalphAPIViewSet):
@@ -32,9 +34,11 @@ class OfficeInfrastructureViewSet(RalphAPIViewSet):
 
 
 class BackOfficeAssetSimpleSerializer(AssetSerializer):
+    licenses = None
+
     class Meta(AssetSerializer.Meta):
         model = BackOfficeAsset
-        exclude = AssetSerializer.Meta.exclude + ('licences', )
+        exclude = AssetSerializer.Meta.exclude
         depth = 0
 
 

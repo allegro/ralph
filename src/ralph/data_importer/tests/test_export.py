@@ -54,25 +54,29 @@ class SimulateAdminExportTestCase(TestCase):
         return export_data
 
     def _init(self, num=10):
-        pass
+        raise NotImplementedError()
 
     def _test_queries_count(self, func, nums=(10, 20), max_queries=10):
         # usually here we cannot specify exact number of queries since there is
         # a lot of dependencies (permissions etc), so we're going to check if
-        # the number of queries do not change if the number of created objects
-        # change
-        queries_counts = set()
-        for num in nums:
-            self._init(num)
-            with CaptureQueriesContext(connections['default']) as cqc:
-                func()
-                queries_counts.add(len(cqc))
+        # the number of queries do not change
+        # when the number of created objects changes
+        first, second = nums
+
+        self._init(first)
+        with CaptureQueriesContext(connections['default']) as cqc:
+            func()
+            first_queries = len(cqc)
+
+        self._init(second)
+        with CaptureQueriesContext(connections['default']) as cqc:
+            func()
+            second_queries = len(cqc)
         self.assertEqual(
-            len(queries_counts),
-            1,
-            msg='Different queries count: {}'.format(queries_counts)
+            first_queries, second_queries,
+            msg=f'Different queries count. First: {first_queries}, second {second_queries}'
         )
-        self.assertLessEqual(queries_counts.pop(), max_queries)
+        self.assertLessEqual(second_queries, max_queries)
 
 
 class LicenceExporterTestCase(SimulateAdminExportTestCase):
@@ -102,6 +106,19 @@ class DataCenterAssetExporterTestCase(SimulateAdminExportTestCase):
     def _init(self, num=10):
         self.data_center_assets = DataCenterAssetFullFactory.create_batch(num)
         self.data_center_assets_map = {}
+        for dca in self.data_center_assets:
+            self.data_center_assets_map[dca.id] = dca
+
+    def test_data_center_asset_export_queries_count(self):
+        self._test_queries_count(func=lambda: self._export(
+            DataCenterAsset
+        ), max_queries=12)
+
+
+class DataCenterAssetExporterTestCaseWithParent(DataCenterAssetExporterTestCase):
+    def _init(self, num=10):
+        self.data_center_assets = DataCenterAssetFullFactory.create_batch(num)
+        self.data_center_assets_map = {}
         for i, dca in enumerate(self.data_center_assets, start=num * 2):
             dca.parent = DataCenterAssetFullFactory()
             dca.parent.management_ip = '10.20.30.{}'.format(i)
@@ -125,12 +142,12 @@ class DataCenterAssetExporterTestCase(SimulateAdminExportTestCase):
         export_data = self._export(
             DataCenterAsset, filters={'parent__isnull': False}
         )
+
+        dca_with_parent = next(dca for dca in export_data.dict if dca['parent'])
+        dca_0_parent = self.data_center_assets_map[int(dca_with_parent['parent'])]
         # check if parent management ip is properly exported
-        self.assertNotEqual(export_data.dict[0]['parent_management_ip'], '')
-        dca_0_parent = self.data_center_assets_map[
-            int(export_data.dict[0]['parent'])
-        ]
-        self.assertEqual(export_data.dict[0]['parent_str'], str(dca_0_parent))
+        self.assertNotEqual(dca_with_parent['parent_management_ip'], '')
+        self.assertEqual(dca_with_parent['parent_str'], dca_0_parent.baseobject_ptr._str_with_type)
 
 
 @ddt

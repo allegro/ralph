@@ -32,7 +32,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='CloudProject',
             fields=[
-                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', auto_created=True, parent_link=True, serialize=False)),
+                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', auto_created=True, parent_link=True, serialize=False, on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -49,7 +49,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Database',
             fields=[
-                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', auto_created=True, parent_link=True, serialize=False)),
+                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', auto_created=True, parent_link=True, serialize=False, on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'verbose_name': 'database',
@@ -72,7 +72,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='DataCenterAsset',
             fields=[
-                ('asset_ptr', models.OneToOneField(primary_key=True, to='assets.Asset', auto_created=True, parent_link=True, serialize=False)),
+                ('asset_ptr', models.OneToOneField(primary_key=True, to='assets.Asset', auto_created=True, parent_link=True, serialize=False, on_delete=django.db.models.deletion.CASCADE)),
                 ('status', ralph.lib.transitions.fields.TransitionField(choices=[(1, 'new'), (2, 'in use'), (3, 'free'), (4, 'damaged'), (5, 'liquidated'), (6, 'to deploy')], default=1)),
                 ('position', models.IntegerField(null=True)),
                 ('orientation', models.PositiveIntegerField(choices=[(1, 'front'), (2, 'back'), (3, 'middle'), (101, 'left'), (102, 'right')], default=1)),
@@ -126,7 +126,7 @@ class Migration(migrations.Migration):
                 ('volume', models.CharField(verbose_name='volume', blank=True, default=None, null=True, max_length=255)),
                 ('size', models.PositiveIntegerField(verbose_name='size (MiB)', blank=True, null=True)),
                 ('asset', models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, default=None, verbose_name='asset', to='assets.Asset', blank=True, null=True)),
-                ('share', models.ForeignKey(verbose_name='share', to='data_center.DiskShare')),
+                ('share', models.ForeignKey(verbose_name='share', to='data_center.DiskShare', on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'verbose_name': 'disk share mount',
@@ -170,7 +170,7 @@ class Migration(migrations.Migration):
                 ('ignore_addresses', models.BooleanField(verbose_name='Ignore addresses from this network', default=False, help_text='Addresses from this network should never be assigned to any device, because they are not unique.')),
                 ('dhcp_broadcast', models.BooleanField(verbose_name='Broadcast in DHCP configuration', default=False, db_index=True)),
                 ('dhcp_config', models.TextField(verbose_name='DHCP additional configuration', blank=True, default='')),
-                ('data_center', models.ForeignKey(verbose_name='data center', to='data_center.DataCenter', blank=True, null=True)),
+                ('data_center', models.ForeignKey(verbose_name='data center', to='data_center.DataCenter', blank=True, null=True, on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'verbose_name': 'network',
@@ -187,7 +187,7 @@ class Migration(migrations.Migration):
                 ('next_server', models.CharField(verbose_name='next server', blank=True, default='', help_text='The address for a TFTP server for DHCP.', max_length=32)),
                 ('domain', models.CharField(verbose_name='domain', blank=True, null=True, max_length=255)),
                 ('remarks', models.TextField(verbose_name='remarks', blank=True, null=True, help_text='Additional information.')),
-                ('data_center', models.ForeignKey(verbose_name='data center', to='data_center.DataCenter')),
+                ('data_center', models.ForeignKey(verbose_name='data center', to='data_center.DataCenter', on_delete=django.db.models.deletion.CASCADE)),
                 ('queue', models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, verbose_name='discovery queue', to='data_center.DiscoveryQueue', blank=True, null=True)),
             ],
             options={
@@ -238,8 +238,8 @@ class Migration(migrations.Migration):
                 ('orientation', models.PositiveIntegerField(choices=[(1, 'front'), (2, 'back'), (3, 'middle'), (101, 'left'), (102, 'right')], default=1)),
                 ('position', models.IntegerField(null=True)),
                 ('remarks', models.CharField(verbose_name='Additional remarks', blank=True, max_length=1024)),
-                ('accessory', models.ForeignKey(to='data_center.Accessory')),
-                ('rack', models.ForeignKey(to='data_center.Rack')),
+                ('accessory', models.ForeignKey(to='data_center.Accessory', on_delete=django.db.models.deletion.CASCADE)),
+                ('rack', models.ForeignKey(to='data_center.Rack', on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'verbose_name_plural': 'rack accessories',
@@ -251,7 +251,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(verbose_name='name', max_length=75)),
-                ('data_center', models.ForeignKey(verbose_name='data center', to='data_center.DataCenter')),
+                ('data_center', models.ForeignKey(verbose_name='data center', to='data_center.DataCenter', on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -260,7 +260,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='VIP',
             fields=[
-                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', auto_created=True, parent_link=True, serialize=False)),
+                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', auto_created=True, parent_link=True, serialize=False, on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'verbose_name': 'VIP',
@@ -271,7 +271,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='VirtualServer',
             fields=[
-                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', auto_created=True, parent_link=True, serialize=False)),
+                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', auto_created=True, parent_link=True, serialize=False, on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'verbose_name': 'Virtual server (VM)',
@@ -287,7 +287,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='rack',
             name='server_room',
-            field=models.ForeignKey(verbose_name='server room', to='data_center.ServerRoom', blank=True, null=True),
+            field=models.ForeignKey(verbose_name='server room', to='data_center.ServerRoom', blank=True, null=True, on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='network',
@@ -317,7 +317,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='diskshare',
             name='base_object',
-            field=models.ForeignKey(to='assets.BaseObject', related_name='diskshare'),
+            field=models.ForeignKey(to='assets.BaseObject', related_name='diskshare', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='diskshare',
@@ -327,7 +327,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='datacenterasset',
             name='rack',
-            field=models.ForeignKey(to='data_center.Rack', null=True),
+            field=models.ForeignKey(to='data_center.Rack', null=True, on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='connection',

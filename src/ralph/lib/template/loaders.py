@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-import io
 from os.path import abspath, dirname, join
 
 from django.apps import apps
+from django.template import Origin
 from django.template.loader import TemplateDoesNotExist
-from django.template.loaders.base import Loader as BaseLoader
+from django.template.loaders.filesystem import Loader
 
 
-class AppTemplateLoader(BaseLoader):
+class AppTemplateLoader(Loader):
     """
     Template loader which allow to specify application label from which
     template should be used (for example when extending).
@@ -43,7 +43,7 @@ class AppTemplateLoader(BaseLoader):
     """
     is_usable = True
 
-    def get_template_path(self, template_name, template_dirs=None):
+    def get_template_path(self, template_name):
         """
         Try to split template name by ':' to get app_label
         """
@@ -58,10 +58,6 @@ class AppTemplateLoader(BaseLoader):
         template_dir = abspath(join(app_dir, 'templates'))
         return join(template_dir, template_name)
 
-    def load_template_source(self, template_name, template_dirs=None):
-        filepath = self.get_template_path(template_name, template_dirs)
-        try:
-            with io.open(filepath, encoding=self.engine.file_charset) as fp:
-                return fp.read(), filepath
-        except IOError:
-            raise TemplateDoesNotExist(template_name)
+    def get_template_sources(self, template_name):
+        filepath = self.get_template_path(template_name)
+        yield Origin(name=filepath, template_name=template_name, loader=self)

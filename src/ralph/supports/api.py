@@ -15,6 +15,7 @@ from ralph.supports.models import BaseObjectsSupport, Support, SupportType
 class SupportTypeSerializer(RalphAPISerializer):
     class Meta:
         model = SupportType
+        fields = "__all__"
 
 
 class SupportTypeViewSet(RalphAPIViewSet):
@@ -65,6 +66,7 @@ class BaseObjectsSupportSerializer(RalphAPISerializer):
 
     class Meta:
         model = BaseObjectsSupport
+        fields = "__all__"
 
 
 class BaseObjectSupportViewSet(RalphAPIViewSet):

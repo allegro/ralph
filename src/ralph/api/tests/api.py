@@ -4,7 +4,7 @@ from django.conf.urls import include, url
 from ralph.api import RalphAPISerializer, RalphAPIViewSet
 from ralph.api.fields import StrField
 from ralph.api.routers import RalphRouter
-from ralph.tests.models import Bar, Car, Foo, Manufacturer
+from ralph.tests.models import Bar, Car, Foo, TestManufacturer
 
 
 class FooSerializer(RalphAPISerializer):
@@ -19,6 +19,7 @@ class FooSerializer(RalphAPISerializer):
                 'view_name': 'test-ralph-api:foo-detail'
             }
         }
+        fields = "__all__"
 
 
 class BarSerializer(RalphAPISerializer):
@@ -28,7 +29,7 @@ class BarSerializer(RalphAPISerializer):
 
 class ManufacturerSerializer(RalphAPISerializer):
     class Meta:
-        model = Manufacturer
+        model = TestManufacturer
         # include view namespace for hyperlinked field
         extra_kwargs = {
             'url': {
@@ -52,6 +53,7 @@ class CarSerializer(RalphAPISerializer):
             }
         }
         depth = 1
+        fields = "__all__"
 
 
 class CarSerializer2(CarSerializer):
@@ -64,7 +66,7 @@ class FooViewSet(RalphAPIViewSet):
 
 
 class ManufacturerViewSet(RalphAPIViewSet):
-    queryset = Manufacturer.objects.all()
+    queryset = TestManufacturer.objects.all()
     serializer_class = ManufacturerSerializer
     save_serializer_class = ManufacturerSerializer2
     extended_filter_fields = {
@@ -84,11 +86,12 @@ class BarViewSet(RalphAPIViewSet):
     filter_fields = ['id']
 
 
+app_name = "test-ralph-api"
 router = RalphRouter()
 router.register(r'foos', FooViewSet)
 router.register(r'manufacturers', ManufacturerViewSet)
 router.register(r'cars', CarViewSet)
 router.register(r'bars', BarViewSet)
 urlpatterns = [
-    url(r'^test-ralph-api/', include(router.urls, namespace='test-ralph-api')),
+    url(r'test-ralph-api/', include((router.urls, app_name), namespace='test-ralph-api')),
 ]

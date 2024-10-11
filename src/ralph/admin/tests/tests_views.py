@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from importlib import import_module
 
-from ddt import data, ddt, unpack
+from ddt import data, ddt
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.db import connections
@@ -14,6 +14,7 @@ from ralph.tests.models import Foo
 
 FACTORY_MAP = {
     'django.contrib.auth.models.Group': 'ralph.accounts.tests.factories.GroupFactory',  # noqa
+    'ralph.accessories.models.Accessory': 'ralph.accessories.tests.factories.AccessoryFactory',  # noqa
     'ralph.access_cards.models.AccessCard': 'ralph.access_cards.tests.factories.AccessCardFactory',  # noqa
     'ralph.access_cards.models.AccessZone': 'ralph.access_cards.tests.factories.AccessZoneFactory',  # noqa
     'ralph.accounts.models.RalphUser': 'ralph.accounts.tests.factories.UserFactory',  # noqa
@@ -53,6 +54,7 @@ FACTORY_MAP = {
     'ralph.data_center.models.physical.Rack': 'ralph.data_center.tests.factories.RackFactory',  # noqa
     'ralph.data_center.models.physical.RackAccessory': 'ralph.data_center.tests.factories.RackAccessoryFactory',  # noqa
     'ralph.data_center.models.physical.ServerRoom': 'ralph.data_center.tests.factories.ServerRoomFactory',  # noqa
+    'ralph.data_center.models.virtual.BaseObjectCluster': 'ralph.data_center.tests.factories.BaseObjectClusterFactory',  # noqa
     'ralph.data_center.models.virtual.Cluster': 'ralph.data_center.tests.factories.ClusterFactory',  # noqa
     'ralph.data_center.models.virtual.ClusterType': 'ralph.data_center.tests.factories.ClusterTypeFactory',  # noqa
     'ralph.data_center.models.virtual.Database': 'ralph.data_center.tests.factories.DatabaseFactory',  # noqa
@@ -68,10 +70,17 @@ FACTORY_MAP = {
     'ralph.domains.models.domains.DomainContract': 'ralph.domains.tests.factories.DomainContractFactory',  # noqa
     'ralph.domains.models.domains.DomainRegistrant': 'ralph.domains.tests.factories.DomainRegistrantFactory',  # noqa
     'ralph.domains.models.domains.DomainProviderAdditionalServices': 'ralph.domains.tests.factories.DomainProviderAdditionalServicesFactory',  # noqa
+    'ralph.lib.custom_fields.models.CustomField': 'ralph.lib.custom_fields.tests.factories.CustomFieldFactory',  # noqa
+    'ralph.lib.transitions.models.Transition': 'ralph.lib.transitions.tests.factories.TransitionFactory',  # noqa
+    'ralph.lib.transitions.models.TransitionJob': 'ralph.lib.transitions.tests.factories.TransitionJobFactory',  # noqa
+    'ralph.lib.transitions.models.TransitionModel': 'ralph.lib.transitions.tests.factories.TransitionModelFactory',  # noqa
+    'ralph.lib.transitions.models.TransitionsHistory': 'ralph.lib.transitions.tests.factories.TransitionsHistoryFactory',  # noqa
     'ralph.licences.models.Licence': 'ralph.licences.tests.factories.LicenceFactory',  # noqa
     'ralph.licences.models.LicenceType': 'ralph.licences.tests.factories.LicenceTypeFactory',  # noqa
+    'ralph.licences.models.LicenceUser': 'ralph.licences.tests.factories.LicenceUserFactory',  # noqa
     'ralph.licences.models.Software': 'ralph.licences.tests.factories.SoftwareFactory',  # noqa
     'ralph.networks.models.networks.IPAddress': 'ralph.networks.tests.factories.IPAddressFactory',  # noqa
+    'ralph.networks.models.networks.Network': 'ralph.networks.tests.factories.NetworkFactory',  # noqa
     'ralph.networks.models.networks.NetworkEnvironment': 'ralph.networks.tests.factories.NetworkEnvironmentFactory',  # noqa
     'ralph.networks.models.networks.NetworkKind': 'ralph.networks.tests.factories.NetworkKindFactory',  # noqa
     'ralph.operations.models.Change': 'ralph.operations.tests.factories.ChangeFactory',  # noqa
@@ -113,7 +122,6 @@ FACTORY_MAP = {
 
 EXCLUDE_MODELS = [
     'django.contrib.contenttypes.models.ContentType',
-    'ralph.accessories.models.Accessory',  # TODO: Add in the future
     'ralph.assets.models.assets.Asset',
     'ralph.assets.models.base.BaseObject',  # TODO: Add in the future
     'ralph.assets.models.components.GenericComponent',
@@ -124,12 +132,11 @@ EXCLUDE_MODELS = [
     'ralph.lib.custom_fields.models.CustomField',
     'ralph.lib.transitions.models.TransitionModel',
     'ralph.networks.models.networks.DiscoveryQueue',
-    'ralph.networks.models.networks.Network',  # TODO: Add in the future
     'ralph.tests.models.Bar',
     'ralph.tests.models.Car',
     'ralph.tests.models.Car2',
     'ralph.tests.models.Foo',
-    'ralph.tests.models.Manufacturer',
+    'ralph.tests.models.TestManufacturer',
     'ralph.tests.models.Order',
     'ralph.tests.models.PolymorphicTestModel',
 ]
@@ -155,11 +162,11 @@ class ViewsTest(TestCase):
         # fetch content types first
         ContentType.objects.get_for_models(*ralph_site._registry.keys())
 
-    @unpack
-    @data(*ralph_site._registry.items())
+    @data(*ralph_site._registry.keys())
     def test_numbers_of_sql_query_and_response_status_is_200(
-        self, model, model_admin
+        self, model
     ):
+            model_admin = ralph_site._registry[model]
             query_count = 0
             model_class_path = '{}.{}'.format(model.__module__, model.__name__)
             if model_class_path in EXCLUDE_MODELS:

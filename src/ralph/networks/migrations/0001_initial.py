@@ -86,7 +86,7 @@ class Migration(migrations.Migration):
                 ('next_server', models.CharField(default='', help_text='The address for a TFTP server for DHCP.', verbose_name='next server', blank=True, max_length=32)),
                 ('domain', models.CharField(null=True, verbose_name='domain', blank=True, max_length=255)),
                 ('remarks', models.TextField(null=True, help_text='Additional information.', verbose_name='remarks', blank=True)),
-                ('data_center', models.ForeignKey(to='data_center.DataCenter', verbose_name='data center')),
+                ('data_center', models.ForeignKey(to='data_center.DataCenter', verbose_name='data center', on_delete=django.db.models.deletion.CASCADE)),
                 ('queue', models.ForeignKey(null=True, to='networks.DiscoveryQueue', verbose_name='discovery queue', blank=True, on_delete=django.db.models.deletion.SET_NULL)),
             ],
             options={
@@ -130,7 +130,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='network',
             name='parent',
-            field=mptt.fields.TreeForeignKey(null=True, editable=False, blank=True, to='networks.Network', related_name='children'),
+            field=mptt.fields.TreeForeignKey(null=True, editable=False, blank=True, to='networks.Network', related_name='children', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='network',

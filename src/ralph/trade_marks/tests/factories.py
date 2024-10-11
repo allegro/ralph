@@ -7,7 +7,6 @@ from factory.django import DjangoModelFactory
 
 from ralph.accounts.tests.factories import UserFactory
 from ralph.assets.tests.factories import AssetHolderFactory
-
 from ralph.domains.tests.factories import DomainFactory
 from ralph.trade_marks.models import (
     Design,
@@ -21,7 +20,6 @@ from ralph.trade_marks.models import (
     UtilityModel,
     UtilityModelLinkedDomains
 )
-
 
 date_now = datetime.now().date()
 

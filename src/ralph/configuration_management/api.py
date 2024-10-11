@@ -16,6 +16,7 @@ from ralph.configuration_management.models import SCMStatusCheck
 class SCMInfoSerializer(RalphAPISerializer):
     class Meta:
         model = SCMStatusCheck
+        fields = "__all__"
 
 
 class SCMInfoSaveSerializer(RalphAPISaveSerializer):

@@ -119,7 +119,7 @@ def _get_history_dict(data, instance, runned_funcs):
             try:
                 field = get_field_by_relation_path(instance, k)
                 if isinstance(field, models.ForeignKey):
-                    value = str(field.rel.to.objects.get(pk=v))
+                    value = str(field.remote_field.model.objects.get(pk=v))
                     field_name = field.verbose_name
                 elif isinstance(field, models.ManyToOneRel):
                     value = ', '.join(map(str, v))
@@ -503,7 +503,7 @@ class TransitionWorkflowBaseWithPermissions(
 
 
 class TransitionModel(AdminAbsoluteUrlMixin, models.Model):
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     field_name = models.CharField(max_length=50)
 
     class Meta:
@@ -523,7 +523,7 @@ class TransitionModel(AdminAbsoluteUrlMixin, models.Model):
 
 class Transition(models.Model):
     name = models.CharField(max_length=50)
-    model = models.ForeignKey(TransitionModel)
+    model = models.ForeignKey(TransitionModel, on_delete=models.CASCADE)
     run_asynchronously = models.BooleanField(
         default=False,
         help_text=_(
@@ -621,12 +621,12 @@ class Action(models.Model):
 
 class TransitionsHistory(TimeStampMixin):
 
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     transition_name = models.CharField(max_length=255)
     source = models.CharField(max_length=50, blank=True, null=True)
     target = models.CharField(max_length=50, blank=True, null=True)
     object_id = models.IntegerField(db_index=True)
-    logged_user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    logged_user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     attachments = models.ManyToManyField(Attachment)
     kwargs = JSONField()
     actions = JSONField()

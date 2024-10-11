@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='CloudFlavor',
             fields=[
-                ('baseobject_ptr', models.OneToOneField(serialize=False, auto_created=True, primary_key=True, parent_link=True, to='assets.BaseObject')),
+                ('baseobject_ptr', models.OneToOneField(serialize=False, auto_created=True, primary_key=True, parent_link=True, to='assets.BaseObject', on_delete=django.db.models.deletion.CASCADE)),
                 ('name', models.CharField(max_length=255, verbose_name='name')),
                 ('flavor_id', models.CharField(unique=True, max_length=100)),
             ],
@@ -29,11 +29,11 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='CloudHost',
             fields=[
-                ('baseobject_ptr', models.OneToOneField(serialize=False, auto_created=True, primary_key=True, parent_link=True, to='assets.BaseObject')),
+                ('baseobject_ptr', models.OneToOneField(serialize=False, auto_created=True, primary_key=True, parent_link=True, to='assets.BaseObject', on_delete=django.db.models.deletion.CASCADE)),
                 ('host_id', models.CharField(unique=True, max_length=100)),
                 ('hostname', models.CharField(max_length=100)),
                 ('image_name', models.CharField(blank=True, null=True, max_length=255)),
-                ('cloudflavor', models.ForeignKey(verbose_name='Instance Type', to='virtual.CloudFlavor')),
+                ('cloudflavor', models.ForeignKey(verbose_name='Instance Type', to='virtual.CloudFlavor', on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'verbose_name_plural': 'Cloud hosts',
@@ -56,7 +56,7 @@ class Migration(migrations.Migration):
             name='VirtualComponent',
             fields=[
                 ('id', models.AutoField(primary_key=True, serialize=False, verbose_name='ID', auto_created=True)),
-                ('base_object', models.ForeignKey(to='assets.BaseObject', related_name='virtualcomponent')),
+                ('base_object', models.ForeignKey(to='assets.BaseObject', related_name='virtualcomponent', on_delete=django.db.models.deletion.CASCADE)),
                 ('model', models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.SET_NULL, verbose_name='model', to='assets.ComponentModel')),
             ],
             options={
@@ -78,22 +78,22 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='cloudhost',
             name='cloudprovider',
-            field=models.ForeignKey(to='virtual.CloudProvider'),
+            field=models.ForeignKey(to='virtual.CloudProvider', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='cloudhost',
             name='hypervisor',
-            field=models.ForeignKey(blank=True, null=True, to='data_center.DataCenterAsset'),
+            field=models.ForeignKey(blank=True, null=True, to='data_center.DataCenterAsset', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='cloudflavor',
             name='cloudprovider',
-            field=models.ForeignKey(to='virtual.CloudProvider'),
+            field=models.ForeignKey(to='virtual.CloudProvider', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='cloudproject',
             name='cloudprovider',
-            field=models.ForeignKey(default=1, to='virtual.CloudProvider'),
+            field=models.ForeignKey(default=1, to='virtual.CloudProvider', on_delete=django.db.models.deletion.CASCADE),
             preserve_default=False,
         ),
     ]

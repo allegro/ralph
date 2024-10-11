@@ -29,7 +29,7 @@ EXTERNAL_JOBS_METRIC_NAME_TMPL = getattr(
 
 
 def _get_user_from_request(request):
-    if request and request.user and request.user.is_authenticated():
+    if request and request.user and request.user.is_authenticated:
         return request.user
 
 

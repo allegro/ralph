@@ -8,6 +8,7 @@ from django.contrib.admin.views.main import ChangeList, ORDER_VAR
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Prefetch, Q
 from django.urls import reverse
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin import filters
@@ -24,7 +25,6 @@ from ralph.admin.filters import (
     VulnerabilitesByPatchDeadline
 )
 from ralph.admin.helpers import generate_html_link
-from ralph.admin.m2m import RalphTabularM2MInline
 from ralph.admin.mixins import (
     BulkEditChangeListMixin,
     RalphAdmin,
@@ -69,7 +69,6 @@ from ralph.lib.table.table import Table
 from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.licences.models import BaseObjectLicence
 from ralph.networks.forms import SimpleNetworkWithManagementIPForm
-from ralph.networks.models.networks import Network
 from ralph.networks.views import NetworkWithTerminatorsView
 from ralph.operations.views import OperationViewReadOnlyForExisiting
 from ralph.security.views import ScanStatusInChangeListMixin, SecurityInfo
@@ -246,6 +245,7 @@ class ClusterAdmin(CustomFieldValueAdminMixin, RalphAdmin):
             ),)
         return fieldsets
 
+    @mark_safe
     def get_masters_summary(self, obj):
         masters = obj.masters
         if not masters:
@@ -255,7 +255,6 @@ class ClusterAdmin(CustomFieldValueAdminMixin, RalphAdmin):
             getattr(masters[0], '_summary_fields', []),
             transpose=True,
         ).render()
-    get_masters_summary.allow_tags = True
     get_masters_summary.short_description = _('Master info')
 
 
@@ -266,22 +265,6 @@ class DataCenterAdmin(RalphAdmin):
     search_fields = ['name', 'shortcut']
     list_filter = ['name', 'company', 'country', 'city', 'address', 'type',
                    'shortcut']
-
-
-class NetworkTerminatorReadOnlyInline(RalphTabularM2MInline):
-    model = Network
-    extra = 0
-    show_change_link = True
-    verbose_name_plural = _('Terminators of')
-    fields = [
-        'name', 'address',
-    ]
-
-    def get_readonly_fields(self, request, obj=None):
-        return self.get_fields(request, obj)
-
-    def has_add_permission(self, request):
-        return False
 
 
 class DataCenterAssetNetworkView(NetworkWithTerminatorsView):
@@ -464,7 +447,9 @@ class DataCenterAssetAdmin(
         'service_env__service',
         'service_env__environment',
         'configuration_path',
-        'property_of'
+        'property_of',
+        'parent',
+        'budget_info',
     ]
     raw_id_fields = [
         'model', 'rack', 'service_env', 'parent', 'budget_info',
@@ -505,6 +490,13 @@ class DataCenterAssetAdmin(
         }),
     )
 
+    def get_export_queryset(self, request):
+        return DataCenterAsset.polymorphic_objects.select_related(
+            *self.list_select_related
+        ).polymorphic_prefetch_related(
+            DataCenterAsset=['tags', 'ethernet_set__ipaddress', 'parent__ethernet_set__ipaddress'],
+        )
+
     def get_multiadd_fields(self, obj=None):
         multiadd_fields = [
             {'field': 'sn', 'allow_duplicates': False},
@@ -514,6 +506,7 @@ class DataCenterAssetAdmin(
             settings, 'MULTIADD_DATA_CENTER_ASSET_FIELDS', None
         ) or multiadd_fields
 
+    @mark_safe
     def go_to_visualization(self, obj):
         if not obj.rack:
             return '&mdash;'
@@ -525,12 +518,11 @@ class DataCenterAssetAdmin(
         label = '&nbsp;/&nbsp;'.join(obj.get_location())
         return generate_html_link(url, label=label, params={})
     go_to_visualization.short_description = _('Visualization')
-    go_to_visualization.allow_tags = True
 
+    @mark_safe
     def show_location(self, obj):
         return obj.location
     show_location.short_description = _('Location')
-    show_location.allow_tags = True
 
     # NOTE(romcheg): Django Admin can only order custom fields by one field.
     #                The rest of the ordering is configured in
@@ -724,12 +716,12 @@ class DCHostAdmin(
     def _initialize_search_form(self, extra_context, fields_from_model=True):
         return super()._initialize_search_form(extra_context)
 
+    @mark_safe
     def show_location(self, obj):
         if hasattr(obj, 'get_location'):
             return ' / '.join(obj.get_location())
         return ''
     show_location.short_description = _('Location')
-    show_location.allow_tags = True
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)

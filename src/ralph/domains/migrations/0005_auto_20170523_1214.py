@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import django
 from django.db import migrations, models
 import ralph.lib.mixins.models
 
@@ -46,11 +47,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='domain',
             name='dns_provider',
-            field=models.ForeignKey(to='domains.DNSProvider', null=True, help_text="Provider which keeps domain's DNS", blank=True),
+            field=models.ForeignKey(to='domains.DNSProvider', null=True, help_text="Provider which keeps domain's DNS", blank=True, on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='domain',
             name='domain_category',
-            field=models.ForeignKey(to='domains.DomainCategory', null=True, blank=True),
+            field=models.ForeignKey(to='domains.DomainCategory', null=True, blank=True, on_delete=django.db.models.deletion.CASCADE),
         ),
     ]

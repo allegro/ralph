@@ -42,7 +42,7 @@ class DiskShare(Component):
 
 @python_2_unicode_compatible
 class DiskShareMount(AdminAbsoluteUrlMixin, models.Model):
-    share = models.ForeignKey(DiskShare, verbose_name=_("share"))
+    share = models.ForeignKey(DiskShare, verbose_name=_("share"), on_delete=models.CASCADE)
     asset = models.ForeignKey(
         Asset, verbose_name=_('asset'), null=True, blank=True,
         default=None, on_delete=models.SET_NULL

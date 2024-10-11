@@ -11,6 +11,7 @@ from django.db.models import Q
 from django.forms.models import model_to_dict
 from django.urls import reverse
 from django.utils.functional import cached_property
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 from reversion import revisions as reversion
 
@@ -365,6 +366,7 @@ class RalphGroupAdmin(EditPermissionsFormMixin, GroupAdmin, RalphAdmin):
         return self._ldap_groups.get(obj.name, '-')
     ldap_mapping.short_description = _('LDAP mapping')
 
+    @mark_safe
     def users_list(self, obj):
         users = []
         for u in obj.user_set.order_by('username'):
@@ -374,11 +376,10 @@ class RalphGroupAdmin(EditPermissionsFormMixin, GroupAdmin, RalphAdmin):
             ))
         return '<br>'.join(users)
     users_list.short_description = _('Users list')
-    users_list.allow_tags = True
 
     def formfield_for_manytomany(self, db_field, request=None, **kwargs):
         if db_field.name == 'permissions':
-            qs = kwargs.get('queryset', db_field.rel.to.objects)
+            qs = kwargs.get('queryset', db_field.remote_field.model.objects)
             if qs:
                 qs = self._simplify_permissions(qs)
             kwargs['queryset'] = qs

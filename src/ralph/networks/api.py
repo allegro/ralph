@@ -17,12 +17,14 @@ class NetworkEnvironmentSerializer(RalphAPISerializer):
     class Meta:
         model = NetworkEnvironment
         depth = 1
+        fields = "__all__"
 
 
 class NetworkKindSerializer(RalphAPISerializer):
     class Meta:
         model = NetworkKind
         depth = 1
+        fields = "__all__"
 
 
 class NetworkSimpleSerializer(RalphAPISerializer):
@@ -45,6 +47,7 @@ class NetworkSerializer(RalphAPISerializer):
     class Meta:
         model = Network
         depth = 1
+        fields = "__all__"
 
 
 class IPAddressSerializer(RalphAPISerializer):
@@ -60,6 +63,7 @@ class IPAddressSerializer(RalphAPISerializer):
 class IPAddressSaveSerializer(RalphAPISaveSerializer):
     class Meta:
         model = IPAddress
+        fields = "__all__"
 
     def validate_dhcp_expose(self, value):
         """
@@ -104,7 +108,7 @@ class NetworkViewSet(RalphAPIViewSet):
     serializer_class = NetworkSerializer
     save_serializer_class = NetworkSaveSerializer
     select_related = ['network_environment', 'kind']
-    prefetch_related = ['racks']
+    prefetch_related = ['racks__accessories', 'terminators']
     extended_filter_fields = {
         # workaround for custom field for address field defined in admin
         'address': ['address'],
@@ -119,6 +123,7 @@ class NetworkEnvironmentViewSet(RalphAPIViewSet):
 class NetworkKindViewSet(RalphAPIViewSet):
     queryset = NetworkKind.objects.all()
     serializer_class = NetworkKindSerializer
+
 
 router.register(r'ipaddresses', IPAddressViewSet)
 router.register(r'networks', NetworkViewSet)

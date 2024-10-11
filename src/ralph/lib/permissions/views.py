@@ -21,7 +21,7 @@ def view_permission_dispatch(func):
     def wraps(self, request, *args, **kwargs):
         # If not logged in redirect to login page instead of returning 403
         # status code.
-        if not request.user.is_authenticated():
+        if not request.user.is_authenticated:
             return redirect_to_login(next=request.get_full_path())
         # first try by model passed in kwargs, then, if user has not this perm
         # try by checking if this perm is assigned directly to user

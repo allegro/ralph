@@ -12,9 +12,9 @@ from ralph.tests.models import (
     Car,
     Car2,
     Foo,
-    Manufacturer,
     Order,
-    PolymorphicTestModel
+    PolymorphicTestModel,
+    TestManufacturer
 )
 
 
@@ -48,7 +48,7 @@ class Car2Admin(RalphAdmin):
     list_filter = ['manufacturer']
 
 
-@register(Manufacturer)
+@register(TestManufacturer)
 class ManufacturerAdmin(RalphAdmin):
     ordering = ['name', '-country']
 
