@@ -3,12 +3,11 @@ import json
 import logging
 from urllib.parse import urlencode
 
-from django.core.urlresolvers import NoReverseMatch, reverse
 from django.template.loader import render_to_string
+from django.urls import NoReverseMatch, reverse
 from django.utils.safestring import mark_safe
 
 from ralph.dashboards.helpers import encode_params, normalize_value
-
 
 logger = logging.getLogger(__name__)
 GRAPH_QUERY_SEP = '|'

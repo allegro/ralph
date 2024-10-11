@@ -40,7 +40,7 @@ class VIPProtocol(Choices):
 
 class VIP(AdminAbsoluteUrlMixin, BaseObject):
     name = models.CharField(_('name'), max_length=255)
-    ip = models.ForeignKey(IPAddress)
+    ip = models.ForeignKey(IPAddress, on_delete=models.CASCADE)
     port = models.PositiveIntegerField(verbose_name=_('port'), default=0)
     protocol = models.PositiveIntegerField(
         verbose_name=_('protocol'),
@@ -95,7 +95,7 @@ class Cluster(
         max_length=255,
         verbose_name=_('hostname')
     )
-    type = models.ForeignKey(ClusterType)
+    type = models.ForeignKey(ClusterType, on_delete=models.CASCADE)
     base_objects = models.ManyToManyField(
         BaseObject,
         verbose_name=_('Assigned base objects'),
@@ -173,7 +173,7 @@ class Cluster(
 
 
 class BaseObjectCluster(models.Model):
-    cluster = models.ForeignKey(Cluster)
+    cluster = models.ForeignKey(Cluster, on_delete=models.CASCADE)
     base_object = BaseObjectForeignKey(
         BaseObject,
         related_name='clusters',
@@ -182,7 +182,8 @@ class BaseObjectCluster(models.Model):
             'data_center.DataCenterAsset',
             'virtual.CloudHost',
             'virtual.VirtualServer'
-        ]
+        ],
+        on_delete=models.CASCADE
     )
     is_master = models.BooleanField(default=False)
 

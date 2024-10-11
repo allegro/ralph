@@ -34,6 +34,7 @@ class ClusterTypeSerializer(RalphAPISerializer):
     class Meta:
         model = ClusterType
         depth = 1
+        fields = "__all__"
 
 
 class ClusterSimpleSerializer(BaseObjectSerializer):
@@ -76,17 +77,20 @@ class DataCenterSerializer(RalphAPISerializer):
     class Meta:
         model = DataCenter
         depth = 1
+        fields = "__all__"
 
 
 class ServerRoomSerializer(RalphAPISerializer):
     class Meta:
         model = ServerRoom
         depth = 1
+        fields = "__all__"
 
 
 class AccessorySerializer(RalphAPISerializer):
     class Meta:
         model = Accessory
+        fields = "__all__"
 
 
 class RackAccessorySerializer(RalphAPISerializer):
@@ -94,6 +98,7 @@ class RackAccessorySerializer(RalphAPISerializer):
 
     class Meta:
         model = RackAccessory
+        fields = "__all__"
 
 
 class SimpleRackSerializer(RalphAPISerializer):
@@ -177,8 +182,9 @@ class DataCenterAssetSaveSerializer(RalphAPISaveSerializer):
         queryset=Rack.objects.all()
     )
 
-    class Meta(object):
+    class Meta:
         model = DataCenterAsset
+        fields = "__all__"
 
 
 class DatabaseSerializer(BaseObjectSerializer):

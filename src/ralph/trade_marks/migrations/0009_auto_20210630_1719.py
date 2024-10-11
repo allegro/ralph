@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import django
 from django.db import migrations, models
 
 
@@ -44,7 +45,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='design',
             name='holder',
-            field=models.ForeignKey(blank=True, null=True, to='assets.AssetHolder'),
+            field=models.ForeignKey(blank=True, null=True, to='assets.AssetHolder', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AlterField(
             model_name='design',
@@ -59,7 +60,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='patent',
             name='holder',
-            field=models.ForeignKey(blank=True, null=True, to='assets.AssetHolder'),
+            field=models.ForeignKey(blank=True, null=True, to='assets.AssetHolder', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AlterField(
             model_name='patent',
@@ -74,7 +75,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='trademark',
             name='holder',
-            field=models.ForeignKey(blank=True, null=True, to='assets.AssetHolder'),
+            field=models.ForeignKey(blank=True, null=True, to='assets.AssetHolder', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AlterField(
             model_name='trademark',

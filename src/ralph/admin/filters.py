@@ -461,8 +461,8 @@ class TreeRelatedFieldListFilter(RelatedFieldListFilter):
         """
         if self.value():
             try:
-                root = self.field.rel.to.objects.get(pk=self.value())
-            except self.field.rel.to.DoesNotExist:
+                root = self.field.remote_field.model.objects.get(pk=self.value())
+            except self.field.remote_field.model.DoesNotExist:
                 _add_incorrect_value_message(request, self.title)
                 raise IncorrectLookupParameters()
             else:
@@ -483,8 +483,8 @@ class TreeRelatedAutocompleteFilterWithDescendants(
     """
     def _get_descendants(self, request, root_id):
         try:
-            root = self.field.rel.to.objects.get(pk=root_id)
-        except self.field.rel.to.DoesNotExist:
+            root = self.field.remote_field.model.objects.get(pk=root_id)
+        except self.field.remote_field.model.DoesNotExist:
             _add_incorrect_value_message(request, self.title)
             raise IncorrectLookupParameters()
         return root.get_descendants(include_self=True)

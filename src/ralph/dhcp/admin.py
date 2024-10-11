@@ -1,5 +1,6 @@
 from django.db.models import Prefetch
 from django.template.defaultfilters import date, timesince_filter
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.decorators import register
@@ -67,6 +68,7 @@ class DNSServerGroupAdmin(RalphAdmin):
         ])
     servers_formatted.short_description = 'DNS Servers'
 
+    @mark_safe
     def networks(self, obj):
         networks = obj.networks.all()
         if networks:
@@ -79,4 +81,3 @@ class DNSServerGroupAdmin(RalphAdmin):
             result = '&ndash;'
         return result
     networks.short_description = _('in networks')
-    networks.allow_tags = True

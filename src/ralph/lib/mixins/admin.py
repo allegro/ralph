@@ -8,7 +8,7 @@ class MemorizeBeforeStateMixin(object):
 
     def save_model(self, request, obj, form, change):
         if change and obj.pk:
-            obj._before_state = obj._default_manager.get(pk=obj.pk)
+            obj._before_state = obj._meta.default_manager.get(pk=obj.pk)
         super().save_model(request, obj, form, change)
 
 

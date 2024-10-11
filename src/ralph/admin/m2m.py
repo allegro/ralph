@@ -84,7 +84,7 @@ class BaseInlineM2MFormset(BaseInlineFormSet):
 
     @classmethod
     def get_default_prefix(cls):
-        return cls.m2m.rel.get_accessor_name(model=cls.model).replace("+", "")
+        return cls.m2m.remote_field.get_accessor_name(model=cls.model).replace("+", "")
 
     def save_existing_objects(self, commit=True):
         """

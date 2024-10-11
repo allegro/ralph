@@ -151,9 +151,8 @@ class CustomFieldValueAdminMaxinTestCase(TestCase):
         response = self.client.post(self.sm1.get_absolute_url(), data)
         self.assertEqual(response.status_code, 200)
         self.assertIn(
-            '<ul class="errorlist nonfield"><li>Select a valid choice. qwerty11'
-            ' is not one of the available choices.</li></ul>',
-            response.context_data['errors'],
+            'Select a valid choice. qwerty11 is not one of the available choices',
+            response.context_data['errors'][0][0],
         )
 
     def test_duplicate_custom_field_one_existing(self):
@@ -176,9 +175,8 @@ class CustomFieldValueAdminMaxinTestCase(TestCase):
         response = self.client.post(self.sm1.get_absolute_url(), data)
         self.assertEqual(response.status_code, 200)
         self.assertIn(
-            '<ul class="errorlist nonfield"><li>Custom field of the same type '
-            'already exists for this object.</li></ul>',
-            response.context_data['errors'],
+            'Custom field of the same type already exists for this object',
+            response.context_data['errors'][0][0]
         )
 
     def test_duplicate_custom_field_both_new(self):
@@ -201,9 +199,8 @@ class CustomFieldValueAdminMaxinTestCase(TestCase):
         response = self.client.post(self.sm1.get_absolute_url(), data)
         self.assertEqual(response.status_code, 200)
         self.assertIn(
-            '<ul class="errorlist nonfield"><li>Custom field of the same type '
-            'already exists for this object.</li></ul>',
-            response.context_data['errors'],
+            'Custom field of the same type already exists for this object.',
+            response.context_data['errors'][0][0],
         )
 
     def test_duplicate_custom_field_for_new_object(self):
@@ -367,12 +364,9 @@ class CustomFieldValueAdminMaxinTestCase(TestCase):
         )
         self.assertEqual(response.status_code, HTTP_200_OK)
 
-        expected_error_message = (
-            '<ul class="errorlist"><li>'
-            'Only users from {} group can set this custom field.</li></ul>'
-        ).format(group.name)
+        expected_error_message = f'Only users from {group.name} group can set this custom field'
         self.assertIn('errors', response.context_data)
-        self.assertIn(expected_error_message, response.context_data['errors'])
+        self.assertIn(expected_error_message, response.context_data['errors'][0][0])
 
         custom_field_qs = CustomFieldValue.objects.filter(
             object_id=self.sm1.id,
@@ -408,12 +402,9 @@ class CustomFieldValueAdminMaxinTestCase(TestCase):
         )
         self.assertEqual(response.status_code, HTTP_200_OK)
 
-        expected_error_message = (
-            '<ul class="errorlist"><li>'
-            'Only users from {} group can set this custom field.</li></ul>'
-        ).format(group.name)
+        expected_error_message = f'Only users from {group.name} group can set this custom field'
         self.assertIn('errors', response.context_data)
-        self.assertIn(expected_error_message, response.context_data['errors'])
+        self.assertIn(expected_error_message, response.context_data['errors'][0][0])
 
         custom_field_qs = CustomFieldValue.objects.filter(
             object_id=self.sm1.id,

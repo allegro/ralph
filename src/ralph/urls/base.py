@@ -43,7 +43,7 @@ api_urls = list(map(lambda u: url(r'^', include(u)), [
 api_urls += [url(r'^', include(router.urls))]
 
 urlpatterns = [
-    url(r'^', include(admin.urls)),
+    url(r'^', admin.urls),
     url(r'^api/', include(api_urls)),
     url(r'^api-token-auth/', views.obtain_auth_token),
     url(r'^', include('ralph.dc_view.urls.ui')),

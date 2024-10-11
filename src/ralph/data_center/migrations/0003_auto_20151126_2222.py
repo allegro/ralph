@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import django
 from django.db import migrations, models
 import ralph.lib.mixins.fields
 
@@ -25,6 +26,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='datacenterasset',
             name='rack',
-            field=models.ForeignKey(null=True, to='data_center.Rack', blank=True),
+            field=models.ForeignKey(null=True, to='data_center.Rack', blank=True, on_delete=django.db.models.deletion.CASCADE),
         ),
     ]

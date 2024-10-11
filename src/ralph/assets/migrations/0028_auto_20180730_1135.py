@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import django
 from django.db import migrations, models
 
 
@@ -30,7 +31,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='service',
             name='business_segment',
-            field=models.ForeignKey(blank=True, null=True, to='assets.BusinessSegment'),
+            field=models.ForeignKey(blank=True, null=True, to='assets.BusinessSegment', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.RunPython(
             rewrite_business_segment_from_pc, reverse_code=rewrite_business_segment_to_pc

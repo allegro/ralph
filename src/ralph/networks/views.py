@@ -1,3 +1,4 @@
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.m2m import RalphTabularM2MInline
@@ -44,6 +45,7 @@ class NetworkView(RalphDetailViewAdmin):
     ]
     fields = ('available_networks', )
 
+    @mark_safe
     def available_networks(self, instance):
         networks = instance._get_available_networks(
             as_query=True
@@ -58,7 +60,6 @@ class NetworkView(RalphDetailViewAdmin):
             result = '&ndash;'
         return result
     available_networks.short_description = _('Available networks')
-    available_networks.allow_tags = True
     fieldsets = (
         (_(''), {
             'fields': (

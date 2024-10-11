@@ -35,7 +35,8 @@ class OperationType(
         null=True,
         blank=True,
         related_name='children',
-        db_index=True
+        db_index=True,
+        on_delete=models.CASCADE
     )
 
     class choices(Choices):
@@ -56,7 +57,7 @@ class OperationType(
 
 
 class Operation(AdminAbsoluteUrlMixin, TaggableMixin, models.Model):
-    type = TreeForeignKey(OperationType, verbose_name=_('type'))
+    type = TreeForeignKey(OperationType, verbose_name=_('type'), on_delete=models.CASCADE)
     _allow_in_dashboard = True
     title = models.CharField(
         max_length=350, null=False, blank=False, verbose_name=_('title'),

@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='BackOfficeAsset',
             fields=[
-                ('asset_ptr', models.OneToOneField(primary_key=True, to='assets.Asset', auto_created=True, parent_link=True, serialize=False)),
+                ('asset_ptr', models.OneToOneField(primary_key=True, to='assets.Asset', auto_created=True, parent_link=True, serialize=False, on_delete=django.db.models.deletion.CASCADE)),
                 ('location', models.CharField(blank=True, null=True, max_length=128)),
                 ('purchase_order', models.CharField(blank=True, null=True, max_length=50)),
                 ('loan_end_date', models.DateField(verbose_name='Loan end date', blank=True, default=None, null=True)),
@@ -61,22 +61,22 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='backofficeasset',
             name='office_infrastructure',
-            field=models.ForeignKey(to='back_office.OfficeInfrastructure', blank=True, null=True),
+            field=models.ForeignKey(to='back_office.OfficeInfrastructure', blank=True, null=True, on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='backofficeasset',
             name='owner',
-            field=models.ForeignKey(to=settings.AUTH_USER_MODEL, blank=True, null=True, related_name='assets_as_owner'),
+            field=models.ForeignKey(to=settings.AUTH_USER_MODEL, blank=True, null=True, related_name='assets_as_owner', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='backofficeasset',
             name='region',
-            field=models.ForeignKey(to='accounts.Region'),
+            field=models.ForeignKey(to='accounts.Region', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='backofficeasset',
             name='user',
-            field=models.ForeignKey(to=settings.AUTH_USER_MODEL, blank=True, null=True, related_name='assets_as_user'),
+            field=models.ForeignKey(to=settings.AUTH_USER_MODEL, blank=True, null=True, related_name='assets_as_user', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='backofficeasset',

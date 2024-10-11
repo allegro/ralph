@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
                 ('size', models.PositiveIntegerField(verbose_name='size (MiB)')),
                 ('speed', models.PositiveIntegerField(null=True, blank=True, verbose_name='speed (MHz)')),
                 ('slot_no', models.PositiveIntegerField(null=True, blank=True, verbose_name='slot number')),
-                ('base_object', models.ForeignKey(related_name='memory_set', to='assets.BaseObject')),
+                ('base_object', models.ForeignKey(related_name='memory_set', to='assets.BaseObject', on_delete=django.db.models.deletion.CASCADE)),
                 ('model', models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, to='assets.ComponentModel', blank=True, default=None, null=True, verbose_name='model')),
             ],
             options={

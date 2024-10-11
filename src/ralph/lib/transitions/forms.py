@@ -83,6 +83,7 @@ class TransitionForm(forms.ModelForm):
             self.fields['template_name'].widget.attrs['disabled'] = True
 
     def clean(self):
+        self.cleaned_data['actions'] = [a.id for a in self.cleaned_data['actions']]
         cleaned_data = super().clean()
         actions = Action.objects.in_bulk(cleaned_data['actions'])
         attachment_counter = 0

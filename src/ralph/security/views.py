@@ -2,7 +2,7 @@
 import logging
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.urlresolvers import NoReverseMatch
+from django.urls import NoReverseMatch
 from django.utils.lru_cache import lru_cache
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _

@@ -108,7 +108,6 @@ class ManyToManyThroughWidget(widgets.ManyToManyWidget):
 
 
 class ExportForeignKeyStrWidget(widgets.Widget):
-
     def render(self, value, obj=None):
         return str(value)
 

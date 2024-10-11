@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='TransitionJob',
             fields=[
-                ('job_ptr', models.OneToOneField(parent_link=True, serialize=False, auto_created=True, to='external_services.Job', primary_key=True)),
+                ('job_ptr', models.OneToOneField(parent_link=True, serialize=False, auto_created=True, to='external_services.Job', primary_key=True, on_delete=django.db.models.deletion.CASCADE)),
                 ('object_id', models.CharField(max_length=200)),
                 ('content_type', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='contenttypes.ContentType')),
             ],
@@ -55,6 +55,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='transitionjob',
             name='transition',
-            field=models.ForeignKey(to='transitions.Transition'),
+            field=models.ForeignKey(to='transitions.Transition', on_delete=django.db.models.deletion.CASCADE),
         ),
     ]

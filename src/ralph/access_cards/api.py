@@ -14,6 +14,7 @@ class AccessZoneSerializer(RalphAPISerializer):
     class Meta:
         model = AccessZone
         depth = 1
+        fields = "__all__"
 
 
 class AccessCardSerializer(RalphAPISerializer):

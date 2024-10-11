@@ -6,12 +6,14 @@ from ralph.dhcp.models import DNSServer, DNSServerGroup
 class DNSServerGroupSerializer(RalphAPISerializer):
     class Meta:
         model = DNSServerGroup
+        fields = "__all__"
 
 
 class DNSServerSerializer(RalphAPISerializer):
     class Meta:
         model = DNSServer
         depth = 1
+        fields = "__all__"
 
 
 class DNSServerViewSet(RalphAPIViewSet):

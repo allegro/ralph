@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import django
 from django.db import migrations, models
 import ralph.lib.mixins.models
 import mptt.fields
@@ -47,7 +48,7 @@ class Migration(migrations.Migration):
                 ('rght', models.PositiveIntegerField(editable=False, db_index=True)),
                 ('tree_id', models.PositiveIntegerField(editable=False, db_index=True)),
                 ('level', models.PositiveIntegerField(editable=False, db_index=True)),
-                ('parent', mptt.fields.TreeForeignKey(to='operations.OperationType', null=True, related_name='children', blank=True)),
+                ('parent', mptt.fields.TreeForeignKey(to='operations.OperationType', null=True, related_name='children', blank=True, on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -56,7 +57,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='operation',
             name='type',
-            field=mptt.fields.TreeForeignKey(to='operations.OperationType', verbose_name='type'),
+            field=mptt.fields.TreeForeignKey(to='operations.OperationType', verbose_name='type', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.CreateModel(
             name='Change',

@@ -4,7 +4,7 @@ from tempfile import TemporaryDirectory
 from ralph.accounts.tests.factories import UserFactory
 from ralph.attachments.models import Attachment, AttachmentItem
 from ralph.attachments.tests import AttachmentsTestCase
-from ralph.tests.models import Foo, Manufacturer
+from ralph.tests.models import Foo, TestManufacturer
 
 
 class AttachmentTest(AttachmentsTestCase):
@@ -19,7 +19,7 @@ class AttachmentTest(AttachmentsTestCase):
 
     def test_get_all_attachments_for_object(self):
         self.create_attachment_for_object(Foo.objects.create(bar='test'))
-        self.create_attachment_for_object(Manufacturer.objects.create())
+        self.create_attachment_for_object(TestManufacturer.objects.create())
         obj = Foo.objects.create(bar='test')
         self.create_attachment_for_object(obj)
         self.create_attachment_for_object(obj)

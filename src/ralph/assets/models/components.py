@@ -75,7 +75,11 @@ class ComponentModel(
 
 
 class Component(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
-    base_object = models.ForeignKey(BaseObject, related_name='%(class)s_set')
+    base_object = models.ForeignKey(
+        BaseObject,
+        related_name='%(class)s_set',
+        on_delete=models.CASCADE
+    )
     # TODO(xor-xor): This field should be removed along with ComponentModel
     # class.
     model = models.ForeignKey(

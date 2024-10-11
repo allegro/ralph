@@ -12,7 +12,7 @@ from ralph.lib.custom_fields.models import (
 )
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
 
-dir_file_name_validator = RegexValidator(regex='\w+')
+dir_file_name_validator = RegexValidator(regex=r'\w+')
 
 ConfigurationModuleBase = type(
     'ConfigurationModuleBase', (MPTTModelBase, CustomFieldMeta), {}
@@ -40,6 +40,7 @@ class ConfigurationModule(
         blank=True,
         default=None,
         related_name='children_modules',
+        on_delete=models.CASCADE
     )
     # TODO: is this necessary?
     support_team = models.ForeignKey(
@@ -86,7 +87,8 @@ class ConfigurationClass(AdminAbsoluteUrlMixin, BaseObject):
     )
     module = models.ForeignKey(
         ConfigurationModule,
-        related_name='configuration_classes'
+        related_name='configuration_classes',
+        on_delete=models.CASCADE
     )
 
     autocomplete_words_split = True

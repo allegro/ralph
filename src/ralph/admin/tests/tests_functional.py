@@ -13,7 +13,7 @@ from ralph.admin.views.extra import RalphDetailView, RalphListView
 from ralph.admin.views.main import RalphChangeList
 from ralph.tests.admin import CarAdmin, ManufacturerAdmin
 from ralph.tests.mixins import ClientMixin, ReloadUrlsMixin
-from ralph.tests.models import Car, Foo, Manufacturer
+from ralph.tests.models import Car, Foo, TestManufacturer
 
 
 class ExtraListView(RalphListView, View):
@@ -216,10 +216,10 @@ class ChangeListTest(TestCase):
 
     def setUp(self):
         super().setUp()
-        manufacturer = Manufacturer.objects.create(
+        manufacturer = TestManufacturer.objects.create(
             name='test', country='pl'
         )
-        Manufacturer.objects.create(
+        TestManufacturer.objects.create(
             name='test2', country='pl2'
         )
         Car.objects.create(
@@ -362,7 +362,7 @@ class ChangeListTest(TestCase):
     def test_get_queryset(self):
         request = RequestFactory().get('/manufacturer', data={IS_POPUP_VAR: 1})
         change_list = self._change_list_factory(
-            model=Manufacturer,
+            model=TestManufacturer,
             model_admin=ManufacturerAdmin,
             request=request,
             list_display=['id']

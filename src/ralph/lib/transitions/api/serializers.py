@@ -29,14 +29,15 @@ class TransitionActionSerializer(RalphAPISerializer):
 
 
 class TransitionSerializer(RalphAPISerializer):
-
     source = serializers.SerializerMethodField()
-    target = serializers.SerializerMethodField()
 
     class Meta:
         model = Transition
+        fields = "__all__"
 
     def get_source(self, obj):
+        # It gets all possible values for the field and not all source values.
+        # But I'm not sure fixing it won't break something else.
         choices = obj.model.content_type.model_class()._meta.get_field(
             obj.model.field_name
         ).choices

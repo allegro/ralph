@@ -180,7 +180,7 @@ class PermissionPerObjectAdminMixin(object):
         narrow result to objects for which user has permissions.
         """
         queryset = super().get_field_queryset(db, db_field, request)
-        related_model = db_field.rel.to
+        related_model = db_field.remote_field.model
         if issubclass(related_model, PermissionsForObjectMixin):
             queryset = related_model._get_objects_for_user(
                 request.user, queryset

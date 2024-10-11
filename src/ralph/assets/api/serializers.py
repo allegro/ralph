@@ -61,11 +61,13 @@ class OwnersFromServiceEnvSerializerMixin(RalphAPISerializer):
 class BusinessSegmentSerializer(RalphAPISerializer):
     class Meta:
         model = BusinessSegment
+        fields = "__all__"
 
 
 class BudgetInfoSerializer(RalphAPISerializer):
     class Meta:
         model = BudgetInfo
+        fields = "__all__"
 
 
 class ProfitCenterSerializer(RalphAPISerializer):
@@ -78,6 +80,7 @@ class ProfitCenterSerializer(RalphAPISerializer):
 class EnvironmentSerializer(RalphAPISerializer):
     class Meta:
         model = Environment
+        fields = "__all__"
 
 
 class SaveServiceSerializer(
@@ -115,6 +118,7 @@ class SaveServiceSerializer(
 
     class Meta:
         model = Service
+        fields = "__all__"
 
     @transaction.atomic
     def _save_environments(self, instance, environments):
@@ -161,6 +165,7 @@ class ServiceSerializer(RalphAPISerializer):
     class Meta:
         model = Service
         depth = 1
+        fields = "__all__"
 
 
 class ServiceEnvironmentSimpleSerializer(RalphAPISerializer):
@@ -200,11 +205,13 @@ class ServiceEnvironmentSerializer(
 class ManufacturerSerializer(RalphAPISerializer):
     class Meta:
         model = Manufacturer
+        fields = "__all__"
 
 
 class ManufacturerKindSerializer(RalphAPISerializer):
     class Meta:
         model = ManufacturerKind
+        fields = "__all__"
 
 
 class CategorySerializer(RalphAPISerializer):
@@ -215,6 +222,7 @@ class CategorySerializer(RalphAPISerializer):
 
     class Meta:
         model = Category
+        fields = "__all__"
 
 
 class AssetModelSerializer(WithCustomFieldsSerializerMixin, RalphAPISerializer):
@@ -237,6 +245,7 @@ class AssetModelSaveSerializer(RalphAPISaveSerializer):
 
     class Meta:
         model = AssetModel
+        fields = "__all__"
 
 
 class BaseObjectPolymorphicSerializer(
@@ -260,6 +269,7 @@ class BaseObjectPolymorphicSerializer(
 class AssetHolderSerializer(RalphAPISerializer):
     class Meta:
         model = AssetHolder
+        fields = "__all__"
 
 
 class BaseObjectSimpleSerializer(
@@ -303,9 +313,12 @@ class ConfigurationClassSimpleSerializer(RalphAPISerializer):
     class Meta:
         model = ConfigurationClass
         exclude = (
-            'content_type', 'tags', 'service_env', 'configuration_path',
+            'content_type', 'configuration_path',
             'parent'
         )
+
+# TODO: Is there a better way to make it work since drf 3.5?
+del ConfigurationClassSimpleSerializer._declared_fields['tags']
 
 
 class ConfigurationClassSerializer(
@@ -351,6 +364,7 @@ class EthernetSerializer(EthernetSimpleSerializer):
     class Meta:
         model = Ethernet
         depth = 1
+        fields = "__all__"
 
 
 class MemorySimpleSerializer(RalphAPISerializer):

@@ -2,6 +2,7 @@ from django.contrib.admin.views.main import ORDER_VAR, SEARCH_VAR
 from django.db.models import Count, F, Prefetch
 from django.urls import reverse
 from django.utils.html import escape
+from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.admin.decorators import register
@@ -185,6 +186,7 @@ class NetworkAdmin(RalphMPTTAdmin):
     ipaddresses_count.short_description = _('IPAddress count')
     ipaddresses_count.admin_order_field = 'ipaddress_count'
 
+    @mark_safe
     def show_parent_networks(self, network):
         if not network or not network.pk:
             return '&ndash;'
@@ -196,16 +198,16 @@ class NetworkAdmin(RalphMPTTAdmin):
             ))
         return ' <br /> '.join(nodes_link)
     show_parent_networks.short_description = _('Parent networks')
-    show_parent_networks.allow_tags = True
 
+    @mark_safe
     def show_first_free_ip(self, network):
         if not network or not network.pk:
             return '&ndash;'
         free_ip = network.get_first_free_ip()
         return str(free_ip) if free_ip else '&ndash;'
     show_first_free_ip.short_description = _('First free IP')
-    show_first_free_ip.allow_tags = True
 
+    @mark_safe
     def show_subnetworks(self, network):
         if not network or not network.pk:
             return '&ndash;'
@@ -215,9 +217,9 @@ class NetworkAdmin(RalphMPTTAdmin):
             ['name', 'address'],
             url_field='name'
         ).render()
-    show_subnetworks.allow_tags = True
     show_subnetworks.short_description = _('Subnetworks')
 
+    @mark_safe
     def show_addresses(self, network):
         if not network or not network.pk:
             return '&ndash;'
@@ -236,7 +238,6 @@ class NetworkAdmin(RalphMPTTAdmin):
             ['address', 'linked_object'],
             url_field='address'
         ).render()
-    show_addresses.allow_tags = True
     show_addresses.short_description = _('Addresses')
 
     def get_queryset(self, request):
@@ -294,6 +295,7 @@ class IPAddressAdmin(ParentChangeMixin, RalphAdmin):
     add_message = _('IP added to <a href="{}" _target="blank">{}</a>')
     change_message = _('IP reassigned from network <a href="{}" target="_blank">{}</a> to <a href="{}" target="_blank">{}</a>')  # noqa
 
+    @mark_safe
     def get_network_path(self, obj):
         if not obj.network:
             return None
@@ -305,7 +307,6 @@ class IPAddressAdmin(ParentChangeMixin, RalphAdmin):
             ))
         return ' > '.join(nodes_link)
     get_network_path.short_description = _('Network')
-    get_network_path.allow_tags = True
 
     def get_queryset(self, request):
         # use Prefetch like select-related to get base_objects with custom
@@ -315,15 +316,15 @@ class IPAddressAdmin(ParentChangeMixin, RalphAdmin):
             queryset=BaseObject.polymorphic_objects.all())
         )
 
+    @mark_safe
     def ip_address(self, obj):
         return '<a href="{}">{}</a>'.format(
             obj.get_absolute_url(), escape(obj.address)
         )
     ip_address.short_description = _('IP address')
     ip_address.admin_order_field = 'number'
-    ip_address.allow_tags = True
 
+    @mark_safe
     def base_object_link(self, obj):
         return ip_address_base_object_link(obj)
     base_object_link.short_description = _('Linked object')
-    base_object_link.allow_tags = True

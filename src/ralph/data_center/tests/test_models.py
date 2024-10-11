@@ -465,11 +465,11 @@ class DataCenterAssetTest(RalphTestCase):
         self.dc_asset.save()
         asset = DataCenterAsset.objects.get(pk=self.dc_asset_2.pk)
 
-        self.assertEquals(self.dc_asset.rack_id, asset.rack_id)
+        self.assertEqual(self.dc_asset.rack_id, asset.rack_id)
 
     def test_get_autocomplete_queryset(self):
         queryset = DataCenterAsset.get_autocomplete_queryset()
-        self.assertEquals(2, queryset.count())
+        self.assertEqual(2, queryset.count())
 
     # =========================================================================
     # management_ip
@@ -527,9 +527,9 @@ class DataCenterAssetTest(RalphTestCase):
         rack_100_net = NetworkFactory(address='10.0.100.0/24')
         rack_101_net = NetworkFactory(address='10.0.101.0/24')
         common_net = NetworkFactory(address='10.0.0.0/24')
-        rack_100_net.racks = [rack100]
-        rack_101_net.racks = [rack101]
-        common_net.racks = [rack100, rack101]
+        rack_100_net.racks.set([rack100])
+        rack_101_net.racks.set([rack101])
+        common_net.racks.set([rack100, rack101])
         self.dc_asset_2.rack = rack100
         self.dc_asset_3.rack = rack101
 

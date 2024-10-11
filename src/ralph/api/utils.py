@@ -96,14 +96,21 @@ class PolymorphicListSerializer(serializers.ListSerializer):
     """
     def __init__(self, *args, **kwargs):
         self.child_serializers = kwargs.pop('child_serializers')
-        return super().__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def to_representation(self, data):
         iterable = data.all() if isinstance(data, models.Manager) else data
-        return [
-            self.child_serializers[item.__class__].to_representation(item)
-            for item in iterable if self.child_serializers.get(item.__class__)
-        ]
+
+        def iterate():
+            for item in iterable:
+                if self.child_serializers.get(item.__class__):
+                    yield self.child_serializers[item.__class__].to_representation(item)
+                else:
+                    try:
+                        yield {"id": item.id}
+                    except Exception:
+                        yield {}
+        return [i for i in iterate()]
 
 
 class PolymorphicSerializer(serializers.Serializer):

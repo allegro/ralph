@@ -94,7 +94,7 @@ class SecurityScan(
     vulnerabilities = models.ManyToManyField(Vulnerability, blank=True)
     # this is a quirk field, it is updated manually (for now it's in API)
     # this is because it's hard to handling it automatically
-    # (its value is computated depending on M2M field and M2M signals are
+    # (its value is computed depending on M2M field and M2M signals are
     # complicated)
     is_patched = models.BooleanField(default=False)
 

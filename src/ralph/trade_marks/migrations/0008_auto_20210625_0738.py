@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import django
 from django.db import migrations, models
 from django.conf import settings
 import ralph.lib.mixins.models
@@ -20,7 +21,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Design',
             fields=[
-                ('baseobject_ptr', models.OneToOneField(primary_key=True, serialize=False, auto_created=True, parent_link=True, to='assets.BaseObject')),
+                ('baseobject_ptr', models.OneToOneField(primary_key=True, serialize=False, auto_created=True, parent_link=True, to='assets.BaseObject', on_delete=django.db.models.deletion.CASCADE)),
                 ('name', models.CharField(max_length=255)),
                 ('registrant_number', models.CharField(verbose_name='Registrant number', max_length=255)),
                 ('type', models.PositiveIntegerField(verbose_name='Trade Mark type', default=2, choices=[(1, 'Word'), (2, 'Figurative'), (3, 'Word - Figurative')])),
@@ -31,7 +32,7 @@ class Migration(migrations.Migration):
                 ('order_number_url', models.URLField(max_length=255, blank=True, null=True)),
                 ('status', models.PositiveIntegerField(verbose_name='Trade Mark status', default=5, choices=[(1, 'Application filed'), (2, 'Application refused'), (3, 'Application withdrawn'), (4, 'Application opposed'), (5, 'Registered'), (6, 'Registration invalidated'), (7, 'Registration expired')])),
                 ('additional_markings', models.ManyToManyField(blank=True, to='trade_marks.ProviderAdditionalMarking')),
-                ('business_owner', models.ForeignKey(related_name='design_business_owner', to=settings.AUTH_USER_MODEL)),
+                ('business_owner', models.ForeignKey(related_name='design_business_owner', to=settings.AUTH_USER_MODEL, on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -42,8 +43,8 @@ class Migration(migrations.Migration):
             name='DesignAdditionalCountry',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
-                ('country', models.ForeignKey(to='trade_marks.TradeMarkCountry')),
-                ('design', models.ForeignKey(to='trade_marks.Design')),
+                ('country', models.ForeignKey(to='trade_marks.TradeMarkCountry', on_delete=django.db.models.deletion.CASCADE)),
+                ('design', models.ForeignKey(to='trade_marks.Design', on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'verbose_name': 'Design Additional Country',
@@ -54,8 +55,8 @@ class Migration(migrations.Migration):
             name='DesignsLinkedDomains',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
-                ('design', models.ForeignKey(to='trade_marks.Design')),
-                ('domain', models.ForeignKey(related_name='design', to='domains.Domain')),
+                ('design', models.ForeignKey(to='trade_marks.Design', on_delete=django.db.models.deletion.CASCADE)),
+                ('domain', models.ForeignKey(related_name='design', to='domains.Domain', on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'verbose_name': 'Design Linked Domain',
@@ -65,7 +66,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Patent',
             fields=[
-                ('baseobject_ptr', models.OneToOneField(primary_key=True, serialize=False, auto_created=True, parent_link=True, to='assets.BaseObject')),
+                ('baseobject_ptr', models.OneToOneField(primary_key=True, serialize=False, auto_created=True, parent_link=True, to='assets.BaseObject', on_delete=django.db.models.deletion.CASCADE)),
                 ('name', models.CharField(max_length=255)),
                 ('registrant_number', models.CharField(verbose_name='Registrant number', max_length=255)),
                 ('type', models.PositiveIntegerField(verbose_name='Trade Mark type', default=2, choices=[(1, 'Word'), (2, 'Figurative'), (3, 'Word - Figurative')])),
@@ -76,7 +77,7 @@ class Migration(migrations.Migration):
                 ('order_number_url', models.URLField(max_length=255, blank=True, null=True)),
                 ('status', models.PositiveIntegerField(verbose_name='Trade Mark status', default=5, choices=[(1, 'Application filed'), (2, 'Application refused'), (3, 'Application withdrawn'), (4, 'Application opposed'), (5, 'Registered'), (6, 'Registration invalidated'), (7, 'Registration expired')])),
                 ('additional_markings', models.ManyToManyField(blank=True, to='trade_marks.ProviderAdditionalMarking')),
-                ('business_owner', models.ForeignKey(related_name='patent_business_owner', to=settings.AUTH_USER_MODEL)),
+                ('business_owner', models.ForeignKey(related_name='patent_business_owner', to=settings.AUTH_USER_MODEL, on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -87,8 +88,8 @@ class Migration(migrations.Migration):
             name='PatentAdditionalCountry',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
-                ('country', models.ForeignKey(to='trade_marks.TradeMarkCountry')),
-                ('patent', models.ForeignKey(to='trade_marks.Patent')),
+                ('country', models.ForeignKey(to='trade_marks.TradeMarkCountry', on_delete=django.db.models.deletion.CASCADE)),
+                ('patent', models.ForeignKey(to='trade_marks.Patent', on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'verbose_name': 'Patent Additional Country',
@@ -99,8 +100,8 @@ class Migration(migrations.Migration):
             name='PatentsLinkedDomains',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', primary_key=True, serialize=False, auto_created=True)),
-                ('domain', models.ForeignKey(related_name='patent', to='domains.Domain')),
-                ('patent', models.ForeignKey(to='trade_marks.Patent')),
+                ('domain', models.ForeignKey(related_name='patent', to='domains.Domain', on_delete=django.db.models.deletion.CASCADE)),
+                ('patent', models.ForeignKey(to='trade_marks.Patent', on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'verbose_name': 'Patent Linked Domain',
@@ -120,17 +121,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='patent',
             name='holder',
-            field=models.ForeignKey(verbose_name='Trade Mark holder', blank=True, null=True, to='assets.AssetHolder'),
+            field=models.ForeignKey(verbose_name='Trade Mark holder', blank=True, null=True, to='assets.AssetHolder', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='patent',
             name='registrar_institution',
-            field=models.ForeignKey(null=True, to='trade_marks.TradeMarkRegistrarInstitution'),
+            field=models.ForeignKey(null=True, to='trade_marks.TradeMarkRegistrarInstitution', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='patent',
             name='technical_owner',
-            field=models.ForeignKey(related_name='patent_technical_owner', to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(related_name='patent_technical_owner', to=settings.AUTH_USER_MODEL, on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='design',
@@ -140,17 +141,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='design',
             name='holder',
-            field=models.ForeignKey(verbose_name='Trade Mark holder', blank=True, null=True, to='assets.AssetHolder'),
+            field=models.ForeignKey(verbose_name='Trade Mark holder', blank=True, null=True, to='assets.AssetHolder', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='design',
             name='registrar_institution',
-            field=models.ForeignKey(null=True, to='trade_marks.TradeMarkRegistrarInstitution'),
+            field=models.ForeignKey(null=True, to='trade_marks.TradeMarkRegistrarInstitution', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='design',
             name='technical_owner',
-            field=models.ForeignKey(related_name='design_technical_owner', to=settings.AUTH_USER_MODEL),
+            field=models.ForeignKey(related_name='design_technical_owner', to=settings.AUTH_USER_MODEL, on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AlterUniqueTogether(
             name='patentslinkeddomains',

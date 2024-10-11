@@ -19,7 +19,8 @@ from ralph.virtual.models import (
     CloudProject,
     CloudProvider,
     VirtualServer,
-    VirtualServerType)
+    VirtualServerType
+)
 
 
 class CloudImageFactory(DjangoModelFactory):

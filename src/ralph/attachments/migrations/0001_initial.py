@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import django
 from django.db import migrations, models
 from django.conf import settings
 import ralph.attachments.helpers
@@ -25,7 +26,7 @@ class Migration(migrations.Migration):
                 ('file', models.FileField(upload_to=ralph.attachments.helpers.get_file_path, max_length=255)),
                 ('mime_type', models.CharField(default='application/octet-stream', max_length=100)),
                 ('description', models.TextField(blank=True)),
-                ('uploaded_by', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('uploaded_by', models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -37,8 +38,8 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('object_id', models.PositiveIntegerField()),
-                ('attachment', models.ForeignKey(to='attachments.Attachment', related_name='items')),
-                ('content_type', models.ForeignKey(to='contenttypes.ContentType')),
+                ('attachment', models.ForeignKey(to='attachments.Attachment', related_name='items', on_delete=django.db.models.deletion.CASCADE)),
+                ('content_type', models.ForeignKey(to='contenttypes.ContentType', on_delete=django.db.models.deletion.CASCADE)),
             ],
         ),
     ]

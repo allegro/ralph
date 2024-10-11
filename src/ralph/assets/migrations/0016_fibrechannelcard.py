@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
                 ('firmware_version', models.CharField(null=True, verbose_name='firmware version', blank=True, max_length=255)),
                 ('speed', models.PositiveIntegerField(choices=[(1, '1 Gbit'), (2, '2 Gbit'), (3, '4 Gbit'), (4, '8 Gbit'), (5, '16 Gbit'), (6, '32 Gbit'), (11, 'unknown speed')], verbose_name='speed', default=11)),
                 ('wwn', ralph.lib.mixins.fields.NullableCharField(verbose_name='WWN', blank=True, default=None, max_length=255, null=True, unique=True)),
-                ('base_object', models.ForeignKey(to='assets.BaseObject', related_name='fibrechannelcard_set')),
+                ('base_object', models.ForeignKey(to='assets.BaseObject', related_name='fibrechannelcard_set', on_delete=django.db.models.deletion.CASCADE)),
                 ('model', models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, verbose_name='model', blank=True, default=None, to='assets.ComponentModel', null=True)),
             ],
             options={

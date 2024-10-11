@@ -269,7 +269,7 @@ class AdminFiltersTestCase(TestCase):
             field=(
                 DataCenterAsset._meta.get_field(
                     'configuration_path'
-                ).rel.to._meta.get_field('module')
+                ).remote_field.model._meta.get_field('module')
             ),
             request=None,
             params={

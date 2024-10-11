@@ -1,38 +1,38 @@
 -r openstack.txt
 -r hermes.txt
-Django==1.11.8
+Django==2.0.13
+Faker==0.9.0
+Markdown<3.0  # headerid extension removed in 3.0 - see #3313 for details
+Pillow==6.2.2
+Unidecode==0.04.18
 dj.choices==0.11.0
-django-extensions==1.7.5
+django-cryptography==0.3
+django-extensions==2.2.9
 django-filter==1.0.4
 django-import-export==1.2.0
-django-money==0.12
-py-moneyed==1.2
-django-mptt==0.8.7
-django-reversion==2.0
+django-money==0.12.3
+django-mptt==0.11
+django-reversion==3.0.5
 django-rq==2.0
 django-sitetree==1.13.0
-django-taggit==0.22.2
 django-taggit-serializer==0.1.7
+django-taggit==0.22.2
 django-threadlocals==0.8
-django-cryptography==0.3
-djangorestframework==3.4.1
+djangorestframework==3.7.5
 djangorestframework_xml==1.2.0
 drf-nested-routers==0.11.1
-Markdown<3.0  # headerid extension removed in 3.0 - see #3313 for details
+factory-boy==2.11.1
 mysqlclient==1.3.13
 netaddr==0.7.18
+openpyxl==2.4.0
+py-moneyed==1.2
 python-dateutil==2.4.2
 pytz==2015.4
 redis==3.2.1
-requests==2.20.0
 requests-oauthlib==1.3.0
+requests==2.20.0
 rq==1.0
 six>=1.9.0
 sqlparse==0.2.3
-Unidecode==0.04.18
 tablib==0.11.5
-factory-boy==2.11.1
-Faker==0.9.0
-openpyxl==2.4.0
 typing==3.6.6
-Pillow==6.2.2

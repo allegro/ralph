@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import django
 from django.db import migrations, models
 import ralph.lib.mixins.fields
 
@@ -23,7 +24,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='Cluster',
             fields=[
-                ('baseobject_ptr', models.OneToOneField(to='assets.BaseObject', parent_link=True, serialize=False, auto_created=True, primary_key=True)),
+                ('baseobject_ptr', models.OneToOneField(to='assets.BaseObject', parent_link=True, serialize=False, auto_created=True, primary_key=True, on_delete=django.db.models.deletion.CASCADE)),
                 ('name', models.CharField(verbose_name='name', max_length=255, unique=True)),
                 ('base_objects', models.ManyToManyField(through='data_center.BaseObjectCluster', to='assets.BaseObject', verbose_name='Assigned base objects', related_name='_cluster_base_objects_+')),
             ],
@@ -46,17 +47,17 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='cluster',
             name='type',
-            field=models.ForeignKey(to='data_center.ClusterType'),
+            field=models.ForeignKey(to='data_center.ClusterType', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='baseobjectcluster',
             name='base_object',
-            field=ralph.lib.mixins.fields.BaseObjectForeignKey(to='assets.BaseObject', related_name='clusters'),
+            field=ralph.lib.mixins.fields.BaseObjectForeignKey(to='assets.BaseObject', related_name='clusters', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='baseobjectcluster',
             name='cluster',
-            field=models.ForeignKey(to='data_center.Cluster'),
+            field=models.ForeignKey(to='data_center.Cluster', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AlterUniqueTogether(
             name='baseobjectcluster',

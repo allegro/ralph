@@ -90,6 +90,7 @@ class AssetModelViewSet(RalphAPIViewSet):
     serializer_class = serializers.AssetModelSerializer
     save_serializer_class = serializers.AssetModelSaveSerializer
     select_related = ["manufacturer"]
+    prefetch_related = ["custom_fields"]
 
 
 class BaseObjectFilterSet(NetworkableObjectFilters):
@@ -299,6 +300,7 @@ class DCHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         return (
             self.queryset.dc_hosts()
             .select_related(*self.select_related)
+            .polymorphic_select_related(Cluster=['type'])
             .polymorphic_prefetch_related(
                 Cluster=[*self.prefetch_related],
                 DataCenterAsset=[*self.prefetch_related],

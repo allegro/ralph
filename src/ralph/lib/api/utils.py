@@ -1,7 +1,7 @@
 import logging
 from collections import OrderedDict
 
-from django.core.urlresolvers import NoReverseMatch
+from django.urls import NoReverseMatch
 from django.utils.encoding import force_text
 from rest_framework.metadata import SimpleMetadata
 from rest_framework.relations import ManyRelatedField, RelatedField
@@ -105,5 +105,22 @@ class RalphApiMetadata(SimpleMetadata):
 
 
 class NoFiltersBrowsableAPIRenderer(BrowsableAPIRenderer):
+    """
+    Filters are loaded directly into HTML
+    It's slow, and we don't want that
+    """
     def get_filter_form(self, data, view, request):
         return None
+
+
+class OnlyRawBrowsableAPIRenderer(NoFiltersBrowsableAPIRenderer):
+    """For some views HTML form loads many objects and it's really slow."""
+    def render_form_for_serializer(self, serializer):
+        return ""
+
+
+def renderer_classes_without_form(renderer_classes):
+    return [OnlyRawBrowsableAPIRenderer] + [
+        rc for rc in renderer_classes
+        if not isinstance(rc(), BrowsableAPIRenderer)
+    ]

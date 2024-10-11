@@ -67,7 +67,7 @@ def _get_content_type_from_field_path(model, field_path):
     if isinstance(field, OneToOneRel):
         related_model = field.related_model
     else:
-        related_model = field.rel.to
+        related_model = field.remote_field.model
     content_type = ContentType.objects.get_for_model(related_model)
     return content_type
 
@@ -107,12 +107,11 @@ class CustomFieldValueQuerySet(models.QuerySet):
         self._prioritize = False
         self._prioritize_model_or_instance = None
 
-    def _clone(self, klass=None, setup=False, **kwargs):
-        kwargs.update({
-            '_prioritize': self._prioritize,
-            '_prioritize_model_or_instance': self._prioritize_model_or_instance,
-        })
-        return super()._clone(**kwargs)
+    def _clone(self):
+        clone = super()._clone()
+        clone._prioritize = self._prioritize
+        clone._prioritize_model_or_instance = self._prioritize_model_or_instance
+        return clone
 
     def prioritize(self, model_or_instance):
         self._prioritize = True
@@ -171,7 +170,7 @@ class ReverseGenericRelatedObjectsWithInheritanceDescriptor:
         """
         if instance is None:
             return self
-        rel_model = RelModel(model=self.field.rel.to, field=self.field)
+        rel_model = RelModel(model=self.field.remote_field.model, field=self.field)
         # difference here comparing to Django!
         superclass = rel_model.model.inherited_objects.__class__
         RelatedManager = create_generic_related_manager_with_inheritance(
@@ -354,7 +353,6 @@ def create_generic_related_manager_with_inheritance(superclass, rel):  # noqa: C
                         # ignore if there is no CustomFieldValue for such
                         # content_type_id and object_id
                         pass
-
                 vals = [
                     v[1] for v in _prioritize_custom_field_values(
                         vals, self.instance, self.content_type
@@ -384,7 +382,8 @@ def create_generic_related_manager_with_inheritance(superclass, rel):  # noqa: C
                 # cache_name is also changed to not assign empty result
                 # to `custom_fields` (and overwrite prefetched custom fields
                 # assigned above)
-                self.prefetch_cache_name + '__empty'
+                self.prefetch_cache_name + '__empty',
+                True
             )
 
     return GenericRelatedObjectWithInheritanceManager

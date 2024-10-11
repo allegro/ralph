@@ -239,7 +239,7 @@ class Licence(Regionalizable, AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
         default='',
     )
     office_infrastructure = models.ForeignKey(
-        'back_office.OfficeInfrastructure', null=True, blank=True
+        'back_office.OfficeInfrastructure', null=True, blank=True, on_delete=models.CASCADE
     )
     budget_info = models.ForeignKey(
         BudgetInfo,
@@ -315,7 +315,7 @@ class Licence(Regionalizable, AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
 
 @reversion.register()
 class BaseObjectLicence(models.Model):
-    licence = models.ForeignKey(Licence)
+    licence = models.ForeignKey(Licence, on_delete=models.CASCADE)
     base_object = BaseObjectForeignKey(
         BaseObject,
         related_name='licences',
@@ -325,7 +325,8 @@ class BaseObjectLicence(models.Model):
             'data_center.DataCenterAsset',
             'virtual.VirtualServer',
             'data_center.Cluster',
-        ]
+        ],
+        on_delete=models.CASCADE
     )
     quantity = models.PositiveIntegerField(default=1)
 
@@ -351,10 +352,11 @@ class BaseObjectLicence(models.Model):
 
 
 class LicenceUser(models.Model):
-    licence = models.ForeignKey(Licence)
+    licence = models.ForeignKey(Licence, on_delete=models.CASCADE)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        related_name='licences'
+        related_name='licences',
+        on_delete=models.CASCADE
     )
     quantity = models.PositiveIntegerField(default=1)
 

@@ -35,7 +35,7 @@ class DHCPServer(AdminAbsoluteUrlMixin, models.Model):
         verbose_name=_('IP address'), unique=True
     )
     network_environment = models.ForeignKey(
-        NetworkEnvironment, null=True, blank=True
+        NetworkEnvironment, null=True, blank=True, on_delete=models.CASCADE
     )
     last_synchronized = models.DateTimeField(null=True, blank=True)
 
@@ -73,10 +73,10 @@ class DNSServerGroup(NamedMixin, AdminAbsoluteUrlMixin, models.Model):
 
 class DNSServerGroupOrder(models.Model):
     dns_server_group = models.ForeignKey(
-        'DNSServerGroup', related_name='server_group_order'
+        'DNSServerGroup', related_name='server_group_order', on_delete=models.CASCADE
     )
     dns_server = models.ForeignKey(
-        'DNSServer', related_name='server_group_order'
+        'DNSServer', related_name='server_group_order', on_delete=models.CASCADE
     )
     order = models.PositiveIntegerField(editable=True, db_index=True)
 

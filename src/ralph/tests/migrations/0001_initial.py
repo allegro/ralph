@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import django
 from django.db import migrations, models
 import ralph.lib.transitions.fields
 import ralph.lib.mixins.models
@@ -56,7 +57,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='car',
             name='manufacturer',
-            field=models.ForeignKey(to='tests.Manufacturer'),
+            field=models.ForeignKey(to='tests.Manufacturer', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.CreateModel(
             name='BaseObjectForeignKeyModel',
@@ -64,7 +65,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, serialize=False, primary_key=True, verbose_name='ID')),
                 ('base_object', ralph.lib.mixins.fields.BaseObjectForeignKey(
                     verbose_name='Asset', related_name='licences',
-                    to='assets.BaseObject')
+                    to='assets.BaseObject', on_delete=django.db.models.deletion.CASCADE)
                 )
             ],
         ),
