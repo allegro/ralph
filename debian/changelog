@@ -1,5 +1,158 @@
 ralph (20241011.1) bionic; urgency=medium
 
+  [ Paweł Szulc ]
+  * Bump to django 1.11
+  * Fix test models
+  * Fix polymorphic queryset
+  * Adjust drf version
+
+  [ Olga Matyla ]
+  * Fix CustomFieldValueAdminMaxinTestCase
+
+  [ Paweł Szulc ]
+  * Fix IPNetwork filtering
+  * Don't fail fast test matrix
+  * Fix polymorphic queryset again
+
+  [ awieckowski ]
+  * fix PermissionsSelectWidget
+  * fix test
+
+  [ Olga Matyla ]
+  * Fix serializers
+  * Fix isort
+
+  [ awieckowski ]
+  * fix InlineM2MAdminMixin
+
+  [ Olga Matyla ]
+  * Fix related_widget_wrapper
+
+  [ Paweł Szulc ]
+  * Fix polymorphic querysets
+  * Adjust polymorphic querysets and prefetches
+  * Fix flake
+  * Don't run postgres. Fix flake
+  * Fix polymorphic for psql
+  * Optimize queries. Add tests
+  * Optimize API and improve API tests
+  * Fix flake. adjust query num
+
+  [ Olga Matyla ]
+  * Fix custom fields
+
+  [ Paweł Szulc ]
+  * Fix different quote types in different db engines
+
+  [ Olga Matyla ]
+  * Fix isort
+
+  [ Paweł Szulc ]
+  * Fix flake
+  * Fix missing f-string
+
+  [ Olga Matyla ]
+  * Fix tests
+
+  [ Paweł Szulc ]
+  * WIP | Remove Django 2.0 deprecation warnings
+  * Initial support for django 2.0
+  * Fix some more deprecation warnings
+  * WIP | Fix more django2.0 warnings
+  * Add missing migrations and missing serializer fields
+  * Fix flake
+  * Fix more flake
+  * Fix bad serializer fields
+  * Fix bad assignment of many-to-many relation
+  * Another django 2.0 compatibility changes batch
+  * Django 2.0
+  * Add missing migrations
+  * Fix namespaced urls
+  * Fix template loading and cloning querysets
+  * Fix number of returned values
+  * Fix serializer fields
+  * Hack fix serializers. Adjust tests for error cases
+  * Fix serializer and max username length
+
+  [ Olga Matyla ]
+  * Fix some tests and flake
+  * Add parent to select_related
+  * Fix test_admin_get_custom_fields_values_result
+
+  [ Paweł Szulc ]
+  * Fix prefetch in export
+  * Add missing prefetch in export
+  * adjust parent_str in export
+  * adjust num queries in datacenterasset changelist
+  * Add missing migrations
+  * Try adding migrations again
+  * Remove extra migrations
+  * Fix BaseObjectForeignKey creating unnecessary migrations
+  * Add missing migrations for test models
+  * Fix test not always taking correct item to check
+  * Tests less flaky now
+  * Fix html not rendering in some cases
+  * Fix graph preview
+  * Fix flake
+  * Fix flake
+  * Test API endpoints
+  * Test API endpoints
+  * Test also json content
+  * Fix error when changing custom fields of some hosts
+  * Don't smoke test endpoints for django 1.11
+  * Fix isort
+
+  [ Olga Matyla ]
+  * Fix transitions form
+  * Fix test_action_choices
+
+  [ Paweł Szulc ]
+  * Bump django debug toolbar
+
+  [ Olga Matyla ]
+  * Fix DC Visualization
+
+  [ Paweł Szulc ]
+  * Add merge migration
+  * Fix serializers
+  * Improve remaining APIs
+  * Improve remaining APIs
+  * Fix transition form. Add missing factories and tests
+  * Fix isort
+  * Fix accessory factory
+  * Further test improvements
+  * Remove unused inline
+  * Merge ng
+  * Fix lint
+  * Fix errors after ng merge
+  * Simplify transition serializers
+  * Improve test coverage
+  * Fix missing comma
+  * Log extra queries
+  * Adjust queries count in tests
+  * Fix badly merged widget
+  * Improve remaining APIs
+  * Select related cluster type
+  * Add missing newline
+  * Minor fixes
+  * Merge migrations
+  * Revert change in transition serializer
+  * Merge ng
+  * Hopefully fix missing woff2 file by bumping drf
+  * Fix template loader
+  * Fix loader and page_not_found
+  * Don't save vulnerability and security scan history. Fix network ip address save
+  * Fix tags in API
+  * Fix file permissions
+  * Add queries more or less check for API tests
+
+  [ Olga Matyla ]
+  * Cleanup
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Fri, 11 Oct 2024 11:58:04 +0000
+
+ralph (20241011.1) bionic; urgency=medium
+
   [ root ]
   * UNRELEASED
 
