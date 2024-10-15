@@ -373,6 +373,7 @@ class Asset(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
         max_length=255,
         null=True,
         verbose_name=_('hostname'),  # TODO: unique
+        db_index=True,
     )
     sn = NullableCharField(
         blank=True,
