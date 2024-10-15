@@ -10,18 +10,18 @@ class GraphAPITestCase(RalphAPITestCase):
         graph = GraphFactory(
             aggregate_type=AggregateType.aggregate_count.id,
             params={
-                'series': 'id',
-                'labels': 'hostname',
-            }
+                "series": "id",
+                "labels": "hostname",
+            },
         )
-        url = reverse('graph-detail', args=(graph.id,))
+        url = reverse("graph-detail", args=(graph.id,))
         response = self.client.get(url)
         self.assertEqual(
             response.data,
             {
-                'name': graph.name,
-                'description': graph.description,
-                'data': graph.get_data(),
-                'params': graph.params
-            }
+                "name": graph.name,
+                "description": graph.description,
+                "data": graph.get_data(),
+                "params": graph.params,
+            },
         )

@@ -7,12 +7,12 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('sim_cards', '0002_auto_20181123_1138'),
+        ("sim_cards", "0002_auto_20181123_1138"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='simcard',
-            options={'ordering': ('-modified', '-created')},
+            name="simcard",
+            options={"ordering": ("-modified", "-created")},
         ),
     ]

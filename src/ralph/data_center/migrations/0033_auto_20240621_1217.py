@@ -9,37 +9,42 @@ import ralph.lib.mixins.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data_center', '0032_auto_20240521_1542'),
+        ("data_center", "0032_auto_20240521_1542"),
     ]
 
     operations = [
         migrations.AlterModelManagers(
-            name='cluster',
+            name="cluster",
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ("polymorphic_objects", django.db.models.manager.Manager()),
             ],
         ),
         migrations.AlterModelManagers(
-            name='database',
+            name="database",
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ("polymorphic_objects", django.db.models.manager.Manager()),
             ],
         ),
         migrations.AlterModelManagers(
-            name='datacenterasset',
+            name="datacenterasset",
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ("polymorphic_objects", django.db.models.manager.Manager()),
             ],
         ),
         migrations.AlterModelManagers(
-            name='vip',
+            name="vip",
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ("polymorphic_objects", django.db.models.manager.Manager()),
             ],
         ),
         migrations.AlterField(
-            model_name='baseobjectcluster',
-            name='base_object',
-            field=ralph.lib.mixins.fields.BaseObjectForeignKey(limit_choices_to=ralph.lib.mixins.fields.BaseObjectForeignKey.limit_choices, on_delete=django.db.models.deletion.CASCADE, related_name='clusters', to='assets.BaseObject'),
+            model_name="baseobjectcluster",
+            name="base_object",
+            field=ralph.lib.mixins.fields.BaseObjectForeignKey(
+                limit_choices_to=ralph.lib.mixins.fields.BaseObjectForeignKey.limit_choices,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="clusters",
+                to="assets.BaseObject",
+            ),
         ),
     ]

@@ -14,43 +14,43 @@ from ralph.tests.models import (
     Foo,
     Order,
     PolymorphicTestModel,
-    TestManufacturer
+    TestManufacturer,
 )
 
 
 @register(Car)
 class CarAdmin(RalphAdmin):
-    ordering = ['name']
-    list_filter = ['year']
-    search_fields = ['name', 'foos__bar']
+    ordering = ["name"]
+    list_filter = ["year"]
+    search_fields = ["name", "foos__bar"]
 
 
 @register(Bar)
 class BarAdmin(RalphAdmin):
-    list_filter = ['date', 'name', 'created', 'price', 'count']
+    list_filter = ["date", "name", "created", "price", "count"]
 
 
 class BarsM2MInline(RalphTabularM2MInline):
     model = Foo.bars.through
-    fields = ('name', 'date', 'price', 'count')
+    fields = ("name", "date", "price", "count")
     extra = 1
-    verbose_name = _('Bars')
+    verbose_name = _("Bars")
 
 
 @register(Foo)
 class FooAdmin(RalphAdmin):
     inlines = [BarsM2MInline]
-    list_filter = ['bar']
+    list_filter = ["bar"]
 
 
 @register(Car2)
 class Car2Admin(RalphAdmin):
-    list_filter = ['manufacturer']
+    list_filter = ["manufacturer"]
 
 
 @register(TestManufacturer)
 class ManufacturerAdmin(RalphAdmin):
-    ordering = ['name', '-country']
+    ordering = ["name", "-country"]
 
 
 @register(Order)
@@ -61,4 +61,4 @@ class OrderAdmin(AttachmentsMixin, TransitionAdminMixin, RalphAdmin):
 @register(PolymorphicTestModel)
 class PolymorphicTestModelAdmin(RalphAdmin):
     inlines = [NetworkInline]
-    exclude = ['service_env', 'parent', 'content_type']
+    exclude = ["service_env", "parent", "content_type"]

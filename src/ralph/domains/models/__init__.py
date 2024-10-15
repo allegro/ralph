@@ -8,10 +8,10 @@ from ralph.domains.models.domains import (
 )
 
 __all__ = [
-    'Domain',
-    'DomainCategory',
-    'DomainContract',
-    'DomainRegistrant',
-    'DomainStatus',
-    'DNSProvider',
+    "Domain",
+    "DomainCategory",
+    "DomainContract",
+    "DomainRegistrant",
+    "DomainStatus",
+    "DNSProvider",
 ]

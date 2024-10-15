@@ -26,8 +26,8 @@ from ralph.admin.autocomplete import AUTOCOMPLETE_EMPTY_VALUE, get_results
 from ralph.admin.helpers import get_field_by_relation_path
 from ralph.lib.mixins.fields import MACAddressField
 
-SEARCH_OR_SEPARATORS_REGEX = re.compile(r'[;|]')
-SEARCH_AND_SEPARATORS_REGEX = re.compile(r'[&]')
+SEARCH_OR_SEPARATORS_REGEX = re.compile(r"[;|]")
+SEARCH_AND_SEPARATORS_REGEX = re.compile(r"[&]")
 
 
 @lru_cache()
@@ -42,10 +42,10 @@ def date_format_to_human(value):
     :param value: Date format example: %Y-%m
     """
     maps = {
-        '%y': 'YY',
-        '%Y': 'YYYY',
-        '%m': 'MM',
-        '%d': 'DD',
+        "%y": "YY",
+        "%Y": "YYYY",
+        "%m": "MM",
+        "%d": "DD",
     }
     for k, v in maps.items():
         value = value.replace(k, v)
@@ -54,14 +54,11 @@ def date_format_to_human(value):
 
 def _add_incorrect_value_message(request, label):
     messages.warning(
-        request, _('Incorrect value in "%(field_name)s" filter') % {
-            'field_name': label
-        }
+        request, _('Incorrect value in "%(field_name)s" filter') % {"field_name": label}
     )
 
 
 def custom_title_filter(title, base_class=FieldListFilter):
-
     class CustomTitledFilter(base_class):
         def __new__(cls, *args, **kwargs):
             filter_instance = base_class.create(*args, **kwargs)
@@ -83,18 +80,13 @@ class BaseCustomFilter(FieldListFilter):
                 self.choices_list = field.flatchoices
         except AttributeError:
             pass
-        super().__init__(
-            field, request, params, model, model_admin, field_path
-        )
+        super().__init__(field, request, params, model, model_admin, field_path)
 
-        filter_title = getattr(field, '_filter_title', None)
+        filter_title = getattr(field, "_filter_title", None)
         if filter_title:
             self.title = filter_title
-        elif '__' in field_path:
-            self.title = '{} {}'.format(
-                field.model._meta.verbose_name,
-                self.title
-            )
+        elif "__" in field_path:
+            self.title = "{} {}".format(field.model._meta.verbose_name, self.title)
 
     def value(self):
         """
@@ -118,7 +110,7 @@ class ChoicesListFilter(BaseCustomFilter):
 
     """Renders filter form with choices field."""
 
-    template = 'admin/filters/choices_filter.html'
+    template = "admin/filters/choices_filter.html"
     _choices_list = []
 
     @property
@@ -131,18 +123,18 @@ class ChoicesListFilter(BaseCustomFilter):
 
     def choices(self, cl):
         yield {
-            'selected': False,
-            'value': '',
-            'display': _('All'),
-            'parameter_name': self.field_path
+            "selected": False,
+            "value": "",
+            "display": _("All"),
+            "parameter_name": self.field_path,
         }
 
         for lookup, title in self.choices_list:
             yield {
-                'selected': smart_text(lookup) == self.value(),
-                'value': lookup,
-                'display': title,
-                'parameter_name': self.field_path,
+                "selected": smart_text(lookup) == self.value(),
+                "value": lookup,
+                "display": title,
+                "parameter_name": self.field_path,
             }
 
     def queryset(self, request, queryset):
@@ -153,8 +145,8 @@ class ChoicesListFilter(BaseCustomFilter):
 class BooleanListFilter(ChoicesListFilter):
 
     _choices_list = [
-        ('1', _('Yes')),
-        ('0', _('No')),
+        ("1", _("Yes")),
+        ("0", _("No")),
     ]
 
 
@@ -162,52 +154,51 @@ class DateListFilter(BaseCustomFilter):
 
     """Renders filter form with date field."""
 
-    template = 'admin/filters/date_filter.html'
+    template = "admin/filters/date_filter.html"
 
     def __init__(self, field, request, params, model, model_admin, field_path):
         used_parameters = {}
-        self.parameter_name_start = field_path + '__start'
-        self.parameter_name_end = field_path + '__end'
+        self.parameter_name_start = field_path + "__start"
+        self.parameter_name_end = field_path + "__end"
 
         for param in self.expected_parameters():
             try:
-                used_parameters[param] = params.pop(param, '')
+                used_parameters[param] = params.pop(param, "")
             except KeyError:
                 pass
-        super().__init__(
-            field, request, params, model, model_admin, field_path
-        )
+        super().__init__(field, request, params, model, model_admin, field_path)
         self.used_parameters = used_parameters
 
     def expected_parameters(self):
         return [self.parameter_name_start, self.parameter_name_end]
 
     def value(self):
-        return [
-            self.used_parameters.get(param)
-            for param in self.expected_parameters()
-        ]
+        return [self.used_parameters.get(param) for param in self.expected_parameters()]
 
     def queryset(self, request, queryset):
         if any(self.value()):
             date = self.value()
             try:
                 date_start = datetime.strptime(
-                    date[0], get_format('DATE_INPUT_FORMATS')[0]
+                    date[0], get_format("DATE_INPUT_FORMATS")[0]
                 )
-                queryset = queryset.filter(**{
-                    '{}__gte'.format(self.field_path): date_start,
-                })
+                queryset = queryset.filter(
+                    **{
+                        "{}__gte".format(self.field_path): date_start,
+                    }
+                )
             except ValueError:
                 pass
 
             try:
                 date_end = datetime.strptime(
-                    date[1], get_format('DATE_INPUT_FORMATS')[0]
+                    date[1], get_format("DATE_INPUT_FORMATS")[0]
                 )
-                queryset = queryset.filter(**{
-                    '{}__lte'.format(self.field_path): date_end,
-                })
+                queryset = queryset.filter(
+                    **{
+                        "{}__lte".format(self.field_path): date_end,
+                    }
+                )
             except ValueError:
                 pass
 
@@ -216,30 +207,28 @@ class DateListFilter(BaseCustomFilter):
     def choices(self, cl):
         value = self.value()
         yield {
-            'parameter_name_start': self.parameter_name_start,
-            'parameter_name_end': self.parameter_name_end,
-            'date_start': value[0],
-            'date_end': value[1],
-            'date_format': date_format_to_human(
-                get_format('DATE_INPUT_FORMATS')[0]
-            )
+            "parameter_name_start": self.parameter_name_start,
+            "parameter_name_end": self.parameter_name_end,
+            "date_start": value[0],
+            "date_end": value[1],
+            "date_format": date_format_to_human(get_format("DATE_INPUT_FORMATS")[0]),
         }
 
 
 class VulnerabilitesByPatchDeadline(DateListFilter):
-
     def queryset(self, request, queryset):
         from ralph.security.models import SecurityScan
+
         if any(self.value()):
             filters = {}
             date_start, date_end = self.value()
             if date_start:
-                filters['vulnerabilities__patch_deadline__gte'] = date_start
+                filters["vulnerabilities__patch_deadline__gte"] = date_start
             if date_end:
-                filters['vulnerabilities__patch_deadline__lte'] = date_end
-            base_objects_ids = SecurityScan.objects.filter(
-                **filters
-            ).values_list('base_object_id', flat=True)
+                filters["vulnerabilities__patch_deadline__lte"] = date_end
+            base_objects_ids = SecurityScan.objects.filter(**filters).values_list(
+                "base_object_id", flat=True
+            )
             queryset = queryset.filter(id__in=base_objects_ids)
         return queryset
 
@@ -248,19 +237,19 @@ class NumberListFilter(DateListFilter):
 
     """Renders filter form with decimal field."""
 
-    template = 'admin/filters/number_filter.html'
+    template = "admin/filters/number_filter.html"
 
     def queryset(self, request, queryset):
         if any(self.value()):
             value = self.value()
             if value[0]:
-                queryset = queryset.filter(**{
-                    '{}__gte'.format(self.field_path): value[0]
-                })
+                queryset = queryset.filter(
+                    **{"{}__gte".format(self.field_path): value[0]}
+                )
             if value[1]:
-                queryset = queryset.filter(**{
-                    '{}__lte'.format(self.field_path): value[1]
-                })
+                queryset = queryset.filter(
+                    **{"{}__lte".format(self.field_path): value[1]}
+                )
         return queryset
 
     def choices(self, cl):
@@ -271,11 +260,11 @@ class NumberListFilter(DateListFilter):
             step = 1
 
         yield {
-            'parameter_name_start': self.parameter_name_start,
-            'parameter_name_end': self.parameter_name_end,
-            'start_value': value[0],
-            'end_value': value[1],
-            'step': step
+            "parameter_name_start": self.parameter_name_start,
+            "parameter_name_end": self.parameter_name_end,
+            "start_value": value[0],
+            "end_value": value[1],
+            "step": step,
         }
 
 
@@ -291,38 +280,36 @@ class TextListFilter(BaseCustomFilter):
         if self.value():
             query = Q()
             for value in SEARCH_OR_SEPARATORS_REGEX.split(self.value()):
-                query |= Q(
-                    **{'{}__icontains'.format(self.field_path): value.strip()}
-                )
+                query |= Q(**{"{}__icontains".format(self.field_path): value.strip()})
             return queryset.filter(query)
 
     def choices(self, cl):
-        return ({
-            'selected': self.value(),
-            'parameter_name': self.field_path,
-            'separators': self.separators,
-            'multiple': self.multiple
-        },)
+        return (
+            {
+                "selected": self.value(),
+                "parameter_name": self.field_path,
+                "separators": self.separators,
+                "multiple": self.multiple,
+            },
+        )
 
 
 class TagsListFilter(SimpleListFilter):
 
-    title = _('Tags')
-    parameter_name = 'tags'
-    separators = ' or '.join(list(SEARCH_AND_SEPARATORS_REGEX.pattern[1:-1]))
-    template = 'admin/filters/text_filter.html'
+    title = _("Tags")
+    parameter_name = "tags"
+    separators = " or ".join(list(SEARCH_AND_SEPARATORS_REGEX.pattern[1:-1]))
+    template = "admin/filters/text_filter.html"
 
     def lookups(self, request, model_admin):
-        return (
-            (1, _('Tags')),
-        )
+        return ((1, _("Tags")),)
 
     def choices(self, cl):
         yield {
-            'current_value': self.value() or '',
-            'parameter_name': self.parameter_name,
-            'separators': self.separators,
-            'multiple': True,
+            "current_value": self.value() or "",
+            "parameter_name": self.parameter_name,
+            "separators": self.separators,
+            "multiple": True,
         }
 
     def queryset(self, request, queryset):
@@ -337,6 +324,7 @@ class RelatedFieldListFilter(ChoicesListFilter):
     Filter for related fields (ForeignKeys) which is displayed as regular HTML
     select list (all options are fetched at once).
     """
+
     def label_for_instance(self, obj):
         return smart_text(obj)
 
@@ -360,18 +348,18 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
 
     def value(self):
         value = super().value()
-        return value or ''
+        return value or ""
 
     def queryset(self, request, queryset):
         value = self.value()
         if not value:
             ids = []
         else:
-            ids = value.split(',')
+            ids = value.split(",")
         q_param = models.Q()
         for id_ in ids:
             if id_ == self.empty_value:
-                q_param |= Q(**{'{}__isnull'.format(self.field_path): True})
+                q_param |= Q(**{"{}__isnull".format(self.field_path): True})
             else:
                 q_param |= Q(**{self.field_path: id_})
         try:
@@ -384,7 +372,8 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
 
     def get_related_url(self):
         return reverse(
-            'admin:%s_%s_changelist' % (
+            "admin:%s_%s_changelist"
+            % (
                 self.field_model._meta.app_label,
                 self.field_model._meta.model_name,
             ),
@@ -394,49 +383,51 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
         value = self.value()
         results = {}
         if value:
-            values = value.split(',')
+            values = value.split(",")
             prepend_empty = self.empty_value in values
-            queryset = self.field_model._default_manager.filter(
-                pk__in=values
-            )
+            queryset = self.field_model._default_manager.filter(pk__in=values)
             results = get_results(queryset, True, prepend_empty)
         return json.dumps(results)
 
     def choices(self, cl):
         model_options = (
-            self.field_model._meta.app_label, self.field_model._meta.model_name
+            self.field_model._meta.app_label,
+            self.field_model._meta.model_name,
         )
-        model = get_field_by_relation_path(
-            self.model, self.field_path
-        ).model
+        model = get_field_by_relation_path(self.model, self.field_path).model
         widget_options = {
-            'id': 'id_{}'.format(self.field_path),
-            'query-ajax-url': reverse(
-                'autocomplete-list', kwargs={
-                    'app': model._meta.app_label,
-                    'model': model.__name__,
-                    'field': self.field.name
-                }
-            ) + '?prepend-empty=true',
-            'multi': True,
-            'detailsurl': reverse(
-                'admin:{}_{}_autocomplete_details'.format(*model_options)
+            "id": "id_{}".format(self.field_path),
+            "query-ajax-url": reverse(
+                "autocomplete-list",
+                kwargs={
+                    "app": model._meta.app_label,
+                    "model": model.__name__,
+                    "field": self.field.name,
+                },
+            )
+            + "?prepend-empty=true",
+            "multi": True,
+            "detailsurl": reverse(
+                "admin:{}_{}_autocomplete_details".format(*model_options)
             ),
         }
-        return ({
-            'value': self.value(),
-            'attrs': flatatt(widget_options),
-            'name': self.field_path,
-            'related_url': self.get_related_url(),
-            'search_fields_info': "Search by: {}".format(self.title),
-            'prefetch_data': self.get_prefetch_data(),
-        },)
+        return (
+            {
+                "value": self.value(),
+                "attrs": flatatt(widget_options),
+                "name": self.field_path,
+                "related_url": self.get_related_url(),
+                "search_fields_info": "Search by: {}".format(self.title),
+                "prefetch_data": self.get_prefetch_data(),
+            },
+        )
 
 
 class TreeRelatedFieldListFilter(RelatedFieldListFilter):
     """
     Related filter for TreeForeignKeys.
     """
+
     def __init__(self, field, request, params, model, model_admin, field_path):
         self.level_indicator = DEFAULT_LEVEL_INDICATOR
         super().__init__(field, request, params, model, model_admin, field_path)
@@ -451,9 +442,7 @@ class TreeRelatedFieldListFilter(RelatedFieldListFilter):
 
     def label_for_instance(self, obj):
         level_indicator = self._get_level_indicator(obj)
-        return mark_safe(
-            level_indicator + ' ' + conditional_escape(smart_text(obj))
-        )
+        return mark_safe(level_indicator + " " + conditional_escape(smart_text(obj)))
 
     def queryset(self, request, queryset):
         """
@@ -466,21 +455,21 @@ class TreeRelatedFieldListFilter(RelatedFieldListFilter):
                 _add_incorrect_value_message(request, self.title)
                 raise IncorrectLookupParameters()
             else:
-                queryset = queryset.filter(**{
-                    self.field_path + '__in': root.get_descendants(
-                        include_self=True
-                    )
-                })
+                queryset = queryset.filter(
+                    **{
+                        self.field_path
+                        + "__in": root.get_descendants(include_self=True)
+                    }
+                )
         return queryset
 
 
-class TreeRelatedAutocompleteFilterWithDescendants(
-    RelatedAutocompleteFieldListFilter
-):
+class TreeRelatedAutocompleteFilterWithDescendants(RelatedAutocompleteFieldListFilter):
     """
     Autocomplete filter for ForeignKeys to `mptt.models.MPTTModel` with
     filtering by object and all its descendants.
     """
+
     def _get_descendants(self, request, root_id):
         try:
             root = self.field.remote_field.model.objects.get(pk=root_id)
@@ -494,24 +483,26 @@ class TreeRelatedAutocompleteFilterWithDescendants(
         if not value:
             ids = []
         else:
-            ids = value.split(',')
+            ids = value.split(",")
         q_param = Q()
         for id_ in ids:
             if id_ == self.empty_value:
-                q_param |= Q(**{'{}__isnull'.format(self.field_path): True})
+                q_param |= Q(**{"{}__isnull".format(self.field_path): True})
             else:
-                q_param |= Q(**{
-                    '{}__in'.format(self.field_path): self._get_descendants(
-                        request, id_
-                    )
-                })
+                q_param |= Q(
+                    **{
+                        "{}__in".format(self.field_path): self._get_descendants(
+                            request, id_
+                        )
+                    }
+                )
         try:
             queryset = queryset.filter(q_param)
         except ValueError:
             messages.warning(
-                request, _('Incorrect value in "%(field_name)s" filter') % {
-                    'field_name': self.title
-                }
+                request,
+                _('Incorrect value in "%(field_name)s" filter')
+                % {"field_name": self.title},
             )
             raise IncorrectLookupParameters()
         return queryset
@@ -519,19 +510,17 @@ class TreeRelatedAutocompleteFilterWithDescendants(
 
 class IPFilter(SimpleListFilter):
 
-    title = _('IP')
-    parameter_name = 'ip'
+    title = _("IP")
+    parameter_name = "ip"
     template = "admin/filters/text_filter.html"
 
     def lookups(self, request, model_admin):
-        return (
-            (1, _('IP')),
-        )
+        return ((1, _("IP")),)
 
     def choices(self, cl):
         yield {
-            'selected': self.value() or '',
-            'parameter_name': self.parameter_name,
+            "selected": self.value() or "",
+            "parameter_name": self.parameter_name,
         }
 
     def queryset(self, request, queryset):
@@ -549,14 +538,12 @@ class IPFilter(SimpleListFilter):
 
 
 class MacAddressFilter(SimpleListFilter):
-    title = _('MAC Address')
-    parameter_name = 'mac'
-    template = 'admin/filters/text_filter.html'
+    title = _("MAC Address")
+    parameter_name = "mac"
+    template = "admin/filters/text_filter.html"
 
     def lookups(self, request, model_admin):
-        return (
-            (1, _('MAC Address')),
-        )
+        return ((1, _("MAC Address")),)
 
     def queryset(self, request, queryset):
         value = self.value()
@@ -574,15 +561,15 @@ class MacAddressFilter(SimpleListFilter):
 
     def choices(self, cl):
         yield {
-            'selected': self.value(),
-            'parameter_name': self.parameter_name,
+            "selected": self.value(),
+            "parameter_name": self.parameter_name,
         }
 
 
 class LiquidatedStatusFilter(SimpleListFilter):
 
-    title = _('show liquidated')
-    parameter_name = 'liquidated'
+    title = _("show liquidated")
+    parameter_name = "liquidated"
     template = "admin/filters/checkbox_filter.html"
 
     def __init__(self, request, params, model, model_admin):
@@ -590,20 +577,18 @@ class LiquidatedStatusFilter(SimpleListFilter):
         self.model = model
 
     def lookups(self, request, model_admin):
-        return (
-            (1, _('show liquidated')),
-        )
+        return ((1, _("show liquidated")),)
 
     def choices(self, cl):
         yield {
-            'selected': self.value() or False,
-            'parameter_name': self.parameter_name,
+            "selected": self.value() or False,
+            "parameter_name": self.parameter_name,
         }
 
     def queryset(self, request, queryset):
         if not self.value():
             liquidated_status = self.model._meta.get_field(
-                'status'
+                "status"
             ).choices.liquidated.id
             queryset = queryset.exclude(status=liquidated_status)
 
@@ -611,28 +596,26 @@ class LiquidatedStatusFilter(SimpleListFilter):
 
 
 class BaseObjectHostnameFilter(SimpleListFilter):
-    title = _('Hostname')
-    parameter_name = 'hostname'
-    template = 'admin/filters/text_filter.html'
+    title = _("Hostname")
+    parameter_name = "hostname"
+    template = "admin/filters/text_filter.html"
 
     def queryset(self, request, queryset):
         if not self.value():
             return queryset
         queries = [
-            Q(hostname__icontains=self.value()) |
-            Q(ethernet_set__ipaddress__hostname__icontains=self.value())
+            Q(hostname__icontains=self.value())
+            | Q(ethernet_set__ipaddress__hostname__icontains=self.value())
         ]
         return queryset.filter(*queries).distinct()
 
     def lookups(self, request, model_admin):
-        return (
-            (1, _('Hostname')),
-        )
+        return ((1, _("Hostname")),)
 
     def choices(self, cl):
         yield {
-            'selected': self.value(),
-            'parameter_name': self.parameter_name,
+            "selected": self.value(),
+            "parameter_name": self.parameter_name,
         }
 
 
@@ -644,37 +627,35 @@ def register_custom_filters():
     """
     field_filter_mapper = [
         (lambda f: bool(f.choices), ChoicesListFilter),
-        (lambda f: isinstance(f, (
-            models.DecimalField, models.IntegerField
-        )), NumberListFilter),
-        (lambda f: isinstance(f, (
-            models.BooleanField, models.NullBooleanField
-        )), BooleanListFilter),
-        (lambda f: isinstance(f, (models.DateField)), DateListFilter),
-        (lambda f: isinstance(f, (
-            models.CharField, models.TextField, models.IntegerField
-        )), TextListFilter),
         (
-            lambda f: isinstance(f, TreeForeignKey),
-            TreeRelatedFieldListFilter
+            lambda f: isinstance(f, (models.DecimalField, models.IntegerField)),
+            NumberListFilter,
         ),
+        (
+            lambda f: isinstance(f, (models.BooleanField, models.NullBooleanField)),
+            BooleanListFilter,
+        ),
+        (lambda f: isinstance(f, (models.DateField)), DateListFilter),
+        (
+            lambda f: isinstance(
+                f, (models.CharField, models.TextField, models.IntegerField)
+            ),
+            TextListFilter,
+        ),
+        (lambda f: isinstance(f, TreeForeignKey), TreeRelatedFieldListFilter),
         (
             lambda f: (
-                isinstance(f, models.ForeignKey) and
-                not getattr(f, '_autocomplete', True)
+                isinstance(f, models.ForeignKey)
+                and not getattr(f, "_autocomplete", True)
             ),
-            RelatedFieldListFilter
+            RelatedFieldListFilter,
         ),
         (
-            lambda f: isinstance(f, (
-                models.ForeignKey, models.ManyToManyField
-            )),
-            RelatedAutocompleteFieldListFilter
+            lambda f: isinstance(f, (models.ForeignKey, models.ManyToManyField)),
+            RelatedAutocompleteFieldListFilter,
         ),
         (lambda f: isinstance(f, TaggableManager), TagsListFilter),
     ]
 
     for func, filter_class in field_filter_mapper:
-        FieldListFilter.register(
-            func, filter_class, take_priority=True
-        )
+        FieldListFilter.register(func, filter_class, take_priority=True)

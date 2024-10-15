@@ -7,14 +7,14 @@ import django.db.models.manager
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('back_office', '0023_auto_20240223_1018'),
+        ("back_office", "0023_auto_20240223_1018"),
     ]
 
     operations = [
         migrations.AlterModelManagers(
-            name='backofficeasset',
+            name="backofficeasset",
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ("polymorphic_objects", django.db.models.manager.Manager()),
             ],
         ),
     ]

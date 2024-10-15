@@ -11,39 +11,45 @@ from ralph.domains.tests.factories import DomainFactory
 class TestDomainValidation(TestCase):
     def test_pass_when_type_redirect_and_value(self):
         domain = DomainFactory(
-            website_type=WebsiteType.redirect.id, website_url='www.allegro.pl',
+            website_type=WebsiteType.redirect.id,
+            website_url="www.allegro.pl",
         )
         domain.clean()
 
     def test_raise_error_when_type_redirect_and_no_value(self):
         domain = DomainFactory(
-            website_type=WebsiteType.redirect.id, website_url='',
+            website_type=WebsiteType.redirect.id,
+            website_url="",
         )
         with self.assertRaises(ValidationError):
             domain.clean()
 
     def test_pass_when_type_none_and_no_value(self):
         domain = DomainFactory(
-            website_type=WebsiteType.none.id, website_url='',
+            website_type=WebsiteType.none.id,
+            website_url="",
         )
         domain.clean()
 
     def test_raise_error_when_type_none_and_value(self):
         domain = DomainFactory(
-            website_type=WebsiteType.none.id, website_url='www.allegro.pl',
+            website_type=WebsiteType.none.id,
+            website_url="www.allegro.pl",
         )
         with self.assertRaises(ValidationError):
             domain.clean()
 
     def test_pass_when_type_direct_and_value(self):
         domain = DomainFactory(
-            website_type=WebsiteType.direct.id, website_url='www.allegro.pl',
+            website_type=WebsiteType.direct.id,
+            website_url="www.allegro.pl",
         )
         domain.clean()
 
     def test_pass_when_type_direct_and_no_value(self):
         domain = DomainFactory(
-            website_type=WebsiteType.direct.id, website_url='',
+            website_type=WebsiteType.direct.id,
+            website_url="",
         )
         domain.clean()
 
@@ -54,7 +60,7 @@ class TestDomainUpdateSignal(TestCase):
 
         result = _publish_domain_data(domain)
 
-        self.assertEqual(domain.name, result['domain_name'])
+        self.assertEqual(domain.name, result["domain_name"])
 
     def test_domain_update_returns_business_owners(self):
         domain = DomainFactory(technical_owner=None)
@@ -62,11 +68,13 @@ class TestDomainUpdateSignal(TestCase):
         result = _publish_domain_data(domain)
 
         self.assertEqual(
-            [{
-                'username': domain.business_owner.username,
-                'ownership_type': settings.DOMAIN_OWNER_TYPE['BO'],
-            }],
-            result['owners']
+            [
+                {
+                    "username": domain.business_owner.username,
+                    "ownership_type": settings.DOMAIN_OWNER_TYPE["BO"],
+                }
+            ],
+            result["owners"],
         )
 
     def test_domain_update_returns_technical_owners(self):
@@ -75,11 +83,13 @@ class TestDomainUpdateSignal(TestCase):
         result = _publish_domain_data(domain)
 
         self.assertEqual(
-            [{
-                'username': domain.technical_owner.username,
-                'ownership_type': settings.DOMAIN_OWNER_TYPE['TO'],
-            }],
-            result['owners']
+            [
+                {
+                    "username": domain.technical_owner.username,
+                    "ownership_type": settings.DOMAIN_OWNER_TYPE["TO"],
+                }
+            ],
+            result["owners"],
         )
 
     def test_domain_update_returns_empty_owners_when_no_owners(self):
@@ -87,16 +97,14 @@ class TestDomainUpdateSignal(TestCase):
 
         result = _publish_domain_data(domain)
 
-        self.assertEqual(result['owners'], [])
+        self.assertEqual(result["owners"], [])
 
     def test_domain_update_returns_service_uid(self):
         domain = DomainFactory()
 
         result = _publish_domain_data(domain)
 
-        self.assertEqual(
-            domain.service.uid, result['service_uid']
-        )
+        self.assertEqual(domain.service.uid, result["service_uid"])
 
     def test_domain_update_returns_empty_when_no_service(self):
         domain = DomainFactory()
@@ -105,4 +113,4 @@ class TestDomainUpdateSignal(TestCase):
 
         result = _publish_domain_data(domain)
 
-        self.assertEqual(result['service_uid'], '')
+        self.assertEqual(result["service_uid"], "")

@@ -23,9 +23,7 @@ def normalize_value(model_class, label, value):
     if isinstance(field, ChoiceField):
         choices = field.choice_class()
         try:
-            value = [
-                i[0] for i in choices if i[1] == value
-            ].pop()
+            value = [i[0] for i in choices if i[1] == value].pop()
         except IndexError:
             # NOTE(romcheg): Choice not found for the filter value.
             #                Leaving it as is.

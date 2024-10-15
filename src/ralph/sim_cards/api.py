@@ -7,13 +7,13 @@ from ralph.sim_cards.models import CellularCarrier, SIMCard, SIMCardFeatures
 class CellularCarrierSerializer(RalphAPISerializer):
     class Meta:
         model = CellularCarrier
-        fields = ['name']
+        fields = ["name"]
 
 
 class SIMCardFeaturesSerializer(RalphAPISerializer):
     class Meta:
         model = SIMCardFeatures
-        fields = ['name']
+        fields = ["name"]
 
 
 class SIMCardSerializer(RalphAPISerializer):
@@ -24,9 +24,20 @@ class SIMCardSerializer(RalphAPISerializer):
 
     class Meta:
         model = SIMCard
-        fields = ['status', 'card_number', 'phone_number', 'pin1', 'puk1',
-                  'user', 'owner', 'warehouse', 'carrier', 'features',
-                  'quarantine_until', 'modified']
+        fields = [
+            "status",
+            "card_number",
+            "phone_number",
+            "pin1",
+            "puk1",
+            "user",
+            "owner",
+            "warehouse",
+            "carrier",
+            "features",
+            "quarantine_until",
+            "modified",
+        ]
 
 
 class CellularCarrierViewSet(RalphAPIViewSet):
@@ -42,13 +53,17 @@ class SIMCardFeatureViewSet(RalphAPIViewSet):
 class SIMCardViewSet(RalphAPIViewSet):
     queryset = SIMCard.objects.all()
     serializer_class = SIMCardSerializer
-    select_related = ['carrier', 'user', 'owner']
-    prefetch_related = ['features']
-    filter_fields = ['user__username', 'features__name', 'owner__username',
-                     'carrier__name']
+    select_related = ["carrier", "user", "owner"]
+    prefetch_related = ["features"]
+    filter_fields = [
+        "user__username",
+        "features__name",
+        "owner__username",
+        "carrier__name",
+    ]
 
 
-router.register(r'sim-card-feature', SIMCardFeatureViewSet)
-router.register(r'sim-card-cellular-carrier', CellularCarrierViewSet)
-router.register(r'sim-card', SIMCardViewSet)
+router.register(r"sim-card-feature", SIMCardFeatureViewSet)
+router.register(r"sim-card-cellular-carrier", CellularCarrierViewSet)
+router.register(r"sim-card", SIMCardViewSet)
 urlpatterns = []

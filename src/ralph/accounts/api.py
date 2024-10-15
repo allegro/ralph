@@ -8,7 +8,7 @@ from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.api.permissions import IsSuperuserOrReadonly
 from ralph.back_office.api import (
     BackOfficeAssetSimpleSerializer,
-    BackOfficeAssetViewSet
+    BackOfficeAssetViewSet,
 )
 from ralph.back_office.models import BackOfficeAsset
 from ralph.licences.api import LicenceUserViewSet
@@ -19,7 +19,7 @@ from ralph.licences.models import LicenceUser
 class GroupSerializer(RalphAPISerializer):
     class Meta:
         model = Group
-        exclude = ('permissions',)
+        exclude = ("permissions",)
 
 
 class GroupViewSet(RalphAPIViewSet):
@@ -31,8 +31,13 @@ class RalphUserSimpleSerializer(RalphAPISerializer):
     class Meta:
         model = get_user_model()
         fields = (
-            'id', 'url', 'username', 'first_name', 'last_name', 'email',
-            'country',
+            "id",
+            "url",
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+            "country",
         )
 
 
@@ -43,7 +48,7 @@ class RalphUserSerializer(RalphAPISerializer):
 
     class Meta:
         model = get_user_model()
-        exclude = ('user_permissions', 'password', 'groups')
+        exclude = ("user_permissions", "password", "groups")
         depth = 1
 
 
@@ -52,21 +57,21 @@ class RalphUserViewSet(RalphAPIViewSet):
     serializer_class = RalphUserSerializer
     _assets_queryset = BackOfficeAsset.objects.select_related(
         *BackOfficeAssetViewSet.select_related
-    ).prefetch_related('tags')
+    ).prefetch_related("tags")
     prefetch_related = [
-        'regions', 'user_permissions',
-        Prefetch('licences', queryset=LicenceUser.objects.select_related(
-            *LicenceUserViewSet.select_related
-        ).prefetch_related('licence__tags')),
-        Prefetch('assets_as_user', queryset=_assets_queryset),
-        Prefetch('assets_as_owner', queryset=_assets_queryset),
+        "regions",
+        "user_permissions",
+        Prefetch(
+            "licences",
+            queryset=LicenceUser.objects.select_related(
+                *LicenceUserViewSet.select_related
+            ).prefetch_related("licence__tags"),
+        ),
+        Prefetch("assets_as_user", queryset=_assets_queryset),
+        Prefetch("assets_as_owner", queryset=_assets_queryset),
     ]
-    permission_classes = RalphAPIViewSet.permission_classes + [
-        IsSuperuserOrReadonly
-    ]
-    http_method_names = [
-        m for m in RalphAPIViewSet.http_method_names if m != 'post'
-    ]
+    permission_classes = RalphAPIViewSet.permission_classes + [IsSuperuserOrReadonly]
+    http_method_names = [m for m in RalphAPIViewSet.http_method_names if m != "post"]
 
 
 class RegionSerializer(RalphAPISerializer):
@@ -91,8 +96,8 @@ class TeamViewSet(RalphAPIViewSet):
     serializer_class = TeamSerializer
 
 
-router.register(r'groups', GroupViewSet)
-router.register(r'users', RalphUserViewSet)
-router.register(r'regions', RegionViewSet)
-router.register(r'teams', TeamViewSet)
+router.register(r"groups", GroupViewSet)
+router.register(r"users", RalphUserViewSet)
+router.register(r"regions", RegionViewSet)
+router.register(r"teams", TeamViewSet)
 urlpatterns = []

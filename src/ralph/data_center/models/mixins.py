@@ -19,10 +19,13 @@ class WithManagementIPMixin(object):
       * if no, it's attached to current object and marked as management ip
 
     """
+
     def _get_management_ip(self):
-        eth = self.ethernet_set.select_related('ipaddress').filter(
-            ipaddress__is_management=True
-        ).first()
+        eth = (
+            self.ethernet_set.select_related("ipaddress")
+            .filter(ipaddress__is_management=True)
+            .first()
+        )
         if eth:
             return eth.ipaddress
         return None
@@ -44,12 +47,9 @@ class WithManagementIPMixin(object):
                     ip = _create_new_ip()
                 else:
                     # check if it's not assigned to any object
-                    if (
-                        ip.ethernet and
-                        ip.ethernet.base_object_id != self.pk
-                    ):
+                    if ip.ethernet and ip.ethernet.base_object_id != self.pk:
                         raise ValidationError(
-                            'IP is already assigned to {}'.format(
+                            "IP is already assigned to {}".format(
                                 ip.ethernet.base_object.last_descendant
                             )
                         )
@@ -70,7 +70,7 @@ class WithManagementIPMixin(object):
         ip = self._get_management_ip()
         if ip:
             return ip.address
-        return ''
+        return ""
 
     @management_ip.setter
     def management_ip(self, value):
@@ -100,8 +100,8 @@ class WithManagementIPMixin(object):
     def management_hostname(self):
         ip = self._get_management_ip()
         if ip:
-            return ip.hostname or ''
-        return ''
+            return ip.hostname or ""
+        return ""
 
     @management_hostname.setter
     def management_hostname(self, value):

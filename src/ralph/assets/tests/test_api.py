@@ -17,7 +17,7 @@ from ralph.assets.models import (
     Manufacturer,
     ObjectModelType,
     Service,
-    ServiceEnvironment
+    ServiceEnvironment,
 )
 from ralph.assets.tests.factories import (
     BusinessSegmentFactory,
@@ -30,7 +30,7 @@ from ralph.assets.tests.factories import (
     ManufacturerFactory,
     ProfitCenterFactory,
     ServiceEnvironmentFactory,
-    ServiceFactory
+    ServiceFactory,
 )
 from ralph.back_office.models import BackOfficeAsset
 from ralph.back_office.tests.factories import BackOfficeAssetFactory
@@ -42,7 +42,7 @@ from ralph.data_center.tests.factories import (
     DatabaseFactory,
     DataCenterAssetFactory,
     DataCenterAssetFullFactory,
-    VIPFactory
+    VIPFactory,
 )
 from ralph.domains.models import Domain
 from ralph.domains.tests.factories import DomainFactory
@@ -60,21 +60,16 @@ from ralph.trade_marks.tests.factories import (
     DesignFactory,
     PatentFactory,
     TradeMarkFactory,
-    UtilityModelFactory
+    UtilityModelFactory,
 )
-from ralph.virtual.models import (
-    CloudFlavor,
-    CloudHost,
-    CloudProject,
-    VirtualServer
-)
+from ralph.virtual.models import CloudFlavor, CloudHost, CloudProject, VirtualServer
 from ralph.virtual.tests.factories import (
     CloudFlavorFactory,
     CloudHostFactory,
     CloudHostFullFactory,
     CloudProjectFactory,
     VirtualServerFactory,
-    VirtualServerFullFactory
+    VirtualServerFullFactory,
 )
 
 
@@ -87,41 +82,35 @@ class ServiceAPITests(RalphAPITestCase):
 
     @data(
         1,
-        '1',
-        'true',
-        'True',
-        'yes',
+        "1",
+        "true",
+        "True",
+        "yes",
     )
     def test_filter_by_active(self, active):
-        url = '{}?{}'.format(
-            reverse('service-list'), urlencode({'active': active})
-        )
-        response = self.client.get(url, format='json')
+        url = "{}?{}".format(reverse("service-list"), urlencode({"active": active}))
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 2)
+        self.assertEqual(response.data["count"], 2)
 
     @data(
         0,
-        '0',
-        'false',
-        'False',
-        'no',
+        "0",
+        "false",
+        "False",
+        "no",
     )
     def test_filter_by_inactive(self, active):
-        url = '{}?{}'.format(
-            reverse('service-list'), urlencode({'active': active})
-        )
-        response = self.client.get(url, format='json')
+        url = "{}?{}".format(reverse("service-list"), urlencode({"active": active}))
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data["count"], 1)
 
     def test_filter_by_active_invalid_value_should_return_all(self):
-        url = '{}?{}'.format(
-            reverse('service-list'), urlencode({'active': 'invalid'})
-        )
-        response = self.client.get(url, format='json')
+        url = "{}?{}".format(reverse("service-list"), urlencode({"active": "invalid"}))
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 3)
+        self.assertEqual(response.data["count"], 3)
 
 
 class ServicesEnvironmentsAPITests(RalphAPITestCase):
@@ -137,61 +126,55 @@ class ServicesEnvironmentsAPITests(RalphAPITestCase):
 
     def test_get_environment(self):
         env = self.envs[0]
-        url = reverse('environment-detail', args=(env.id,))
-        response = self.client.get(url, format='json')
+        url = reverse("environment-detail", args=(env.id,))
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['name'], env.name)
-        self.assertIn('url', response.data)
+        self.assertEqual(response.data["name"], env.name)
+        self.assertIn("url", response.data)
 
     def test_create_environment(self):
-        url = reverse('environment-list')
-        data = {
-            'name': 'test-env'
-        }
-        response = self.client.post(url, data, format='json')
+        url = reverse("environment-list")
+        data = {"name": "test-env"}
+        response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['name'], 'test-env')
+        self.assertEqual(response.data["name"], "test-env")
         self.assertEqual(Environment.objects.count(), 3)
 
     def test_patch_environment(self):
         env = self.envs[0]
-        url = reverse('environment-detail', args=(env.id,))
-        data = {
-            'name': 'test-env-2'
-        }
-        response = self.client.patch(url, data, format='json')
+        url = reverse("environment-detail", args=(env.id,))
+        data = {"name": "test-env-2"}
+        response = self.client.patch(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['name'], 'test-env-2')
+        self.assertEqual(response.data["name"], "test-env-2")
 
     def test_get_service(self):
         service = self.services[0]
-        url = reverse('service-detail', args=(service.id,))
-        response = self.client.get(url, format='json')
+        url = reverse("service-detail", args=(service.id,))
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['name'], service.name)
+        self.assertEqual(response.data["name"], service.name)
         self.assertEqual(
-            response.data['environments'][0]['id'],
-            service.environments.all()[0].id
+            response.data["environments"][0]["id"], service.environments.all()[0].id
         )
 
     def test_create_service(self):
-        url = reverse('service-list')
+        url = reverse("service-list")
         data = {
-            'name': 'test-service',
-            'environments': [self.envs[0].id, self.envs[1].id],
-            'business_owners': [self.user1.id],
-            'technical_owners': [self.user2.id],
-            'support_team': self.team.id,
-            'profit_center': self.profit_center.id,
+            "name": "test-service",
+            "environments": [self.envs[0].id, self.envs[1].id],
+            "business_owners": [self.user1.id],
+            "technical_owners": [self.user2.id],
+            "support_team": self.team.id,
+            "profit_center": self.profit_center.id,
         }
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Service.objects.count(), 3)
-        service = Service.objects.get(pk=response.data['id'])
-        self.assertEqual(service.name, 'test-service')
+        service = Service.objects.get(pk=response.data["id"])
+        self.assertEqual(service.name, "test-service")
         self.assertCountEqual(
-            service.environments.values_list('id', flat=True),
-            data['environments']
+            service.environments.values_list("id", flat=True), data["environments"]
         )
         self.assertIn(self.user1, service.business_owners.all())
         self.assertIn(self.user2, service.technical_owners.all())
@@ -199,23 +182,22 @@ class ServicesEnvironmentsAPITests(RalphAPITestCase):
         self.assertEqual(service.support_team, self.team)
 
     def test_create_service_with_names_instead_of_ids(self):
-        url = reverse('service-list')
+        url = reverse("service-list")
         data = {
-            'name': 'test-service',
-            'environments': [self.envs[0].name, self.envs[1].name],
-            'business_owners': [self.user1.username],
-            'technical_owners': [self.user2.username],
-            'support_team': self.team.name,
-            'profit_center': self.profit_center.name,
+            "name": "test-service",
+            "environments": [self.envs[0].name, self.envs[1].name],
+            "business_owners": [self.user1.username],
+            "technical_owners": [self.user2.username],
+            "support_team": self.team.name,
+            "profit_center": self.profit_center.name,
         }
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Service.objects.count(), 3)
-        service = Service.objects.get(pk=response.data['id'])
-        self.assertEqual(service.name, 'test-service')
+        service = Service.objects.get(pk=response.data["id"])
+        self.assertEqual(service.name, "test-service")
         self.assertCountEqual(
-            service.environments.values_list('name', flat=True),
-            data['environments']
+            service.environments.values_list("name", flat=True), data["environments"]
         )
         self.assertIn(self.user1, service.business_owners.all())
         self.assertIn(self.user2, service.technical_owners.all())
@@ -223,23 +205,22 @@ class ServicesEnvironmentsAPITests(RalphAPITestCase):
         self.assertEqual(service.support_team, self.team)
 
     def test_create_service_with_nulls(self):
-        url = reverse('service-list')
+        url = reverse("service-list")
         data = {
-            'name': 'test-service',
-            'environments': [self.envs[0].name, self.envs[1].name],
-            'business_owners': [self.user1.username],
-            'technical_owners': [self.user2.username],
-            'support_team': None,
-            'profit_center': None,
+            "name": "test-service",
+            "environments": [self.envs[0].name, self.envs[1].name],
+            "business_owners": [self.user1.username],
+            "technical_owners": [self.user2.username],
+            "support_team": None,
+            "profit_center": None,
         }
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Service.objects.count(), 3)
-        service = Service.objects.get(pk=response.data['id'])
-        self.assertEqual(service.name, 'test-service')
+        service = Service.objects.get(pk=response.data["id"])
+        self.assertEqual(service.name, "test-service")
         self.assertCountEqual(
-            service.environments.values_list('name', flat=True),
-            data['environments']
+            service.environments.values_list("name", flat=True), data["environments"]
         )
         self.assertIn(self.user1, service.business_owners.all())
         self.assertIn(self.user2, service.technical_owners.all())
@@ -247,21 +228,20 @@ class ServicesEnvironmentsAPITests(RalphAPITestCase):
         self.assertIsNone(service.support_team, self.team)
 
     def test_create_service_with_without_profit_center_and_support_team(self):
-        url = reverse('service-list')
+        url = reverse("service-list")
         data = {
-            'name': 'test-service',
-            'environments': [self.envs[0].name, self.envs[1].name],
-            'business_owners': [self.user1.username],
-            'technical_owners': [self.user2.username],
+            "name": "test-service",
+            "environments": [self.envs[0].name, self.envs[1].name],
+            "business_owners": [self.user1.username],
+            "technical_owners": [self.user2.username],
         }
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Service.objects.count(), 3)
-        service = Service.objects.get(pk=response.data['id'])
-        self.assertEqual(service.name, 'test-service')
+        service = Service.objects.get(pk=response.data["id"])
+        self.assertEqual(service.name, "test-service")
         self.assertCountEqual(
-            service.environments.values_list('name', flat=True),
-            data['environments']
+            service.environments.values_list("name", flat=True), data["environments"]
         )
         self.assertIn(self.user1, service.business_owners.all())
         self.assertIn(self.user2, service.technical_owners.all())
@@ -270,19 +250,18 @@ class ServicesEnvironmentsAPITests(RalphAPITestCase):
 
     def test_patch_service(self):
         service = self.services[1]
-        url = reverse('service-detail', args=(service.id,))
+        url = reverse("service-detail", args=(service.id,))
         data = {
-            'name': 'test-service-2',
-            'environments': [self.envs[1].id],
-            'technical_owners': [self.user2.id],
+            "name": "test-service-2",
+            "environments": [self.envs[1].id],
+            "technical_owners": [self.user2.id],
         }
-        response = self.client.patch(url, data, format='json')
+        response = self.client.patch(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         service.refresh_from_db()
-        self.assertEqual(service.name, 'test-service-2')
+        self.assertEqual(service.name, "test-service-2")
         self.assertCountEqual(
-            service.environments.values_list('id', flat=True),
-            data['environments']
+            service.environments.values_list("id", flat=True), data["environments"]
         )
         self.assertIn(self.user2, service.technical_owners.all())
 
@@ -293,21 +272,17 @@ class ServicesEnvironmentsAPITests(RalphAPITestCase):
         """
         service = self.services[0]
         environments_ids = [env.id for env in service.environments.all()]
-        service_env_ids = [
-            se.id for se in service.serviceenvironment_set.all()
-        ]
-        url = reverse('service-detail', args=(service.id,))
+        service_env_ids = [se.id for se in service.serviceenvironment_set.all()]
+        url = reverse("service-detail", args=(service.id,))
         data = {
-            'name': 'test-service-2',
+            "name": "test-service-2",
         }
-        response = self.client.patch(url, data, format='json')
+        response = self.client.patch(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         service.refresh_from_db()
-        self.assertEqual(service.name, 'test-service-2')
+        self.assertEqual(service.name, "test-service-2")
         new_environments_ids = [env.id for env in service.environments.all()]
-        new_service_env_ids = [
-            se.id for se in service.serviceenvironment_set.all()
-        ]
+        new_service_env_ids = [se.id for se in service.serviceenvironment_set.all()]
         self.assertCountEqual(environments_ids, new_environments_ids)
         self.assertCountEqual(service_env_ids, new_service_env_ids)
 
@@ -317,57 +292,47 @@ class ServicesEnvironmentsAPITests(RalphAPITestCase):
         """
         service = self.services[0]
         environments_ids = [env.id for env in service.environments.all()]
-        service_env_ids = [
-            se.id for se in service.serviceenvironment_set.all()
-        ]
-        url = reverse('service-detail', args=(service.id,))
+        service_env_ids = [se.id for se in service.serviceenvironment_set.all()]
+        url = reverse("service-detail", args=(service.id,))
         data = {
-            'name': 'test-service-2',
-            'environments': environments_ids,
+            "name": "test-service-2",
+            "environments": environments_ids,
         }
-        response = self.client.patch(url, data, format='json')
+        response = self.client.patch(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         service.refresh_from_db()
-        self.assertEqual(service.name, 'test-service-2')
+        self.assertEqual(service.name, "test-service-2")
         new_environments_ids = [env.id for env in service.environments.all()]
-        new_service_env_ids = [
-            se.id for se in service.serviceenvironment_set.all()
-        ]
+        new_service_env_ids = [se.id for se in service.serviceenvironment_set.all()]
         self.assertCountEqual(environments_ids, new_environments_ids)
         self.assertCountEqual(service_env_ids, new_service_env_ids)
 
     def test_get_service_environment(self):
         service_env = ServiceEnvironment.objects.all()[0]
-        url = reverse('serviceenvironment-detail', args=(service_env.id,))
-        response = self.client.get(url, format='json')
+        url = reverse("serviceenvironment-detail", args=(service_env.id,))
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['service']['id'], service_env.service.id)
-        self.assertEqual(
-            response.data['environment']['id'], service_env.environment.id
-        )
+        self.assertEqual(response.data["service"]["id"], service_env.service.id)
+        self.assertEqual(response.data["environment"]["id"], service_env.environment.id)
 
     def test_create_service_should_return_method_not_allowed(self):
-        url = reverse('serviceenvironment-list')
+        url = reverse("serviceenvironment-list")
         data = {
-            'service': self.services[0].id,
-            'environment': self.envs[0].id,
+            "service": self.services[0].id,
+            "environment": self.envs[0].id,
         }
-        response = self.client.post(url, data, format='json')
-        self.assertEqual(
-            response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED
-        )
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_patch_service_should_return_method_not_allowed(self):
         service_env = ServiceEnvironment.objects.all()[0]
-        url = reverse('serviceenvironment-detail', args=(service_env.id,))
+        url = reverse("serviceenvironment-detail", args=(service_env.id,))
         data = {
-            'service': self.services[0].id,
-            'environment': self.envs[0].id,
+            "service": self.services[0].id,
+            "environment": self.envs[0].id,
         }
-        response = self.client.patch(url, data, format='json')
-        self.assertEqual(
-            response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED
-        )
+        response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class ProfitCenterAPITests(RalphAPITestCase):
@@ -376,19 +341,17 @@ class ProfitCenterAPITests(RalphAPITestCase):
         self.profit_center = ProfitCenterFactory()
 
     def test_get_profit_center_list(self):
-        url = reverse('profitcenter-list')
-        response = self.client.get(url, format='json')
+        url = reverse("profitcenter-list")
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
-        self.assertEqual(
-            response.data['results'][0]['name'], self.profit_center.name
-        )
+        self.assertEqual(response.data["count"], 1)
+        self.assertEqual(response.data["results"][0]["name"], self.profit_center.name)
 
     def test_get_profit_center_details(self):
-        url = reverse('profitcenter-detail', args=(self.profit_center.id,))
-        response = self.client.get(url, format='json')
+        url = reverse("profitcenter-detail", args=(self.profit_center.id,))
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['name'], self.profit_center.name)
+        self.assertEqual(response.data["name"], self.profit_center.name)
 
 
 class BusinessSegmentAPITests(RalphAPITestCase):
@@ -397,19 +360,19 @@ class BusinessSegmentAPITests(RalphAPITestCase):
         self.business_segment = BusinessSegmentFactory()
 
     def test_get_business_segment_list(self):
-        url = reverse('businesssegment-list')
-        response = self.client.get(url, format='json')
+        url = reverse("businesssegment-list")
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data["count"], 1)
         self.assertEqual(
-            response.data['results'][0]['name'], self.business_segment.name
+            response.data["results"][0]["name"], self.business_segment.name
         )
 
     def test_get_business_segment_details(self):
-        url = reverse('businesssegment-detail', args=(self.business_segment.id,))
-        response = self.client.get(url, format='json')
+        url = reverse("businesssegment-detail", args=(self.business_segment.id,))
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['name'], self.business_segment.name)
+        self.assertEqual(response.data["name"], self.business_segment.name)
 
 
 class ManufacturerAPITests(RalphAPITestCase):
@@ -418,99 +381,86 @@ class ManufacturerAPITests(RalphAPITestCase):
         self.manufacturer = ManufacturerFactory()
 
     def test_get_manufacturer_list(self):
-        url = reverse('manufacturer-list')
-        response = self.client.get(url, format='json')
+        url = reverse("manufacturer-list")
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
-        self.assertEqual(
-            response.data['results'][0]['name'], self.manufacturer.name
-        )
+        self.assertEqual(response.data["count"], 1)
+        self.assertEqual(response.data["results"][0]["name"], self.manufacturer.name)
 
     def test_get_manufacturer_details(self):
-        url = reverse('manufacturer-detail', args=(self.manufacturer.id,))
-        response = self.client.get(url, format='json')
+        url = reverse("manufacturer-detail", args=(self.manufacturer.id,))
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['name'], self.manufacturer.name)
+        self.assertEqual(response.data["name"], self.manufacturer.name)
 
     def test_create_manufacturer(self):
-        url = reverse('manufacturer-list')
-        data = {
-            'name': 'Lenovo'
-        }
-        response = self.client.post(url, data, format='json')
+        url = reverse("manufacturer-list")
+        data = {"name": "Lenovo"}
+        response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['name'], 'Lenovo')
+        self.assertEqual(response.data["name"], "Lenovo")
         self.assertEqual(Manufacturer.objects.count(), 2)
 
     def test_patch_manufacturer(self):
-        url = reverse('manufacturer-detail', args=(self.manufacturer.id,))
-        data = {
-            'name': 'Lenovo'
-        }
-        response = self.client.patch(url, data, format='json')
+        url = reverse("manufacturer-detail", args=(self.manufacturer.id,))
+        data = {"name": "Lenovo"}
+        response = self.client.patch(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.manufacturer.refresh_from_db()
-        self.assertEqual(self.manufacturer.name, 'Lenovo')
+        self.assertEqual(self.manufacturer.name, "Lenovo")
 
 
 class CategoryAPITests(RalphAPITestCase):
     def setUp(self):
         super().setUp()
-        self.category = CategoryFactory(name='rack-servers')
+        self.category = CategoryFactory(name="rack-servers")
 
     def test_get_category_list(self):
-        url = reverse('category-list')
-        response = self.client.get(url, format='json')
+        url = reverse("category-list")
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
-        self.assertEqual(
-            response.data['results'][0]['name'], self.category.name
-        )
+        self.assertEqual(response.data["count"], 1)
+        self.assertEqual(response.data["results"][0]["name"], self.category.name)
 
     def test_get_category_details(self):
-        url = reverse('category-detail', args=(self.category.id,))
-        response = self.client.get(url, format='json')
+        url = reverse("category-detail", args=(self.category.id,))
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['name'], self.category.name)
+        self.assertEqual(response.data["name"], self.category.name)
 
     def test_create_category(self):
-        url = reverse('category-list')
-        data = {
-            'name': 'cell-phones',
-            'code': 'cp'
-        }
-        response = self.client.post(url, data, format='json')
+        url = reverse("category-list")
+        data = {"name": "cell-phones", "code": "cp"}
+        response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['name'], 'cell-phones')
+        self.assertEqual(response.data["name"], "cell-phones")
         self.assertEqual(Category.objects.count(), 2)
-        category = Category.objects.get(pk=response.data['id'])
-        self.assertEqual(category.name, 'cell-phones')
-        self.assertEqual(category.code, 'cp')
+        category = Category.objects.get(pk=response.data["id"])
+        self.assertEqual(category.name, "cell-phones")
+        self.assertEqual(category.code, "cp")
         self.assertIsNone(category.parent)
 
     def test_create_category_with_parent(self):
-        url = reverse('category-list')
+        url = reverse("category-list")
         data = {
-            'name': 'cell-phones',
-            'parent': self.category.id,
+            "name": "cell-phones",
+            "parent": self.category.id,
         }
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['name'], 'cell-phones')
+        self.assertEqual(response.data["name"], "cell-phones")
         self.assertEqual(Category.objects.count(), 2)
-        category = Category.objects.get(pk=response.data['id'])
-        self.assertEqual(category.name, 'cell-phones')
+        category = Category.objects.get(pk=response.data["id"])
+        self.assertEqual(category.name, "cell-phones")
         self.assertEqual(category.parent, self.category)
 
     def test_patch_category(self):
-        url = reverse('category-detail', args=(self.category.id,))
-        data = {
-            'name': 'cell-phones'
-        }
-        response = self.client.patch(url, data, format='json')
+        url = reverse("category-detail", args=(self.category.id,))
+        data = {"name": "cell-phones"}
+        response = self.client.patch(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.category.refresh_from_db()
-        self.assertEqual(self.category.name, 'cell-phones')
+        self.assertEqual(self.category.name, "cell-phones")
 
 
 class AssetModelAPITests(RalphAPITestCase):
@@ -520,43 +470,39 @@ class AssetModelAPITests(RalphAPITestCase):
         self.asset_model = DataCenterAssetModelFactory()
 
     def test_get_asset_model_list(self):
-        url = reverse('assetmodel-list')
-        response = self.client.get(url, format='json')
+        url = reverse("assetmodel-list")
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
-        self.assertEqual(
-            response.data['results'][0]['name'], self.asset_model.name
-        )
+        self.assertEqual(response.data["count"], 1)
+        self.assertEqual(response.data["results"][0]["name"], self.asset_model.name)
 
     def test_get_asset_model_details(self):
-        url = reverse('assetmodel-detail', args=(self.asset_model.id,))
-        response = self.client.get(url, format='json')
+        url = reverse("assetmodel-detail", args=(self.asset_model.id,))
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['name'], self.asset_model.name)
+        self.assertEqual(response.data["name"], self.asset_model.name)
 
     def test_create_asset_model(self):
-        url = reverse('assetmodel-list')
+        url = reverse("assetmodel-list")
         data = {
-            'name': 'MacBook Pro',
-            'manufacturer': self.manufacturer.id,
-            'type': ObjectModelType.back_office.id,
+            "name": "MacBook Pro",
+            "manufacturer": self.manufacturer.id,
+            "type": ObjectModelType.back_office.id,
         }
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(AssetModel.objects.count(), 2)
-        asset_model = AssetModel.objects.get(pk=response.data['id'])
-        self.assertEqual(asset_model.name, 'MacBook Pro')
+        asset_model = AssetModel.objects.get(pk=response.data["id"])
+        self.assertEqual(asset_model.name, "MacBook Pro")
         self.assertEqual(asset_model.manufacturer, self.manufacturer)
 
     def test_patch_asset_model(self):
-        url = reverse('assetmodel-detail', args=(self.asset_model.id,))
-        data = {
-            'name': 'Iphone 6'
-        }
-        response = self.client.patch(url, data, format='json')
+        url = reverse("assetmodel-detail", args=(self.asset_model.id,))
+        data = {"name": "Iphone 6"}
+        response = self.client.patch(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.asset_model.refresh_from_db()
-        self.assertEqual(self.asset_model.name, 'Iphone 6')
+        self.assertEqual(self.asset_model.name, "Iphone 6")
 
 
 BASE_OBJECTS_FACTORIES = {
@@ -578,643 +524,543 @@ BASE_OBJECTS_FACTORIES = {
     TradeMark: TradeMarkFactory,
     Design: DesignFactory,
     Patent: PatentFactory,
-    UtilityModel: UtilityModelFactory
+    UtilityModel: UtilityModelFactory,
 }
 
 
 class BaseObjectAPITests(RalphAPITestCase):
     def setUp(self):
         super().setUp()
-        self.bo_asset = BackOfficeAssetFactory(
-            barcode='12345', hostname='host1'
-        )
-        self.bo_asset.tags.add('tag1')
+        self.bo_asset = BackOfficeAssetFactory(barcode="12345", hostname="host1")
+        self.bo_asset.tags.add("tag1")
         self.conf_module_1 = ConfigurationModuleFactory()
         self.conf_module_2 = ConfigurationModuleFactory(
-            parent=self.conf_module_1, name='mod1'
+            parent=self.conf_module_1, name="mod1"
         )
         self.conf_class_1 = ConfigurationClassFactory(
-            id=999999,
-            module=self.conf_module_2, class_name='cls1'
+            id=999999, module=self.conf_module_2, class_name="cls1"
         )
         self.dc_asset = DataCenterAssetFactory(
-            barcode='12543', price='9.00',
-            service_env__service__name='test-service',
-            service_env__service__uid='sc-123',
-            service_env__environment__name='prod',
+            barcode="12543",
+            price="9.00",
+            service_env__service__name="test-service",
+            service_env__service__uid="sc-123",
+            service_env__environment__name="prod",
             configuration_path=self.conf_class_1,
         )
-        self.dc_asset.tags.add('tag2')
-        self.ip = IPAddressFactory(
-            ethernet=EthernetFactory(base_object=self.dc_asset)
-        )
-        self.service = ServiceEnvironmentFactory(service__name='myservice')
+        self.dc_asset.tags.add("tag2")
+        self.ip = IPAddressFactory(ethernet=EthernetFactory(base_object=self.dc_asset))
+        self.service = ServiceEnvironmentFactory(service__name="myservice")
 
     def test_get_base_objects_list(self):
-        url = reverse('baseobject-list')
-        response = self.client.get(url, format='json')
+        url = reverse("baseobject-list")
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], BaseObject.objects.count())
+        self.assertEqual(response.data["count"], BaseObject.objects.count())
         barcodes = [
-            item['barcode']
-            for item in response.data['results']
-            if 'barcode' in item
+            item["barcode"] for item in response.data["results"] if "barcode" in item
         ]
-        self.assertCountEqual(barcodes, set(['12345', '12543']))
+        self.assertCountEqual(barcodes, set(["12345", "12543"]))
 
     def test_get_base_objects_list_different_type_with_custom_fields(self):
-        CustomField.objects.create(name='test_field')
-        self.dc_asset.update_custom_field('test_field', 'abc')
-        self.bo_asset.update_custom_field('test_field', 'def')
-        url = reverse('baseobject-list')
-        response = self.client.get(url, format='json')
+        CustomField.objects.create(name="test_field")
+        self.dc_asset.update_custom_field("test_field", "abc")
+        self.bo_asset.update_custom_field("test_field", "def")
+        url = reverse("baseobject-list")
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         count = 0
-        for item in response.data['results']:
-            if item['id'] == self.dc_asset.id:
-                self.assertEqual(item['custom_fields'], {'test_field': 'abc'})
+        for item in response.data["results"]:
+            if item["id"] == self.dc_asset.id:
+                self.assertEqual(item["custom_fields"], {"test_field": "abc"})
                 count += 1
-            if item['id'] == self.bo_asset.id:
-                self.assertEqual(item['custom_fields'], {'test_field': 'def'})
+            if item["id"] == self.bo_asset.id:
+                self.assertEqual(item["custom_fields"], {"test_field": "def"})
                 count += 1
         self.assertEqual(count, 2)
 
     def test_get_asset_model_details(self):
-        url = reverse('baseobject-detail', args=(self.bo_asset.id,))
-        response = self.client.get(url, format='json')
+        url = reverse("baseobject-detail", args=(self.bo_asset.id,))
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['barcode'], '12345')
+        self.assertEqual(response.data["barcode"], "12345")
 
     def test_get_asset_service_simple_details(self):
-        url = reverse('baseobject-detail', args=(self.dc_asset.id,))
-        response = self.client.get(url, format='json')
+        url = reverse("baseobject-detail", args=(self.dc_asset.id,))
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        service_env = response.data['service_env']
-        self.assertEqual(service_env['service_uid'], 'sc-123')
-        self.assertEqual(service_env['service'], 'test-service')
-        self.assertEqual(service_env['environment'], 'prod')
+        service_env = response.data["service_env"]
+        self.assertEqual(service_env["service_uid"], "sc-123")
+        self.assertEqual(service_env["service"], "test-service")
+        self.assertEqual(service_env["environment"], "prod")
 
     def test_icontains_polymorphic(self):
-        url = '{}?{}'.format(
-            reverse('baseobject-list'), urlencode(
-                {'hostname__icontains': 'host'}
-            )
+        url = "{}?{}".format(
+            reverse("baseobject-list"), urlencode({"hostname__icontains": "host"})
         )
-        response = self.client.get(url, format='json')
-        self.assertEqual(len(response.data['results']), 1)
+        response = self.client.get(url, format="json")
+        self.assertEqual(len(response.data["results"]), 1)
 
     def test_icontains_polymorphic_with_extended_filters(self):
-        url = '{}?{}'.format(
-            reverse('baseobject-list'), urlencode(
-                {'name__startswith': 'host'}
-            )
+        url = "{}?{}".format(
+            reverse("baseobject-list"), urlencode({"name__startswith": "host"})
         )
-        response = self.client.get(url, format='json')
-        self.assertEqual(len(response.data['results']), 1)
+        response = self.client.get(url, format="json")
+        self.assertEqual(len(response.data["results"]), 1)
 
     def test_startswith_polymorphic_different_types(self):
-        url = '{}?{}'.format(
-            reverse('baseobject-list'), urlencode(
-                {'barcode__startswith': '12'}
-            )
+        url = "{}?{}".format(
+            reverse("baseobject-list"), urlencode({"barcode__startswith": "12"})
         )
-        response = self.client.get(url, format='json')
-        self.assertEqual(len(response.data['results']), 2)
+        response = self.client.get(url, format="json")
+        self.assertEqual(len(response.data["results"]), 2)
 
     def test_lte_polymorphic(self):
-        url = '{}?{}'.format(
-            reverse('baseobject-list'), urlencode(
-                {'price__lte': '9'}
-            )
-        )
-        response = self.client.get(url, format='json')
-        self.assertEqual(len(response.data['results']), 1)
+        url = "{}?{}".format(reverse("baseobject-list"), urlencode({"price__lte": "9"}))
+        response = self.client.get(url, format="json")
+        self.assertEqual(len(response.data["results"]), 1)
 
     def test_is_lookup_used(self):
-        url = '{}?{}'.format(
-            reverse('baseobject-list'), urlencode(
-                {'hostname__icontains': 'no_exists_host'}
-            )
+        url = "{}?{}".format(
+            reverse("baseobject-list"),
+            urlencode({"hostname__icontains": "no_exists_host"}),
         )
-        response = self.client.get(url, format='json')
-        self.assertEqual(len(response.data['results']), 0)
+        response = self.client.get(url, format="json")
+        self.assertEqual(len(response.data["results"]), 0)
 
     def test_filter_by_ip(self):
-        url = '{}?{}'.format(
-            reverse('baseobject-list'), urlencode(
-                {'ip': self.ip.address}
-            )
+        url = "{}?{}".format(
+            reverse("baseobject-list"), urlencode({"ip": self.ip.address})
         )
-        response = self.client.get(url, format='json')
-        self.assertEqual(len(response.data['results']), 1)
+        response = self.client.get(url, format="json")
+        self.assertEqual(len(response.data["results"]), 1)
 
     def test_filter_by_scm_status_check_result(self):
         status_checks = {
             SCMCheckResult.scm_error: 2,
             SCMCheckResult.scm_ok: 1,
-            SCMCheckResult.check_failed: 3
+            SCMCheckResult.check_failed: 3,
         }
         objects = []
-        for obj_type in (CloudHostFactory,
-                         DataCenterAssetFactory,
-                         VirtualServerFactory):
+        for obj_type in (
+            CloudHostFactory,
+            DataCenterAssetFactory,
+            VirtualServerFactory,
+        ):
             for _ in range(2):
                 objects.append(obj_type())
 
         for check_result in status_checks:
             for i in range(status_checks[check_result]):
                 SCMStatusCheckFactory(
-                    base_object=objects.pop().baseobject_ptr,
-                    check_result=check_result
+                    base_object=objects.pop().baseobject_ptr, check_result=check_result
                 )
 
-            url = '{}?{}'.format(
-                reverse('baseobject-list'), urlencode(
-                    {'scmstatuscheck__check_result': check_result.numerator}
-                )
+            url = "{}?{}".format(
+                reverse("baseobject-list"),
+                urlencode({"scmstatuscheck__check_result": check_result.numerator}),
             )
-            response = self.client.get(url, format='json')
-            self.assertEqual(
-                len(response.data['results']),
-                status_checks[check_result]
-            )
+            response = self.client.get(url, format="json")
+            self.assertEqual(len(response.data["results"]), status_checks[check_result])
 
-            for obj in response.data['results']:
-                self.assertIn('scmstatuscheck', obj)
+            for obj in response.data["results"]:
+                self.assertIn("scmstatuscheck", obj)
                 self.assertEqual(
-                    obj['scmstatuscheck']['check_result'],
-                    check_result.raw
+                    obj["scmstatuscheck"]["check_result"], check_result.raw
                 )
 
     def test_filter_by_service_uid(self):
-        url = '{}?{}'.format(
-            reverse('baseobject-list'), urlencode(
-                {'service': self.dc_asset.service_env.service.uid}
-            )
+        url = "{}?{}".format(
+            reverse("baseobject-list"),
+            urlencode({"service": self.dc_asset.service_env.service.uid}),
         )
-        response = self.client.get(url, format='json')
-        self.assertEqual(len(response.data['results']), 1)
+        response = self.client.get(url, format="json")
+        self.assertEqual(len(response.data["results"]), 1)
 
     def test_filter_by_uid(self):
-        url = '{}?{}'.format(
-            reverse('baseobject-list'), urlencode(
-                {'uid': self.dc_asset.service_env.service.uid}
-            )
+        url = "{}?{}".format(
+            reverse("baseobject-list"),
+            urlencode({"uid": self.dc_asset.service_env.service.uid}),
         )
-        response = self.client.get(url, format='json')
-        self.assertEqual(len(response.data['results']), 1)
+        response = self.client.get(url, format="json")
+        self.assertEqual(len(response.data["results"]), 1)
         self.assertEqual(
-            response.data['results'][0]['id'],
-            self.dc_asset.service_env.id
+            response.data["results"][0]["id"], self.dc_asset.service_env.id
         )
 
     def test_filter_by_service_name(self):
-        url = '{}?{}'.format(
-            reverse('baseobject-list'), urlencode(
-                {'service': self.dc_asset.service_env.service.name}
-            )
+        url = "{}?{}".format(
+            reverse("baseobject-list"),
+            urlencode({"service": self.dc_asset.service_env.service.name}),
         )
-        response = self.client.get(url, format='json')
-        self.assertEqual(len(response.data['results']), 1)
+        response = self.client.get(url, format="json")
+        self.assertEqual(len(response.data["results"]), 1)
 
     def test_filter_by_configuration_path(self):
-        url = '{}?{}'.format(
-            reverse('baseobject-list'), urlencode(
-                {'configuration_path': 'mod1/cls1'}
-            )
+        url = "{}?{}".format(
+            reverse("baseobject-list"), urlencode({"configuration_path": "mod1/cls1"})
         )
-        response = self.client.get(url, format='json')
-        self.assertEqual(len(response.data['results']), 1)
-        self.assertEqual(response.data['results'][0]['id'], self.dc_asset.id)
+        response = self.client.get(url, format="json")
+        self.assertEqual(len(response.data["results"]), 1)
+        self.assertEqual(response.data["results"][0]["id"], self.dc_asset.id)
 
     def test_filter_by_configuration_path_module_name(self):
-        url = '{}?{}'.format(
-            reverse('baseobject-list'), urlencode(
-                {'configuration_path__module__name': 'mod1'}
-            )
+        url = "{}?{}".format(
+            reverse("baseobject-list"),
+            urlencode({"configuration_path__module__name": "mod1"}),
         )
-        response = self.client.get(url, format='json')
-        self.assertEqual(len(response.data['results']), 1)
-        self.assertEqual(response.data['results'][0]['id'], self.dc_asset.id)
+        response = self.client.get(url, format="json")
+        self.assertEqual(len(response.data["results"]), 1)
+        self.assertEqual(response.data["results"][0]["id"], self.dc_asset.id)
 
     def test_filter_by_id_startswith(self):
-        url = '{}?{}'.format(
-            reverse('baseobject-list'), urlencode(
-                {'id__startswith': '99999'}
-            )
+        url = "{}?{}".format(
+            reverse("baseobject-list"), urlencode({"id__startswith": "99999"})
         )
-        response = self.client.get(url, format='json')
-        self.assertEqual(len(response.data['results']), 1)
-        self.assertEqual(
-            response.data['results'][0]['id'], self.conf_class_1.id
-        )
+        response = self.client.get(url, format="json")
+        self.assertEqual(len(response.data["results"]), 1)
+        self.assertEqual(response.data["results"][0]["id"], self.conf_class_1.id)
 
     def test_filter_by_id_exact(self):
-        url = '{}?{}'.format(
-            reverse('baseobject-list'), urlencode(
-                {'id__exact': '999999'}
-            )
+        url = "{}?{}".format(
+            reverse("baseobject-list"), urlencode({"id__exact": "999999"})
         )
-        response = self.client.get(url, format='json')
-        self.assertEqual(len(response.data['results']), 1)
-        self.assertEqual(
-            response.data['results'][0]['id'], self.conf_class_1.id
-        )
+        response = self.client.get(url, format="json")
+        self.assertEqual(len(response.data["results"]), 1)
+        self.assertEqual(response.data["results"][0]["id"], self.conf_class_1.id)
 
     def test_tags(self):
-        url = '{}?{}'.format(
-            reverse('baseobject-list'), urlencode(
-                [
-                    ('tag', 'tag1'), ('tag', 'tag2')
-                ]
-            )
+        url = "{}?{}".format(
+            reverse("baseobject-list"), urlencode([("tag", "tag1"), ("tag", "tag2")])
         )
-        response = self.client.get(url, format='json')
-        self.assertEqual(len(response.data['results']), 0)
+        response = self.client.get(url, format="json")
+        self.assertEqual(len(response.data["results"]), 0)
 
-        url = '{}?{}'.format(
-            reverse('baseobject-list'), urlencode([('tag', 'tag1')])
-        )
-        response = self.client.get(url, format='json')
-        self.assertEqual(len(response.data['results']), 1)
+        url = "{}?{}".format(reverse("baseobject-list"), urlencode([("tag", "tag1")]))
+        response = self.client.get(url, format="json")
+        self.assertEqual(len(response.data["results"]), 1)
 
     def test_str_and_type_field(self):
         count = 0
         for descendant in BaseObject._polymorphic_descendants:
-            if descendant._meta.proxy or descendant in [
-                PolymorphicTestModel
-            ]:
+            if descendant._meta.proxy or descendant in [PolymorphicTestModel]:
                 continue
             if not descendant._polymorphic_descendants:
                 count += 1
                 obj = BASE_OBJECTS_FACTORIES[descendant]()
-                url = reverse('baseobject-detail', args=(obj.id,))
-                response = self.client.get(url, format='json')
+                url = reverse("baseobject-detail", args=(obj.id,))
+                response = self.client.get(url, format="json")
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
                 self.assertEqual(
-                    response.data.get('__str__'),
-                    '{}: {}'.format(obj._meta.verbose_name, str(obj)),
-                    msg='__str__ not found (or different) for {}'.format(
-                        descendant
-                    )
+                    response.data.get("__str__"),
+                    "{}: {}".format(obj._meta.verbose_name, str(obj)),
+                    msg="__str__ not found (or different) for {}".format(descendant),
                 )
                 self.assertEqual(
-                    response.data.get('object_type'), obj.content_type.model
+                    response.data.get("object_type"), obj.content_type.model
                 )
         self.assertEqual(count, len(BASE_OBJECTS_FACTORIES))
 
     def test_filter_by_configurationclass_path(self):
-        url = '{}?{}'.format(
-            reverse('baseobject-list'), urlencode(
-                {'name__startswith': 'mod1/cls'}
-            )
+        url = "{}?{}".format(
+            reverse("baseobject-list"), urlencode({"name__startswith": "mod1/cls"})
         )
-        response = self.client.get(url, format='json')
-        self.assertEqual(len(response.data['results']), 1)
+        response = self.client.get(url, format="json")
+        self.assertEqual(len(response.data["results"]), 1)
 
     def test_filter_by_service_env_service_name(self):
-        url = '{}?{}'.format(
-            reverse('baseobject-list'), urlencode(
-                {'name__startswith': 'myserv'}
-            )
+        url = "{}?{}".format(
+            reverse("baseobject-list"), urlencode({"name__startswith": "myserv"})
         )
-        response = self.client.get(url, format='json')
-        self.assertEqual(len(response.data['results']), 1)
+        response = self.client.get(url, format="json")
+        self.assertEqual(len(response.data["results"]), 1)
 
     def test_filter_by_cloudproject_name(self):
-        CloudProjectFactory(name='my-cloud-project')
-        url = '{}?{}'.format(
-            reverse('baseobject-list'), urlencode(
-                {'name__startswith': 'my-cloud'}
-            )
+        CloudProjectFactory(name="my-cloud-project")
+        url = "{}?{}".format(
+            reverse("baseobject-list"), urlencode({"name__startswith": "my-cloud"})
         )
-        response = self.client.get(url, format='json')
-        self.assertEqual(len(response.data['results']), 1)
+        response = self.client.get(url, format="json")
+        self.assertEqual(len(response.data["results"]), 1)
 
     def test_filter_by_cluster_name(self):
-        ClusterFactory(name='my-cluster')
-        url = '{}?{}'.format(
-            reverse('baseobject-list'), urlencode(
-                {'name__startswith': 'my-clus'}
-            )
+        ClusterFactory(name="my-cluster")
+        url = "{}?{}".format(
+            reverse("baseobject-list"), urlencode({"name__startswith": "my-clus"})
         )
-        response = self.client.get(url, format='json')
-        self.assertEqual(len(response.data['results']), 1)
+        response = self.client.get(url, format="json")
+        self.assertEqual(len(response.data["results"]), 1)
 
     def test_filter_by_service_env_env_name(self):
-        url = '{}?{}'.format(
-            reverse('baseobject-list'), urlencode(
-                {'env': 'prod'}
-            )
-        )
-        response = self.client.get(url, format='json')
-        self.assertEqual(len(response.data['results']), 1)
+        url = "{}?{}".format(reverse("baseobject-list"), urlencode({"env": "prod"}))
+        response = self.client.get(url, format="json")
+        self.assertEqual(len(response.data["results"]), 1)
 
 
 class DCHostAPITests(RalphAPITestCase):
     def setUp(self):
         super().setUp()
         self.cf = CustomField.objects.create(
-            name='test_cf', use_as_configuration_variable=True
+            name="test_cf", use_as_configuration_variable=True
         )
         # BO asset isn't DC Host - will be skipped in API
-        self.bo_asset = BackOfficeAssetFactory(
-            barcode='12345', hostname='host1'
-        )
+        self.bo_asset = BackOfficeAssetFactory(barcode="12345", hostname="host1")
         self.conf_module_1 = ConfigurationModuleFactory()
         self.conf_module_2 = ConfigurationModuleFactory(
-            parent=self.conf_module_1, name='ralph'
+            parent=self.conf_module_1, name="ralph"
         )
         self.conf_class_1 = ConfigurationClassFactory(
-            module=self.conf_module_2, class_name='cls1'
+            module=self.conf_module_2, class_name="cls1"
         )
         self.dc_asset = DataCenterAssetFullFactory(
-            service_env__service__name='test-service',
-            service_env__service__uid='sc-123',
-            service_env__environment__name='prod',
+            service_env__service__name="test-service",
+            service_env__service__uid="sc-123",
+            service_env__environment__name="prod",
             configuration_path=self.conf_class_1,
         )
-        self.dc_asset.update_custom_field('test_cf', 'abc')
+        self.dc_asset.update_custom_field("test_cf", "abc")
         self.virtual = VirtualServerFullFactory(
             parent=self.dc_asset,
-            configuration_path__module__name='ralph2',
-            service_env__service__uid='sc-222',
-            service_env__environment__name='some_env',
+            configuration_path__module__name="ralph2",
+            service_env__service__uid="sc-222",
+            service_env__environment__name="some_env",
         )
-        self.virtual.update_custom_field('test_cf', 'def')
-        se = ServiceEnvironmentFactory(service__uid='sc-333')
+        self.virtual.update_custom_field("test_cf", "def")
+        se = ServiceEnvironmentFactory(service__uid="sc-333")
         self.cloud_host = CloudHostFullFactory(
-            configuration_path__module__name='ralph3',
+            configuration_path__module__name="ralph3",
             service_env=se,
             parent__service_env=se,
-            hostname='aaaa',
-            hypervisor=self.dc_asset
+            hostname="aaaa",
+            hypervisor=self.dc_asset,
         )
-        self.cloud_host.ip_addresses = ['10.20.30.40']
-        self.cloud_host.update_custom_field('test_cf', 'xyz')
+        self.cloud_host.ip_addresses = ["10.20.30.40"]
+        self.cloud_host.update_custom_field("test_cf", "xyz")
 
     def test_get_dc_hosts_list(self):
         dc_assets = DataCenterAssetFullFactory.create_batch(20)
         VirtualServerFullFactory.create_batch(20, parent=dc_assets[0])
         CloudHostFullFactory.create_batch(20, hypervisor=dc_assets[0])
-        url = reverse('dchost-list') + "?limit=100"
+        url = reverse("dchost-list") + "?limit=100"
         with self.assertNumQueries(31):
-            response = self.client.get(url, format='json')
+            response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 63)
+        self.assertEqual(response.data["count"], 63)
 
     def test_get_dc_host_details(self):
         dc_asset = DataCenterAssetFullFactory()
         VirtualServerFullFactory.create_batch(2, parent=dc_asset)
         CloudHostFullFactory.create_batch(2, hypervisor=dc_asset)
-        url = reverse('dchost-detail', args=(dc_asset.pk,))
-        response = self.client.get(url, format='json')
+        url = reverse("dchost-detail", args=(dc_asset.pk,))
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_filter_by_type_dc_asset(self):
-        url = '{}?{}'.format(
-            reverse('dchost-list'),
-            urlencode({'object_type': 'datacenterasset'})
+        url = "{}?{}".format(
+            reverse("dchost-list"), urlencode({"object_type": "datacenterasset"})
         )
-        response = self.client.get(url, format='json')
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
-        dca = response.data['results'][0]
-        self.assertEqual(dca['hostname'], self.dc_asset.hostname)
-        self.assertEqual(len(dca['ethernet']), 3)
-        self.assertEqual(len(dca['ipaddresses']), 2)
-        self.assertCountEqual(dca['tags'], ['abc, cde', 'xyz'])
-        self.assertEqual(dca['configuration_path']['module']['name'], 'ralph')
-        self.assertEqual(dca['service_env']['service_uid'], 'sc-123')
-        self.assertEqual(dca['object_type'], 'datacenterasset')
-        self.assertEqual(dca['custom_fields'], {'test_cf': 'abc'})
-        self.assertEqual(dca['configuration_variables'], {'test_cf': 'abc'})
+        self.assertEqual(response.data["count"], 1)
+        dca = response.data["results"][0]
+        self.assertEqual(dca["hostname"], self.dc_asset.hostname)
+        self.assertEqual(len(dca["ethernet"]), 3)
+        self.assertEqual(len(dca["ipaddresses"]), 2)
+        self.assertCountEqual(dca["tags"], ["abc, cde", "xyz"])
+        self.assertEqual(dca["configuration_path"]["module"]["name"], "ralph")
+        self.assertEqual(dca["service_env"]["service_uid"], "sc-123")
+        self.assertEqual(dca["object_type"], "datacenterasset")
+        self.assertEqual(dca["custom_fields"], {"test_cf": "abc"})
+        self.assertEqual(dca["configuration_variables"], {"test_cf": "abc"})
 
     def test_filter_by_type_virtual(self):
-        url = '{}?{}'.format(
-            reverse('dchost-list'),
-            urlencode({'object_type': 'virtualserver'})
+        url = "{}?{}".format(
+            reverse("dchost-list"), urlencode({"object_type": "virtualserver"})
         )
-        response = self.client.get(url, format='json')
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
-        virt = response.data['results'][0]
-        self.assertEqual(virt['hostname'], self.virtual.hostname)
-        self.assertEqual(len(virt['ethernet']), 2)
-        self.assertEqual(len(virt['ipaddresses']), 1)
-        self.assertCountEqual(virt['tags'], ['abc, cde', 'xyz'])
-        self.assertEqual(virt['configuration_path']['module']['name'], 'ralph2')
-        self.assertEqual(virt['service_env']['service_uid'], 'sc-222')
-        self.assertEqual(virt['object_type'], 'virtualserver')
-        self.assertEqual(virt['custom_fields'], {'test_cf': 'def'})
-        self.assertEqual(virt['configuration_variables'], {'test_cf': 'def'})
+        self.assertEqual(response.data["count"], 1)
+        virt = response.data["results"][0]
+        self.assertEqual(virt["hostname"], self.virtual.hostname)
+        self.assertEqual(len(virt["ethernet"]), 2)
+        self.assertEqual(len(virt["ipaddresses"]), 1)
+        self.assertCountEqual(virt["tags"], ["abc, cde", "xyz"])
+        self.assertEqual(virt["configuration_path"]["module"]["name"], "ralph2")
+        self.assertEqual(virt["service_env"]["service_uid"], "sc-222")
+        self.assertEqual(virt["object_type"], "virtualserver")
+        self.assertEqual(virt["custom_fields"], {"test_cf": "def"})
+        self.assertEqual(virt["configuration_variables"], {"test_cf": "def"})
 
     def test_filter_by_type_cloudhost(self):
-        url = '{}?{}'.format(
-            reverse('dchost-list'), urlencode({'object_type': 'cloudhost'})
+        url = "{}?{}".format(
+            reverse("dchost-list"), urlencode({"object_type": "cloudhost"})
         )
-        response = self.client.get(url, format='json')
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
-        cloud = response.data['results'][0]
-        self.assertEqual(cloud['hostname'], self.cloud_host.hostname)
-        self.assertCountEqual(cloud['tags'], ['abc, cde', 'xyz'])
-        self.assertEqual(
-            cloud['configuration_path']['module']['name'], 'ralph3'
-        )
-        self.assertEqual(cloud['service_env']['service_uid'], 'sc-333')
-        self.assertEqual(cloud['object_type'], 'cloudhost')
-        self.assertEqual(len(cloud['ethernet']), 1)
-        self.assertEqual(len(cloud['ipaddresses']), 1)
-        self.assertEqual(cloud['custom_fields'], {'test_cf': 'xyz'})
-        self.assertEqual(cloud['configuration_variables'], {'test_cf': 'xyz'})
+        self.assertEqual(response.data["count"], 1)
+        cloud = response.data["results"][0]
+        self.assertEqual(cloud["hostname"], self.cloud_host.hostname)
+        self.assertCountEqual(cloud["tags"], ["abc, cde", "xyz"])
+        self.assertEqual(cloud["configuration_path"]["module"]["name"], "ralph3")
+        self.assertEqual(cloud["service_env"]["service_uid"], "sc-333")
+        self.assertEqual(cloud["object_type"], "cloudhost")
+        self.assertEqual(len(cloud["ethernet"]), 1)
+        self.assertEqual(len(cloud["ipaddresses"]), 1)
+        self.assertEqual(cloud["custom_fields"], {"test_cf": "xyz"})
+        self.assertEqual(cloud["configuration_variables"], {"test_cf": "xyz"})
 
     def test_filter_by_hostname(self):
-        url = '{}?{}'.format(
-            reverse('dchost-list'), urlencode({'hostname': 'aaaa'})
-        )
-        response = self.client.get(url, format='json')
+        url = "{}?{}".format(reverse("dchost-list"), urlencode({"hostname": "aaaa"}))
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data["count"], 1)
 
     def test_filter_by_name(self):
-        url = '{}?{}'.format(
-            reverse('dchost-list'), urlencode({'name': 'aaaa'})
-        )
-        response = self.client.get(url, format='json')
+        url = "{}?{}".format(reverse("dchost-list"), urlencode({"name": "aaaa"}))
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data["count"], 1)
 
     def test_filter_by_service_uid(self):
-        url = '{}?{}'.format(
-            reverse('dchost-list'), urlencode({'service': 'sc-222'})
-        )
-        response = self.client.get(url, format='json')
+        url = "{}?{}".format(reverse("dchost-list"), urlencode({"service": "sc-222"}))
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data["count"], 1)
 
     def test_filter_by_ip(self):
-        url = '{}?{}'.format(
-            reverse('dchost-list'), urlencode({'ip': '10.20.30.40'})
-        )
-        response = self.client.get(url, format='json')
+        url = "{}?{}".format(reverse("dchost-list"), urlencode({"ip": "10.20.30.40"}))
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data["count"], 1)
 
     def test_filter_by_configuration_path(self):
-        url = '{}?{}'.format(
-            reverse('dchost-list'), urlencode(
-                {'configuration_path': 'ralph/cls1'}
-            )
+        url = "{}?{}".format(
+            reverse("dchost-list"), urlencode({"configuration_path": "ralph/cls1"})
         )
-        response = self.client.get(url, format='json')
-        self.assertEqual(len(response.data['results']), 1)
-        self.assertEqual(response.data['results'][0]['id'], self.dc_asset.id)
+        response = self.client.get(url, format="json")
+        self.assertEqual(len(response.data["results"]), 1)
+        self.assertEqual(response.data["results"][0]["id"], self.dc_asset.id)
 
     def test_filter_by_configuration_path_module_name(self):
-        url = '{}?{}'.format(
-            reverse('dchost-list'), urlencode(
-                {'configuration_path__module__name': 'ralph'}
-            )
+        url = "{}?{}".format(
+            reverse("dchost-list"),
+            urlencode({"configuration_path__module__name": "ralph"}),
         )
-        response = self.client.get(url, format='json')
-        self.assertEqual(len(response.data['results']), 1)
-        self.assertEqual(response.data['results'][0]['id'], self.dc_asset.id)
+        response = self.client.get(url, format="json")
+        self.assertEqual(len(response.data["results"]), 1)
+        self.assertEqual(response.data["results"][0]["id"], self.dc_asset.id)
 
     def test_filter_by_env_name(self):
-        url = '{}?{}'.format(
-            reverse('dchost-list'), urlencode({'env': 'some_env'})
-        )
-        response = self.client.get(url, format='json')
+        url = "{}?{}".format(reverse("dchost-list"), urlencode({"env": "some_env"}))
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data["count"], 1)
 
 
 class ConfigurationModuleAPITests(RalphAPITestCase):
     def setUp(self):
         super().setUp()
         self.conf_module_1 = ConfigurationModuleFactory()
-        self.conf_module_2 = ConfigurationModuleFactory(
-            parent=self.conf_module_1
-        )
+        self.conf_module_2 = ConfigurationModuleFactory(parent=self.conf_module_1)
 
     def test_get_configuration_modules_list(self):
-        url = reverse('configurationmodule-list')
-        response = self.client.get(url, format='json')
+        url = reverse("configurationmodule-list")
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 2)
-        self.assertEqual(
-            response.data['results'][0]['name'], self.conf_module_1.name
-        )
+        self.assertEqual(response.data["count"], 2)
+        self.assertEqual(response.data["results"][0]["name"], self.conf_module_1.name)
 
     def test_get_configuration_module_details(self):
-        url = reverse('configurationmodule-detail', args=(self.conf_module_1.id,))
-        response = self.client.get(url, format='json')
+        url = reverse("configurationmodule-detail", args=(self.conf_module_1.id,))
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['name'], self.conf_module_1.name)
+        self.assertEqual(response.data["name"], self.conf_module_1.name)
         self.assertTrue(
-            response.data['children_modules'][0].endswith(
-                reverse('configurationmodule-detail', args=(self.conf_module_2.id,))
+            response.data["children_modules"][0].endswith(
+                reverse("configurationmodule-detail", args=(self.conf_module_2.id,))
             )
         )
 
     def test_get_configuration_module_details_with_parent(self):
-        url = reverse('configurationmodule-detail', args=(self.conf_module_2.id,))
-        response = self.client.get(url, format='json')
+        url = reverse("configurationmodule-detail", args=(self.conf_module_2.id,))
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(
-            response.data['parent'].endswith(
-                reverse('configurationmodule-detail', args=(self.conf_module_1.id,))
+            response.data["parent"].endswith(
+                reverse("configurationmodule-detail", args=(self.conf_module_1.id,))
             )
         )
 
     def test_create_configuration_module(self):
-        url = reverse('configurationmodule-list')
+        url = reverse("configurationmodule-list")
         data = {
-            'name': 'test_1',
-            'parent': self.conf_module_2.pk,
+            "name": "test_1",
+            "parent": self.conf_module_2.pk,
         }
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(ConfigurationModule.objects.count(), 3)
-        conf_module = ConfigurationModule.objects.get(pk=response.data['id'])
-        self.assertEqual(conf_module.name, 'test_1')
+        conf_module = ConfigurationModule.objects.get(pk=response.data["id"])
+        self.assertEqual(conf_module.name, "test_1")
         self.assertEqual(conf_module.parent, self.conf_module_2)
 
     def test_patch_configuration_module(self):
-        url = reverse('configurationmodule-detail', args=(self.conf_module_2.id,))
-        data = {
-            'name': 'test_2'
-        }
-        response = self.client.patch(url, data, format='json')
-        self.assertEqual(
-            response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED
-        )
+        url = reverse("configurationmodule-detail", args=(self.conf_module_2.id,))
+        data = {"name": "test_2"}
+        response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class ConfigurationClassAPITests(RalphAPITestCase):
     def setUp(self):
         super().setUp()
         self.conf_module_1 = ConfigurationModuleFactory()
-        self.conf_module_2 = ConfigurationModuleFactory(
-            parent=self.conf_module_1
-        )
+        self.conf_module_2 = ConfigurationModuleFactory(parent=self.conf_module_1)
         self.conf_class_1 = ConfigurationClassFactory(module=self.conf_module_2)
 
     def test_get_configuration_classes_list(self):
-        url = reverse('configurationclass-list')
-        response = self.client.get(url, format='json')
+        url = reverse("configurationclass-list")
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data["count"], 1)
         self.assertEqual(
-            response.data['results'][0]['class_name'],
-            self.conf_class_1.class_name
+            response.data["results"][0]["class_name"], self.conf_class_1.class_name
         )
         self.assertEqual(
-            response.data['results'][0]['module']['id'],
-            self.conf_module_2.id
+            response.data["results"][0]["module"]["id"], self.conf_module_2.id
         )
-        self.assertEqual(
-            response.data['results'][0]['path'], self.conf_class_1.path
-        )
+        self.assertEqual(response.data["results"][0]["path"], self.conf_class_1.path)
 
     def test_get_configuration_class_details(self):
-        url = reverse('configurationclass-detail', args=(self.conf_class_1.id,))
-        response = self.client.get(url, format='json')
+        url = reverse("configurationclass-detail", args=(self.conf_class_1.id,))
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(
-            response.data['class_name'],
-            self.conf_class_1.class_name
-        )
-        self.assertEqual(response.data['path'], self.conf_class_1.path)
+        self.assertEqual(response.data["class_name"], self.conf_class_1.class_name)
+        self.assertEqual(response.data["path"], self.conf_class_1.path)
         self.assertTrue(
-            response.data['module']['url'].endswith(
-                reverse('configurationmodule-detail', args=(self.conf_module_2.id,))
+            response.data["module"]["url"].endswith(
+                reverse("configurationmodule-detail", args=(self.conf_module_2.id,))
             )
         )
 
     def test_create_configuration_class(self):
-        url = reverse('configurationclass-list')
+        url = reverse("configurationclass-list")
         data = {
-            'class_name': 'test_1',
-            'module': self.conf_module_2.pk,
+            "class_name": "test_1",
+            "module": self.conf_module_2.pk,
         }
-        response = self.client.post(url, data, format='json')
+        response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(ConfigurationClass.objects.count(), 2)
-        conf_class = ConfigurationClass.objects.get(pk=response.data['id'])
-        self.assertEqual(conf_class.class_name, 'test_1')
+        conf_class = ConfigurationClass.objects.get(pk=response.data["id"])
+        self.assertEqual(conf_class.class_name, "test_1")
         self.assertEqual(conf_class.module, self.conf_module_2)
 
     def test_patch_configuration_class(self):
-        url = reverse('configurationclass-detail', args=(self.conf_class_1.id,))
-        data = {
-            'class_name': 'test_2'
-        }
-        response = self.client.patch(url, data, format='json')
-        self.assertEqual(
-            response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED
-        )
+        url = reverse("configurationclass-detail", args=(self.conf_class_1.id,))
+        data = {"class_name": "test_2"}
+        response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class EthernetAPITests(RalphAPITestCase):
@@ -1225,40 +1071,42 @@ class EthernetAPITests(RalphAPITestCase):
         self.eth2 = EthernetFactory()
 
     def test_get_list_of_ethernets(self):
-        url = reverse('ethernet-list')
-        response = self.client.get(url, format='json')
+        url = reverse("ethernet-list")
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['count'], 2)
+        self.assertEqual(response.data["count"], 2)
 
     def test_get_ethernet_with_ip_details(self):
-        url = reverse('ethernet-detail', args=(self.eth.id,))
-        response = self.client.get(url, format='json')
+        url = reverse("ethernet-detail", args=(self.eth.id,))
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['ipaddress'], {
-            'id': self.ip.id,
-            'address': self.ip.address,
-            'hostname': self.ip.hostname,
-            'dhcp_expose': self.ip.dhcp_expose,
-            'is_management': self.ip.is_management,
-            'url': self.get_full_url(
-                reverse('ipaddress-detail', args=(self.ip.id,))
-            ),
-            'ui_url': self.get_full_url(self.ip.get_absolute_url())
-        })
+        self.assertEqual(
+            response.data["ipaddress"],
+            {
+                "id": self.ip.id,
+                "address": self.ip.address,
+                "hostname": self.ip.hostname,
+                "dhcp_expose": self.ip.dhcp_expose,
+                "is_management": self.ip.is_management,
+                "url": self.get_full_url(
+                    reverse("ipaddress-detail", args=(self.ip.id,))
+                ),
+                "ui_url": self.get_full_url(self.ip.get_absolute_url()),
+            },
+        )
 
     def test_cannot_delete_when_exposed_in_dhcp(self):
-        url = reverse('ethernet-detail', args=(self.eth.id,))
-        response = self.client.delete(url, format='json')
+        url = reverse("ethernet-detail", args=(self.eth.id,))
+        response = self.client.delete(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn(
-            'Could not delete Ethernet when it is exposed in DHCP',
-            response.data
+            "Could not delete Ethernet when it is exposed in DHCP", response.data
         )
 
     def test_filter_by_ipaddress(self):
-        url = '{}?ipaddress__address={}'.format(
-            reverse('ethernet-list'), self.ip.address
+        url = "{}?ipaddress__address={}".format(
+            reverse("ethernet-list"), self.ip.address
         )
-        response = self.client.get(url, format='json')
+        response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data["count"], 1)

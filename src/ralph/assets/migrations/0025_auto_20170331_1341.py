@@ -8,13 +8,17 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assets', '0024_auto_20170322_1148'),
+        ("assets", "0024_auto_20170322_1148"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='asset',
-            name='model',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='assets.AssetModel', related_name='assets'),
+            model_name="asset",
+            name="model",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT,
+                to="assets.AssetModel",
+                related_name="assets",
+            ),
         ),
     ]

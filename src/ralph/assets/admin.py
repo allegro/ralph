@@ -18,7 +18,7 @@ from ralph.assets.models.assets import (
     ManufacturerKind,
     ProfitCenter,
     Service,
-    ServiceEnvironment
+    ServiceEnvironment,
 )
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.components import (
@@ -28,12 +28,9 @@ from ralph.assets.models.components import (
     FibreChannelCard,
     GenericComponent,
     Memory,
-    Processor
+    Processor,
 )
-from ralph.assets.models.configuration import (
-    ConfigurationClass,
-    ConfigurationModule
-)
+from ralph.assets.models.configuration import ConfigurationClass, ConfigurationModule
 from ralph.data_importer import resources
 from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
 from ralph.lib.table.table import Table, TableWithUrl
@@ -42,149 +39,141 @@ from ralph.security.views import ScanStatusInTableMixin
 
 @register(ConfigurationClass)
 class ConfigurationClassAdmin(CustomFieldValueAdminMixin, RalphAdmin):
-    fields = ['class_name', 'module', 'path']
-    readonly_fields = ['path']
-    raw_id_fields = ['module']
+    fields = ["class_name", "module", "path"]
+    readonly_fields = ["path"]
+    raw_id_fields = ["module"]
     search_fields = [
-        'path',
+        "path",
     ]
-    list_display = ['class_name', 'module', 'path', 'objects_count']
-    list_select_related = ['module']
-    list_filter = ['class_name', 'module']
+    list_display = ["class_name", "module", "path", "objects_count"]
+    list_select_related = ["module"]
+    list_filter = ["class_name", "module"]
     show_custom_fields_values_summary = False
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        qs = qs.annotate(objects_count=Count('baseobject'))
+        qs = qs.annotate(objects_count=Count("baseobject"))
         return qs
 
     def objects_count(self, instance):
         return instance.objects_count
-    objects_count.short_description = _('Objects count')
-    objects_count.admin_order_field = 'objects_count'
+
+    objects_count.short_description = _("Objects count")
+    objects_count.admin_order_field = "objects_count"
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
-            return self.readonly_fields + ['class_name', 'module']
+            return self.readonly_fields + ["class_name", "module"]
         return self.readonly_fields
 
 
 @register(ConfigurationModule)
 class ConfigurationModuleAdmin(CustomFieldValueAdminMixin, RalphMPTTAdmin):
-    list_display = ['name']
-    search_fields = ['name']
-    readonly_fields = [
-        'show_children_modules', 'show_children_classes'
-    ]
-    raw_id_fields = ['parent']
+    list_display = ["name"]
+    search_fields = ["name"]
+    readonly_fields = ["show_children_modules", "show_children_classes"]
+    raw_id_fields = ["parent"]
     fieldsets = (
-        (_('Basic info'), {
-            'fields': [
-                'name', 'parent', 'support_team'
-            ]
-        }),
-        (_('Relations'), {
-            'fields': [
-                'show_children_modules', 'show_children_classes'
-            ]
-        })
+        (_("Basic info"), {"fields": ["name", "parent", "support_team"]}),
+        (
+            _("Relations"),
+            {"fields": ["show_children_modules", "show_children_classes"]},
+        ),
     )
     show_custom_fields_values_summary = False
 
     @mark_safe
     def show_children_modules(self, module):
         if not module or not module.pk:
-            return '&ndash;'
+            return "&ndash;"
         return TableWithUrl(
-            module.children_modules.all(),
-            ['name'],
-            url_field='name'
+            module.children_modules.all(), ["name"], url_field="name"
         ).render()
-    show_children_modules.short_description = _('Children modules')
+
+    show_children_modules.short_description = _("Children modules")
 
     @mark_safe
     def show_children_classes(self, module):
         if not module or not module.pk:
-            return '&ndash;'
+            return "&ndash;"
         return TableWithUrl(
-            module.configuration_classes.all(),
-            ['class_name'],
-            url_field='class_name'
+            module.configuration_classes.all(), ["class_name"], url_field="class_name"
         ).render()
-    show_children_classes.short_description = _('Children classes')
+
+    show_children_classes.short_description = _("Children classes")
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
-            return self.readonly_fields + ['name', 'parent']
+            return self.readonly_fields + ["name", "parent"]
         return self.readonly_fields
 
 
 @register(ServiceEnvironment)
 class ServiceEnvironmentAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     show_custom_fields_values_summary = False
-    search_fields = ['service__name', 'environment__name']
-    list_select_related = ['service', 'environment']
-    raw_id_fields = ['service', 'environment']
+    search_fields = ["service__name", "environment__name"]
+    list_select_related = ["service", "environment"]
+    raw_id_fields = ["service", "environment"]
     resource_class = resources.ServiceEnvironmentResource
-    fields = ('service', 'environment', 'remarks', 'tags')
+    fields = ("service", "environment", "remarks", "tags")
 
 
 class ServiceEnvironmentInline(RalphTabularInline):
     model = ServiceEnvironment
-    raw_id_fields = ['environment']
-    fields = ('environment',)
+    raw_id_fields = ["environment"]
+    fields = ("environment",)
     min_num = 1
 
 
 class BaseObjectsList(ScanStatusInTableMixin, Table):
     def url(self, item):
-        return '<a href="{}">{}</a>'.format(
-            item.get_absolute_url(),
-            _('Go to object')
-        )
-    url.title = _('Link')
+        return '<a href="{}">{}</a>'.format(item.get_absolute_url(), _("Go to object"))
+
+    url.title = _("Link")
 
     def _str(self, item):
         return str(item)
-    _str.title = _('object')
+
+    _str.title = _("object")
 
 
 class ServiceBaseObjects(RalphDetailView):
-    icon = 'bookmark'
-    name = 'service_base_objects'
-    label = _('Objects')
-    url_name = 'service_base_objects'
+    icon = "bookmark"
+    name = "service_base_objects"
+    label = _("Objects")
+    url_name = "service_base_objects"
 
     def get_service_base_objects_queryset(self):
         return BaseObject.polymorphic_objects.filter(
             service_env__service=self.object
-        ).select_related(
-            'service_env__environment', 'content_type', 'securityscan'
-        )
+        ).select_related("service_env__environment", "content_type", "securityscan")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['base_objects_list'] = BaseObjectsList(
+        context["base_objects_list"] = BaseObjectsList(
             self.get_service_base_objects_queryset(),
             [
-                'id', ('content_type', _('type')),
-                ('service_env__environment', _('environment')), '_str',
-                'scan_status', 'url',
-            ]
+                "id",
+                ("content_type", _("type")),
+                ("service_env__environment", _("environment")),
+                "_str",
+                "scan_status",
+                "url",
+            ],
         )
         return context
 
     def get_object(self, model, pk):
         if pk.isdigit():
-            query = {'pk': pk}
+            query = {"pk": pk}
         else:
-            query = {'uid': pk}
+            query = {"uid": pk}
 
         return model.objects.get(**query)
 
     @classmethod
     def get_url_pattern(cls, model):
-        return r'^{}/{}/(?P<pk>[\w-]+)/{}/$'.format(
+        return r"^{}/{}/(?P<pk>[\w-]+)/{}/$".format(
             model._meta.app_label, model._meta.model_name, cls.url_name
         )
 
@@ -192,25 +181,33 @@ class ServiceBaseObjects(RalphDetailView):
 @register(ManufacturerKind)
 class ManufacturerKindAdmin(RalphAdmin):
 
-    search_fields = ['name']
+    search_fields = ["name"]
 
 
 @register(Service)
 class ServiceAdmin(RalphAdmin):
-    list_display = ['name', 'uid', 'active', 'business_segment']
-    search_fields = ['name', 'uid']
-    list_filter = [
-        'active', 'business_segment', 'profit_center', 'support_team'
-    ]
-    list_select_related = ['business_segment']
+    list_display = ["name", "uid", "active", "business_segment"]
+    search_fields = ["name", "uid"]
+    list_filter = ["active", "business_segment", "profit_center", "support_team"]
+    list_select_related = ["business_segment"]
 
     fields = (
-        'name', 'uid', 'active', 'profit_center', 'business_segment',
-        'cost_center', 'technical_owners', 'business_owners', 'support_team',
+        "name",
+        "uid",
+        "active",
+        "profit_center",
+        "business_segment",
+        "cost_center",
+        "technical_owners",
+        "business_owners",
+        "support_team",
     )
     inlines = [ServiceEnvironmentInline]
     raw_id_fields = [
-        'profit_center', 'support_team', 'business_owners', 'technical_owners'
+        "profit_center",
+        "support_team",
+        "business_owners",
+        "technical_owners",
     ]
     resource_class = resources.ServiceResource
     change_views = [ServiceBaseObjects]
@@ -219,78 +216,86 @@ class ServiceAdmin(RalphAdmin):
 @register(Manufacturer)
 class ManufacturerAdmin(RalphAdmin):
 
-    search_fields = ['name', ]
+    search_fields = [
+        "name",
+    ]
     list_filter = [
-        'manufacturer_kind',
+        "manufacturer_kind",
     ]
 
 
 @register(BudgetInfo)
 class BudgetInfoAdmin(RalphAdmin):
 
-    search_fields = ['name']
+    search_fields = ["name"]
 
 
 @register(Environment)
 class EnvironmentAdmin(RalphAdmin):
 
-    search_fields = ['name']
+    search_fields = ["name"]
 
 
 @register(BusinessSegment)
 class BusinessSegmentAdmin(RalphAdmin):
 
-    search_fields = ['name']
-    list_display = ['name', 'services_count']
+    search_fields = ["name"]
+    list_display = ["name", "services_count"]
 
     def get_queryset(self, request):
-        return BusinessSegment.objects.annotate(services_count=Count('service'))
+        return BusinessSegment.objects.annotate(services_count=Count("service"))
 
     def services_count(self, instance):
         return instance.services_count
-    services_count.short_description = _('Services count')
-    services_count.admin_order_field = 'services_count'
+
+    services_count.short_description = _("Services count")
+    services_count.admin_order_field = "services_count"
 
 
 @register(ProfitCenter)
 class ProfitCenterAdmin(RalphAdmin):
 
-    search_fields = ['name']
+    search_fields = ["name"]
 
 
 @register(AssetModel)
-class AssetModelAdmin(
-    CustomFieldValueAdminMixin,
-    RalphAdmin
-):
+class AssetModelAdmin(CustomFieldValueAdminMixin, RalphAdmin):
 
     resource_class = resources.AssetModelResource
-    list_select_related = ['manufacturer', 'category']
-    list_display = ['name', 'type', 'manufacturer', 'category', 'assets_count']
-    raw_id_fields = ['manufacturer']
-    search_fields = ['name', 'manufacturer__name']
-    list_filter = ['type', 'manufacturer', 'category']
-    ordering = ['name']
+    list_select_related = ["manufacturer", "category"]
+    list_display = ["name", "type", "manufacturer", "category", "assets_count"]
+    raw_id_fields = ["manufacturer"]
+    search_fields = ["name", "manufacturer__name"]
+    list_filter = ["type", "manufacturer", "category"]
+    ordering = ["name"]
     fields = (
-        'name', 'manufacturer', 'category', 'type', 'has_parent',
-        'cores_count', 'height_of_device', 'power_consumption',
-        'visualization_layout_front', 'visualization_layout_back'
+        "name",
+        "manufacturer",
+        "category",
+        "type",
+        "has_parent",
+        "cores_count",
+        "height_of_device",
+        "power_consumption",
+        "visualization_layout_front",
+        "visualization_layout_back",
     )
 
     def get_queryset(self, request):
-        return AssetModel.objects.annotate(assets_count=Count('assets'))
+        return AssetModel.objects.annotate(assets_count=Count("assets"))
 
     def assets_count(self, instance):
         return instance.assets_count
-    assets_count.short_description = _('Assets count')
-    assets_count.admin_order_field = 'assets_count'
+
+    assets_count.short_description = _("Assets count")
+    assets_count.admin_order_field = "assets_count"
 
 
 @register(Category)
 class CategoryAdmin(RalphMPTTAdmin):
 
-    search_fields = ['name']
-    list_display = ['name', 'code']
+    search_fields = ["name"]
+    list_display = ["name", "code"]
     resource_class = resources.CategoryResource
 
     def get_actions(self, request):
@@ -298,22 +303,22 @@ class CategoryAdmin(RalphMPTTAdmin):
 
 
 class ComponentAdminMixin(object):
-    raw_id_fields = ['base_object', 'model']
+    raw_id_fields = ["base_object", "model"]
 
 
 @register(ComponentModel)
 class ComponentModelAdmin(RalphAdmin):
-    search_fields = ['name']
+    search_fields = ["name"]
 
 
 @register(GenericComponent)
 class GenericComponentAdmin(ComponentAdminMixin, RalphAdmin):
-    search_fields = ['name']
+    search_fields = ["name"]
 
 
 @register(Ethernet)
 class EthernetAdmin(ComponentAdminMixin, RalphAdmin):
-    search_fields = ['label', 'mac']
+    search_fields = ["label", "mac"]
 
 
 @register(Disk, FibreChannelCard, Memory, Processor)
@@ -323,19 +328,19 @@ class ComponentAdmin(ComponentAdminMixin, RalphAdmin):
 
 @register(Asset)
 class AssetAdmin(RalphAdmin):
-    raw_id_fields = ['parent', 'service_env', 'model']
-    search_fields = ['hostname', 'sn', 'barcode']
+    raw_id_fields = ["parent", "service_env", "model"]
+    search_fields = ["hostname", "sn", "barcode"]
 
 
 @register(BaseObject)
 class BaseObjectAdmin(RalphAdmin):
-    list_display = ['repr']
-    raw_id_fields = ['parent', 'service_env']
-    exclude = ('content_type',)
-    list_select_related = ['content_type']
+    list_display = ["repr"]
+    raw_id_fields = ["parent", "service_env"]
+    exclude = ("content_type",)
+    list_select_related = ["content_type"]
 
     def repr(self, obj):
-        return '{}: {}'.format(obj.content_type, obj)
+        return "{}: {}".format(obj.content_type, obj)
 
     def has_add_permission(self, request):
         return False
@@ -344,4 +349,4 @@ class BaseObjectAdmin(RalphAdmin):
 @register(AssetHolder)
 class AssetHolderAdmin(RalphAdmin):
 
-    search_fields = ['name']
+    search_fields = ["name"]

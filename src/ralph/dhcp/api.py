@@ -26,6 +26,6 @@ class DNSServerGroupViewSet(RalphAPIViewSet):
     serializer_class = DNSServerGroupSerializer
 
 
-router.register(r'dns-servers', DNSServerViewSet)
-router.register(r'dns-server-group', DNSServerGroupViewSet)
+router.register(r"dns-servers", DNSServerViewSet)
+router.register(r"dns-server-group", DNSServerGroupViewSet)
 urlpatterns = []

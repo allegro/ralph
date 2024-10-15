@@ -20,10 +20,10 @@ class VulnerabilitySerializer(RalphAPISerializer):
 
 
 class VulnerabilityViewSet(RalphAPIViewSet):
-    queryset = Vulnerability.objects.all().prefetch_related('tags')
+    queryset = Vulnerability.objects.all().prefetch_related("tags")
     serializer_class = VulnerabilitySerializer
     filter_fields = [
-        'external_vulnerability_id',
+        "external_vulnerability_id",
     ]
 
 
@@ -36,7 +36,6 @@ class SecurityScanSerializer(RalphAPISerializer):
 
 
 class SaveSecurityScanSerializer(RalphAPISaveSerializer):
-
     class Meta:
         model = SecurityScan
         fields = "__all__"
@@ -46,23 +45,22 @@ class SaveSecurityScanSerializer(RalphAPISaveSerializer):
         errors = OrderedDict()
 
         # external_id to local_id
-        if 'external_vulnerabilities' in data:
-            external_ids = set(data.get('external_vulnerabilities', []))
+        if "external_vulnerabilities" in data:
+            external_ids = set(data.get("external_vulnerabilities", []))
             converted = Vulnerability.objects.filter(
-                external_vulnerability_id__in=external_ids)
+                external_vulnerability_id__in=external_ids
+            )
             if len(converted) != len(external_ids):
                 unknown = external_ids - set(
                     [str(v.external_vulnerability_id) for v in converted]
                 )
-                msg = "Unknow external_vulnerabilities: {}".format(
-                    ', '.join(unknown)
-                )
-                errors['external_vulnerability'] = msg
-            merged_vulnerabilities = data.get('vulnerabilities', [])
+                msg = "Unknow external_vulnerabilities: {}".format(", ".join(unknown))
+                errors["external_vulnerability"] = msg
+            merged_vulnerabilities = data.get("vulnerabilities", [])
             merged_vulnerabilities.extend([c.id for c in converted])
-            data['vulnerabilities'] = merged_vulnerabilities
+            data["vulnerabilities"] = merged_vulnerabilities
 
-        host_ip = data.get('host_ip', None)
+        host_ip = data.get("host_ip", None)
         if host_ip:
             base_object = None
             # try to get base object by IPAddress
@@ -73,28 +71,26 @@ class SaveSecurityScanSerializer(RalphAPISaveSerializer):
             else:
                 base_object = ip_address.base_object
             if not base_object:
-                errors['host_ip'] = "IP is not assigned to any host"
+                errors["host_ip"] = "IP is not assigned to any host"
         else:
-            errors['host_ip'] = "Host IP is required"
+            errors["host_ip"] = "Host IP is required"
 
         if errors:
             raise serializers.ValidationError(errors)
-        data['base_object'] = base_object.pk
-        data['is_patched'] = not any_exceeded(
-            Vulnerability.objects.filter(id__in=data['vulnerabilities'])
+        data["base_object"] = base_object.pk
+        data["is_patched"] = not any_exceeded(
+            Vulnerability.objects.filter(id__in=data["vulnerabilities"])
         )
         result = super().to_internal_value(data)
         return result
 
 
 class IPFilter(django_filters.FilterSet):
-    ip = django_filters.CharFilter(
-        name='base_object__ethernet_set__ipaddress__address'
-    )
+    ip = django_filters.CharFilter(name="base_object__ethernet_set__ipaddress__address")
 
     class Meta:
         model = IPAddress
-        fields = ['ip']
+        fields = ["ip"]
 
 
 class SecurityScanViewSet(RalphAPIViewSet):
@@ -107,8 +103,8 @@ class SecurityScanViewSet(RalphAPIViewSet):
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        ip = IPAddress.objects.filter(address=self.request.data.get(
-            'host_ip', None)
+        ip = IPAddress.objects.filter(
+            address=self.request.data.get("host_ip", None)
         ).first()
         if ip:
             # one scan can exist for ip (because there are linked by onetoone)
@@ -117,6 +113,6 @@ class SecurityScanViewSet(RalphAPIViewSet):
         return super().create(request, *args, **kwargs)
 
 
-router.register(r'vulnerabilities', VulnerabilityViewSet)
-router.register(r'security-scans', SecurityScanViewSet)
+router.register(r"vulnerabilities", VulnerabilityViewSet)
+router.register(r"security-scans", SecurityScanViewSet)
 urlpatterns = []

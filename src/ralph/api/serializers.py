@@ -9,33 +9,30 @@ from django.db import transaction
 from django.db.models import Q
 from django.db.models.fields import exceptions
 from rest_framework import permissions, relations, serializers
-from rest_framework.exceptions import \
-    ValidationError as RestFrameworkValidationError
+from rest_framework.exceptions import ValidationError as RestFrameworkValidationError
 from rest_framework.settings import api_settings
 from rest_framework.utils import model_meta
 from reversion import revisions as reversion
-from taggit_serializer.serializers import (
-    TaggitSerializer,
-    TagListSerializerField
-)
+from taggit_serializer.serializers import TaggitSerializer, TagListSerializerField
 
 from ralph.api.fields import AbsoluteUrlField, ReversedChoiceField
 from ralph.api.relations import RalphHyperlinkedRelatedField, RalphRelatedField
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TaggableMixin
 from ralph.lib.permissions.api import (
     PermissionsPerFieldSerializerMixin,
-    RelatedObjectsPermissionsSerializerMixin
+    RelatedObjectsPermissionsSerializerMixin,
 )
 
 logger = logging.getLogger(__name__)
 
-NESTED_SERIALIZER_FIELDS_BLACKLIST = ['content_type', 'password']
+NESTED_SERIALIZER_FIELDS_BLACKLIST = ["content_type", "password"]
 
 
 class AdditionalLookupRelatedField(serializers.PrimaryKeyRelatedField):
     """
     Allows to lookup related field (foreign key) by fields other than pk.
     """
+
     def __init__(self, lookup_fields, *args, **kwargs):
         self.lookup_fields = lookup_fields
         super().__init__(*args, **kwargs)
@@ -51,9 +48,9 @@ class AdditionalLookupRelatedField(serializers.PrimaryKeyRelatedField):
         try:
             return self.get_queryset().get(reduce(operator.or_, query))
         except ObjectDoesNotExist:
-            self.fail('does_not_exist', pk_value=data)
+            self.fail("does_not_exist", pk_value=data)
         except (TypeError, ValueError):
-            self.fail('incorrect_type', data_type=type(data).__name__)
+            self.fail("incorrect_type", data_type=type(data).__name__)
 
 
 class DeclaredFieldsMetaclass(serializers.SerializerMetaclass):
@@ -63,24 +60,25 @@ class DeclaredFieldsMetaclass(serializers.SerializerMetaclass):
     When serializer's model inherits from
     `ralph.lib.mixins.models.TaggableMixin`, tags field is attached.
     """
+
     def __new__(cls, name, bases, attrs):
-        meta = attrs.get('Meta')
-        model = getattr(meta, 'model', None)
-        fields = getattr(meta, 'fields', None)
+        meta = attrs.get("Meta")
+        model = getattr(meta, "model", None)
+        fields = getattr(meta, "fields", None)
         if (
-            model and
-            issubclass(model, TaggableMixin) and
-            not getattr(attrs.get('Meta'), '_skip_tags_field', False)
+            model
+            and issubclass(model, TaggableMixin)
+            and not getattr(attrs.get("Meta"), "_skip_tags_field", False)
         ):
-            attrs['tags'] = TagListSerializerField(required=False)
-            attrs['prefetch_related'] = (
-                list(attrs.get('prefetch_related', [])) + ['tags']
-            )
+            attrs["tags"] = TagListSerializerField(required=False)
+            attrs["prefetch_related"] = list(attrs.get("prefetch_related", [])) + [
+                "tags"
+            ]
 
         if model and issubclass(model, AdminAbsoluteUrlMixin):
-            attrs['ui_url'] = AbsoluteUrlField()
+            attrs["ui_url"] = AbsoluteUrlField()
             if fields and isinstance(fields, (list, tuple)):
-                meta.fields += ('ui_url',)
+                meta.fields += ("ui_url",)
         return super().__new__(cls, name, bases, attrs)
 
 
@@ -88,7 +86,7 @@ class RalphAPISerializerMixin(
     TaggitSerializer,
     RelatedObjectsPermissionsSerializerMixin,
     PermissionsPerFieldSerializerMixin,
-    metaclass=DeclaredFieldsMetaclass  # noqa
+    metaclass=DeclaredFieldsMetaclass,  # noqa
 ):
     """
     Mix used in Ralph API serializers features:
@@ -99,6 +97,7 @@ class RalphAPISerializerMixin(
         * use `ReversedChoiceField` as default serializer for choice field
         * request and user object easily accessible in each related serializer
     """
+
     # This switch disable `url` fields in serializers
     # Ralph uses serializers mainly with http requests, but occasionally we
     # need to use Ralph serializers with django signals (if so there is no
@@ -113,7 +112,10 @@ class RalphAPISerializerMixin(
         (contains url to related object). When it's not safe request (ex. POST),
         serializer expect to pass only PK for related object.
         """
-        if self.context.get('request') and self.context['request'].method in permissions.SAFE_METHODS:  # noqa
+        if (
+            self.context.get("request")
+            and self.context["request"].method in permissions.SAFE_METHODS
+        ):  # noqa
             return RalphHyperlinkedRelatedField
         return RalphRelatedField
 
@@ -126,9 +128,8 @@ class RalphAPISerializerMixin(
         included in `rest_framework.serializers.HyperlinkedModelSerializer`
         by default).
         """
-        return (
-            [model_info.pk.name] +
-            super().get_default_field_names(declared_fields, model_info)
+        return [model_info.pk.name] + super().get_default_field_names(
+            declared_fields, model_info
         )
 
     def get_fields(self, *args, **kwargs):
@@ -137,9 +138,9 @@ class RalphAPISerializerMixin(
         """
         fields = super().get_fields(*args, **kwargs)
         if (
-            self.skip_url_when_no_request and
-            not self.context.get('request') and
-            api_settings.URL_FIELD_NAME in fields
+            self.skip_url_when_no_request
+            and not self.context.get("request")
+            and api_settings.URL_FIELD_NAME in fields
         ):
             del fields[api_settings.URL_FIELD_NAME]
 
@@ -157,8 +158,8 @@ class RalphAPISerializerMixin(
             field_name, info, model_class, nested_depth
         )
         if issubclass(field_class, serializers.BaseSerializer):
-            field_kwargs.setdefault('context', {})['request'] = (
-                self.context.get('request')
+            field_kwargs.setdefault("context", {})["request"] = self.context.get(
+                "request"
             )
         return field_class, field_kwargs
 
@@ -166,6 +167,7 @@ class RalphAPISerializerMixin(
         """
         Nested serializer is inheriting from `RalphAPISerializer`.
         """
+
         class NestedMeta:
             model = relation_info.related_model
             depth = nested_depth - 1
@@ -203,8 +205,8 @@ class ReversionHistoryAPISerializerMixin(serializers.ModelSerializer):
     def save(self):
         if self._save_history:
             with transaction.atomic(), reversion.create_revision():
-                reversion.set_comment('API Save')
-                reversion.set_user(self.context['request'].user)
+                reversion.set_comment("API Save")
+                reversion.set_user(self.context["request"].user)
                 return super().save()
         else:
             return super().save()
@@ -213,7 +215,7 @@ class ReversionHistoryAPISerializerMixin(serializers.ModelSerializer):
 class RalphAPISaveSerializer(
     TaggitSerializer,
     ReversionHistoryAPISerializerMixin,
-    metaclass=DeclaredFieldsMetaclass
+    metaclass=DeclaredFieldsMetaclass,
 ):
     serializer_choice_field = ReversedChoiceField
     serializer_related_field = relations.PrimaryKeyRelatedField
@@ -231,7 +233,7 @@ class RalphAPISaveSerializer(
         # TODO: autocomplete field
         # http://www.django-rest-framework.org/topics/browsable-api/#customizing
         if issubclass(field_class, relations.RelatedField):
-            field_kwargs.setdefault('style', {})['base_template'] = 'input.html'
+            field_kwargs.setdefault("style", {})["base_template"] = "input.html"
         return field_class, field_kwargs
 
     def _validate_model_clean(self, attrs):
@@ -266,12 +268,12 @@ class RalphAPISaveSerializer(
         # ValidationError to display errors per field
         # (the standard behaviour of DRF is to dump all Django
         # ValidationErrors into "non_field_errors" result field)
-        if hasattr(exc, 'error_dict'):
+        if hasattr(exc, "error_dict"):
             return RestFrameworkValidationError(detail=dict(list(exc)))
         else:
-            return RestFrameworkValidationError(detail=dict([
-                (NON_FIELD_ERRORS, [value]) for value in exc
-            ]))
+            return RestFrameworkValidationError(
+                detail=dict([(NON_FIELD_ERRORS, [value]) for value in exc])
+            )
 
     def _extra_instance_validation(self, instance):
         pass
@@ -288,12 +290,11 @@ serializers_registry = {}
 
 class RalphAPISerializerMetaclass(DeclaredFieldsMetaclass):
     def __new__(cls, name, bases, attrs):
-        attrs['_serializers_registry'] = serializers_registry
+        attrs["_serializers_registry"] = serializers_registry
         new_cls = super().__new__(cls, name, bases, attrs)
-        meta = getattr(new_cls, 'Meta', None)
-        if (
-            getattr(meta, 'model', None) and
-            not getattr(meta, 'exclude_from_registry', False)
+        meta = getattr(new_cls, "Meta", None)
+        if getattr(meta, "model", None) and not getattr(
+            meta, "exclude_from_registry", False
         ):
             serializers_registry[meta.model] = new_cls
         return new_cls
@@ -302,6 +303,6 @@ class RalphAPISerializerMetaclass(DeclaredFieldsMetaclass):
 class RalphAPISerializer(
     RalphAPISerializerMixin,
     serializers.HyperlinkedModelSerializer,
-    metaclass=RalphAPISerializerMetaclass
+    metaclass=RalphAPISerializerMetaclass,
 ):
     pass

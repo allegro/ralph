@@ -10,7 +10,7 @@ from ralph.assets.models.components import Ethernet
 from ralph.lib.field_validation.form_fields import CharFormFieldWithAutoStrip
 from ralph.networks.models import IPAddress
 
-DHCP_EXPOSE_LOCKED_FIELDS = ['hostname', 'address', 'mac', 'dhcp_expose']
+DHCP_EXPOSE_LOCKED_FIELDS = ["hostname", "address", "mac", "dhcp_expose"]
 
 
 def validate_is_management(forms):
@@ -20,18 +20,14 @@ def validate_is_management(forms):
     is_management = []
     for form in forms:
         cleaned_data = form.cleaned_data
-        if (
-            cleaned_data and
-            not cleaned_data.get('DELETE', False)
-        ):
-            is_management.append(cleaned_data.get('is_management'))
+        if cleaned_data and not cleaned_data.get("DELETE", False):
+            is_management.append(cleaned_data.get("is_management"))
 
     count_management_ip = is_management.count(True)
     if is_management and count_management_ip > 1:
-        raise ValidationError((
-            'Only one management IP address can be assigned '
-            'to this asset'
-        ))
+        raise ValidationError(
+            ("Only one management IP address can be assigned " "to this asset")
+        )
 
 
 class EthernetLockDeleteForm(forms.ModelForm):
@@ -39,7 +35,7 @@ class EthernetLockDeleteForm(forms.ModelForm):
 
     class Meta:
         model = Ethernet
-        fields = ['mac', 'model_name', 'label', 'speed']
+        fields = ["mac", "model_name", "label", "speed"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -61,8 +57,8 @@ class EthernetLockDeleteForm(forms.ModelForm):
                     pass
                 else:
                     if isinstance(field, forms.BooleanField):
-                        field.widget.attrs['disabled'] = True
-                    field.widget.attrs['readonly'] = True
+                        field.widget.attrs["disabled"] = True
+                    field.widget.attrs["readonly"] = True
 
     @property
     def _dhcp_expose_should_lock_fields(self):
@@ -70,11 +66,11 @@ class EthernetLockDeleteForm(forms.ModelForm):
         Return True if row should be locked for changes if it's exposed in DHCP.
         """
         return (
-            settings.DHCP_ENTRY_FORBID_CHANGE and
-            self.instance and
-            self.instance.pk and
-            self.ip and
-            self.ip.dhcp_expose
+            settings.DHCP_ENTRY_FORBID_CHANGE
+            and self.instance
+            and self.instance.pk
+            and self.ip
+            and self.ip.dhcp_expose
         )
 
 
@@ -98,19 +94,20 @@ class SimpleNetworkForm(EthernetLockDeleteForm):
         transition changing `dhcp_expose` field (to False) - then row could be
         modified/deleted.
     """
-    hostname = CharFormFieldWithAutoStrip(label='Hostname', required=False)
+
+    hostname = CharFormFieldWithAutoStrip(label="Hostname", required=False)
     address = forms.GenericIPAddressField(
-        label='IP address',
-        required=False,
-        protocol='IPv4'
+        label="IP address", required=False, protocol="IPv4"
     )
 
-    ip_fields = ['hostname', 'address']
+    ip_fields = ["hostname", "address"]
 
     class Meta:
         model = Ethernet
         fields = [
-            'hostname', 'address', 'mac',
+            "hostname",
+            "address",
+            "mac",
         ]
 
     def _validate_ip_uniquness(self, address):
@@ -122,25 +119,25 @@ class SimpleNetworkForm(EthernetLockDeleteForm):
             qs = qs.exclude(pk=self.ip.pk)
         if qs.exists():
             raise ValidationError(
-                _('Address %(ip)s already exist.'),
-                params={'ip': address},
+                _("Address %(ip)s already exist."),
+                params={"ip": address},
             )
 
     def _validate_hostame_uniqueness_in_dc(self):
-            address = self.cleaned_data['address']
-            new_hostname = self.cleaned_data['hostname']
-            if not self.ip or self.ip.address != address:
-                ip = IPAddress(address=address, hostname=new_hostname)
-            else:
-                ip = self.ip
-            ip.validate_hostname_uniqueness_in_dc(new_hostname)
+        address = self.cleaned_data["address"]
+        new_hostname = self.cleaned_data["hostname"]
+        if not self.ip or self.ip.address != address:
+            ip = IPAddress(address=address, hostname=new_hostname)
+        else:
+            ip = self.ip
+        ip.validate_hostname_uniqueness_in_dc(new_hostname)
 
     def clean_address(self):
         if self._dhcp_expose_should_lock_fields:
             # if address is locked, just return current address
             address = self.ip.address
         else:
-            address = self.cleaned_data['address']
+            address = self.cleaned_data["address"]
             self._validate_ip_uniquness(address)
         return address
 
@@ -148,13 +145,13 @@ class SimpleNetworkForm(EthernetLockDeleteForm):
         if self._dhcp_expose_should_lock_fields:
             # if mac is locked, just return current mac
             return self.instance.mac
-        return self.cleaned_data['mac']
+        return self.cleaned_data["mac"]
 
     def clean_hostname(self):
         if self._dhcp_expose_should_lock_fields:
             # if mac is locked, just return current hostname
             return self.ip.hostname
-        return self.cleaned_data['hostname']
+        return self.cleaned_data["hostname"]
 
     def clean_dhcp_expose(self):
         """
@@ -164,19 +161,19 @@ class SimpleNetworkForm(EthernetLockDeleteForm):
         if self._dhcp_expose_should_lock_fields:
             # if dhcp expose is locked, just return current address
             return self.ip.dhcp_expose
-        dhcp_expose = self.cleaned_data['dhcp_expose']
+        dhcp_expose = self.cleaned_data["dhcp_expose"]
         if dhcp_expose:
-            if not self.cleaned_data.get('address'):
+            if not self.cleaned_data.get("address"):
                 raise ValidationError(
-                    _('Cannot expose in DHCP without IP address'),
+                    _("Cannot expose in DHCP without IP address"),
                 )
-            if not self.cleaned_data.get('hostname'):
+            if not self.cleaned_data.get("hostname"):
                 raise ValidationError(
-                    _('Cannot expose in DHCP without hostname'),
+                    _("Cannot expose in DHCP without hostname"),
                 )
-            if not self.cleaned_data.get('mac'):
+            if not self.cleaned_data.get("mac"):
                 raise ValidationError(
-                    _('Cannot expose in DHCP without MAC address'),
+                    _("Cannot expose in DHCP without MAC address"),
                 )
             self._validate_hostame_uniqueness_in_dc()
         return dhcp_expose
@@ -185,25 +182,23 @@ class SimpleNetworkForm(EthernetLockDeleteForm):
         """
         Validate if any of mac and address are filled.
         """
-        fields = ['mac', 'address']
+        fields = ["mac", "address"]
         if not any([self.cleaned_data.get(field) for field in fields]):
-            raise ValidationError(_('At least one of {} is required'.format(
-                ', '.join(fields)
-            )))
+            raise ValidationError(
+                _("At least one of {} is required".format(", ".join(fields)))
+            )
 
     def _validate_ip_fields(self):
         """
         If adddress is not filled and any other ip field is filled, raise error.
         """
-        ip_fields_without_address = [
-            f for f in self.ip_fields if f != 'address'
-        ]
-        if not self.cleaned_data.get('address') and any([
-            self.cleaned_data.get(f) for f in ip_fields_without_address
-        ]):
+        ip_fields_without_address = [f for f in self.ip_fields if f != "address"]
+        if not self.cleaned_data.get("address") and any(
+            [self.cleaned_data.get(f) for f in ip_fields_without_address]
+        ):
             raise ValidationError(
-                'Address is required when one of {} is filled'.format(
-                    ', '.join(ip_fields_without_address)
+                "Address is required when one of {} is filled".format(
+                    ", ".join(ip_fields_without_address)
                 )
             )
 
@@ -222,29 +217,26 @@ class SimpleNetworkForm(EthernetLockDeleteForm):
         if self.ip:
             self.ip.__dict__.update(ip_values)
             self.ip.save()
-        elif ip_values['address']:
+        elif ip_values["address"]:
             # save IP only if there is address passed in the form
             IPAddress.objects.create(ethernet=obj, **ip_values)
         return obj
 
 
 class SimpleNetworkWithManagementIPForm(SimpleNetworkForm):
-    is_management = forms.BooleanField(label='Is management', required=False)
+    is_management = forms.BooleanField(label="Is management", required=False)
 
-    ip_fields = ['hostname', 'address', 'is_management']
+    ip_fields = ["hostname", "address", "is_management"]
 
 
 class NetworkForm(SimpleNetworkWithManagementIPForm):
-    dhcp_expose = forms.BooleanField(label=_('Expose in DHCP'), required=False)
+    dhcp_expose = forms.BooleanField(label=_("Expose in DHCP"), required=False)
 
-    ip_fields = ['hostname', 'address', 'is_management', 'dhcp_expose']
+    ip_fields = ["hostname", "address", "is_management", "dhcp_expose"]
 
     class Meta:
         model = Ethernet
-        fields = [
-            'hostname', 'address', 'mac', 'is_management', 'label',
-            'dhcp_expose'
-        ]
+        fields = ["hostname", "address", "mac", "is_management", "label", "dhcp_expose"]
 
 
 class NetworkInlineFormset(BaseInlineFormSet):
@@ -254,7 +246,7 @@ class NetworkInlineFormset(BaseInlineFormSet):
             # many other places in Django code depends on DELETE field
             # so instead of deleting it here, we're just hiding it and validate
             # if it's not used
-            form.fields[DELETION_FIELD_NAME].widget.attrs['hidden'] = True
+            form.fields[DELETION_FIELD_NAME].widget.attrs["hidden"] = True
 
     def clean(self):
         result = super().clean()
@@ -267,14 +259,9 @@ class NetworkInlineFormset(BaseInlineFormSet):
         Forbid deletion of rows with 'dhcp_entry' enabled.
         """
         for form in self.forms:
-            if not hasattr(form, 'cleaned_data'):
+            if not hasattr(form, "cleaned_data"):
                 continue
 
             data = form.cleaned_data
-            if (
-                data.get('DELETE') and
-                form._dhcp_expose_should_lock_fields
-            ):
-                raise ValidationError(
-                    "Cannot delete entry if its exposed in DHCP"
-                )
+            if data.get("DELETE") and form._dhcp_expose_should_lock_fields:
+                raise ValidationError("Cannot delete entry if its exposed in DHCP")

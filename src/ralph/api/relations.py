@@ -8,7 +8,6 @@ class RalphRelatedField(QuerysetRelatedMixin, relations.PrimaryKeyRelatedField):
 
 
 class RalphHyperlinkedRelatedField(
-    QuerysetRelatedMixin,
-    relations.HyperlinkedRelatedField
+    QuerysetRelatedMixin, relations.HyperlinkedRelatedField
 ):
     pass

@@ -7,7 +7,6 @@ from ralph.domains.models.domains import DomainProviderAdditionalServices
 
 
 class DomainProviderAdditionalServicesSerializer(RalphAPISerializer):
-
     class Meta:
         model = DomainProviderAdditionalServices
         fields = "__all__"
@@ -32,12 +31,19 @@ class DomainViewSet(RalphAPIViewSet):
     queryset = Domain.objects.all()
     serializer_class = DomainSerializer
     select_related = [
-        'service_env__service', 'service_env__environment', 'business_segment',
-        'business_owner', 'technical_owner', 'domain_holder'
+        "service_env__service",
+        "service_env__environment",
+        "business_segment",
+        "business_owner",
+        "technical_owner",
+        "domain_holder",
     ]
     prefetch_related = [
-        'tags', 'custom_fields', 'content_type',
-        'additional_services', 'licences__baseobjectlicence_set'
+        "tags",
+        "custom_fields",
+        "content_type",
+        "additional_services",
+        "licences__baseobjectlicence_set",
     ]
 
 
@@ -63,11 +69,10 @@ class DomainCategoryViewSet(RalphAPIViewSet):
     serializer_class = DomainCategorySerializer
 
 
-router.register(r'domains', DomainViewSet)
+router.register(r"domains", DomainViewSet)
 router.register(
-    r'domain-provider-additional-services',
-    DomainProviderAdditionalServicesViewSet
+    r"domain-provider-additional-services", DomainProviderAdditionalServicesViewSet
 )
-router.register(r'dns-provider', DNSProviderViewSet)
-router.register(r'domain-category', DomainCategoryViewSet)
+router.register(r"dns-provider", DNSProviderViewSet)
+router.register(r"domain-category", DomainCategoryViewSet)
 urlpatterns = []

@@ -9,7 +9,6 @@ from ralph.operations.models import Operation, OperationStatus, OperationType
 
 
 class OperationTypeSerializer(RalphAPISerializer):
-
     class Meta:
         model = OperationType
         depth = 1
@@ -17,7 +16,6 @@ class OperationTypeSerializer(RalphAPISerializer):
 
 
 class OperationStatusSerializer(RalphAPISerializer):
-
     class Meta:
         model = OperationStatus
         depth = 1
@@ -28,26 +26,26 @@ class OperationSerializer(RalphAPISerializer):
     type = SlugRelatedField(
         many=False,
         read_only=False,
-        slug_field='name',
-        queryset=OperationType.objects.all()
+        slug_field="name",
+        queryset=OperationType.objects.all(),
     )
     assignee = SlugRelatedField(
         many=False,
         read_only=False,
-        slug_field='username',
-        queryset=RalphUser.objects.all()
+        slug_field="username",
+        queryset=RalphUser.objects.all(),
     )
     reporter = SlugRelatedField(
         many=False,
         read_only=False,
-        slug_field='username',
-        queryset=RalphUser.objects.all()
+        slug_field="username",
+        queryset=RalphUser.objects.all(),
     )
     status = SlugRelatedField(
         many=False,
         read_only=False,
-        slug_field='name',
-        queryset=OperationStatus.objects.all()
+        slug_field="name",
+        queryset=OperationStatus.objects.all(),
     )
 
     class Meta:
@@ -60,18 +58,26 @@ class OperationViewSet(RalphAPIViewSet):
     renderer_classes = renderer_classes_without_form(RalphAPIViewSet.renderer_classes)
     queryset = Operation.objects.all().prefetch_related(
         Prefetch(
-            lookup='base_objects',
-            queryset=BaseObject.objects.select_related('parent')
+            lookup="base_objects", queryset=BaseObject.objects.select_related("parent")
         )
     )
     serializer_class = OperationSerializer
     save_serializer_class = OperationSerializer
-    select_related = ['type', 'assignee', 'reporter', 'status']
+    select_related = ["type", "assignee", "reporter", "status"]
     prefetch_related = ["tags", "base_objects__tags"]
     filter_fields = [
-        'id', 'title', 'description', 'status', 'status', 'ticket_id',
-        'created_date', 'update_date', 'resolved_date', 'type',
-        'assignee', 'reporter'
+        "id",
+        "title",
+        "description",
+        "status",
+        "status",
+        "ticket_id",
+        "created_date",
+        "update_date",
+        "resolved_date",
+        "type",
+        "assignee",
+        "reporter",
     ]
 
 
@@ -85,7 +91,7 @@ class OperationStatusViewSet(RalphAPIViewSet):
     serializer_class = OperationStatusSerializer
 
 
-router.register(r'operation', OperationViewSet)
-router.register(r'operationtype', OperationTypeViewSet)
-router.register(r'operationstatus', OperationStatusViewSet)
+router.register(r"operation", OperationViewSet)
+router.register(r"operationtype", OperationTypeViewSet)
+router.register(r"operationstatus", OperationStatusViewSet)
 urlpatterns = []

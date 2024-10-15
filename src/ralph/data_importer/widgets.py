@@ -24,19 +24,11 @@ def get_imported_obj(model, old_pk):
     """
     content_type = ContentType.objects.get_for_model(model)
     imported_obj = ImportedObjects.objects.filter(
-        content_type=content_type,
-        old_object_pk=str(old_pk)
+        content_type=content_type, old_object_pk=str(old_pk)
     ).first()
     if not imported_obj:
-        msg = (
-            "Record with pk %s not found for model %s of '%s'"
-        )
-        logger.warning(
-            msg,
-            str(old_pk),
-            model._meta.model_name,
-            content_type
-        )
+        msg = "Record with pk %s not found for model %s of '%s'"
+        logger.warning(msg, str(old_pk), model._meta.model_name, content_type)
     return content_type, imported_obj
 
 
@@ -51,15 +43,13 @@ class UserWidget(widgets.ForeignKeyWidget):
                 username=value,
             )
             if created:
-                logger.warning(
-                    'User not found: %s create a new.', value
-                )
+                logger.warning("User not found: %s create a new.", value)
         return result
 
     def render(self, value, obj=None):
         if value:
             return value.username
-        return ''
+        return ""
 
 
 class UserManyToManyWidget(widgets.ManyToManyWidget):
@@ -81,6 +71,7 @@ class ManyToManyThroughWidget(widgets.ManyToManyWidget):
     Widget for many-to-many relations with through table. This widget accept
     or return list of related models PKs (other-end of through table).
     """
+
     def __init__(self, through_field, related_model, *args, **kwargs):
         """
         Args:
@@ -97,9 +88,7 @@ class ManyToManyThroughWidget(widgets.ManyToManyWidget):
     def clean(self, value, *args, **kwargs):
         if not value:
             return self.related_model.objects.none()
-        return self.related_model.objects.filter(
-            pk__in=value.split(self.separator)
-        )
+        return self.related_model.objects.filter(pk__in=value.split(self.separator))
 
     def render(self, value, obj=None):
         return self.separator.join(
@@ -113,7 +102,6 @@ class ExportForeignKeyStrWidget(widgets.Widget):
 
 
 class ExportManyToManyStrWidget(widgets.ManyToManyWidget):
-
     def render(self, value, obj=None):
         return self.separator.join([str(obj) for obj in value.all()])
 
@@ -123,6 +111,7 @@ class ExportManyToManyStrTroughWidget(ManyToManyThroughWidget):
     Exporter-equivalent of `ManyToManyThroughWidget` - return str of whole
     object instead of pk.
     """
+
     def render(self, value, obj=None):
         return self.separator.join(
             [str(getattr(obj, self.through_field)) for obj in value.all()]
@@ -143,19 +132,14 @@ class BaseObjectManyToManyWidget(widgets.ManyToManyWidget):
             # TODO: more types
         )
         imported_obj_ids = ImportedObjects.objects.filter(
-            content_type__in=content_types.values(),
-            old_object_pk__in=ids
-        ).values_list('object_pk', 'content_type')
+            content_type__in=content_types.values(), old_object_pk__in=ids
+        ).values_list("object_pk", "content_type")
         base_object_ids = []
         for model, content_type in content_types.items():
-            model_ids = [
-                i[0] for i in imported_obj_ids if i[1] == content_type.pk
-            ]
+            model_ids = [i[0] for i in imported_obj_ids if i[1] == content_type.pk]
             base_object_ids.extend(
-                model.objects.filter(
-                    pk__in=model_ids,
-                ).values_list(
-                    'baseobject_ptr',
+                model.objects.filter(pk__in=model_ids,).values_list(
+                    "baseobject_ptr",
                     flat=True,
                 )
             )
@@ -171,7 +155,7 @@ class BaseObjectWidget(widgets.ForeignKeyWidget):
             return None
         result = None
         asset_type, asset_id = value.split("|")  # dc/bo, pk
-        models = {'bo': BackOfficeAsset, 'dc': DataCenterAsset}
+        models = {"bo": BackOfficeAsset, "dc": DataCenterAsset}
         model = models.get(asset_type.lower())
         if not model:
             return None
@@ -179,9 +163,7 @@ class BaseObjectWidget(widgets.ForeignKeyWidget):
         content_type, imported_obj = get_imported_obj(model, asset_id)
 
         if imported_obj:
-            result = model.objects.filter(
-                pk=imported_obj.object_pk
-            ).first()
+            result = model.objects.filter(pk=imported_obj.object_pk).first()
 
         if result:
             return result.baseobject_ptr
@@ -195,9 +177,7 @@ class ImportedForeignKeyWidget(widgets.ForeignKeyWidget):
     def clean(self, value, *args, **kwargs):
         if settings.MAP_IMPORTED_ID_TO_NEW_ID:
             if value:
-                content_type, imported_obj = get_imported_obj(
-                    self.model, value
-                )
+                content_type, imported_obj = get_imported_obj(self.model, value)
                 if imported_obj:
                     value = imported_obj.object_pk
         return super().clean(value)
@@ -224,8 +204,7 @@ class AssetServiceEnvWidget(widgets.ForeignKeyWidget):
             else:
                 service, enviroment = value.split("|")
                 value = ServiceEnvironment.objects.get(
-                    service__name=service,
-                    environment__name=enviroment
+                    service__name=service, environment__name=enviroment
                 )
         except (ValueError, ServiceEnvironment.DoesNotExist):
             value = None
@@ -234,14 +213,10 @@ class AssetServiceEnvWidget(widgets.ForeignKeyWidget):
     def render(self, value, obj=None):
         if value is None:
             return ""
-        return "{}|{}".format(
-            value.service.name,
-            value.environment.name
-        )
+        return "{}|{}".format(value.service.name, value.environment.name)
 
 
 class AssetServiceUidWidget(widgets.ForeignKeyWidget):
-
     def clean(self, value, *args, **kwargs):
         if not value:
             return None
@@ -251,8 +226,7 @@ class AssetServiceUidWidget(widgets.ForeignKeyWidget):
             else:
                 service, enviroment = value.split("|")
                 value = ServiceEnvironment.objects.get(
-                    service__name=service,
-                    environment__name=enviroment
+                    service__name=service, environment__name=enviroment
                 )
         except (ValueError, ServiceEnvironment.DoesNotExist):
             value = None
@@ -276,24 +250,24 @@ class IPManagementWidget(widgets.ManyToManyWidget):
     ip. This because management ip is seperate model which can't be created
     wihtout DataCenterAsset (and DataCenterAsset is the result of importing).
     """
+
     def clean(self, value, *args, **kwargs):
         return value
 
     def render(self, value, obj=None):
-        return value or ''
+        return value or ""
 
 
 class BaseObjectServiceNamesM2MWidget(widgets.ManyToManyWidget):
     def render(self, value, obj=None):
-        return self.separator.join([
-            bo.service.name if bo.service else '-'
-            for bo in value.all()
-        ])
+        return self.separator.join(
+            [bo.service.name if bo.service else "-" for bo in value.all()]
+        )
 
 
 class PriceAmountWidget(widgets.Widget):
     def render(self, value, obj=None):
-        return '{0:.2f}'.format(value.amount)
+        return "{0:.2f}".format(value.amount)
 
 
 class PriceCurrencyWidget(widgets.Widget):

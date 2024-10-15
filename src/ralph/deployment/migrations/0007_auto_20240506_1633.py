@@ -9,26 +9,26 @@ import django.db.models.manager
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('deployment', '0006_auto_20211019_1456'),
+        ("deployment", "0006_auto_20211019_1456"),
     ]
 
     operations = [
         migrations.AlterModelManagers(
-            name='prebootconfiguration',
+            name="prebootconfiguration",
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ("polymorphic_objects", django.db.models.manager.Manager()),
             ],
         ),
         migrations.AlterModelManagers(
-            name='prebootfile',
+            name="prebootfile",
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ("polymorphic_objects", django.db.models.manager.Manager()),
             ],
         ),
         migrations.AlterModelManagers(
-            name='prebootitem',
+            name="prebootitem",
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ("polymorphic_objects", django.db.models.manager.Manager()),
             ],
         ),
     ]

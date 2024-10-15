@@ -35,7 +35,7 @@ class AttachmentManager(models.Manager):
         attachment.uploaded_by = uploaded_by
         filename = os.path.basename(file_path)
         attachment.original_filename = filename
-        with open(file_path, 'rb') as f:
+        with open(file_path, "rb") as f:
             content = ContentFile(f.read())
             attachment.file.save(filename, content, save=True)
         return attachment
@@ -52,9 +52,13 @@ class AttachmentItemManager(models.Manager):
         [<AttachmentItem: image/png data center asset: 2>]
         """
         content_type = get_content_type_for_model(obj)
-        return self.get_queryset().select_related('attachment').filter(
-            object_id=obj.pk,
-            content_type=content_type,
+        return (
+            self.get_queryset()
+            .select_related("attachment")
+            .filter(
+                object_id=obj.pk,
+                content_type=content_type,
+            )
         )
 
     def attach(self, pk, content_type, attachments):
@@ -63,11 +67,13 @@ class AttachmentItemManager(models.Manager):
         """
         new_items = []
         for attachment in attachments:
-            new_items.append(self.model(
-                content_type=content_type,
-                object_id=pk,
-                attachment=attachment,
-            ))
+            new_items.append(
+                self.model(
+                    content_type=content_type,
+                    object_id=pk,
+                    attachment=attachment,
+                )
+            )
         if new_items:
             self.bulk_create(new_items)
 
@@ -103,6 +109,7 @@ class Attachment(TimeStampMixin, models.Model):
         * description - e.g., description of file's content or some comment,
         * uploaded_by - the user who added attachment.
     """
+
     md5 = models.CharField(max_length=32, unique=True)
     original_filename = models.CharField(
         max_length=255,
@@ -112,7 +119,7 @@ class Attachment(TimeStampMixin, models.Model):
     mime_type = models.CharField(
         max_length=100,
         unique=False,
-        default='application/octet-stream',
+        default="application/octet-stream",
     )
     description = models.TextField(blank=True)
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -120,7 +127,7 @@ class Attachment(TimeStampMixin, models.Model):
     objects = AttachmentManager()
 
     def __str__(self):
-        return '{} ({}) uploaded by {}'.format(
+        return "{} ({}) uploaded by {}".format(
             self.original_filename, self.mime_type, self.uploaded_by
         )
 
@@ -157,8 +164,8 @@ class Attachment(TimeStampMixin, models.Model):
         >>> Attachment._safe_filename('injection.txt?q=alert("Ha!")')
         'injection.txtqalert(Ha)''
         """
-        allowed = '-_.() ' + string.ascii_letters + string.digits
-        return ''.join(filter(lambda x: x in allowed, unidecode(filename)))
+        allowed = "-_.() " + string.ascii_letters + string.digits
+        return "".join(filter(lambda x: x in allowed, unidecode(filename)))
 
 
 class AttachmentItem(models.Model):
@@ -166,14 +173,17 @@ class AttachmentItem(models.Model):
     This model is bridge between attachment and content type - with this
     model we can add one attachment and link with many content types.
     """
-    attachment = models.ForeignKey(Attachment, related_name='items', on_delete=models.CASCADE)
+
+    attachment = models.ForeignKey(
+        Attachment, related_name="items", on_delete=models.CASCADE
+    )
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
-    content_object = fields.GenericForeignKey('content_type', 'object_id')
+    content_object = fields.GenericForeignKey("content_type", "object_id")
 
     objects = AttachmentItemManager()
 
     def __str__(self):
-        return '{} {}: {}'.format(
+        return "{} {}: {}".format(
             self.attachment.mime_type, self.content_type, self.object_id
         )

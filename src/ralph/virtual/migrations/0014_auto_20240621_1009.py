@@ -9,14 +9,14 @@ import django.db.models.manager
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('virtual', '0013_auto_20190625_1239'),
+        ("virtual", "0013_auto_20190625_1239"),
     ]
 
     operations = [
         migrations.AlterModelManagers(
-            name='cloudflavor',
+            name="cloudflavor",
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ("polymorphic_objects", django.db.models.manager.Manager()),
             ],
         ),
     ]

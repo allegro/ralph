@@ -11,7 +11,7 @@ from ralph.assets.models.assets import (
     ManufacturerKind,
     ProfitCenter,
     Service,
-    ServiceEnvironment
+    ServiceEnvironment,
 )
 from ralph.assets.models.base import BaseObject
 from ralph.assets.models.choices import (
@@ -19,7 +19,7 @@ from ralph.assets.models.choices import (
     AssetSource,
     ComponentType,
     ModelVisualizationLayout,
-    ObjectModelType
+    ObjectModelType,
 )
 from ralph.assets.models.components import (
     ComponentModel,
@@ -29,41 +29,38 @@ from ralph.assets.models.components import (
     Ethernet,
     Memory,
     FibreChannelCard,
-    Processor
+    Processor,
 )
-from ralph.assets.models.configuration import (
-    ConfigurationClass,
-    ConfigurationModule
-)
+from ralph.assets.models.configuration import ConfigurationClass, ConfigurationModule
 
 __all__ = [
-    'Asset',
-    'AssetLastHostname',
-    'AssetModel',
-    'AssetHolder',
-    'AssetPurpose',
-    'AssetSource',
-    'BudgetInfo',
-    'BaseObject',
-    'BusinessSegment',
-    'Category',
-    'Component',
-    'ComponentModel',
-    'ComponentType',
-    'ConfigurationClass',
-    'ConfigurationModule',
-    'Disk',
-    'Environment',
-    'FibreChannelCard',
-    'GenericComponent',
-    'Manufacturer',
-    'ManufacturerKind',
-    'Memory',
-    'ModelVisualizationLayout',
-    'ObjectModelType',
-    'ProfitCenter',
-    'Processor',
-    'Service',
-    'ServiceEnvironment',
-    'Ethernet',
+    "Asset",
+    "AssetLastHostname",
+    "AssetModel",
+    "AssetHolder",
+    "AssetPurpose",
+    "AssetSource",
+    "BudgetInfo",
+    "BaseObject",
+    "BusinessSegment",
+    "Category",
+    "Component",
+    "ComponentModel",
+    "ComponentType",
+    "ConfigurationClass",
+    "ConfigurationModule",
+    "Disk",
+    "Environment",
+    "FibreChannelCard",
+    "GenericComponent",
+    "Manufacturer",
+    "ManufacturerKind",
+    "Memory",
+    "ModelVisualizationLayout",
+    "ObjectModelType",
+    "ProfitCenter",
+    "Processor",
+    "Service",
+    "ServiceEnvironment",
+    "Ethernet",
 ]

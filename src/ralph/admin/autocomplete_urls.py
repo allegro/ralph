@@ -7,8 +7,8 @@ from ralph.admin.sites import ralph_site
 
 urlpatterns = [
     url(
-        r'^(?P<app>\w+)/(?P<model>\w+)/(?P<field>\w+)/autocomplete$',
+        r"^(?P<app>\w+)/(?P<model>\w+)/(?P<field>\w+)/autocomplete$",
         login_required(ralph_site.admin_view(AutocompleteList.as_view())),
-        name='autocomplete-list'
+        name="autocomplete-list",
     ),
 ]

@@ -5,4 +5,4 @@ from django.test import TestCase
 
 class RalphMenuTest(TestCase):
     def test_menu_resync(self):
-        call_command('sitetree_resync_apps')
+        call_command("sitetree_resync_apps")

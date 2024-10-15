@@ -9,14 +9,14 @@ import django.db.models.manager
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('licences', '0006_auto_20200909_1115'),
+        ("licences", "0006_auto_20200909_1115"),
     ]
 
     operations = [
         migrations.AlterModelManagers(
-            name='licence',
+            name="licence",
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ("polymorphic_objects", django.db.models.manager.Manager()),
             ],
         ),
     ]

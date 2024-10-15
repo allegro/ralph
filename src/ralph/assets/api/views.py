@@ -254,9 +254,7 @@ class DCHostFilterSet(NetworkableObjectFilters):
 
 # TODO: move to data_center and use DCHost proxy model
 class DCHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
-    queryset = (
-        BaseObject.polymorphic_objects
-    )
+    queryset = BaseObject.polymorphic_objects
     serializer_class = serializers.DCHostSerializer
     http_method_names = ["get", "options", "head"]
     filter_fields = [
@@ -300,7 +298,7 @@ class DCHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         return (
             self.queryset.dc_hosts()
             .select_related(*self.select_related)
-            .polymorphic_select_related(Cluster=['type'])
+            .polymorphic_select_related(Cluster=["type"])
             .polymorphic_prefetch_related(
                 Cluster=[*self.prefetch_related],
                 DataCenterAsset=[*self.prefetch_related],

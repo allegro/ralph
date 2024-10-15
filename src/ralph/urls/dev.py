@@ -9,10 +9,8 @@ from ralph.urls import handler404  # noqa
 
 urlpatterns = base_urlpatterns
 urlpatterns += [
-    url(r'^__debug__/', include(debug_toolbar.urls)),
+    url(r"^__debug__/", include(debug_toolbar.urls)),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
-if 'silk' in settings.INSTALLED_APPS:
-    urlpatterns += [
-        url(r'^silk/', include('silk.urls', namespace='silk'))
-    ]
+if "silk" in settings.INSTALLED_APPS:
+    urlpatterns += [url(r"^silk/", include("silk.urls", namespace="silk"))]

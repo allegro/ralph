@@ -7,12 +7,12 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assets', '0029_asset_start_usage'),
+        ("assets", "0029_asset_start_usage"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='serviceenvironment',
-            options={'ordering': ('service__name', 'environment__name')},
+            name="serviceenvironment",
+            options={"ordering": ("service__name", "environment__name")},
         ),
     ]

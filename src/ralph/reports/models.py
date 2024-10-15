@@ -3,29 +3,18 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.attachments.helpers import get_file_path
-from ralph.lib.mixins.models import (
-    AdminAbsoluteUrlMixin,
-    NamedMixin,
-    TimeStampMixin
-)
+from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin
 
 
 def get_report_file_path(instance, filename):
-    return get_file_path(
-        instance, filename, default_dir='report_templates'
-    )
+    return get_file_path(instance, filename, default_dir="report_templates")
 
 
 class Report(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
     pass
 
 
-class ReportLanguage(
-    AdminAbsoluteUrlMixin,
-    NamedMixin,
-    TimeStampMixin,
-    models.Model
-):
+class ReportLanguage(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
     default = models.BooleanField()
 
     def clean(self):
@@ -33,7 +22,7 @@ class ReportLanguage(
         if self.pk:
             default_qs = default_qs.exclude(pk=self.pk)
         if self.default and default_qs.count() > 0:
-            raise ValidationError(_('Only one language can be default.'))
+            raise ValidationError(_("Only one language can be default."))
 
 
 class ReportTemplate(TimeStampMixin, models.Model):
@@ -44,16 +33,14 @@ class ReportTemplate(TimeStampMixin, models.Model):
     language = models.ForeignKey(ReportLanguage, on_delete=models.CASCADE)
     default = models.BooleanField()
     report = models.ForeignKey(
-        Report,
-        related_name='templates',
-        on_delete=models.CASCADE
+        Report, related_name="templates", on_delete=models.CASCADE
     )
 
     class Meta:
-        unique_together = ('language', 'report')
+        unique_together = ("language", "report")
 
     def __str__(self):
-        return '{} ({})'.format(self.template, self.language)
+        return "{} ({})".format(self.template, self.language)
 
     @property
     def name(self):

@@ -7,16 +7,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('ssl_certificates', '0003_remove_sslcertificate_service_environment'),
+        ("ssl_certificates", "0003_remove_sslcertificate_service_environment"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='sslcertificate',
-            name='business_owner',
+            model_name="sslcertificate",
+            name="business_owner",
         ),
         migrations.RemoveField(
-            model_name='sslcertificate',
-            name='technical_owner',
+            model_name="sslcertificate",
+            name="technical_owner",
         ),
     ]

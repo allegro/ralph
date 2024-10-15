@@ -7,32 +7,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assets', '0003_auto_20151126_2205'),
+        ("assets", "0003_auto_20151126_2205"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='assetholder',
-            options={'ordering': ['name']},
+            name="assetholder",
+            options={"ordering": ["name"]},
         ),
         migrations.AlterModelOptions(
-            name='businesssegment',
-            options={'ordering': ['name']},
+            name="businesssegment",
+            options={"ordering": ["name"]},
         ),
         migrations.AlterModelOptions(
-            name='environment',
-            options={'ordering': ['name']},
+            name="environment",
+            options={"ordering": ["name"]},
         ),
         migrations.AlterModelOptions(
-            name='manufacturer',
-            options={'ordering': ['name']},
+            name="manufacturer",
+            options={"ordering": ["name"]},
         ),
         migrations.AlterModelOptions(
-            name='profitcenter',
-            options={'ordering': ['name']},
+            name="profitcenter",
+            options={"ordering": ["name"]},
         ),
         migrations.AlterModelOptions(
-            name='service',
-            options={'ordering': ['name']},
+            name="service",
+            options={"ordering": ["name"]},
         ),
     ]

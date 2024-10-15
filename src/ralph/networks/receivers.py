@@ -14,12 +14,8 @@ def _should_send_dnsaas_request(ip_instance):
     Ethernet) and it's not CloudHost.
     """
     eth = ip_instance.ethernet
-    invalid_content_types = ContentType.objects.get_for_models(
-        *INVALID_MODELS
-    ).values()
-    return (
-        eth and eth.base_object.content_type not in invalid_content_types
-    )
+    invalid_content_types = ContentType.objects.get_for_models(*INVALID_MODELS).values()
+    return eth and eth.base_object.content_type not in invalid_content_types
 
 
 def _get_connected_service_uid(ip_instance):
@@ -38,15 +34,15 @@ def _get_connected_service_uid(ip_instance):
 def update_dns_record(instance, created, *args, **kwargs):
     if not _should_send_dnsaas_request(instance):
         return
-    keys = ['address', 'hostname']
+    keys = ["address", "hostname"]
     old = {key: instance._previous_state[key] for key in keys}
     new = {key: instance.__dict__[key] for key in keys}
-    if old != new and old['hostname'] is not None:
+    if old != new and old["hostname"] is not None:
         data_to_send = {
-            'old': old,
-            'new': new,
-            'service_uid': _get_connected_service_uid(instance),
-            'action': 'add' if created else 'update'
+            "old": old,
+            "new": new,
+            "service_uid": _get_connected_service_uid(instance),
+            "action": "add" if created else "update",
         }
         DNSaaS().send_ipaddress_data(data_to_send)
 
@@ -54,8 +50,6 @@ def update_dns_record(instance, created, *args, **kwargs):
 def delete_dns_record(instance, *args, **kwargs):
     if not _should_send_dnsaas_request(instance):
         return
-    DNSaaS().send_ipaddress_data({
-        'address': instance.address,
-        'hostname': instance.hostname,
-        'action': 'delete'
-    })
+    DNSaaS().send_ipaddress_data(
+        {"address": instance.address, "hostname": instance.hostname, "action": "delete"}
+    )

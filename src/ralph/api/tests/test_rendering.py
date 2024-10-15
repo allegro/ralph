@@ -14,14 +14,12 @@ from ralph.tests.factories import UserFactory
 
 
 class APIBrowsableClient(APIClient):
-    renderer_classes_list = (
-        'rest_framework.renderers.BrowsableAPIRenderer',
-    )
-    default_format = 'text/html'
+    renderer_classes_list = ("rest_framework.renderers.BrowsableAPIRenderer",)
+    default_format = "text/html"
 
 
 # If you want to test all items in the API, set BROWSE_ALL_API_ITEMS=1 env
-BROWSE_ALL_API_ITEMS = os.environ.get('BROWSE_ALL_API_ITEMS', False)
+BROWSE_ALL_API_ITEMS = os.environ.get("BROWSE_ALL_API_ITEMS", False)
 DEFAULT_MAX_QUERIES = 20
 # To get this just visit /api in your browser
 ALL_API_ENDPOINTS = {
@@ -108,7 +106,7 @@ ALL_API_ENDPOINTS = {
     "virtual-server-types": "/api/virtual-server-types/",
     "virtual-servers": "/api/virtual-servers/",
     "vulnerabilities": "/api/vulnerabilities/",
-    "warehouses": "/api/warehouses/"
+    "warehouses": "/api/warehouses/",
 }
 
 
@@ -120,52 +118,52 @@ class RalphAPIRenderingTests(APIPermissionsTestMixin, APITestCase):
     def setUpClass(cls):
         super().setUpClass()
         for factory in FACTORY_MAP.values():
-            module_path, factory_class = factory.rsplit(
-                '.', 1
-            )
+            module_path, factory_class = factory.rsplit(".", 1)
             module = import_module(module_path)
             factory_model = getattr(module, factory_class)
             factory_model.create_batch(20)
         cls.user = UserFactory(is_staff=True, is_superuser=True)
 
     def test_rendering(self):
-        url = reverse('test-ralph-api:api-root')
+        url = reverse("test-ralph-api:api-root")
         self.client.force_authenticate(self.user1)
-        response = self.client.get(url, HTTP_ACCEPT='text/html')
+        response = self.client.get(url, HTTP_ACCEPT="text/html")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    @data(
-        *ALL_API_ENDPOINTS.keys()
-    )
+    @data(*ALL_API_ENDPOINTS.keys())
     def test_browsable_endpoint(self, model_name):
-        endpoint, max_queries = ALL_API_ENDPOINTS[model_name] \
-            if isinstance(ALL_API_ENDPOINTS[model_name], tuple) \
+        endpoint, max_queries = (
+            ALL_API_ENDPOINTS[model_name]
+            if isinstance(ALL_API_ENDPOINTS[model_name], tuple)
             else (ALL_API_ENDPOINTS[model_name], DEFAULT_MAX_QUERIES)
+        )
         self.client.force_authenticate(self.user)
-        with CaptureQueriesContext(connections['default']) as cqc:
-            response = self.client.get(endpoint, HTTP_ACCEPT='text/html')
+        with CaptureQueriesContext(connections["default"]) as cqc:
+            response = self.client.get(endpoint, HTTP_ACCEPT="text/html")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertLessEqual(len(cqc.captured_queries), max_queries)
 
-    @data(
-        *ALL_API_ENDPOINTS.keys()
-    )
+    @data(*ALL_API_ENDPOINTS.keys())
     def test_json_endpoint(self, model_name):
-        endpoint, max_queries = ALL_API_ENDPOINTS[model_name] \
-            if isinstance(ALL_API_ENDPOINTS[model_name], tuple) \
+        endpoint, max_queries = (
+            ALL_API_ENDPOINTS[model_name]
+            if isinstance(ALL_API_ENDPOINTS[model_name], tuple)
             else (ALL_API_ENDPOINTS[model_name], DEFAULT_MAX_QUERIES)
+        )
         self.client.force_authenticate(self.user)
         while True:
-            with CaptureQueriesContext(connections['default']) as cqc:
-                response = self.client.get(endpoint, HTTP_ACCEPT='application/json')
+            with CaptureQueriesContext(connections["default"]) as cqc:
+                response = self.client.get(endpoint, HTTP_ACCEPT="application/json")
             self.assertEqual(response.status_code, status.HTTP_200_OK)
-            self.assertGreater(len(response.json()['results']), 0)
+            self.assertGreater(len(response.json()["results"]), 0)
             self.assertLessEqual(
-                len(cqc.captured_queries), max_queries,
+                len(cqc.captured_queries),
+                max_queries,
                 msg=f"Too many queries when getting {endpoint}."
                 f"\nQueries count: {len(cqc.captured_queries)}."
-                "\nQueries:\n" + "\n".join(query['sql'] for query in cqc.captured_queries)
+                "\nQueries:\n"
+                + "\n".join(query["sql"] for query in cqc.captured_queries),
             )
-            endpoint = response.json()['next']
+            endpoint = response.json()["next"]
             if not BROWSE_ALL_API_ITEMS or endpoint is None:
                 break

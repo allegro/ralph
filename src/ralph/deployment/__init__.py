@@ -1,1 +1,1 @@
-default_app_config = 'ralph.deployment.apps.DeploymentConfig'
+default_app_config = "ralph.deployment.apps.DeploymentConfig"

@@ -11,13 +11,17 @@ class SimpleLicenceSerializer(RalphAPISerializer):
         model = Licence
         depth = 1
         exclude = (
-            'base_objects', 'users', 'content_type', 'service_env', 'parent',
-            'configuration_path'
+            "base_objects",
+            "users",
+            "content_type",
+            "service_env",
+            "parent",
+            "configuration_path",
         )
 
 
 # FIXME
-del SimpleLicenceSerializer._declared_fields['tags']
+del SimpleLicenceSerializer._declared_fields["tags"]
 
 
 class SimpleLicenceUserSerializer(RalphAPISerializer):

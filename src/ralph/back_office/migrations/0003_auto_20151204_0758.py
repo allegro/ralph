@@ -7,12 +7,12 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('back_office', '0002_auto_20151125_1354'),
+        ("back_office", "0002_auto_20151125_1354"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='warehouse',
-            options={'ordering': ['name']},
+            name="warehouse",
+            options={"ordering": ["name"]},
         ),
     ]

@@ -11,5 +11,5 @@ class OperationAdminViewTest(ClientMixin, TestCase):
         OperationFactory.create_batch(5)
         with self.assertNumQueries(2):
             self.client.get(
-                reverse('admin:operations_operation_changelist'),
+                reverse("admin:operations_operation_changelist"),
             )

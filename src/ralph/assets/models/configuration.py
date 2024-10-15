@@ -6,16 +6,13 @@ from django.utils.translation import ugettext_lazy as _
 from mptt.models import MPTTModel, MPTTModelBase, TreeForeignKey
 
 from ralph.assets.models.base import BaseObject
-from ralph.lib.custom_fields.models import (
-    CustomFieldMeta,
-    WithCustomFieldsMixin
-)
+from ralph.lib.custom_fields.models import CustomFieldMeta, WithCustomFieldsMixin
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
 
-dir_file_name_validator = RegexValidator(regex=r'\w+')
+dir_file_name_validator = RegexValidator(regex=r"\w+")
 
 ConfigurationModuleBase = type(
-    'ConfigurationModuleBase', (MPTTModelBase, CustomFieldMeta), {}
+    "ConfigurationModuleBase", (MPTTModelBase, CustomFieldMeta), {}
 )
 
 
@@ -25,40 +22,40 @@ class ConfigurationModule(
     MPTTModel,
     TimeStampMixin,
     models.Model,
-    metaclass=ConfigurationModuleBase
+    metaclass=ConfigurationModuleBase,
 ):
     name = models.CharField(
-        verbose_name=_('name'),
+        verbose_name=_("name"),
         max_length=255,
-        help_text=_('module name (ex. directory name in puppet)'),
+        help_text=_("module name (ex. directory name in puppet)"),
         validators=[dir_file_name_validator],
     )
     parent = TreeForeignKey(
-        'self',
-        verbose_name=_('parent module'),
+        "self",
+        verbose_name=_("parent module"),
         null=True,
         blank=True,
         default=None,
-        related_name='children_modules',
-        on_delete=models.CASCADE
+        related_name="children_modules",
+        on_delete=models.CASCADE,
     )
     # TODO: is this necessary?
     support_team = models.ForeignKey(
-        'accounts.Team',
-        verbose_name=_('team'),
+        "accounts.Team",
+        verbose_name=_("team"),
         null=True,
         blank=True,
         default=None,
-        on_delete=models.SET_NULL
+        on_delete=models.SET_NULL,
     )
 
     class Meta:
-        verbose_name = _('configuration module')
-        unique_together = ('parent', 'name')
-        ordering = ('parent__name', 'name')
+        verbose_name = _("configuration module")
+        unique_together = ("parent", "name")
+        ordering = ("parent__name", "name")
 
     class MPTTMeta:
-        order_insertion_by = ['name']
+        order_insertion_by = ["name"]
 
     def __str__(self):
         return self.name
@@ -72,35 +69,35 @@ class ConfigurationModule(
 
 class ConfigurationClass(AdminAbsoluteUrlMixin, BaseObject):
     class_name = models.CharField(
-        verbose_name=_('class name'),
+        verbose_name=_("class name"),
         max_length=255,
-        help_text=_('ex. puppet class'),
+        help_text=_("ex. puppet class"),
         validators=[dir_file_name_validator],
     )
     path = models.CharField(
-        verbose_name=_('path'),
+        verbose_name=_("path"),
         blank=True,
-        default='',
+        default="",
         editable=False,
         max_length=511,  # 255 form module name, '/' and 255 from class name
-        help_text=_('path is constructed from name of module and name of class')
+        help_text=_("path is constructed from name of module and name of class"),
     )
     module = models.ForeignKey(
         ConfigurationModule,
-        related_name='configuration_classes',
-        on_delete=models.CASCADE
+        related_name="configuration_classes",
+        on_delete=models.CASCADE,
     )
 
     autocomplete_words_split = True
 
     class Meta:
-        verbose_name = _('configuration class')
-        unique_together = ('module', 'class_name')
-        ordering = ('path',)
+        verbose_name = _("configuration class")
+        unique_together = ("module", "class_name")
+        ordering = ("path",)
 
     def __str__(self):
         return self.path
 
     def save(self, *args, **kwargs):
-        self.path = self.module.name + '/' + self.class_name
+        self.path = self.module.name + "/" + self.class_name
         super().save(*args, **kwargs)

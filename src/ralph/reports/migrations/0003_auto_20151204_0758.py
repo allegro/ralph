@@ -7,16 +7,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('reports', '0002_auto_20151125_1354'),
+        ("reports", "0002_auto_20151125_1354"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='report',
-            options={'ordering': ['name']},
+            name="report",
+            options={"ordering": ["name"]},
         ),
         migrations.AlterModelOptions(
-            name='reportlanguage',
-            options={'ordering': ['name']},
+            name="reportlanguage",
+            options={"ordering": ["name"]},
         ),
     ]

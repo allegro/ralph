@@ -19,11 +19,9 @@ def unload_initial_accessory(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('data_center', '0004_auto_20151204_0758'),
+        ("data_center", "0004_auto_20151204_0758"),
     ]
 
     operations = [
-        migrations.RunPython(
-            initial_accessory, reverse_code=unload_initial_accessory
-        ),
+        migrations.RunPython(initial_accessory, reverse_code=unload_initial_accessory),
     ]

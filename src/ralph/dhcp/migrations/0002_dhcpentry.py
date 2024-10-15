@@ -7,18 +7,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('networks', '0001_initial'),
-        ('dhcp', '0001_initial'),
+        ("networks", "0001_initial"),
+        ("dhcp", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='DHCPEntry',
-            fields=[
-            ],
+            name="DHCPEntry",
+            fields=[],
             options={
-                'proxy': True,
+                "proxy": True,
             },
-            bases=('networks.ipaddress',),
+            bases=("networks.ipaddress",),
         ),
     ]

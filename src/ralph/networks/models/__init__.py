@@ -4,14 +4,14 @@ from ralph.networks.models.networks import (
     IPAddress,
     Network,
     NetworkEnvironment,
-    NetworkKind
+    NetworkKind,
 )
 
 __all__ = [
-    'DiscoveryQueue',
-    'IPAddress',
-    'IPAddressStatus',
-    'Network',
-    'NetworkEnvironment',
-    'NetworkKind',
+    "DiscoveryQueue",
+    "IPAddress",
+    "IPAddressStatus",
+    "Network",
+    "NetworkEnvironment",
+    "NetworkKind",
 ]

@@ -8,13 +8,20 @@ import ralph.lib.mixins.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('tests', '0013_auto_20240627_1512'),
+        ("tests", "0013_auto_20240627_1512"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='baseobjectforeignkeymodel',
-            name='base_object',
-            field=ralph.lib.mixins.fields.BaseObjectForeignKey(limit_models=['back_office.BackOfficeAsset', 'data_center.DataCenterAsset'], on_delete=django.db.models.deletion.CASCADE, to='assets.BaseObject'),
+            model_name="baseobjectforeignkeymodel",
+            name="base_object",
+            field=ralph.lib.mixins.fields.BaseObjectForeignKey(
+                limit_models=[
+                    "back_office.BackOfficeAsset",
+                    "data_center.DataCenterAsset",
+                ],
+                on_delete=django.db.models.deletion.CASCADE,
+                to="assets.BaseObject",
+            ),
         ),
     ]

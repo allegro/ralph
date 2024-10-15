@@ -7,12 +7,12 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('networks', '0011_add_dns_servers_group'),
+        ("networks", "0011_add_dns_servers_group"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='network',
-            name='dns_servers',
+            model_name="network",
+            name="dns_servers",
         ),
     ]

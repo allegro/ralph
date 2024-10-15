@@ -4,11 +4,7 @@ from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.assets.api.serializers import AssetSerializer
 from ralph.assets.api.views import base_object_descendant_prefetch_related
 from ralph.back_office.admin import BackOfficeAssetAdmin
-from ralph.back_office.models import (
-    BackOfficeAsset,
-    OfficeInfrastructure,
-    Warehouse
-)
+from ralph.back_office.models import BackOfficeAsset, OfficeInfrastructure, Warehouse
 
 
 class WarehouseSerializer(RalphAPISerializer):
@@ -53,23 +49,29 @@ class BackOfficeAssetSerializer(AssetSerializer):
 
 class BackOfficeAssetViewSet(RalphAPIViewSet):
     select_related = BackOfficeAssetAdmin.list_select_related + [
-        'service_env', 'service_env__service', 'service_env__environment',
-        'user', 'owner', 'property_of', 'office_infrastructure',
-        'budget_info',
+        "service_env",
+        "service_env__service",
+        "service_env__environment",
+        "user",
+        "owner",
+        "property_of",
+        "office_infrastructure",
+        "budget_info",
     ]
     prefetch_related = base_object_descendant_prefetch_related + [
-        'user__groups', 'user__user_permissions',
-        'service_env__service__environments',
-        'service_env__service__business_owners',
-        'service_env__service__technical_owners',
-        'tags',
-        'content_type',
+        "user__groups",
+        "user__user_permissions",
+        "service_env__service__environments",
+        "service_env__service__business_owners",
+        "service_env__service__technical_owners",
+        "tags",
+        "content_type",
     ]
     queryset = BackOfficeAsset.objects.all()
     serializer_class = BackOfficeAssetSerializer
 
 
-router.register(r'warehouses', WarehouseViewSet)
-router.register(r'office-infrastructures', OfficeInfrastructureViewSet)
-router.register(r'back-office-assets', BackOfficeAssetViewSet)
+router.register(r"warehouses", WarehouseViewSet)
+router.register(r"office-infrastructures", OfficeInfrastructureViewSet)
+router.register(r"back-office-assets", BackOfficeAssetViewSet)
 urlpatterns = []

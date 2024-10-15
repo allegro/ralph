@@ -7,7 +7,7 @@ from ralph.deployment.models import Deployment, Preboot, PrebootConfiguration
 
 class PrebootFactory(DjangoModelFactory):
 
-    name = factory.Sequence(lambda n: 'Preboot {}'.format(n))
+    name = factory.Sequence(lambda n: "Preboot {}".format(n))
 
     class Meta:
         model = Preboot
@@ -15,7 +15,7 @@ class PrebootFactory(DjangoModelFactory):
 
 class PrebootConfigurationFactory(DjangoModelFactory):
 
-    name = factory.Sequence(lambda n: 'PrebootConfiguration {}'.format(n))
+    name = factory.Sequence(lambda n: "PrebootConfiguration {}".format(n))
 
     class Meta:
         model = PrebootConfiguration

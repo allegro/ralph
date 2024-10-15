@@ -6,11 +6,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.assets.models.base import BaseObject
-from ralph.lib.mixins.models import (
-    AdminAbsoluteUrlMixin,
-    TaggableMixin,
-    TimeStampMixin
-)
+from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TaggableMixin, TimeStampMixin
 from ralph.lib.permissions.models import PermByFieldMixin
 
 
@@ -43,22 +39,15 @@ class Vulnerability(
 ):
     _allow_in_dashboard = True
 
-    name = models.CharField(
-        verbose_name=_("name"),
-        max_length=1024,
-        unique=False
-    )
-    display_name = models.CharField(
-        verbose_name=_("display name"),
-        max_length=1024
-    )
+    name = models.CharField(verbose_name=_("name"), max_length=1024, unique=False)
+    display_name = models.CharField(verbose_name=_("display name"), max_length=1024)
     patch_deadline = models.DateTimeField(null=True, blank=True)
     risk = models.PositiveIntegerField(choices=Risk(), null=True, blank=True)
     external_vulnerability_id = models.IntegerField(
         unique=True,  # id means id
         null=True,
         blank=True,
-        help_text=_('Id of vulnerability from external system'),
+        help_text=_("Id of vulnerability from external system"),
     )
 
     @property
@@ -67,8 +56,7 @@ class Vulnerability(
 
     def __str__(self):
         deadline = (
-            self.patch_deadline.strftime('%Y-%m-%d') if
-            self.patch_deadline else '-'
+            self.patch_deadline.strftime("%Y-%m-%d") if self.patch_deadline else "-"
         )
         return "{} ({})".format(self.name, deadline)
 
@@ -86,7 +74,7 @@ class SecurityScan(
     scan_status = models.PositiveIntegerField(choices=ScanStatus())
     next_scan_date = models.DateTimeField()
     details_url = models.URLField(max_length=255, blank=True)
-    rescan_url = models.URLField(blank=True, verbose_name=_('Rescan url'))
+    rescan_url = models.URLField(blank=True, verbose_name=_("Rescan url"))
     base_object = models.OneToOneField(
         BaseObject,
         on_delete=models.CASCADE,
@@ -108,7 +96,7 @@ class SecurityScan(
 
     def __str__(self):
         return "{} {} ({})".format(
-            self.last_scan_date.strftime('%Y-%m-%d'),
+            self.last_scan_date.strftime("%Y-%m-%d"),
             ScanStatus.from_id(self.scan_status).desc,
             self.base_object.content_type,
         )

@@ -9,14 +9,14 @@ import django.db.models.manager
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assets', '0034_auto_20240304_1511'),
+        ("assets", "0034_auto_20240304_1511"),
     ]
 
     operations = [
         migrations.AlterModelManagers(
-            name='baseobject',
+            name="baseobject",
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ("polymorphic_objects", django.db.models.manager.Manager()),
             ],
         ),
     ]

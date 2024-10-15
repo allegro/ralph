@@ -7,26 +7,26 @@ import django.db.models.manager
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assets', '0036_auto_20240621_1200'),
+        ("assets", "0036_auto_20240621_1200"),
     ]
 
     operations = [
         migrations.AlterModelManagers(
-            name='asset',
+            name="asset",
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ("polymorphic_objects", django.db.models.manager.Manager()),
             ],
         ),
         migrations.AlterModelManagers(
-            name='configurationclass',
+            name="configurationclass",
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ("polymorphic_objects", django.db.models.manager.Manager()),
             ],
         ),
         migrations.AlterModelManagers(
-            name='serviceenvironment',
+            name="serviceenvironment",
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ("polymorphic_objects", django.db.models.manager.Manager()),
             ],
         ),
     ]

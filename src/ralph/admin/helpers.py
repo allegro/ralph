@@ -10,10 +10,8 @@ from django.urls import reverse
 
 def get_admin_url(obj, action):
     return reverse(
-        "admin:{}_{}_{}".format(
-            obj._meta.app_label, obj._meta.model_name, action
-        ),
-        args=(obj.id,)
+        "admin:{}_{}_{}".format(obj._meta.app_label, obj._meta.model_name, action),
+        args=(obj.id,),
     )
 
 
@@ -62,7 +60,7 @@ def getattr_dunder(obj, attr, default=None):
     if attr contains double underscores.
     """
 
-    first, dunder, rest = attr.partition('__')
+    first, dunder, rest = attr.partition("__")
     value = getattr(obj, first, default)
     if rest:
         return getattr_dunder(value, rest, default)
@@ -108,8 +106,8 @@ def generate_html_link(base_url, label, params=None):
 
     return '<a href="{base_url}{params}">{label}</a>'.format(
         base_url=base_url,
-        params=('?' + urlencode(params or {})) if params else '',
-        label=str(label).replace(' ', '&nbsp;')
+        params=("?" + urlencode(params or {})) if params else "",
+        label=str(label).replace(" ", "&nbsp;"),
     )
 
 
@@ -123,11 +121,11 @@ def get_client_ip(request):
     Returns:
         IP as a string
     """
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
     if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
+        ip = x_forwarded_for.split(",")[0]
     else:
-        ip = request.META.get('REMOTE_ADDR')
+        ip = request.META.get("REMOTE_ADDR")
     return ip
 
 
@@ -135,13 +133,14 @@ class CastToInteger(Func):
     """
     A helper class for casting values to signed integer in database.
     """
-    function = 'CAST'
-    template = '%(function)s(%(expressions)s as %(integer_type)s)'
+
+    function = "CAST"
+    template = "%(function)s(%(expressions)s as %(integer_type)s)"
 
     def __init__(self, *expressions, **extra):
         super().__init__(*expressions, **extra)
-        self.extra['integer_type'] = 'INTEGER'
+        self.extra["integer_type"] = "INTEGER"
 
     def as_mysql(self, compiler, connection):
-        self.extra['integer_type'] = 'SIGNED'
+        self.extra["integer_type"] = "SIGNED"
         return super().as_sql(compiler, connection)

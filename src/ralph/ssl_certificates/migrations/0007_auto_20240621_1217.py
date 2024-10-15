@@ -7,14 +7,14 @@ import django.db.models.manager
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('ssl_certificates', '0006_sslcertificate_certificate_repository'),
+        ("ssl_certificates", "0006_sslcertificate_certificate_repository"),
     ]
 
     operations = [
         migrations.AlterModelManagers(
-            name='sslcertificate',
+            name="sslcertificate",
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ("polymorphic_objects", django.db.models.manager.Manager()),
             ],
         ),
     ]

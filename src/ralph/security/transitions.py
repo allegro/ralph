@@ -14,14 +14,11 @@ from ralph.virtual.models import CloudHost, VirtualServer
 HOST_MODELS = [DataCenterAsset, CloudHost, VirtualServer]
 
 
-@transition_action(
-    verbose_name=_('Cleanup security scans'),
-    models=HOST_MODELS
-)
+@transition_action(verbose_name=_("Cleanup security scans"), models=HOST_MODELS)
 def cleanup_security_scans(cls, instances, **kwargs):
     with transaction.atomic():
         for instance in instances:
             try:
                 instance.securityscan.delete()
             except cls.securityscan.RelatedObjectDoesNotExist:
-                    pass
+                pass

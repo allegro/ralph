@@ -9,29 +9,29 @@ def populate_trademark_kinds(apps, schema_editor):
 
     TradeMarkKind(
         id=1,
-        type='Word',
+        type="Word",
     ).save()
 
     TradeMarkKind(
         id=2,
-        type='Figurative',
+        type="Figurative",
     ).save()
 
     TradeMarkKind(
         id=3,
-        type='Word - Figurative',
+        type="Word - Figurative",
     ).save()
 
     TradeMarkKind(
         id=4,
-        type='3D',
+        type="3D",
     ).save()
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('trade_marks', '0011_trademarkkind'),
+        ("trade_marks", "0011_trademarkkind"),
     ]
 
     operations = [

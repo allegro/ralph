@@ -8,13 +8,18 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('networks', '0012_remove_network_dns_servers'),
+        ("networks", "0012_remove_network_dns_servers"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='network',
-            name='dns_servers_group',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='dhcp.DNSServerGroup', null=True, blank=True),
+            model_name="network",
+            name="dns_servers_group",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT,
+                to="dhcp.DNSServerGroup",
+                null=True,
+                blank=True,
+            ),
         ),
     ]

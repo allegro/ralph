@@ -7,18 +7,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assets', '0019_auto_20160719_1443'),
-        ('data_center', '0018_auto_20160729_1401'),
+        ("assets", "0019_auto_20160719_1443"),
+        ("data_center", "0018_auto_20160729_1401"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='DCHost',
-            fields=[
-            ],
+            name="DCHost",
+            fields=[],
             options={
-                'proxy': True,
+                "proxy": True,
             },
-            bases=('assets.baseobject',),
+            bases=("assets.baseobject",),
         ),
     ]

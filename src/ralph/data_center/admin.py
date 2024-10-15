@@ -22,14 +22,10 @@ from ralph.admin.filters import (
     RelatedAutocompleteFieldListFilter,
     TagsListFilter,
     TreeRelatedAutocompleteFilterWithDescendants,
-    VulnerabilitesByPatchDeadline
+    VulnerabilitesByPatchDeadline,
 )
 from ralph.admin.helpers import generate_html_link
-from ralph.admin.mixins import (
-    BulkEditChangeListMixin,
-    RalphAdmin,
-    RalphTabularInline
-)
+from ralph.admin.mixins import BulkEditChangeListMixin, RalphAdmin, RalphTabularInline
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.admin.views.main import RalphChangeList
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
@@ -40,7 +36,7 @@ from ralph.assets.views import ComponentsAdminView
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.configuration_management.views import (
     SCMCheckInfo,
-    SCMStatusCheckInChangeListMixin
+    SCMStatusCheckInChangeListMixin,
 )
 from ralph.data_center.forms import DataCenterAssetForm
 from ralph.data_center.models.components import DiskShare, DiskShareMount
@@ -52,14 +48,14 @@ from ralph.data_center.models.physical import (
     DataCenterAsset,
     Rack,
     RackAccessory,
-    ServerRoom
+    ServerRoom,
 )
 from ralph.data_center.models.virtual import (
     BaseObjectCluster,
     Cluster,
     ClusterType,
     Database,
-    VIP
+    VIP,
 )
 from ralph.data_center.views import RelationsView
 from ralph.data_importer import resources
@@ -75,31 +71,29 @@ from ralph.security.views import ScanStatusInChangeListMixin, SecurityInfo
 from ralph.supports.models import BaseObjectsSupport
 
 
-def generate_list_filter_with_common_fields(
-    prefix=None, postfix=None
-):
+def generate_list_filter_with_common_fields(prefix=None, postfix=None):
     result = []
     if type(prefix) == list:
         result.extend(prefix)
     result.extend(
         [
-            'service_env',
-            'configuration_path__path',
+            "service_env",
+            "configuration_path__path",
             (
-                'configuration_path__module',
-                TreeRelatedAutocompleteFilterWithDescendants
+                "configuration_path__module",
+                TreeRelatedAutocompleteFilterWithDescendants,
             ),
             MacAddressFilter,
             IPFilter,
             (
-                'securityscan__vulnerabilities__patch_deadline',
-                VulnerabilitesByPatchDeadline
+                "securityscan__vulnerabilities__patch_deadline",
+                VulnerabilitesByPatchDeadline,
             ),
             (
-                'securityscan__vulnerabilities',
-                filters.RelatedAutocompleteFieldListFilter
+                "securityscan__vulnerabilities",
+                filters.RelatedAutocompleteFieldListFilter,
             ),
-            'securityscan__is_patched',
+            "securityscan__is_patched",
         ]
     )
     if type(postfix) == list:
@@ -111,48 +105,44 @@ class DCHostTypeListFilter(ChoicesListFilter):
     def __init__(self, *args, **kwargs):
         from ralph.data_center.models import Cluster, DataCenterAsset
         from ralph.virtual.models import CloudHost, VirtualServer
+
         models = [Cluster, DataCenterAsset, CloudHost, VirtualServer]
         self.choices_list = [
-            (
-                ContentType.objects.get_for_model(model).pk,
-                model._meta.verbose_name
-            )
+            (ContentType.objects.get_for_model(model).pk, model._meta.verbose_name)
             for model in models
         ]
         super().__init__(*args, **kwargs)
 
 
 class DCHostHostnameFilter(SimpleListFilter):
-    title = _('Hostname')
-    parameter_name = 'hostname'
-    template = 'admin/filters/text_filter.html'
+    title = _("Hostname")
+    parameter_name = "hostname"
+    template = "admin/filters/text_filter.html"
 
     def queryset(self, request, queryset):
         if not self.value():
             return queryset
         fields = [
-            'asset__hostname',
-            'cloudhost__hostname',
-            'cluster__hostname',
-            'virtualserver__hostname',
-            'ethernet_set__ipaddress__hostname'
+            "asset__hostname",
+            "cloudhost__hostname",
+            "cluster__hostname",
+            "virtualserver__hostname",
+            "ethernet_set__ipaddress__hostname",
         ]
         # TODO: simple if hostname would be in one model
         queries = [
-            Q(**{'{}__icontains'.format(field): self.value().strip()})
+            Q(**{"{}__icontains".format(field): self.value().strip()})
             for field in fields
         ]
         return queryset.filter(reduce(operator.or_, queries)).distinct()
 
     def lookups(self, request, model_admin):
-        return (
-            (1, _('Hostname')),
-        )
+        return ((1, _("Hostname")),)
 
     def choices(self, cl):
         yield {
-            'selected': self.value(),
-            'parameter_name': self.parameter_name,
+            "selected": self.value(),
+            "parameter_name": self.parameter_name,
         }
 
 
@@ -166,24 +156,24 @@ if settings.ENABLE_DNSAAS_INTEGRATION:
 @register(Accessory)
 class AccessoryAdmin(RalphAdmin):
 
-    search_fields = ['name']
+    search_fields = ["name"]
 
 
 class ClusterNetworkInline(RalphTabularInline):
     form = SimpleNetworkWithManagementIPForm
     model = Ethernet
-    exclude = ['model']
+    exclude = ["model"]
 
 
 class ClusterLicencesView(RalphDetailViewAdmin):
-    icon = 'key'
-    name = 'cluster_licences'
-    label = _('Licences')
-    url_name = 'licences'
+    icon = "key"
+    name = "cluster_licences"
+    label = _("Licences")
+    url_name = "licences"
 
     class ClusterLicenceInline(RalphTabularInline):
         model = BaseObjectLicence
-        raw_id_fields = ('licence',)
+        raw_id_fields = ("licence",)
         extra = 1
 
     inlines = [ClusterLicenceInline]
@@ -192,29 +182,41 @@ class ClusterLicencesView(RalphDetailViewAdmin):
 @register(ClusterType)
 class ClusterTypeAdmin(RalphAdmin):
 
-    search_fields = ['name']
+    search_fields = ["name"]
 
 
 @register(Cluster)
 class ClusterAdmin(CustomFieldValueAdminMixin, RalphAdmin):
 
-    search_fields = ['name', 'hostname', 'ethernet_set__ipaddress__hostname']
+    search_fields = ["name", "hostname", "ethernet_set__ipaddress__hostname"]
     fieldsets = (
-        (_('Basic info'), {
-            'fields': (
-                'name', 'hostname', 'type', 'status', 'remarks', 'service_env',
-                'configuration_path',
-                'tags'
-            )
-        }),
+        (
+            _("Basic info"),
+            {
+                "fields": (
+                    "name",
+                    "hostname",
+                    "type",
+                    "status",
+                    "remarks",
+                    "service_env",
+                    "configuration_path",
+                    "tags",
+                )
+            },
+        ),
     )
-    raw_id_fields = ['service_env', 'configuration_path']
-    readonly_fields = ['get_masters_summary']
-    list_display = ['id', 'name', 'hostname', 'type']
-    list_select_related = ['type']
+    raw_id_fields = ["service_env", "configuration_path"]
+    readonly_fields = ["get_masters_summary"]
+    list_display = ["id", "name", "hostname", "type"]
+    list_select_related = ["type"]
     list_filter = [
-        'name', BaseObjectHostnameFilter, 'type', 'service_env',
-        'configuration_path', 'status'
+        "name",
+        BaseObjectHostnameFilter,
+        "type",
+        "service_env",
+        "configuration_path",
+        "status",
     ]
     change_views = [ClusterLicencesView]
     if settings.ENABLE_DNSAAS_INTEGRATION:
@@ -222,10 +224,10 @@ class ClusterAdmin(CustomFieldValueAdminMixin, RalphAdmin):
 
     class ClusterBaseObjectInline(RalphTabularInline):
         model = BaseObjectCluster
-        fk_name = 'cluster'
-        raw_id_fields = ('base_object',)
+        fk_name = "cluster"
+        raw_id_fields = ("base_object",)
         extra = 1
-        verbose_name = _('Base Object')
+        verbose_name = _("Base Object")
 
     inlines = [ClusterBaseObjectInline, ClusterNetworkInline]
 
@@ -236,35 +238,38 @@ class ClusterAdmin(CustomFieldValueAdminMixin, RalphAdmin):
         """
         fieldsets = super().get_fieldsets(request, obj)
         if obj and obj.pk and obj.type.show_master_summary:
-            fieldsets += ((
-                _('Master Info'), {
-                    'fields': (
-                        'get_masters_summary',
-                    )
-                }
-            ),)
+            fieldsets += ((_("Master Info"), {"fields": ("get_masters_summary",)}),)
         return fieldsets
 
     @mark_safe
     def get_masters_summary(self, obj):
         masters = obj.masters
         if not masters:
-            return '-'
+            return "-"
         return Table(
             masters,
-            getattr(masters[0], '_summary_fields', []),
+            getattr(masters[0], "_summary_fields", []),
             transpose=True,
         ).render()
-    get_masters_summary.short_description = _('Master info')
+
+    get_masters_summary.short_description = _("Master info")
 
 
 @register(DataCenter)
 class DataCenterAdmin(RalphAdmin):
-    list_display = ['name', 'company', 'country', 'city', 'address',
-                    'latitude', 'longitude', 'type', 'shortcut']
-    search_fields = ['name', 'shortcut']
-    list_filter = ['name', 'company', 'country', 'city', 'address', 'type',
-                   'shortcut']
+    list_display = [
+        "name",
+        "company",
+        "country",
+        "city",
+        "address",
+        "latitude",
+        "longitude",
+        "type",
+        "shortcut",
+    ]
+    search_fields = ["name", "shortcut"]
+    list_filter = ["name", "company", "country", "city", "address", "type", "shortcut"]
 
 
 class DataCenterAssetNetworkView(NetworkWithTerminatorsView):
@@ -272,30 +277,30 @@ class DataCenterAssetNetworkView(NetworkWithTerminatorsView):
 
 
 class DataCenterAssetSupport(RalphDetailViewAdmin):
-    icon = 'bookmark'
-    name = 'dc_asset_support'
-    label = _('Supports')
-    url_name = 'data_center_asset_support'
+    icon = "bookmark"
+    name = "dc_asset_support"
+    label = _("Supports")
+    url_name = "data_center_asset_support"
 
     class DataCenterAssetSupportInline(RalphTabularInline):
         model = BaseObjectsSupport
-        raw_id_fields = ('support',)
+        raw_id_fields = ("support",)
         extra = 1
-        verbose_name = _('Support')
-        ordering = ['-support__date_to']
+        verbose_name = _("Support")
+        ordering = ["-support__date_to"]
 
     inlines = [DataCenterAssetSupportInline]
 
 
 class DataCenterAssetLicence(RalphDetailViewAdmin):
-    icon = 'key'
-    name = 'dc_asset_licences'
-    label = _('Licences')
-    url_name = 'data_center_asset_licences'
+    icon = "key"
+    name = "dc_asset_licences"
+    label = _("Licences")
+    url_name = "data_center_asset_licences"
 
     class DataCenterAssetLicenceInline(RalphTabularInline):
         model = BaseObjectLicence
-        raw_id_fields = ('licence',)
+        raw_id_fields = ("licence",)
         extra = 1
 
     inlines = [DataCenterAssetLicenceInline]
@@ -306,13 +311,13 @@ class DataCenterAssetComponents(ComponentsAdminView):
 
 
 class DataCenterAssetOperation(OperationViewReadOnlyForExisiting):
-    name = 'dc_asset_operations'
-    url_name = 'data_center_asset_operations'
+    name = "dc_asset_operations"
+    url_name = "data_center_asset_operations"
     inlines = OperationViewReadOnlyForExisiting.admin_class.inlines
 
 
 class DataCenterAssetSecurityInfo(SecurityInfo):
-    url_name = 'datacenter_asset_security_info'
+    url_name = "datacenter_asset_security_info"
 
 
 class DataCenterAssetChangeList(RalphChangeList):
@@ -321,10 +326,10 @@ class DataCenterAssetChangeList(RalphChangeList):
 
         # NOTE(romcheg): slot_no is added by Django Admin automatically.
         location_fields = [
-            'rack__server_room__data_center__name',
-            'rack__server_room__name',
-            'rack__name',
-            'position',
+            "rack__server_room__data_center__name",
+            "rack__server_room__name",
+            "rack__name",
+            "position",
         ]
 
         ordering = super(DataCenterAssetChangeList, self).get_ordering(
@@ -334,15 +339,14 @@ class DataCenterAssetChangeList(RalphChangeList):
         params = self.params
         if ORDER_VAR in params:
 
-            order_params = params[ORDER_VAR].split('.')
+            order_params = params[ORDER_VAR].split(".")
             for insert_index, p in enumerate(order_params):
                 try:
-                    none, pfx, idx = p.rpartition('-')
-                    if self.list_display[int(idx)] == 'show_location':
+                    none, pfx, idx = p.rpartition("-")
+                    if self.list_display[int(idx)] == "show_location":
 
                         ordering[insert_index:insert_index] = [
-                            '{}{}'.format(pfx, field)
-                            for field in location_fields
+                            "{}{}".format(pfx, field) for field in location_fields
                         ]
                 except (IndexError, ValueError):
                     continue  # Invalid ordering specified, skip it.
@@ -351,11 +355,11 @@ class DataCenterAssetChangeList(RalphChangeList):
 
 
 class DataCenterAssetSCMInfo(SCMCheckInfo):
-    url_name = 'datacenterasset_scm_info'
+    url_name = "datacenterasset_scm_info"
 
 
 class DataCenterAssetRelationsView(RelationsView):
-    url = 'datacenterasset_relations'
+    url = "datacenterasset_relations"
 
 
 @register(DataCenterAsset)
@@ -373,8 +377,8 @@ class DataCenterAssetAdmin(
 ):
     """Data Center Asset admin class."""
 
-    add_form_template = 'data_center/datacenterasset/add_form.html'
-    actions = ['bulk_edit_action']
+    add_form_template = "data_center/datacenterasset/add_form.html"
+    actions = ["bulk_edit_action"]
     change_views = [
         DataCenterAssetComponents,
         DataCenterAssetNetworkView,
@@ -391,143 +395,227 @@ class DataCenterAssetAdmin(
     show_transition_history = True
     resource_class = resources.DataCenterAssetResource
     list_display = [
-        'hostname',
-        'status',
-        'barcode',
-        'model',
-        'sn',
-        'invoice_date',
-        'invoice_no',
-        'show_location',
-        'service_env',
-        'configuration_path',
-        'scan_status',
-        'scm_status_check',
-        'property_of',
-        'order_no'
+        "hostname",
+        "status",
+        "barcode",
+        "model",
+        "sn",
+        "invoice_date",
+        "invoice_no",
+        "show_location",
+        "service_env",
+        "configuration_path",
+        "scan_status",
+        "scm_status_check",
+        "property_of",
+        "order_no",
     ]
-    multiadd_summary_fields = list_display + ['rack']
-    one_of_mulitvalue_required = ['sn', 'barcode']
+    multiadd_summary_fields = list_display + ["rack"]
+    one_of_mulitvalue_required = ["sn", "barcode"]
     bulk_edit_list = [
-        'hostname', 'status', 'barcode', 'model', 'sn', 'invoice_date',
-        'invoice_no', 'rack', 'orientation', 'position', 'slot_no', 'price',
-        'provider', 'service_env', 'configuration_path', 'tags', 'start_usage',
-        'depreciation_end_date', 'depreciation_rate', 'order_no', 'remarks',
-        'property_of'
+        "hostname",
+        "status",
+        "barcode",
+        "model",
+        "sn",
+        "invoice_date",
+        "invoice_no",
+        "rack",
+        "orientation",
+        "position",
+        "slot_no",
+        "price",
+        "provider",
+        "service_env",
+        "configuration_path",
+        "tags",
+        "start_usage",
+        "depreciation_end_date",
+        "depreciation_rate",
+        "order_no",
+        "remarks",
+        "property_of",
     ]
-    bulk_edit_no_fillable = ['barcode', 'sn']
+    bulk_edit_no_fillable = ["barcode", "sn"]
     search_fields = [
-        'barcode', 'sn', 'hostname', 'invoice_no', 'order_no',
-        'ethernet_set__ipaddress__address', 'ethernet_set__ipaddress__hostname'
+        "barcode",
+        "sn",
+        "hostname",
+        "invoice_no",
+        "order_no",
+        "ethernet_set__ipaddress__address",
+        "ethernet_set__ipaddress__hostname",
     ]
-    list_filter_prefix = ['hostname']
+    list_filter_prefix = ["hostname"]
     list_filter_postfix = [
-        'invoice_no', 'invoice_date', 'status', 'barcode', 'sn',
-        'order_no', 'model__name',
-        ('model__category', RelatedAutocompleteFieldListFilter),
-        'depreciation_end_date', 'force_depreciation', 'remarks',
-        'budget_info', 'rack', 'rack__server_room',
-        'rack__server_room__data_center', 'position', 'property_of',
-        LiquidatedStatusFilter, TagsListFilter,
-        'fibrechannelcard_set__wwn'
+        "invoice_no",
+        "invoice_date",
+        "status",
+        "barcode",
+        "sn",
+        "order_no",
+        "model__name",
+        ("model__category", RelatedAutocompleteFieldListFilter),
+        "depreciation_end_date",
+        "force_depreciation",
+        "remarks",
+        "budget_info",
+        "rack",
+        "rack__server_room",
+        "rack__server_room__data_center",
+        "position",
+        "property_of",
+        LiquidatedStatusFilter,
+        TagsListFilter,
+        "fibrechannelcard_set__wwn",
     ]
     list_filter = generate_list_filter_with_common_fields(
-        list_filter_prefix,
-        list_filter_postfix
+        list_filter_prefix, list_filter_postfix
     )
-    date_hierarchy = 'created'
+    date_hierarchy = "created"
     list_select_related = [
-        'model',
-        'model__manufacturer',
-        'model__category',
-        'rack',
-        'rack__server_room',
-        'rack__server_room__data_center',
-        'service_env',
-        'service_env__service',
-        'service_env__environment',
-        'configuration_path',
-        'property_of',
-        'parent',
-        'budget_info',
+        "model",
+        "model__manufacturer",
+        "model__category",
+        "rack",
+        "rack__server_room",
+        "rack__server_room__data_center",
+        "service_env",
+        "service_env__service",
+        "service_env__environment",
+        "configuration_path",
+        "property_of",
+        "parent",
+        "budget_info",
     ]
     raw_id_fields = [
-        'model', 'rack', 'service_env', 'parent', 'budget_info',
-        'configuration_path',
+        "model",
+        "rack",
+        "service_env",
+        "parent",
+        "budget_info",
+        "configuration_path",
     ]
-    raw_id_override_parent = {'parent': DataCenterAsset}
-    _invoice_report_name = 'invoice-data-center-asset'
-    readonly_fields = ['get_created_date', 'go_to_visualization']
+    raw_id_override_parent = {"parent": DataCenterAsset}
+    _invoice_report_name = "invoice-data-center-asset"
+    readonly_fields = ["get_created_date", "go_to_visualization"]
 
     fieldsets = (
-        (_('Basic info'), {
-            'fields': (
-                'hostname', 'model', 'status', 'barcode', 'sn', 'niw',
-                'required_support', 'remarks', 'tags', 'property_of',
-                'firmware_version', 'bios_version',
-            )
-        }),
-        (_('Location Info'), {
-            'fields': (
-                'rack', 'position', 'orientation', 'slot_no', 'parent',
-                'management_ip', 'management_hostname', 'go_to_visualization'
-            )
-        }),
-        (_('Usage info'), {
-            'fields': (
-                'service_env', 'configuration_path', 'production_year',
-                'production_use_date',
-            )
-        }),
-        (_('Financial & Order Info'), {
-            'fields': (
-                'order_no', 'invoice_date', 'invoice_no', 'task_url', 'price',
-                'vendor_contract_number', 'leasing_rate',
-                'depreciation_rate', 'depreciation_end_date',
-                'force_depreciation', 'source', 'provider', 'delivery_date',
-                'budget_info', 'start_usage', 'get_created_date',
-            )
-        }),
+        (
+            _("Basic info"),
+            {
+                "fields": (
+                    "hostname",
+                    "model",
+                    "status",
+                    "barcode",
+                    "sn",
+                    "niw",
+                    "required_support",
+                    "remarks",
+                    "tags",
+                    "property_of",
+                    "firmware_version",
+                    "bios_version",
+                )
+            },
+        ),
+        (
+            _("Location Info"),
+            {
+                "fields": (
+                    "rack",
+                    "position",
+                    "orientation",
+                    "slot_no",
+                    "parent",
+                    "management_ip",
+                    "management_hostname",
+                    "go_to_visualization",
+                )
+            },
+        ),
+        (
+            _("Usage info"),
+            {
+                "fields": (
+                    "service_env",
+                    "configuration_path",
+                    "production_year",
+                    "production_use_date",
+                )
+            },
+        ),
+        (
+            _("Financial & Order Info"),
+            {
+                "fields": (
+                    "order_no",
+                    "invoice_date",
+                    "invoice_no",
+                    "task_url",
+                    "price",
+                    "vendor_contract_number",
+                    "leasing_rate",
+                    "depreciation_rate",
+                    "depreciation_end_date",
+                    "force_depreciation",
+                    "source",
+                    "provider",
+                    "delivery_date",
+                    "budget_info",
+                    "start_usage",
+                    "get_created_date",
+                )
+            },
+        ),
     )
 
     def get_export_queryset(self, request):
         return DataCenterAsset.polymorphic_objects.select_related(
             *self.list_select_related
         ).polymorphic_prefetch_related(
-            DataCenterAsset=['tags', 'ethernet_set__ipaddress', 'parent__ethernet_set__ipaddress'],
+            DataCenterAsset=[
+                "tags",
+                "ethernet_set__ipaddress",
+                "parent__ethernet_set__ipaddress",
+            ],
         )
 
     def get_multiadd_fields(self, obj=None):
         multiadd_fields = [
-            {'field': 'sn', 'allow_duplicates': False},
-            {'field': 'barcode', 'allow_duplicates': False},
+            {"field": "sn", "allow_duplicates": False},
+            {"field": "barcode", "allow_duplicates": False},
         ]
-        return getattr(
-            settings, 'MULTIADD_DATA_CENTER_ASSET_FIELDS', None
-        ) or multiadd_fields
+        return (
+            getattr(settings, "MULTIADD_DATA_CENTER_ASSET_FIELDS", None)
+            or multiadd_fields
+        )
 
     @mark_safe
     def go_to_visualization(self, obj):
         if not obj.rack:
-            return '&mdash;'
-        url = '{}#/sr/{}/rack/{}'.format(
-            reverse('dc_view'),
+            return "&mdash;"
+        url = "{}#/sr/{}/rack/{}".format(
+            reverse("dc_view"),
             obj.rack.server_room_id,
             obj.rack.id,
         )
-        label = '&nbsp;/&nbsp;'.join(obj.get_location())
+        label = "&nbsp;/&nbsp;".join(obj.get_location())
         return generate_html_link(url, label=label, params={})
-    go_to_visualization.short_description = _('Visualization')
+
+    go_to_visualization.short_description = _("Visualization")
 
     @mark_safe
     def show_location(self, obj):
         return obj.location
-    show_location.short_description = _('Location')
+
+    show_location.short_description = _("Location")
 
     # NOTE(romcheg): Django Admin can only order custom fields by one field.
     #                The rest of the ordering is configured in
     #                DataCenterAssetChangeList.get_ordering()
-    show_location.admin_order_field = 'slot_no'
+    show_location.admin_order_field = "slot_no"
 
     def get_created_date(self, obj):
         """
@@ -535,8 +623,9 @@ class DataCenterAssetAdmin(
         permissions, it cannot be displayed directly, because only superuser
         will see it)
         """
-        return obj.created or '-'
-    get_created_date.short_description = _('Created at')
+        return obj.created or "-"
+
+    get_created_date.short_description = _("Created at")
 
     def get_changelist(self, request, **kwargs):
         return DataCenterAssetChangeList
@@ -545,10 +634,10 @@ class DataCenterAssetAdmin(
 @register(ServerRoom)
 class ServerRoomAdmin(RalphAdmin):
 
-    list_select_related = ['data_center']
-    search_fields = ['name', 'data_center__name']
+    list_select_related = ["data_center"]
+    search_fields = ["name", "data_center__name"]
     resource_class = resources.ServerRoomResource
-    list_display = ['name', 'data_center']
+    list_display = ["name", "data_center"]
 
 
 class RackAccessoryInline(RalphTabularInline):
@@ -558,33 +647,35 @@ class RackAccessoryInline(RalphTabularInline):
 @register(Rack)
 class RackAdmin(RalphAdmin):
 
-    exclude = ['accessories']
+    exclude = ["accessories"]
     list_display = [
-        'name',
-        'server_room_name',
-        'data_center_name',
-        'reverse_ordering',
+        "name",
+        "server_room_name",
+        "data_center_name",
+        "reverse_ordering",
     ]
-    list_filter = ['server_room__data_center']  # TODO use fk field in filter
-    list_select_related = ['server_room', 'server_room__data_center']
-    search_fields = ['name']
+    list_filter = ["server_room__data_center"]  # TODO use fk field in filter
+    list_select_related = ["server_room", "server_room__data_center"]
+    search_fields = ["name"]
     inlines = [RackAccessoryInline]
     resource_class = resources.RackResource
 
     def server_room_name(self, obj):
-        return obj.server_room.name if obj.server_room else ''
-    server_room_name.short_description = _('Server room')
-    server_room_name.admin_order_field = 'server_room__name'
+        return obj.server_room.name if obj.server_room else ""
+
+    server_room_name.short_description = _("Server room")
+    server_room_name.admin_order_field = "server_room__name"
 
     def data_center_name(self, obj):
-        return obj.server_room.data_center.name if obj.server_room else ''
-    data_center_name.short_description = _('Data Center')
-    data_center_name.admin_order_field = 'server_room__data_center__name'
+        return obj.server_room.data_center.name if obj.server_room else ""
+
+    data_center_name.short_description = _("Data Center")
+    data_center_name.admin_order_field = "server_room__data_center__name"
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "server_room":
             kwargs["queryset"] = ServerRoom.objects.select_related(
-                'data_center',
+                "data_center",
             )
         return super(RackAdmin, self).formfield_for_foreignkey(
             db_field, request, **kwargs
@@ -594,10 +685,10 @@ class RackAdmin(RalphAdmin):
 @register(RackAccessory)
 class RackAccessoryAdmin(RalphAdmin):
 
-    list_select_related = ['rack', 'accessory']
-    search_fields = ['accessory__name', 'rack__name']
-    raw_id_fields = ['rack']
-    list_display = ['__str__', 'position']
+    list_select_related = ["rack", "accessory"]
+    search_fields = ["accessory__name", "rack__name"]
+    raw_id_fields = ["rack"]
+    list_display = ["__str__", "position"]
     resource_class = resources.RackAccessoryResource
 
 
@@ -608,17 +699,21 @@ class DatabaseAdmin(RalphAdmin):
 
 @register(VIP)
 class VIPAdmin(RalphAdmin):
-    search_fields = ['name', 'ip__address']
-    list_display = ['name', 'ip', 'port', 'protocol', 'service_env']
-    list_filter = ['ip', 'port', 'protocol', 'service_env', 'parent']
-    list_select_related = [
-        'ip', 'service_env__service', 'service_env__environment'
-    ]
-    raw_id_fields = ['ip', 'service_env', 'parent', 'configuration_path']
-    raw_id_override_parent = {'parent': Cluster}
+    search_fields = ["name", "ip__address"]
+    list_display = ["name", "ip", "port", "protocol", "service_env"]
+    list_filter = ["ip", "port", "protocol", "service_env", "parent"]
+    list_select_related = ["ip", "service_env__service", "service_env__environment"]
+    raw_id_fields = ["ip", "service_env", "parent", "configuration_path"]
+    raw_id_override_parent = {"parent": Cluster}
     fields = (
-        'name', 'ip', 'port', 'protocol', 'service_env', 'parent', 'remarks',
-        'tags'
+        "name",
+        "ip",
+        "port",
+        "protocol",
+        "service_env",
+        "parent",
+        "remarks",
+        "tags",
     )
 
 
@@ -644,50 +739,52 @@ class DCHostChangeList(ChangeList):
 
 
 class DCHostSCMInfo(SCMCheckInfo):
-    url_name = 'dchost_scm_info'
+    url_name = "dchost_scm_info"
 
 
 @register(DCHost)
 class DCHostAdmin(
-    SCMStatusCheckInChangeListMixin,
-    ScanStatusInChangeListMixin,
-    RalphAdmin
+    SCMStatusCheckInChangeListMixin, ScanStatusInChangeListMixin, RalphAdmin
 ):
-    change_list_template = 'admin/data_center/dchost/change_list.html'
+    change_list_template = "admin/data_center/dchost/change_list.html"
     search_fields = [
-        'remarks',
-        'asset__hostname',
-        'cloudhost__hostname',
-        'cluster__hostname',
-        'virtualserver__hostname',
-        'ethernet_set__ipaddress__address',
-        'ethernet_set__ipaddress__hostname'
+        "remarks",
+        "asset__hostname",
+        "cloudhost__hostname",
+        "cluster__hostname",
+        "virtualserver__hostname",
+        "ethernet_set__ipaddress__address",
+        "ethernet_set__ipaddress__hostname",
     ]
     list_display = [
-        'get_hostname',
-        'content_type',
-        'service_env',
-        'configuration_path',
-        'show_location',
-        'remarks',
-        'scan_status',
-        'scm_status_check'
+        "get_hostname",
+        "content_type",
+        "service_env",
+        "configuration_path",
+        "show_location",
+        "remarks",
+        "scan_status",
+        "scm_status_check",
     ]
     # TODO: sn
     # TODO: hostname, DC
     list_filter_prefix = [DCHostHostnameFilter]
-    list_filter_postfix = [('content_type', DCHostTypeListFilter,)]
+    list_filter_postfix = [
+        (
+            "content_type",
+            DCHostTypeListFilter,
+        )
+    ]
     list_filter = generate_list_filter_with_common_fields(
-        list_filter_prefix,
-        list_filter_postfix
+        list_filter_prefix, list_filter_postfix
     )
 
     list_select_related = [
-        'content_type',
-        'configuration_path',
-        'service_env',
-        'service_env__environment',
-        'service_env__service',
+        "content_type",
+        "configuration_path",
+        "service_env",
+        "service_env__environment",
+        "service_env__service",
     ]
 
     resource_class = resources.DCHostResource
@@ -704,7 +801,7 @@ class DCHostAdmin(
     def get_hostname(self, obj):
         return obj.hostname
 
-    get_hostname.short_description = _('Hostname')
+    get_hostname.short_description = _("Hostname")
     # TODO: simple if hostname would be in one model
     # get_hostname.admin_order_field = 'asset__hostname'
 
@@ -718,32 +815,31 @@ class DCHostAdmin(
 
     @mark_safe
     def show_location(self, obj):
-        if hasattr(obj, 'get_location'):
-            return ' / '.join(obj.get_location())
-        return ''
-    show_location.short_description = _('Location')
+        if hasattr(obj, "get_location"):
+            return " / ".join(obj.get_location())
+        return ""
+
+    show_location.short_description = _("Location")
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         # location
         polymorphic_select_related = dict(
-            DataCenterAsset=[
-                'rack__server_room__data_center', 'model'
-            ],
+            DataCenterAsset=["rack__server_room__data_center", "model"],
             VirtualServer=[
-                'parent__asset__datacenterasset__rack__server_room__data_center',  # noqa
+                "parent__asset__datacenterasset__rack__server_room__data_center",  # noqa
             ],
-            CloudHost=[
-                'hypervisor__rack__server_room__data_center'
-            ]
+            CloudHost=["hypervisor__rack__server_room__data_center"],
         )
         qs = qs.polymorphic_select_related(**polymorphic_select_related)
-        qs = qs.polymorphic_prefetch_related(Cluster=[
-            Prefetch(
-                'baseobjectcluster_set__base_object',
-                queryset=BaseObject.polymorphic_objects.polymorphic_select_related(  # noqa
-                    **polymorphic_select_related
+        qs = qs.polymorphic_prefetch_related(
+            Cluster=[
+                Prefetch(
+                    "baseobjectcluster_set__base_object",
+                    queryset=BaseObject.polymorphic_objects.polymorphic_select_related(  # noqa
+                        **polymorphic_select_related
+                    ),
                 )
-            )
-        ])
+            ]
+        )
         return qs

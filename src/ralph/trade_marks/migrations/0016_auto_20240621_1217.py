@@ -7,32 +7,32 @@ import django.db.models.manager
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('trade_marks', '0015_auto_20221020_1340'),
+        ("trade_marks", "0015_auto_20221020_1340"),
     ]
 
     operations = [
         migrations.AlterModelManagers(
-            name='design',
+            name="design",
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ("polymorphic_objects", django.db.models.manager.Manager()),
             ],
         ),
         migrations.AlterModelManagers(
-            name='patent',
+            name="patent",
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ("polymorphic_objects", django.db.models.manager.Manager()),
             ],
         ),
         migrations.AlterModelManagers(
-            name='trademark',
+            name="trademark",
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ("polymorphic_objects", django.db.models.manager.Manager()),
             ],
         ),
         migrations.AlterModelManagers(
-            name='utilitymodel',
+            name="utilitymodel",
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ("polymorphic_objects", django.db.models.manager.Manager()),
             ],
         ),
     ]

@@ -4,8 +4,8 @@ from ralph.attachments.views import ServeAttachment
 
 urlpatterns = [
     url(
-        r'^attachment/(?P<id>\d+)-(?P<filename>.+)',
+        r"^attachment/(?P<id>\d+)-(?P<filename>.+)",
         ServeAttachment.as_view(),
-        name='serve_attachment'
+        name="serve_attachment",
     ),
 ]

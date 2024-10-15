@@ -9,13 +9,18 @@ import ralph.lib.polymorphic.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('operations', '0012_auto_20211206_1347'),
+        ("operations", "0012_auto_20211206_1347"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='operation',
-            name='base_objects',
-            field=ralph.lib.polymorphic.fields.PolymorphicManyToManyField(blank=True, related_name='operations', to='assets.BaseObject', verbose_name='objects'),
+            model_name="operation",
+            name="base_objects",
+            field=ralph.lib.polymorphic.fields.PolymorphicManyToManyField(
+                blank=True,
+                related_name="operations",
+                to="assets.BaseObject",
+                verbose_name="objects",
+            ),
         ),
     ]

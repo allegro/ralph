@@ -8,7 +8,7 @@ from django.core.cache import caches
 
 def clear_sitetree_cache(apps, schema_editor):
     try:
-        cache = caches['default']
+        cache = caches["default"]
         cache.delete("sitetrees")
     except Exception as e:
         pass
@@ -17,12 +17,11 @@ def clear_sitetree_cache(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('dashboards', '0006_auto_20171221_0959'),
+        ("dashboards", "0006_auto_20171221_0959"),
     ]
 
     operations = [
         migrations.RunPython(
-            code=clear_sitetree_cache,
-            reverse_code=clear_sitetree_cache
+            code=clear_sitetree_cache, reverse_code=clear_sitetree_cache
         )
     ]

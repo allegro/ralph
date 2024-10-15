@@ -17,7 +17,7 @@ from ralph.assets.tests.factories import (
     FibreChannelCardFactory,
     MemoryFactory,
     ProcessorFactory,
-    ServiceEnvironmentFactory
+    ServiceEnvironmentFactory,
 )
 from ralph.data_center.models import BaseObjectCluster
 from ralph.data_center.models.choices import ConnectionType
@@ -30,14 +30,14 @@ from ralph.data_center.models.physical import (
     DataCenterAsset,
     Rack,
     RackAccessory,
-    ServerRoom
+    ServerRoom,
 )
 from ralph.data_center.models.virtual import (
     Cluster,
     ClusterType,
     Database,
     VIP,
-    VIPProtocol
+    VIPProtocol,
 )
 from ralph.security.tests.factories import SecurityScanFactory
 
@@ -47,7 +47,7 @@ date_now = datetime.now().date()
 class DiskShareFactory(DjangoModelFactory):
 
     base_object = factory.SubFactory(BaseObjectFactory)
-    wwn = factory.Sequence(lambda n: 'wwn {}'.format(n))
+    wwn = factory.Sequence(lambda n: "wwn {}".format(n))
 
     class Meta:
         model = DiskShare
@@ -63,11 +63,11 @@ class DiskShareMountFactory(DjangoModelFactory):
 
 class ClusterTypeFactory(DjangoModelFactory):
 
-    name = factory.Iterator(['Application', 'Partitional'])
+    name = factory.Iterator(["Application", "Partitional"])
 
     class Meta:
         model = ClusterType
-        django_get_or_create = ['name']
+        django_get_or_create = ["name"]
 
 
 class ClusterFactory(DjangoModelFactory):
@@ -79,11 +79,11 @@ class ClusterFactory(DjangoModelFactory):
 
     class Meta:
         model = Cluster
-        django_get_or_create = ['name']
+        django_get_or_create = ["name"]
 
     @factory.post_generation
     def post_tags(self, create, extracted, **kwargs):
-        self.tags.add('abc, cde', 'xyz')
+        self.tags.add("abc, cde", "xyz")
 
 
 class BaseObjectClusterFactory(DjangoModelFactory):
@@ -92,28 +92,28 @@ class BaseObjectClusterFactory(DjangoModelFactory):
 
     class Meta:
         model = BaseObjectCluster
-        django_get_or_create = ['cluster', 'base_object']
+        django_get_or_create = ["cluster", "base_object"]
 
 
 class DataCenterFactory(DjangoModelFactory):
 
-    name = factory.Iterator(['DC1', 'DC2', 'DC3', 'DC4', 'DC5'])
+    name = factory.Iterator(["DC1", "DC2", "DC3", "DC4", "DC5"])
 
     class Meta:
         model = DataCenter
-        django_get_or_create = ['name']
+        django_get_or_create = ["name"]
 
 
 class ServerRoomFactory(DjangoModelFactory):
 
-    name = factory.Iterator([
-        'Server Room A', 'Server Room B', 'Server Room C', 'Server Room D'
-    ])
+    name = factory.Iterator(
+        ["Server Room A", "Server Room B", "Server Room C", "Server Room D"]
+    )
     data_center = factory.SubFactory(DataCenterFactory)
 
     class Meta:
         model = ServerRoom
-        django_get_or_create = ['name']
+        django_get_or_create = ["name"]
 
 
 class AccessoryFactory(DjangoModelFactory):
@@ -122,17 +122,17 @@ class AccessoryFactory(DjangoModelFactory):
 
     class Meta:
         model = Accessory
-        django_get_or_create = ['name']
+        django_get_or_create = ["name"]
 
 
 class RackFactory(DjangoModelFactory):
 
-    name = factory.Sequence(lambda n: 'Rack #{}'.format(n + 100))
+    name = factory.Sequence(lambda n: "Rack #{}".format(n + 100))
     server_room = factory.SubFactory(ServerRoomFactory)
 
     class Meta:
         model = Rack
-        django_get_or_create = ['name']
+        django_get_or_create = ["name"]
 
 
 class RackAccessoryFactory(DjangoModelFactory):
@@ -147,25 +147,21 @@ class RackAccessoryFactory(DjangoModelFactory):
 class DataCenterAssetFactory(DjangoModelFactory):
     force_depreciation = False
     model = factory.SubFactory(DataCenterAssetModelFactory)
-    sn = factory.Faker('ssn')
-    barcode = factory.Sequence(lambda n: 'dc' + str(n + 10**8))
-    hostname = factory.Sequence(lambda n: 'ralph{}.allegro.pl'.format(n))
-    order_no = factory.Sequence(lambda n: 'Order number ' + str(n))
+    sn = factory.Faker("ssn")
+    barcode = factory.Sequence(lambda n: "dc" + str(n + 10**8))
+    hostname = factory.Sequence(lambda n: "ralph{}.allegro.pl".format(n))
+    order_no = factory.Sequence(lambda n: "Order number " + str(n))
     budget_info = factory.SubFactory(BudgetInfoFactory)
     invoice_date = date_now - timedelta(days=15)
-    invoice_no = factory.Sequence(lambda n: 'Invoice number ' + str(n))
+    invoice_no = factory.Sequence(lambda n: "Invoice number " + str(n))
     property_of = factory.SubFactory(AssetHolderFactory)
-    provider = factory.Iterator([
-        'Komputronik', 'Dell Poland', 'Oracle Poland'
-    ])
-    source = factory.Iterator([
-        AssetSource.shipment.id, AssetSource.salvaged.id
-    ])
+    provider = factory.Iterator(["Komputronik", "Dell Poland", "Oracle Poland"])
+    source = factory.Iterator([AssetSource.shipment.id, AssetSource.salvaged.id])
     price = FuzzyDecimal(10, 300)
     service_env = factory.SubFactory(ServiceEnvironmentFactory)
     configuration_path = factory.SubFactory(ConfigurationClassFactory)
-    firmware_version = factory.Sequence(lambda n: '1.1.{}'.format(n))
-    bios_version = factory.Sequence(lambda n: '2.2.{}'.format(n))
+    firmware_version = factory.Sequence(lambda n: "1.1.{}".format(n))
+    bios_version = factory.Sequence(lambda n: "2.2.{}".format(n))
 
     class Meta:
         model = DataCenterAsset
@@ -175,6 +171,7 @@ class DataCenterAssetFullFactory(DataCenterAssetFactory):
     """
     Factory for DataCenterAsset and m2m relations
     """
+
     rack = factory.SubFactory(RackFactory)
 
     # m2m relations
@@ -182,50 +179,50 @@ class DataCenterAssetFullFactory(DataCenterAssetFactory):
     # clusters, tags
     eth1 = factory.RelatedFactory(
         EthernetWithIPAddressFactory,
-        'base_object',
+        "base_object",
         ipaddress__is_management=True,
     )
-    eth2 = factory.RelatedFactory(EthernetFactory, 'base_object')
+    eth2 = factory.RelatedFactory(EthernetFactory, "base_object")
     eth3 = factory.RelatedFactory(
         EthernetWithIPAddressFactory,
-        'base_object',
+        "base_object",
         ipaddress__dhcp_expose=True,
     )
     licence1 = factory.RelatedFactory(
-        'ralph.licences.tests.factories.BaseObjectLicenceFactory', 'base_object'
+        "ralph.licences.tests.factories.BaseObjectLicenceFactory", "base_object"
     )
     licence2 = factory.RelatedFactory(
-        'ralph.licences.tests.factories.BaseObjectLicenceFactory',
-        'base_object',
-        quantity=3
+        "ralph.licences.tests.factories.BaseObjectLicenceFactory",
+        "base_object",
+        quantity=3,
     )
     support1 = factory.RelatedFactory(
-        'ralph.supports.tests.factories.BaseObjectsSupportFactory',
-        'baseobject'
+        "ralph.supports.tests.factories.BaseObjectsSupportFactory", "baseobject"
     )
     support2 = factory.RelatedFactory(
-        'ralph.supports.tests.factories.BaseObjectsSupportFactory',
-        'baseobject'
+        "ralph.supports.tests.factories.BaseObjectsSupportFactory", "baseobject"
     )
-    mem1 = factory.RelatedFactory(MemoryFactory, 'base_object')
-    mem2 = factory.RelatedFactory(MemoryFactory, 'base_object')
-    fc_card1 = factory.RelatedFactory(FibreChannelCardFactory, 'base_object')
-    fc_card2 = factory.RelatedFactory(FibreChannelCardFactory, 'base_object')
-    proc1 = factory.RelatedFactory(ProcessorFactory, 'base_object')
-    proc2 = factory.RelatedFactory(ProcessorFactory, 'base_object')
-    disk1 = factory.RelatedFactory(DiskFactory, 'base_object')
-    disk2 = factory.RelatedFactory(DiskFactory, 'base_object')
+    mem1 = factory.RelatedFactory(MemoryFactory, "base_object")
+    mem2 = factory.RelatedFactory(MemoryFactory, "base_object")
+    fc_card1 = factory.RelatedFactory(FibreChannelCardFactory, "base_object")
+    fc_card2 = factory.RelatedFactory(FibreChannelCardFactory, "base_object")
+    proc1 = factory.RelatedFactory(ProcessorFactory, "base_object")
+    proc2 = factory.RelatedFactory(ProcessorFactory, "base_object")
+    disk1 = factory.RelatedFactory(DiskFactory, "base_object")
+    disk2 = factory.RelatedFactory(DiskFactory, "base_object")
     scmstatuscheck = factory.RelatedFactory(
-        'ralph.configuration_management.tests.factories.SCMStatusCheckFactory',
-        'base_object',
+        "ralph.configuration_management.tests.factories.SCMStatusCheckFactory",
+        "base_object",
     )
-    securityscan = factory.RelatedFactory(SecurityScanFactory, factory_related_name='base_object')
+    securityscan = factory.RelatedFactory(
+        SecurityScanFactory, factory_related_name="base_object"
+    )
 
-    securityscan = factory.RelatedFactory(SecurityScanFactory, 'base_object')
+    securityscan = factory.RelatedFactory(SecurityScanFactory, "base_object")
 
     @factory.post_generation
     def post_tags(self, create, extracted, **kwargs):
-        self.tags.add('abc, cde', 'xyz')
+        self.tags.add("abc, cde", "xyz")
 
 
 class ConnectionFactory(DjangoModelFactory):
@@ -246,9 +243,9 @@ class DatabaseFactory(DjangoModelFactory):
 
 
 class VIPFactory(DjangoModelFactory):
-    name = factory.Sequence(lambda n: 'ralph-test{}.local'.format(n))
+    name = factory.Sequence(lambda n: "ralph-test{}.local".format(n))
     # IPAddressFactory is given as string to avoid circular imports here.
-    ip = factory.SubFactory('ralph.networks.tests.factories.IPAddressFactory')
+    ip = factory.SubFactory("ralph.networks.tests.factories.IPAddressFactory")
     port = FuzzyInteger(1024, 49151)
     protocol = factory.Iterator([VIPProtocol.TCP.id, VIPProtocol.UDP.id])
     service_env = factory.SubFactory(ServiceEnvironmentFactory)

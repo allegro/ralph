@@ -7,26 +7,26 @@ import django.db.models.manager
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('virtual', '0014_auto_20240621_1009'),
+        ("virtual", "0014_auto_20240621_1009"),
     ]
 
     operations = [
         migrations.AlterModelManagers(
-            name='cloudhost',
+            name="cloudhost",
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ("polymorphic_objects", django.db.models.manager.Manager()),
             ],
         ),
         migrations.AlterModelManagers(
-            name='cloudproject',
+            name="cloudproject",
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ("polymorphic_objects", django.db.models.manager.Manager()),
             ],
         ),
         migrations.AlterModelManagers(
-            name='virtualserver',
+            name="virtualserver",
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ("polymorphic_objects", django.db.models.manager.Manager()),
             ],
         ),
     ]

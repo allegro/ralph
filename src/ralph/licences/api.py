@@ -5,7 +5,7 @@ from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.api.serializers import ReversionHistoryAPISerializerMixin
 from ralph.assets.api.serializers import (
     BaseObjectSimpleSerializer,
-    ServiceEnvironmentSimpleSerializer
+    ServiceEnvironmentSimpleSerializer,
 )
 from ralph.lib.api.utils import renderer_classes_without_form
 from ralph.licences.models import (
@@ -13,7 +13,7 @@ from ralph.licences.models import (
     Licence,
     LicenceType,
     LicenceUser,
-    Software
+    Software,
 )
 
 
@@ -35,10 +35,8 @@ class LicenceUserSerializer(RalphAPISerializer):
 
 
 class BaseObjectLicenceSerializer(
-    ReversionHistoryAPISerializerMixin,
-    RalphAPISerializer
+    ReversionHistoryAPISerializerMixin, RalphAPISerializer
 ):
-
     class Meta:
         model = BaseObjectLicence
         fields = "__all__"
@@ -51,17 +49,15 @@ class BaseObjectLicenceSerializer(
 
 class LicenceSerializer(BaseObjectSimpleSerializer):
     base_objects = BaseObjectLicenceSerializer(
-        many=True, read_only=True, source='baseobjectlicence_set'
+        many=True, read_only=True, source="baseobjectlicence_set"
     )
-    users = LicenceUserSerializer(
-        many=True, read_only=True, source='licenceuser_set'
-    )
+    users = LicenceUserSerializer(many=True, read_only=True, source="licenceuser_set")
     service_env = ServiceEnvironmentSimpleSerializer()
 
     class Meta:
         model = Licence
         depth = 1
-        exclude = ('content_type', 'configuration_path')
+        exclude = ("content_type", "configuration_path")
 
 
 class SoftwareSerializer(RalphAPISerializer):
@@ -78,12 +74,15 @@ class BaseObjectLicenceViewSet(RalphAPIViewSet):
     queryset = BaseObjectLicence.objects.all()
     serializer_class = BaseObjectLicenceSerializer
     select_related = [
-        'licence',
-        'base_object',
-        'licence__region', 'licence__manufacturer',
-        'licence__licence_type', 'licence__software',
-        'licence__budget_info', 'licence__office_infrastructure',
-        'licence__property_of',
+        "licence",
+        "base_object",
+        "licence__region",
+        "licence__manufacturer",
+        "licence__licence_type",
+        "licence__software",
+        "licence__budget_info",
+        "licence__office_infrastructure",
+        "licence__property_of",
     ]
     save_serializer_class = BaseObjectLicenceSerializer
 
@@ -98,13 +97,24 @@ class LicenceViewSet(RalphAPIViewSet):
     queryset = Licence.objects.all()
     serializer_class = LicenceSerializer
     select_related = [
-        'region', 'manufacturer', 'office_infrastructure', 'licence_type',
-        'software', 'service_env', 'service_env__service',
-        'service_env__environment', 'budget_info', 'property_of',
+        "region",
+        "manufacturer",
+        "office_infrastructure",
+        "licence_type",
+        "software",
+        "service_env",
+        "service_env__service",
+        "service_env__environment",
+        "budget_info",
+        "property_of",
     ]
     prefetch_related = [
-        'tags', 'users', 'licenceuser_set__user',
-        'baseobjectlicence_set__base_object', 'custom_fields', 'content_type'
+        "tags",
+        "users",
+        "licenceuser_set__user",
+        "baseobjectlicence_set__base_object",
+        "custom_fields",
+        "content_type",
     ]
 
 
@@ -112,9 +122,13 @@ class LicenceUserViewSet(RalphAPIViewSet):
     queryset = LicenceUser.objects.all()
     serializer_class = LicenceUserSerializer
     select_related = [
-        'licence__region', 'licence__manufacturer', 'licence__office_infrastructure',
-        'licence__licence_type', 'licence__software', 'licence__budget_info',
-        'user'
+        "licence__region",
+        "licence__manufacturer",
+        "licence__office_infrastructure",
+        "licence__licence_type",
+        "licence__software",
+        "licence__budget_info",
+        "user",
     ]
 
 
@@ -123,9 +137,9 @@ class SoftwareViewSet(RalphAPIViewSet):
     serializer_class = SoftwareSerializer
 
 
-router.register(r'base-objects-licences', BaseObjectLicenceViewSet)
-router.register(r'licences', LicenceViewSet)
-router.register(r'licence-types', LicenceTypeViewSet)
-router.register(r'licence-users', LicenceUserViewSet)
-router.register(r'software', SoftwareViewSet)
+router.register(r"base-objects-licences", BaseObjectLicenceViewSet)
+router.register(r"licences", LicenceViewSet)
+router.register(r"licence-types", LicenceTypeViewSet)
+router.register(r"licence-users", LicenceUserViewSet)
+router.register(r"software", SoftwareViewSet)
 urlpatterns = []

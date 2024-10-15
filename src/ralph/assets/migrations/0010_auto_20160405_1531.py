@@ -7,12 +7,12 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('assets', '0009_auto_20160307_1138'),
+        ("assets", "0009_auto_20160307_1138"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='service',
+            name="service",
             options={},
         ),
     ]
