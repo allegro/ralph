@@ -88,9 +88,9 @@ All newline characters will be converted to Unix \\n newlines.
 <br>  - ralph_instance (eg. '{ralph_instance}')
 <br>  - service_env (eg. 'Backup systems - prod')
 <br>  - service_uid (eg. 'sc-123')
-""".format(
+""".format(  # noqa
     ralph_instance=settings.RALPH_INSTANCE.rstrip("/")
-).strip()  # noqa
+).strip()
 
 
 class PrebootConfiguration(PrebootItem):

@@ -301,7 +301,7 @@ class RalphOpenStackInfrastructureClient:
                 project_id = server['tenant_id']
                 host_id = server['id']
                 image_name = client.get_image_name(
-                     server['image']['id']
+                    server['image']['id']
                 ) if server['image'] else None
                 flavor_id = server['flavor']['id']
                 new_server = {

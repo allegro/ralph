@@ -7,8 +7,8 @@ class RalphOperationsConfig(RalphAppConfig):
     verbose_name = "Ralph Operations"
 
     def ready(self):
-        from ralph.operations.changemanagement.subscribtions import (
+        from ralph.operations.changemanagement.subscribtions import (  # noqa
             receive_chm_event,
-        )  # noqa
+        )
 
         super().ready()

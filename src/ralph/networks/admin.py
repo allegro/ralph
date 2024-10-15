@@ -163,8 +163,8 @@ class NetworkAdmin(RalphMPTTAdmin):
 
     add_message = _('Network added to <a href="{}" _target="blank">{}</a>')
     change_message = _(
-        'Network reassigned from network <a href="{}" target="_blank">{}</a> to <a href="{}" target="_blank">{}</a>'
-    )  # noqa
+        'Network reassigned from network <a href="{}" target="_blank">{}</a> to <a href="{}" target="_blank">{}</a>'  # noqa
+    )
 
     fieldsets = (
         (
@@ -343,8 +343,8 @@ class IPAddressAdmin(ParentChangeMixin, RalphAdmin):
 
     add_message = _('IP added to <a href="{}" _target="blank">{}</a>')
     change_message = _(
-        'IP reassigned from network <a href="{}" target="_blank">{}</a> to <a href="{}" target="_blank">{}</a>'
-    )  # noqa
+        'IP reassigned from network <a href="{}" target="_blank">{}</a> to <a href="{}" target="_blank">{}</a>'  # noqa
+    )
 
     @mark_safe
     def get_network_path(self, obj):
