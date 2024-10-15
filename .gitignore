@@ -15,7 +15,7 @@ develop-eggs/
 dist/
 downloads/
 eggs/
-lib/
+venv/
 lib64/
 parts/
 sdist/
