@@ -7,10 +7,7 @@ from django.core.exceptions import FieldDoesNotExist, ValidationError
 from django.db.models.query import QuerySet
 
 from ralph.lib.mixins.forms import RequestFormMixin
-from ralph.lib.permissions.models import (
-    PermByFieldMixin,
-    PermissionsForObjectMixin
-)
+from ralph.lib.permissions.models import PermByFieldMixin, PermissionsForObjectMixin
 
 logger = logging.getLogger(__name__)
 
@@ -32,15 +29,15 @@ class PermissionPerFieldAdminMixin(object):
         except FieldDoesNotExist:
             perm_field = getattr(
                 (
-                    getattr(self, field_name, None) or
-                    getattr(self.model, field_name, None)
+                    getattr(self, field_name, None)
+                    or getattr(self.model, field_name, None)
                 ),
-                '_permission_field',
-                None
+                "_permission_field",
+                None,
             )
             if perm_field:
                 logger.debug(
-                    'Checking permission for field {} instead of {}'.format(
+                    "Checking permission for field {} instead of {}".format(
                         perm_field, field_name
                     )
                 )
@@ -48,27 +45,24 @@ class PermissionPerFieldAdminMixin(object):
             else:
                 # by default user has access to the field
                 return True
-        return self.model.has_access_to_field(
-            field_name, request.user, action='view'
-        )
+        return self.model.has_access_to_field(field_name, request.user, action="view")
 
     # TODO: required permissions for add and change
     def get_fieldsets(self, request, obj=None):
         new_fieldsets = []
-        fieldsets = super().get_fieldsets(
-            request, obj
-        )
+        fieldsets = super().get_fieldsets(request, obj)
         if not issubclass(self.model, PermByFieldMixin):
             return fieldsets
 
         for fieldset in deepcopy(fieldsets):
             fields = [
-                field for field in fieldset[1]['fields']
+                field
+                for field in fieldset[1]["fields"]
                 if self._has_access_to_field(field, request)
             ]
             if not fields:
                 continue
-            fieldset[1]['fields'] = fields
+            fieldset[1]["fields"] = fields
             new_fieldsets.append(fieldset)
         return new_fieldsets
 
@@ -77,11 +71,10 @@ class PermissionPerFieldAdminMixin(object):
         if not issubclass(self.model, PermByFieldMixin):
             return super().get_readonly_fields(request, obj)
 
-        can_view = self.model.allowed_fields(request.user, 'view')
-        can_change = self.model.allowed_fields(request.user, 'change')
+        can_view = self.model.allowed_fields(request.user, "view")
+        can_change = self.model.allowed_fields(request.user, "change")
         return list(
-            (can_view - can_change) |
-            set(super().get_readonly_fields(request, obj))
+            (can_view - can_change) | set(super().get_readonly_fields(request, obj))
         )
 
     def get_form(self, request, obj=None, **kwargs):
@@ -105,8 +98,7 @@ class PermissionPerFieldAdminMixin(object):
             return list_display
 
         list_display = [
-            field for field in list_display
-            if self._has_access_to_field(field, request)
+            field for field in list_display if self._has_access_to_field(field, request)
         ]
         return list_display
 
@@ -119,9 +111,8 @@ class PermissionsPerObjectFormMixin(RequestFormMixin):
         """
         for field_name, field in self.fields.items():
             value = []
-            if (
-                isinstance(field, forms.ModelChoiceField) and
-                issubclass(field.queryset.model, PermissionsForObjectMixin)
+            if isinstance(field, forms.ModelChoiceField) and issubclass(
+                field.queryset.model, PermissionsForObjectMixin
             ):
                 value = self.cleaned_data.get(field_name)
                 if value and not isinstance(value, (list, tuple, QuerySet)):
@@ -129,9 +120,12 @@ class PermissionsPerObjectFormMixin(RequestFormMixin):
             if field_name in self.fields and value:
                 for obj in value:
                     if not obj.has_permission_to_object(self._user):
-                        self.add_error(field_name, ValidationError(
-                            "You don't have permissions to select this value"
-                        ))
+                        self.add_error(
+                            field_name,
+                            ValidationError(
+                                "You don't have permissions to select this value"
+                            ),
+                        )
 
     def clean(self):
         super().clean()
@@ -143,6 +137,7 @@ class PermissionPerObjectAdminMixin(object):
     Admin mixin cooperating with
     `ralph.lib.permissions.models.PermissionsForObjectMixin`
     """
+
     def _check_obj_permission(self, request, obj=None):
         """
         Returns True if user has access to object.
@@ -153,16 +148,14 @@ class PermissionPerObjectAdminMixin(object):
         return obj_permission
 
     def has_change_permission(self, request, obj=None):
-        return (
-            super().has_change_permission(request, obj) and
-            self._check_obj_permission(request, obj)
-        )
+        return super().has_change_permission(
+            request, obj
+        ) and self._check_obj_permission(request, obj)
 
     def has_delete_permission(self, request, obj=None):
-        return (
-            super().has_delete_permission(request, obj) and
-            self._check_obj_permission(request, obj)
-        )
+        return super().has_delete_permission(
+            request, obj
+        ) and self._check_obj_permission(request, obj)
 
     def get_queryset(self, request):
         """
@@ -182,14 +175,9 @@ class PermissionPerObjectAdminMixin(object):
         queryset = super().get_field_queryset(db, db_field, request)
         related_model = db_field.remote_field.model
         if issubclass(related_model, PermissionsForObjectMixin):
-            queryset = related_model._get_objects_for_user(
-                request.user, queryset
-            )
+            queryset = related_model._get_objects_for_user(request.user, queryset)
         return queryset
 
 
-class PermissionAdminMixin(
-    PermissionPerFieldAdminMixin,
-    PermissionPerObjectAdminMixin
-):
+class PermissionAdminMixin(PermissionPerFieldAdminMixin, PermissionPerObjectAdminMixin):
     pass

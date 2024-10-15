@@ -7,14 +7,9 @@ from ralph.lib.permissions.api import (
     ObjectPermissionsMixin,
     PermissionsForObjectFilter,
     PermissionsPerFieldSerializerMixin,
-    RelatedObjectsPermissionsSerializerMixin
+    RelatedObjectsPermissionsSerializerMixin,
 )
-from ralph.lib.permissions.tests.models import (
-    Article,
-    Foo,
-    Library,
-    LongArticle
-)
+from ralph.lib.permissions.tests.models import Article, Foo, Library, LongArticle
 
 
 class Permission(ObjectPermissionsMixin, permissions.IsAuthenticated):
@@ -24,7 +19,7 @@ class Permission(ObjectPermissionsMixin, permissions.IsAuthenticated):
 class ArticleSerializer(
     PermissionsPerFieldSerializerMixin,
     RelatedObjectsPermissionsSerializerMixin,
-    serializers.ModelSerializer
+    serializers.ModelSerializer,
 ):
     class Meta:
         model = Article
@@ -41,7 +36,7 @@ class ArticleViewSet(viewsets.ModelViewSet):
 class LongArticleSerializer(
     PermissionsPerFieldSerializerMixin,
     RelatedObjectsPermissionsSerializerMixin,
-    serializers.ModelSerializer
+    serializers.ModelSerializer,
 ):
     class Meta:
         model = LongArticle
@@ -57,7 +52,7 @@ class LongArticleViewSet(viewsets.ModelViewSet):
 class LibrarySerializer(
     PermissionsPerFieldSerializerMixin,
     RelatedObjectsPermissionsSerializerMixin,
-    serializers.ModelSerializer
+    serializers.ModelSerializer,
 ):
     class Meta:
         model = Library
@@ -79,12 +74,12 @@ class FooViewSet(viewsets.ModelViewSet):
     serializer_class = FooSerializer
 
 
-app_name = 'test-api'
+app_name = "test-api"
 router = routers.DefaultRouter()
-router.register(r'articles', ArticleViewSet)
-router.register(r'long-articles', LongArticleViewSet)
-router.register(r'library', LibraryViewSet)
-router.register(r'foo', FooViewSet)
+router.register(r"articles", ArticleViewSet)
+router.register(r"long-articles", LongArticleViewSet)
+router.register(r"library", LibraryViewSet)
+router.register(r"foo", FooViewSet)
 urlpatterns = [
-    url(r'^test-api/', include((router.urls, app_name), namespace='test-api')),
+    url(r"^test-api/", include((router.urls, app_name), namespace="test-api")),
 ]

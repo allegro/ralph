@@ -9,7 +9,7 @@ from django.http import (
     Http404,
     HttpResponseBadRequest,
     HttpResponseForbidden,
-    HttpResponseRedirect
+    HttpResponseRedirect,
 )
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -31,22 +31,21 @@ from ralph.lib.transitions.models import (
     _transition_data_validation,
     run_transition,
     Transition,
-    TransitionJob
+    TransitionJob,
 )
 
 
 def collect_actions(obj, transition):
-    names = transition.actions.values_list('name', flat=True).all()
+    names = transition.actions.values_list("name", flat=True).all()
     actions = [getattr(obj, name) for name in names]
     return_attachment = [
-        getattr(action, 'return_attachment', False)
-        for action in actions
+        getattr(action, "return_attachment", False) for action in actions
     ]
     return actions, any(return_attachment)
 
 
 def build_params_url_for_redirect(ids):
-    return urlencode(list(zip(repeat('select', len(ids)), ids)))
+    return urlencode(list(zip(repeat("select", len(ids)), ids)))
 
 
 class NonAtomicView(object):
@@ -61,14 +60,14 @@ class NonAtomicView(object):
 
 
 class TransitionViewMixin(NonAtomicView, object):
-    template_name = 'transitions/run_transition.html'
+    template_name = "transitions/run_transition.html"
 
     def _objects_are_valid(self):
         try:
             _check_instances_for_transition(
                 instances=self.objects,
                 transition=self.transition,
-                requester=self.request.user
+                requester=self.request.user,
             )
         except TransitionNotAllowedError as e:
             return False, e
@@ -84,27 +83,27 @@ class TransitionViewMixin(NonAtomicView, object):
     def form_fields_from_actions(self):
         fields = {}
         for action in self.actions:
-            action_fields = getattr(action, 'form_fields', {})
+            action_fields = getattr(action, "form_fields", {})
             for name, options in action_fields.items():
                 options = deepcopy(options)
-                condition = options.get('condition', lambda x, y: True)
-                choices = options.get('choices')
-                field = options.get('field')
-                autocomplete_field = options.get('autocomplete_field', False)
+                condition = options.get("condition", lambda x, y: True)
+                choices = options.get("choices")
+                field = options.get("field")
+                autocomplete_field = options.get("autocomplete_field", False)
                 if not condition(self.obj, self.actions):
                     continue
-                autocomplete_model = options.get('autocomplete_model', False)
+                autocomplete_model = options.get("autocomplete_model", False)
                 model = self.obj
                 if autocomplete_model:
                     model = apps.get_model(autocomplete_model)
 
                 if autocomplete_field:
                     field = model._meta.get_field(autocomplete_field)
-                    options['field'].widget = AutocompleteWidget(
+                    options["field"].widget = AutocompleteWidget(
                         field=field,
                         admin_site=ralph_site,
                         request=self.request,
-                        **options.get('widget_options', {})
+                        **options.get("widget_options", {})
                     )
 
                 if choices:
@@ -115,31 +114,27 @@ class TransitionViewMixin(NonAtomicView, object):
                     if field:
                         field.choices = list_of_choices
                     else:
-                        options['field'] = forms.ChoiceField(
-                            choices=list_of_choices
-                        )
+                        options["field"] = forms.ChoiceField(choices=list_of_choices)
 
-                default_value = options.get(
-                    'default_value', lambda x, y: False
-                )
+                default_value = options.get("default_value", lambda x, y: False)
                 initial = default_value(self.actions, self.objects)
                 if initial:
-                    options['field'].initial = initial
+                    options["field"].initial = initial
 
                 if not autocomplete_field:
-                    options['field'].widget.request = self.request
+                    options["field"].widget.request = self.request
 
-                field_key = '{}__{}'.format(action.__name__, name)
-                fields[field_key] = options['field']
+                field_key = "{}__{}".format(action.__name__, name)
+                fields[field_key] = options["field"]
         return fields
 
     def dispatch(self, request, *args, **kwargs):
-        if not hasattr(self, 'transition'):
+        if not hasattr(self, "transition"):
             return HttpResponseBadRequest()
         if not request.user.has_perm(
-            '{}.{}'.format(
-                self.transition.permission_info['content_type'].app_label,
-                self.transition.permission_info['codename'],
+            "{}.{}".format(
+                self.transition.permission_info["content_type"].app_label,
+                self.transition.permission_info["codename"],
             )
         ):
             return HttpResponseForbidden()
@@ -152,20 +147,20 @@ class TransitionViewMixin(NonAtomicView, object):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if 'form' not in context:
-            context['form'] = self.get_form()
-        context['transition'] = self.transition
-        context['back_url'] = self.get_success_url()
-        context['objects'] = self.objects
-        context['verbose_name'] = self.obj._meta.verbose_name
+        if "form" not in context:
+            context["form"] = self.get_form()
+        context["transition"] = self.transition
+        context["back_url"] = self.get_success_url()
+        context["objects"] = self.objects
+        context["verbose_name"] = self.obj._meta.verbose_name
         return context
 
     def get_form(self):
         form_kwargs = {}
         fields_dict = self.form_fields_from_actions
-        ParamsForm = type('ParamsForm', (forms.Form,), fields_dict)  # noqa
-        if self.request.method == 'POST':
-            form_kwargs['data'] = self.request.POST
+        ParamsForm = type("ParamsForm", (forms.Form,), fields_dict)  # noqa
+        if self.request.method == "POST":
+            form_kwargs["data"] = self.request.POST
         return ParamsForm(**form_kwargs)
 
     def form_invalid(self, form):
@@ -186,11 +181,9 @@ class TransitionViewMixin(NonAtomicView, object):
             transition_obj_or_name=self.transition,
             field=self.transition.model.field_name,
             data=form.cleaned_data if form else {},
-            requester=self.request.user
+            requester=self.request.user,
         )
-        return HttpResponseRedirect(
-            self.get_async_transitions_awaiter_url(job_ids)
-        )
+        return HttpResponseRedirect(self.get_async_transitions_awaiter_url(job_ids))
 
     def _run_synchronous_transition(self, form):
         status, attachments = run_transition(
@@ -198,46 +191,49 @@ class TransitionViewMixin(NonAtomicView, object):
             transition_obj_or_name=self.transition,
             field=self.transition.model.field_name,
             data=form.cleaned_data if form else {},
-            requester=self.request.user
+            requester=self.request.user,
         )
         if status:
-            messages.success(
-                self.request, _('Transitions performed successfully')
-            )
+            messages.success(self.request, _("Transitions performed successfully"))
         else:
             messages.error(
-                self.request, _((
-                    'Something went wrong while displaying this transition. '
-                    'To continue, reload or go to another transition.'
-                ))
+                self.request,
+                _(
+                    (
+                        "Something went wrong while displaying this transition. "
+                        "To continue, reload or go to another transition."
+                    )
+                ),
             )
             return self.form_invalid(form)
         if attachments:
-            urls = [reverse(
-                'serve_attachment',
-                args=(attachment.id, attachment.original_filename)
-            ) for attachment in attachments]
-            self.request.session['attachments_to_download'] = urls
+            urls = [
+                reverse(
+                    "serve_attachment",
+                    args=(attachment.id, attachment.original_filename),
+                )
+                for attachment in attachments
+            ]
+            self.request.session["attachments_to_download"] = urls
         return HttpResponseRedirect(self.get_success_url())
 
     def _is_valid(self):
         is_valid, error = self._objects_are_valid()
         if not is_valid:
-            messages.info(
-                self.request, _('Some assets are not valid')
-            )
-            additional_error_message = '<ul>'
+            messages.info(self.request, _("Some assets are not valid"))
+            additional_error_message = "<ul>"
             for obj, msgs in error.errors.items():
-                additional_error_message += '<li>'
+                additional_error_message += "<li>"
                 additional_error_message += '<a href="{}">{}</a> - {}'.format(
-                    obj.get_absolute_url(), obj, ','.join(map(str, msgs))
+                    obj.get_absolute_url(), obj, ",".join(map(str, msgs))
                 )
-                additional_error_message += '</li>'
-            additional_error_message += '</ul>'
-            messages.error(self.request, mark_safe(
-                '{}<br>{}'.format(error.message, additional_error_message)
-            ))
-            return HttpResponseRedirect('..')
+                additional_error_message += "</li>"
+            additional_error_message += "</ul>"
+            messages.error(
+                self.request,
+                mark_safe("{}<br>{}".format(error.message, additional_error_message)),
+            )
+            return HttpResponseRedirect("..")
         return None
 
     def run_and_redirect(self, request, *args, **kwargs):
@@ -260,17 +256,15 @@ class TransitionViewMixin(NonAtomicView, object):
             if form_errors:
                 for action, action_errors in form_errors.items():
                     for field_name, field_errors in action_errors.items():
-                        form.add_error(
-                            action + '__' + field_name, field_errors
-                        )
+                        form.add_error(action + "__" + field_name, field_errors)
             else:
                 return self.form_valid(form)
         return self.form_invalid(form)
 
     def get_async_transitions_awaiter_url(self, job_ids):
-        return '{}?{}'.format(
-            reverse('async_bulk_transitions_awaiter'),
-            urlencode(MultiValueDict([('jobid', job_id) for job_id in job_ids]))
+        return "{}?{}".format(
+            reverse("async_bulk_transitions_awaiter"),
+            urlencode(MultiValueDict([("jobid", job_id) for job_id in job_ids])),
         )
 
     def get_success_url(self):
@@ -278,13 +272,10 @@ class TransitionViewMixin(NonAtomicView, object):
 
 
 class RunBulkTransitionView(TransitionViewMixin, RalphTemplateView):
-
-    def dispatch(
-        self, request, transition_pk, model, *args, **kwargs
-    ):
+    def dispatch(self, request, transition_pk, model, *args, **kwargs):
         self.model = model
         self.transition = get_object_or_404(Transition, pk=transition_pk)
-        self.ids = [int(i) for i in self.request.GET.getlist('select')]
+        self.ids = [int(i) for i in self.request.GET.getlist("select")]
         self.objects = list(self.model.objects.filter(id__in=self.ids))
         self.obj = self.objects[0]
         return super().dispatch(request, *args, **kwargs)
@@ -292,23 +283,16 @@ class RunBulkTransitionView(TransitionViewMixin, RalphTemplateView):
     def get_success_url(self):
         transition_success_url = self.transition.success_url
         if transition_success_url:
-            transition_success_url += '?' + build_params_url_for_redirect(
-                self.ids
-            )
-        transition_back_url = self.request.GET.get('back_url', None)
+            transition_success_url += "?" + build_params_url_for_redirect(self.ids)
+        transition_back_url = self.request.GET.get("back_url", None)
         if not transition_back_url:
             info = self.model._meta.app_label, self.model._meta.model_name
-            transition_back_url = reverse(
-                'admin:{}_{}_changelist'.format(*info)
-            )
+            transition_back_url = reverse("admin:{}_{}_changelist".format(*info))
         return transition_success_url or transition_back_url
 
 
 class RunTransitionView(TransitionViewMixin, RalphTemplateView):
-
-    def dispatch(
-        self, request, object_pk, transition_pk, model, *args, **kwargs
-    ):
+    def dispatch(self, request, object_pk, transition_pk, model, *args, **kwargs):
         self.model = model
         self.transition = get_object_or_404(Transition, pk=transition_pk)
         self.obj = get_object_or_404(model, pk=object_pk)
@@ -319,15 +303,15 @@ class RunTransitionView(TransitionViewMixin, RalphTemplateView):
         return self.transition.success_url or self.objects[0].get_absolute_url()
 
     def get_async_transitions_awaiter_url(self, job_ids):
-        return get_admin_url(self.objects[0], 'current_transitions')
+        return get_admin_url(self.objects[0], "current_transitions")
 
 
 class AsyncBulkTransitionsAwaiterView(RalphTemplateView):
-    template_name = 'transitions/async_transitions_awaiter.html'
+    template_name = "transitions/async_transitions_awaiter.html"
 
     def get_context_data(self, *args, **kwargs):
         context = super().get_context_data(*args, **kwargs)
-        job_ids = self.request.GET.getlist('jobid')
+        job_ids = self.request.GET.getlist("jobid")
         try:
             jobs = list(TransitionJob.objects.filter(pk__in=job_ids))
             if len(jobs) != len(job_ids):
@@ -335,16 +319,15 @@ class AsyncBulkTransitionsAwaiterView(RalphTemplateView):
         except ValueError:
             raise Http404()  # ?
         else:
-            context['jobs'] = jobs
-            context['are_jobs_running'] = any([j.is_running for j in jobs])
-            context['for_many_objects'] = True
+            context["jobs"] = jobs
+            context["are_jobs_running"] = any([j.is_running for j in jobs])
+            context["for_many_objects"] = True
         return context
 
 
 class KillTransitionJobView(View, metaclass=PermissionViewMetaClass):
-
     def get(self, request, job_id, *args, **kwargs):
         job = get_object_or_404(TransitionJob, pk=job_id)
         job.kill()
-        messages.success(request, 'Job {} killed successfully'.format(job.id))
-        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        messages.success(request, "Job {} killed successfully".format(job.id))
+        return HttpResponseRedirect(request.META.get("HTTP_REFERER"))

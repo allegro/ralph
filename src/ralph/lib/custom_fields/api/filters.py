@@ -14,12 +14,11 @@ class CustomFieldsFilterBackend(BaseFilterBackend):
     attribute name by 'customfield_' in request query params, ex.
     `<URL>?customfield__myfield=1&customfield__myfield=2&customfield__otherfield=a`
     """
-    prefix = 'customfield__'
+
+    prefix = "customfield__"
 
     def _handle_customfield_filter(self, queryset, custom_field, value):
-        logger.info(
-            'Filtering by custom field {} : {}'.format(custom_field, value)
-        )
+        logger.info("Filtering by custom field {} : {}".format(custom_field, value))
         return queryset.filter(
             custom_fields__custom_field__attribute_name=custom_field,
             custom_fields__value__in=value,
@@ -31,7 +30,7 @@ class CustomFieldsFilterBackend(BaseFilterBackend):
                 if key.startswith(self.prefix):
                     queryset = self._handle_customfield_filter(
                         queryset,
-                        key[len(self.prefix):],
-                        request.query_params.getlist(key)
+                        key[len(self.prefix) :],
+                        request.query_params.getlist(key),
                     )
         return queryset

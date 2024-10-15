@@ -8,7 +8,7 @@ from ralph.lib.polymorphic.tests.models import (
     PolymorphicModelTest,
     PolymorphicModelTest2,
     SomeM2MModel,
-    SomethingRelated
+    SomethingRelated,
 )
 
 

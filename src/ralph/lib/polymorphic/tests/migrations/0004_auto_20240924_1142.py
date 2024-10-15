@@ -9,13 +9,15 @@ import ralph.lib.polymorphic.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polymorphic_tests', '0003_auto_20240506_1133'),
+        ("polymorphic_tests", "0003_auto_20240506_1133"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='somem2mmodel',
-            name='polymorphics',
-            field=ralph.lib.polymorphic.fields.PolymorphicManyToManyField(related_name='some_m2m', to='polymorphic_tests.PolymorphicModelBaseTest'),
+            model_name="somem2mmodel",
+            name="polymorphics",
+            field=ralph.lib.polymorphic.fields.PolymorphicManyToManyField(
+                related_name="some_m2m", to="polymorphic_tests.PolymorphicModelBaseTest"
+            ),
         ),
     ]

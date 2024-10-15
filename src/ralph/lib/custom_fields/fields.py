@@ -5,7 +5,7 @@ from typing import Any
 
 from django.contrib.contenttypes.fields import (
     create_generic_related_manager,
-    GenericRelation
+    GenericRelation,
 )
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -45,6 +45,7 @@ class CustomFieldsWithInheritanceRelation(GenericRelation):
     * restaurant.city
     * restaurant.city.country (lowest)
     """
+
     def contribute_to_class(self, cls, name, **kwargs):
         super().contribute_to_class(cls, name, **kwargs)
         # use ReverseGenericRelatedObjectsWithInheritanceDescriptor
@@ -53,9 +54,8 @@ class CustomFieldsWithInheritanceRelation(GenericRelation):
             cls,
             self.name,
             ReverseGenericRelatedObjectsWithInheritanceDescriptor(
-                self,
-                self.for_concrete_model
-            )
+                self, self.for_concrete_model
+            ),
         )
 
 
@@ -88,13 +88,9 @@ def _prioritize_custom_field_values(objects, model, content_type):
     for field_path in model.custom_fields_inheritance:
         content_type = _get_content_type_from_field_path(model, field_path)
         ct_priority.append(content_type.id)
-    ct_priority = {
-        ct_id: index for (index, ct_id) in enumerate(ct_priority)
-    }
+    ct_priority = {ct_id: index for (index, ct_id) in enumerate(ct_priority)}
     custom_fields_seen = set()
-    for cfv in sorted(
-        objects, key=lambda cfv: ct_priority[cfv.content_type_id]
-    ):
+    for cfv in sorted(objects, key=lambda cfv: ct_priority[cfv.content_type_id]):
         if cfv.custom_field_id in custom_fields_seen:
             continue
         custom_fields_seen.add(cfv.custom_field_id)
@@ -126,9 +122,7 @@ class CustomFieldValueQuerySet(models.QuerySet):
             for cfv_id, cfv in _prioritize_custom_field_values(
                 self,
                 self._prioritize_model_or_instance,
-                ContentType.objects.get_for_model(
-                    self._prioritize_model_or_instance
-                )
+                ContentType.objects.get_for_model(self._prioritize_model_or_instance),
             ):
                 yield cfv
             return
@@ -138,12 +132,12 @@ class CustomFieldValueQuerySet(models.QuerySet):
         # TODO: handle values and values_list (need to overwrite `iterator`
         # using prioritizing)
         raise NotImplementedError(
-            'CustomField queryset does not support values queryset'
+            "CustomField queryset does not support values queryset"
         )
 
     def values_list(self, *fields):
         raise NotImplementedError(
-            'CustomField queryset does not support values list queryset'
+            "CustomField queryset does not support values list queryset"
         )
 
 
@@ -219,13 +213,10 @@ def create_generic_related_manager_with_inheritance(superclass, rel):  # noqa: C
             """
             inheritance_filters = [
                 # custom field of instance
-                models.Q(**{
-                    self.content_type_field_name: self.content_type.id
-                }) &
+                models.Q(**{self.content_type_field_name: self.content_type.id})
+                &
                 # object id of instance
-                models.Q(**{
-                    self.object_id_field_name: self.instance.id
-                })
+                models.Q(**{self.object_id_field_name: self.instance.id})
             ]
             # for each related field (foreign key), add it's content_type
             # and object_id to queryset filter
@@ -237,24 +228,21 @@ def create_generic_related_manager_with_inheritance(superclass, rel):  # noqa: C
                 # filter only if related field has some value
                 if value:
                     inheritance_filters.append(
-                        models.Q(**{
-                            self.content_type_field_name: content_type.id
-                        }) &
-                        models.Q(**{
-                            self.object_id_field_name: value.pk
-                        })
+                        models.Q(**{self.content_type_field_name: content_type.id})
+                        & models.Q(**{self.object_id_field_name: value.pk})
                     )
             return reduce(operator.or_, inheritance_filters)
 
         def get_queryset(self):
             try:
-                return self.instance._prefetched_objects_cache[
-                    self.prefetch_cache_name
-                ]
+                return self.instance._prefetched_objects_cache[self.prefetch_cache_name]
             except (AttributeError, KeyError):
-                return super().get_queryset().filter(
-                    *self.inheritance_filters
-                ).prioritize(self.instance)
+                return (
+                    super()
+                    .get_queryset()
+                    .filter(*self.inheritance_filters)
+                    .prioritize(self.instance)
+                )
 
         def get_prefetch_queryset(self, instances, queryset=None):
             """
@@ -266,15 +254,11 @@ def create_generic_related_manager_with_inheritance(superclass, rel):  # noqa: C
             django.db.models.query:prefetch_one_level)
             """
             if queryset is None:
-                queryset = super().get_queryset().select_related(
-                    'custom_field'
-                )
+                queryset = super().get_queryset().select_related("custom_field")
 
             queryset._add_hints(instance=instances[0])
             queryset = queryset.using(queryset._db or self._db)
-            content_type = ContentType.objects.get_for_model(
-                instances[0]
-            )
+            content_type = ContentType.objects.get_for_model(instances[0])
             # store possible content types of CustomFieldValue
             content_types = set([content_type])
             # store possible values of object id
@@ -301,9 +285,7 @@ def create_generic_related_manager_with_inheritance(superclass, rel):  # noqa: C
                         # store mapping from instance to content type and value
                         # of dependent field to know, which CustomFieldValue
                         # assign later to instance
-                        instances_cfs[instance.pk].add(
-                            (content_type.pk, value.pk)
-                        )
+                        instances_cfs[instance.pk].add((content_type.pk, value.pk))
 
             # filter by possible content types and objects ids
             # notice that thus this filter is not perfect (filter separately
@@ -315,8 +297,8 @@ def create_generic_related_manager_with_inheritance(superclass, rel):  # noqa: C
             # possible values for this single content type, for example:
             # (Q(content_type_id=A) & Q(object_id__in=[B, C, D])) | (Q(content_type_id=X) & Q(object_id__in=[Y, Z])) | ... # noqa
             query = {
-                '%s__in' % self.content_type_field_name: content_types,
-                '%s__in' % self.object_id_field_name: set(objects_ids)
+                "%s__in" % self.content_type_field_name: content_types,
+                "%s__in" % self.object_id_field_name: set(objects_ids),
             }
 
             qs = list(queryset.filter(**query))
@@ -330,9 +312,7 @@ def create_generic_related_manager_with_inheritance(superclass, rel):  # noqa: C
             # mapping from content_type and object_id to `CustomFieldValue`s
             rel_obj_cache = defaultdict(list)
             for rel_obj in qs:
-                rel_obj_cache[
-                    (rel_obj.content_type_id, rel_obj.object_id)
-                ].append(
+                rel_obj_cache[(rel_obj.content_type_id, rel_obj.object_id)].append(
                     rel_obj
                 )
 
@@ -346,15 +326,14 @@ def create_generic_related_manager_with_inheritance(superclass, rel):  # noqa: C
                 # dependent fields
                 for content_type_id, obj_id in instances_cfs[obj.id]:
                     try:
-                        vals.extend(rel_obj_cache[
-                            (content_type_id, obj_id)
-                        ])
+                        vals.extend(rel_obj_cache[(content_type_id, obj_id)])
                     except KeyError:
                         # ignore if there is no CustomFieldValue for such
                         # content_type_id and object_id
                         pass
                 vals = [
-                    v[1] for v in _prioritize_custom_field_values(
+                    v[1]
+                    for v in _prioritize_custom_field_values(
                         vals, self.instance, self.content_type
                     )
                 ]
@@ -382,8 +361,8 @@ def create_generic_related_manager_with_inheritance(superclass, rel):  # noqa: C
                 # cache_name is also changed to not assign empty result
                 # to `custom_fields` (and overwrite prefetched custom fields
                 # assigned above)
-                self.prefetch_cache_name + '__empty',
-                True
+                self.prefetch_cache_name + "__empty",
+                True,
             )
 
     return GenericRelatedObjectWithInheritanceManager

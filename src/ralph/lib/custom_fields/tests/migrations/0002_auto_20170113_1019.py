@@ -8,32 +8,59 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('custom_fields_tests', '0001_initial'),
+        ("custom_fields_tests", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ModelA',
+            name="ModelA",
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, primary_key=True, auto_created=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        verbose_name="ID",
+                        serialize=False,
+                        primary_key=True,
+                        auto_created=True,
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='ModelB',
+            name="ModelB",
             fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, primary_key=True, auto_created=True)),
-                ('a', models.ForeignKey(to='custom_fields_tests.ModelA', on_delete=django.db.models.deletion.CASCADE)),
+                (
+                    "id",
+                    models.AutoField(
+                        verbose_name="ID",
+                        serialize=False,
+                        primary_key=True,
+                        auto_created=True,
+                    ),
+                ),
+                (
+                    "a",
+                    models.ForeignKey(
+                        to="custom_fields_tests.ModelA",
+                        on_delete=django.db.models.deletion.CASCADE,
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.AddField(
-            model_name='somemodel',
-            name='b',
-            field=models.ForeignKey(to='custom_fields_tests.ModelB', null=True, blank=True, on_delete=django.db.models.deletion.CASCADE),
+            model_name="somemodel",
+            name="b",
+            field=models.ForeignKey(
+                to="custom_fields_tests.ModelB",
+                null=True,
+                blank=True,
+                on_delete=django.db.models.deletion.CASCADE,
+            ),
         ),
     ]

@@ -41,6 +41,7 @@ class NullableCharFieldMixin(object):
     It's especially useful when field is marked as unique and at the same time
     allows null/blank (`models.CharField(unique=True, null=True, blank=True)`)
     """
+
     _formfield_class = NullableCharFormField
 
     def get_prep_value(self, value):
@@ -49,7 +50,7 @@ class NullableCharFieldMixin(object):
     def formfield(self, **kwargs):
         defaults = {}
         if self._formfield_class:
-            defaults['form_class'] = self._formfield_class
+            defaults["form_class"] = self._formfield_class
         defaults.update(kwargs)
         return super().formfield(**defaults)
 
@@ -61,9 +62,7 @@ class NullableCharField(
     pass
 
 
-class NullableCharFieldWithAutoStrip(
-    NullableCharField
-):
+class NullableCharFieldWithAutoStrip(NullableCharField):
     def clean(self, value, model_instance):
         return super().clean(value.strip(), model_instance)
 
@@ -72,13 +71,14 @@ class NullableCharFieldWithAutoStrip(
 #                It is recommended to refrain from checking the other meaning
 #                in UD.
 class NUMPFieldMixIn(object):
-
     def __init__(self, *args, **kwargs):
-        fields_to_ignore = kwargs.pop('fields_to_ignore', None)
+        fields_to_ignore = kwargs.pop("fields_to_ignore", None)
         super(NUMPFieldMixIn, self).__init__(*args, **kwargs)
-        self.fields_to_ignore = fields_to_ignore if (
-            fields_to_ignore is not None
-        ) else ('help_text', 'verbose_name')
+        self.fields_to_ignore = (
+            fields_to_ignore
+            if (fields_to_ignore is not None)
+            else ("help_text", "verbose_name")
+        )
 
     def deconstruct(self):
         name, path, args, kwargs = super(NUMPFieldMixIn, self).deconstruct()
@@ -88,13 +88,11 @@ class NUMPFieldMixIn(object):
         if not self.__class__.__mro__.index(NUMPFieldMixIn) > 1:
             # NOTE(romcheg): Exclude all fields that should not be concidered
             #                when generating migrations.
-            kwargs = {
-                f: kwargs[f] for f in kwargs if f not in self.fields_to_ignore
-            }
-            path = '{}.{}'.format(NUMP.__module__, NUMP.__name__)
+            kwargs = {f: kwargs[f] for f in kwargs if f not in self.fields_to_ignore}
+            path = "{}.{}".format(NUMP.__module__, NUMP.__name__)
 
             nump_args = [self.base_class(*args, **kwargs)]
-            nump_kwargs = {'fields_to_ignore': self.fields_to_ignore}
+            nump_kwargs = {"fields_to_ignore": self.fields_to_ignore}
 
             return name, path, nump_args, nump_kwargs
 
@@ -111,30 +109,27 @@ def get_nump_class(base_field, fields_to_ignore):
     cache_lookup = tuple((base_class,) + fields_to_ignore)
 
     if cache_lookup not in NUMP_FIELD_CACHE:
-        nump_field_name = 'NUMP' + base_class.__name__
+        nump_field_name = "NUMP" + base_class.__name__
         NUMP_FIELD_CACHE[cache_lookup] = type(
-            nump_field_name,
-            (NUMPFieldMixIn, base_class),
-            {'base_class': base_class}
+            nump_field_name, (NUMPFieldMixIn, base_class), {"base_class": base_class}
         )
 
     return NUMP_FIELD_CACHE[cache_lookup]
 
 
-def NUMP(base_field, fields_to_ignore=('help_text', 'verbose_name')):
+def NUMP(base_field, fields_to_ignore=("help_text", "verbose_name")):
     """Decorator to avoid migrations when not important fields are changed."""
 
     klass = get_nump_class(base_field, fields_to_ignore)
     name, path, args, kwargs = base_field.deconstruct()
 
-    kwargs['fields_to_ignore'] = fields_to_ignore
+    kwargs["fields_to_ignore"] = fields_to_ignore
 
     return klass(*args, **kwargs)
 
 
 class NullableGenericIPAddressField(
-    NullableCharFieldMixin,
-    models.GenericIPAddressField
+    NullableCharFieldMixin, models.GenericIPAddressField
 ):
     _formfield_class = NullableGenericIPAddressFormField
 
@@ -142,12 +137,13 @@ class NullableGenericIPAddressField(
 class TicketIdField(NullableCharField):
     def __init__(
         self,
-        verbose_name=_('ticket ID'),
-        help_text=_('External system ticket identifier'),
+        verbose_name=_("ticket ID"),
+        help_text=_("External system ticket identifier"),
         null=True,
         blank=True,
         max_length=200,
-        *args, **kwargs
+        *args,
+        **kwargs
     ):
         super().__init__(
             verbose_name=verbose_name,
@@ -155,7 +151,8 @@ class TicketIdField(NullableCharField):
             null=null,
             blank=blank,
             max_length=max_length,
-            *args, **kwargs
+            *args,
+            **kwargs
         )
 
     def _strip_issue_tracker_url(self, value):
@@ -163,11 +160,8 @@ class TicketIdField(NullableCharField):
         Strip (generic) issue tracker url from the beggining if url is
         passed into ticket_id
         """
-        if (
-            value and
-            value.startswith(settings.ISSUE_TRACKER_URL)
-        ):
-            value = value[len(settings.ISSUE_TRACKER_URL):]
+        if value and value.startswith(settings.ISSUE_TRACKER_URL):
+            value = value[len(settings.ISSUE_TRACKER_URL) :]
         return value.strip()
 
     def clean(self, value, model_instance):
@@ -179,11 +173,13 @@ class TicketIdFieldWidget(AdminTextInputWidget):
     def render(self, name, value, attrs=None):
         html = super().render(name, value, attrs)
         if value:
-            url = '{}{}'.format(settings.ISSUE_TRACKER_URL, value)
-            final_attrs = {'href': smart_urlquote(url), 'target': '_blank'}
+            url = "{}{}".format(settings.ISSUE_TRACKER_URL, value)
+            final_attrs = {"href": smart_urlquote(url), "target": "_blank"}
             html = format_html(
                 '<div class="ticket-url">{}<a{}>{}</a></div>',
-                html, flatatt(final_attrs), url,
+                html,
+                flatatt(final_attrs),
+                url,
             )
         return html
 
@@ -218,15 +214,16 @@ class BaseObjectForeignKey(models.ForeignKey):
     and from now `BaseObjectLicence.base_object` only gets `BackOfficeAsset` and
     `DataCenterAsset` (and not other models inherited from `BaseObject`).
     """
+
     def __init__(self, *args, **kwargs):
-        self.limit_models = kwargs.pop('limit_models', [])
+        self.limit_models = kwargs.pop("limit_models", [])
         super().__init__(*args, **kwargs)
 
     def deconstruct(self):
         name, path, args, kwargs = super().deconstruct()
         # Otherwise the migrations won't be created if limit_models changes
         if self.limit_models:
-            kwargs['limit_models'] = self.limit_models
+            kwargs["limit_models"] = self.limit_models
         return name, path, args, kwargs
 
     def limit_choices_to(self):
@@ -239,9 +236,9 @@ class BaseObjectForeignKey(models.ForeignKey):
         """
         if self.limit_models:
             content_types = ContentType.objects.get_for_models(
-                *[apps.get_model(*i.split('.')) for i in self.limit_models]
+                *[apps.get_model(*i.split(".")) for i in self.limit_models]
             )
-            return {'content_type__in': content_types.values()}
+            return {"content_type__in": content_types.values()}
 
         return {}
 
@@ -255,12 +252,12 @@ class BaseObjectForeignKey(models.ForeignKey):
 class TagWidget(forms.TextInput):
     def render(self, name, value, attrs=None):
         if value is not None and not isinstance(value, six.string_types):
-            value = ', '.join(sorted([
-                (t if ',' not in t else '"%s"' % t) for t in value
-            ]))
+            value = ", ".join(
+                sorted([(t if "," not in t else '"%s"' % t) for t in value])
+            )
         if attrs is None:
             attrs = {}
-        attrs['class'] = 'vTextField'
+        attrs["class"] = "vTextField"
         return super(TagWidget, self).render(name, value, attrs)
 
 
@@ -284,31 +281,31 @@ class TaggitTagField(TagField):
         False
         """
         if initial and data:
-            data = [i.strip() for i in data.split(',') if i.strip()]
+            data = [i.strip() for i in data.split(",") if i.strip()]
             changed = len(initial) != len(data) or set(initial) - set(data)
             return changed
         return initial or data
 
 
 class RalphMACStrategy(netaddr.mac_unix_expanded):
-    word_fmt = '%.2X'
+    word_fmt = "%.2X"
 
 
 class MACAddressField(NullableCharField):
     dialect = RalphMACStrategy
     default_error_messages = {
-        'invalid': _("'%(value)s' is not a valid MAC address."),
+        "invalid": _("'%(value)s' is not a valid MAC address."),
     }
-    description = 'MAC address'
-    max_length = len('aa:aa:aa:aa:aa:aa')
+    description = "MAC address"
+    max_length = len("aa:aa:aa:aa:aa:aa")
 
     def __init__(self, verbose_name=None, **kwargs):
-        kwargs['max_length'] = self.max_length
+        kwargs["max_length"] = self.max_length
         super().__init__(verbose_name, **kwargs)
 
     def deconstruct(self):
         name, path, args, kwargs = super().deconstruct()
-        del kwargs['max_length']
+        del kwargs["max_length"]
         return name, path, args, kwargs
 
     def get_db_prep_value(self, value, connection, prepared=False):
@@ -319,7 +316,7 @@ class MACAddressField(NullableCharField):
             return self.normalize(value)
         except ValueError:
             raise ValidationError(
-                self.error_messages['invalid'] % {'value': value},
+                self.error_messages["invalid"] % {"value": value},
             )
 
     @classmethod

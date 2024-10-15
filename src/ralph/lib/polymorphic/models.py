@@ -184,11 +184,12 @@ class PolymorphicQuerySet(models.QuerySet):
         """
 
         def get_database_quote_type() -> str:
-            db_engine = settings.DATABASES['default']['ENGINE']
-            if 'mysql' in db_engine:
-                return '`'
+            db_engine = settings.DATABASES["default"]["ENGINE"]
+            if "mysql" in db_engine:
+                return "`"
             else:
                 return '"'
+
         # mysql uses different quotes than postgres
         q = get_database_quote_type()
         through_table_name = through_table._meta.db_table  # type: str
@@ -209,15 +210,13 @@ class PolymorphicQuerySet(models.QuerySet):
                     back_column = field.column
                     our_table = field.related_model._meta.db_table
             if our_table and back_column and remote_table:
-                condition_local = (
-                    f'{q}{our_table}{q}.{q}id{q} = {q}{through_table_name}{q}.{q}{back_column}{q}'
-                )
+                condition_local = f"{q}{our_table}{q}.{q}id{q} = {q}{through_table_name}{q}.{q}{back_column}{q}"
                 condition_remote = (
-                    f'{q}{remote_table}{q}.{q}id{q}'
-                    f' = {q}{through_table_name}{q}.{q}{target_column_name}{q}'
+                    f"{q}{remote_table}{q}.{q}id{q}"
+                    f" = {q}{through_table_name}{q}.{q}{target_column_name}{q}"
                 )
                 query = query.extra(
-                    tables=[f'{q}{remote_table}{q}', f'{q}{through_table_name}{q}'],
+                    tables=[f"{q}{remote_table}{q}", f"{q}{through_table_name}{q}"],
                     where=[condition_local, condition_remote],
                 )
         return query
@@ -263,7 +262,7 @@ class PolymorphicQuerySet(models.QuerySet):
 
     def get(self, *args, **kwargs):
         obj = super().get(*args, **kwargs)
-        if hasattr(obj, 'content_type'):
+        if hasattr(obj, "content_type"):
             obj = obj.content_type.get_object_for_this_type(pk=obj.pk)
         return obj
 
@@ -350,7 +349,9 @@ class Polymorphic(models.Model):
                 pass
     """
 
-    content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.CASCADE)
+    content_type = models.ForeignKey(
+        ContentType, blank=True, null=True, on_delete=models.CASCADE
+    )
 
     polymorphic_objects = PolymorphicQuerySet.as_manager()
     objects = models.Manager()

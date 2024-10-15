@@ -9,26 +9,26 @@ import django.db.models.manager
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('polymorphic_tests', '0002_somem2mmodel'),
+        ("polymorphic_tests", "0002_somem2mmodel"),
     ]
 
     operations = [
         migrations.AlterModelManagers(
-            name='polymorphicmodelbasetest',
+            name="polymorphicmodelbasetest",
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ("polymorphic_objects", django.db.models.manager.Manager()),
             ],
         ),
         migrations.AlterModelManagers(
-            name='polymorphicmodeltest',
+            name="polymorphicmodeltest",
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ("polymorphic_objects", django.db.models.manager.Manager()),
             ],
         ),
         migrations.AlterModelManagers(
-            name='polymorphicmodeltest2',
+            name="polymorphicmodeltest2",
             managers=[
-                ('polymorphic_objects', django.db.models.manager.Manager()),
+                ("polymorphic_objects", django.db.models.manager.Manager()),
             ],
         ),
     ]

@@ -41,6 +41,7 @@ class AppTemplateLoader(Loader):
 
     Loader is based on this snippet: https://djangosnippets.org/snippets/1376/
     """
+
     is_usable = True
 
     def get_template_path(self, template_name):
@@ -55,7 +56,7 @@ class AppTemplateLoader(Loader):
         app_label, template_name = template_parts
         app = apps.get_app_config(app_label)
         app_dir = dirname(app.module.__file__)
-        template_dir = abspath(join(app_dir, 'templates'))
+        template_dir = abspath(join(app_dir, "templates"))
         return join(template_dir, template_name)
 
     def get_template_sources(self, template_name):

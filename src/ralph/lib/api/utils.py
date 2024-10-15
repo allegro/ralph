@@ -15,9 +15,7 @@ def get_list_view_name(model):
     """
     Return list view name for model.
     """
-    return '{}-list'.format(
-        model._meta.object_name.lower()
-    )
+    return "{}-list".format(model._meta.object_name.lower())
 
 
 def get_list_view_url_for_model(model):
@@ -32,13 +30,12 @@ class RalphApiMetadata(SimpleMetadata):
     """
     Add filtering variable to Django Rest Framework Meta.
     """
+
     def determine_metadata(self, request, view):
         data = super().determine_metadata(request, view)
-        filtering = getattr(view, 'filter_fields', [])[:]
-        filtering.extend(
-            getattr(view, 'extended_filter_fields', {}).keys()
-        )
-        data['filtering'] = list(set(filtering))
+        filtering = getattr(view, "filter_fields", [])[:]
+        filtering.extend(getattr(view, "extended_filter_fields", {}).keys())
+        data["filtering"] = list(set(filtering))
         return data
 
     def get_field_info(self, field):
@@ -51,35 +48,37 @@ class RalphApiMetadata(SimpleMetadata):
           particular resource)
         """
         field_info = OrderedDict()
-        field_info['type'] = self.label_lookup[field]
-        field_info['required'] = getattr(field, 'required', False)
+        field_info["type"] = self.label_lookup[field]
+        field_info["required"] = getattr(field, "required", False)
 
         attrs = [
-            'read_only', 'label', 'help_text',
-            'min_length', 'max_length',
-            'min_value', 'max_value'
+            "read_only",
+            "label",
+            "help_text",
+            "min_length",
+            "max_length",
+            "min_value",
+            "max_value",
         ]
 
         for attr in attrs:
             value = getattr(field, attr, None)
-            if value is not None and value != '':
+            if value is not None and value != "":
                 field_info[attr] = force_text(value, strings_only=True)
 
-        if getattr(field, 'child', None):
-            field_info['child'] = self.get_field_info(field.child)
-        elif getattr(field, 'fields', None):
-            field_info['children'] = self.get_serializer_info(field)
+        if getattr(field, "child", None):
+            field_info["child"] = self.get_field_info(field.child)
+        elif getattr(field, "fields", None):
+            field_info["children"] = self.get_serializer_info(field)
 
         # for RelatedField just return url to resource
         if isinstance(field, RelatedField):
             if field.queryset:
                 model = field.queryset.model
                 try:
-                    field_info['url'] = get_list_view_url_for_model(
-                        model
-                    )
+                    field_info["url"] = get_list_view_url_for_model(model)
                 except NoReverseMatch:
-                    logger.warning('Reverse for %s not found', model)
+                    logger.warning("Reverse for %s not found", model)
         elif isinstance(field, ManyRelatedField):
             # for ManyRelatedField just return url to resource
             try:
@@ -88,15 +87,15 @@ class RalphApiMetadata(SimpleMetadata):
                 pass
             else:
                 try:
-                    field_info['url'] = get_list_view_url_for_model(model)
+                    field_info["url"] = get_list_view_url_for_model(model)
                 except NoReverseMatch:
-                    logger.warning('Reverse for %s not found', model)
+                    logger.warning("Reverse for %s not found", model)
         # otherwise act as usual
-        elif not field_info.get('read_only') and hasattr(field, 'choices'):
-            field_info['choices'] = [
+        elif not field_info.get("read_only") and hasattr(field, "choices"):
+            field_info["choices"] = [
                 {
-                    'value': choice_value,
-                    'display_name': force_text(choice_name, strings_only=True)
+                    "value": choice_value,
+                    "display_name": force_text(choice_name, strings_only=True),
                 }
                 for choice_value, choice_name in field.choices.items()
             ]
@@ -109,18 +108,19 @@ class NoFiltersBrowsableAPIRenderer(BrowsableAPIRenderer):
     Filters are loaded directly into HTML
     It's slow, and we don't want that
     """
+
     def get_filter_form(self, data, view, request):
         return None
 
 
 class OnlyRawBrowsableAPIRenderer(NoFiltersBrowsableAPIRenderer):
     """For some views HTML form loads many objects and it's really slow."""
+
     def render_form_for_serializer(self, serializer):
         return ""
 
 
 def renderer_classes_without_form(renderer_classes):
     return [OnlyRawBrowsableAPIRenderer] + [
-        rc for rc in renderer_classes
-        if not isinstance(rc(), BrowsableAPIRenderer)
+        rc for rc in renderer_classes if not isinstance(rc(), BrowsableAPIRenderer)
     ]

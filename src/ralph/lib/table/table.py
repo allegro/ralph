@@ -1,5 +1,6 @@
 try:
     from dj.choices import Choices
+
     use_choices = True
 except ImportError:
     Choices = None
@@ -15,7 +16,7 @@ from django.utils.html import escape
 from ralph.admin.helpers import (
     get_field_by_relation_path,
     get_field_title_by_relation_path,
-    getattr_dunder
+    getattr_dunder,
 )
 
 
@@ -36,10 +37,15 @@ class Table(object):
 
     See __init__'s docstring for additional info about Table params.
     """
-    template_name = 'table.html'
+
+    template_name = "table.html"
 
     def __init__(
-        self, queryset, list_display, additional_row_method=None, request=None,
+        self,
+        queryset,
+        list_display,
+        additional_row_method=None,
+        request=None,
         transpose=False,
     ):
         """
@@ -78,15 +84,13 @@ class Table(object):
         headers = []
         for field in self.list_display_raw:
             if isinstance(field, (list, tuple)):
-                headers.append({'value': field[1]})
+                headers.append({"value": field[1]})
             else:
                 try:
                     name = getattr(self, field).title
                 except AttributeError:
-                    name = get_field_title_by_relation_path(
-                        self.queryset.model, field
-                    )
-                headers.append({'value': name})
+                    name = get_field_title_by_relation_path(self.queryset.model, field)
+                headers.append({"value": name})
         return headers
 
     def get_field_value(self, item, field):
@@ -111,10 +115,7 @@ class Table(object):
                 ).choices
             except FieldDoesNotExist:
                 choice_class = None
-            if (
-                use_choices and choice_class and
-                isinstance(choice_class, Choices)
-            ):
+            if use_choices and choice_class and isinstance(choice_class, Choices):
                 value = choice_class.name_from_id(value)
         return value
 
@@ -127,24 +128,23 @@ class Table(object):
         list_display = [
             field for field in self.list_display if not hasattr(self, field)
         ]
-        if 'id' not in list_display:
-            list_display.append('id')
+        if "id" not in list_display:
+            list_display.append("id")
         if self.additional_row_method:
             colspan = len(self.list_display)
 
         for item in self.queryset:
-            result.append([
-                {
-                    'value': self.get_field_value(item, field),
-                    'html_attributes': ''
-                } for field in self.list_display
-            ])
+            result.append(
+                [
+                    {"value": self.get_field_value(item, field), "html_attributes": ""}
+                    for field in self.list_display
+                ]
+            )
             if self.additional_row_method:
                 for method in self.additional_row_method:
                     additional_data = [
-                        {'value': i, 'html_attributes': flatatt(
-                            {'colspan': colspan}
-                        )} for i in getattr(self, method)(item)
+                        {"value": i, "html_attributes": flatatt({"colspan": colspan})}
+                        for i in getattr(self, method)(item)
                     ]
                     if additional_data:
                         result.append(additional_data)
@@ -155,15 +155,15 @@ class Table(object):
     def render(self, request=None):
         content = self.get_table_content()
         context = {
-            'show_header': not self.transpose,
-            'headers_count': self.headers_count,
-            'rows_count': self.rows_count,
-            'LIMIT': 5
+            "show_header": not self.transpose,
+            "headers_count": self.headers_count,
+            "rows_count": self.rows_count,
+            "LIMIT": 5,
         }
         if self.transpose:
-            context.update({'rows': content})
+            context.update({"rows": content})
         else:
-            context.update({'headers': content[0], 'rows': content[1:]})
+            context.update({"headers": content[0], "rows": content[1:]})
         return render_to_string(
             self.template_name,
             context=context,
@@ -181,15 +181,16 @@ class TableWithUrl(Table):
         if field == self.url_field:
             return '<a href="{}">{}</a>'.format(
                 reverse(
-                    'admin:view_on_site',
-                    args=(ContentType.objects.get_for_model(item).id, item.id,)
+                    "admin:view_on_site",
+                    args=(
+                        ContentType.objects.get_for_model(item).id,
+                        item.id,
+                    ),
                 ),
-                escape(value)
+                escape(value),
             )
         return value
 
     def __init__(self, queryset, list_display, *args, **kwargs):
-        self.url_field = kwargs.pop('url_field', None)
-        super().__init__(
-            queryset=queryset, list_display=list_display, *args, **kwargs
-        )
+        self.url_field = kwargs.pop("url_field", None)
+        super().__init__(queryset=queryset, list_display=list_display, *args, **kwargs)

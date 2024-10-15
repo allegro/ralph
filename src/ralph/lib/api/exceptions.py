@@ -5,6 +5,4 @@ from rest_framework.exceptions import APIException
 
 class Conflict(APIException):
     status_code = status.HTTP_409_CONFLICT
-    default_detail = _(
-        'State of the resource is in conflict with the request.'
-    )
+    default_detail = _("State of the resource is in conflict with the request.")

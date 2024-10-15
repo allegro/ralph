@@ -7,15 +7,22 @@ import ralph.lib.mixins.fields
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='MACModel',
+            name="MACModel",
             fields=[
-                ('id', models.AutoField(primary_key=True, serialize=False, auto_created=True, verbose_name='ID')),
-                ('mac', ralph.lib.mixins.fields.MACAddressField()),
+                (
+                    "id",
+                    models.AutoField(
+                        primary_key=True,
+                        serialize=False,
+                        auto_created=True,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("mac", ralph.lib.mixins.fields.MACAddressField()),
             ],
         ),
     ]

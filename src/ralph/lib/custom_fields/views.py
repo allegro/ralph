@@ -9,12 +9,12 @@ class CustomFieldFormfieldView(View):
     """
     Return HTML for custom field formfield.
     """
-    http_method_names = ['get']
+
+    http_method_names = ["get"]
 
     def get(self, request, custom_field_id, *args, **kwargs):
         custom_field = get_object_or_404(CustomField, pk=custom_field_id)
         form_field = custom_field.get_form_field()
-        return HttpResponse(form_field.widget.render(
-            name='__empty__',
-            value=form_field.initial
-        ))
+        return HttpResponse(
+            form_field.widget.render(name="__empty__", value=form_field.initial)
+        )

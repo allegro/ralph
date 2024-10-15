@@ -6,8 +6,8 @@ from ralph.lib.hooks.checks import check_configuration
 
 
 class HooksAppConfig(AppConfig):
-    name = 'ralph.lib.hooks'
-    verbose_name = 'Hooks'
+    name = "ralph.lib.hooks"
+    verbose_name = "Hooks"
 
 
 register(check_configuration)

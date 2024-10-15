@@ -4,7 +4,7 @@ from factory.fuzzy import FuzzyText
 from ralph.lib.custom_fields.models import (
     CustomField,
     CustomFieldTypes,
-    CustomFieldValue
+    CustomFieldValue,
 )
 
 
@@ -15,4 +15,6 @@ class CustomFieldFactory(DjangoModelFactory):
 
     class Meta:
         model = CustomField
-        django_get_or_create = ['name',]
+        django_get_or_create = [
+            "name",
+        ]

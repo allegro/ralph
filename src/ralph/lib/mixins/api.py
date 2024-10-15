@@ -11,12 +11,18 @@ class ChoiceFieldWithOtherOptionField(ChoiceField):
     plain value as regular ChoiceField or compound value - dict - where `value`
     is choice value and (optionally) `__other__` to specify other value.
     """
-    other_option_label = _('Other')
+
+    other_option_label = _("Other")
     other_field = CharField()
 
     def __init__(
-        self, choices, other_option_label=None, other_field=None,
-        auto_other_choice=True, *args, **kwargs
+        self,
+        choices,
+        other_option_label=None,
+        other_field=None,
+        auto_other_choice=True,
+        *args,
+        **kwargs
     ):
         self.auto_other_choice = auto_other_choice
         self.other_option_label = other_option_label or self.other_option_label
@@ -28,11 +34,9 @@ class ChoiceFieldWithOtherOptionField(ChoiceField):
 
     def to_internal_value(self, data):
         if not isinstance(data, dict):
-            data = {'value': data}
-        value = {
-            'value': super().to_internal_value(data.get('value'))
-        }
-        if value['value'] == OTHER:
+            data = {"value": data}
+        value = {"value": super().to_internal_value(data.get("value"))}
+        if value["value"] == OTHER:
             value[OTHER] = self._validate_other(data[OTHER])
         return value
 

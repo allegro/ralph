@@ -26,7 +26,7 @@ def get_perm_key(action, class_name, field_name):
     :return: django permission code name
     :rtype: str
     """
-    return '{}_{}_{}_field'.format(action, class_name, field_name)
+    return "{}_{}_{}_field".format(action, class_name, field_name)
 
 
 class user_permission(object):  # noqa
@@ -49,9 +49,7 @@ class user_permission(object):  # noqa
     """
 
     def __init__(self, func=None, name=None):
-        """
-
-        """
+        """ """
         self.func = func
         if not name and func:
             name = func.__name__
@@ -66,8 +64,8 @@ class user_permission(object):  # noqa
             return models.Q()
         kw = {}
         # pass skip_superuser_rights info to operators
-        if self.func and getattr(self.func, '_is_operator', False):
-            kw['skip_superuser_rights'] = skip_superuser_rights
+        if self.func and getattr(self.func, "_is_operator", False):
+            kw["skip_superuser_rights"] = skip_superuser_rights
         return self.func(user, **kw) if self.func else models.Q()
 
     def _apply_operator(self, other, operator_):
@@ -78,14 +76,17 @@ class user_permission(object):  # noqa
         `func` (which is applying operator on self and other) as called
         function.
         """
+
         def func(*args, **kwargs):
             return operator_(self(*args, **kwargs), other(*args, **kwargs))
+
         func._is_operator = True
-        return type(self)(func, name='({}: {}, {})'.format(
-            operator_.__name__.rstrip('_').upper(),
-            self,
-            other
-        ))
+        return type(self)(
+            func,
+            name="({}: {}, {})".format(
+                operator_.__name__.rstrip("_").upper(), self, other
+            ),
+        )
 
     def __and__(self, other):
         return self._apply_operator(other, operator.and_)
@@ -94,7 +95,7 @@ class user_permission(object):  # noqa
         return self._apply_operator(other, operator.or_)
 
     def __repr__(self):
-        return self.name or '<True>'
+        return self.name or "<True>"
 
 
 class PermissionsBase(ModelBase):
@@ -123,27 +124,25 @@ class PermissionsBase(ModelBase):
     def __new__(cls, name, bases, attrs):
         new_class = super().__new__(cls, name, bases, attrs)
 
-        permissions = attrs.pop('Permissions', None)
+        permissions = attrs.pop("Permissions", None)
         apply_bases_permissions = True
         if not permissions:
             # apply bases permissions only if there are new permissions in
             # new class
             apply_bases_permissions = False
             permissions = getattr(
-                new_class,
-                'Permissions',
-                type(str('Permissions'), (object,), dict())
+                new_class, "Permissions", type(str("Permissions"), (object,), dict())
             )
         permissions.blacklist = cls._init_blacklist(cls, permissions, bases)
         permissions.has_access = cls._init_object_permissions(
             cls, permissions, bases, apply_bases_permissions
         )
-        new_class.add_to_class('_permissions', permissions)
+        new_class.add_to_class("_permissions", permissions)
         cls._init_meta_permissions(cls, new_class)
         return new_class
 
     def _init_blacklist(cls, permissions, bases):
-        blacklist = getattr(permissions, 'blacklist', set())
+        blacklist = getattr(permissions, "blacklist", set())
         for base in bases:
             try:
                 blacklist |= base.Permissions.blacklist
@@ -153,27 +152,28 @@ class PermissionsBase(ModelBase):
 
     def _init_meta_permissions(cls, new_class):
         class_name = new_class._meta.model_name
-        model_fields = (
-            new_class._meta.fields +
-            new_class._meta.many_to_many
-        )
+        model_fields = new_class._meta.fields + new_class._meta.many_to_many
         for field in model_fields:
             name = field.name
             if name in new_class._permissions.blacklist:
                 continue
-            new_class._meta.permissions.append((
-                get_perm_key('view', class_name, name),
-                _('Can view {} field').format(field.verbose_name)
-            ))
+            new_class._meta.permissions.append(
+                (
+                    get_perm_key("view", class_name, name),
+                    _("Can view {} field").format(field.verbose_name),
+                )
+            )
             if field.primary_key:
                 continue
-            new_class._meta.permissions.append((
-                get_perm_key('change', class_name, name),
-                _('Can change {} field').format(field.verbose_name)
-            ))
+            new_class._meta.permissions.append(
+                (
+                    get_perm_key("change", class_name, name),
+                    _("Can change {} field").format(field.verbose_name),
+                )
+            )
 
     def _init_object_permissions(cls, permissions, bases, apply_bases=True):
-        has_access = getattr(permissions, 'has_access', user_permission())
+        has_access = getattr(permissions, "has_access", user_permission())
         if apply_bases:
             for base in bases:
                 try:
@@ -188,7 +188,7 @@ class PermByFieldMixin(models.Model, metaclass=PermissionsBase):
     """Django Abstract model class for permission by fields."""
 
     @classmethod
-    def has_access_to_field(cls, field_name, user, action='change'):
+    def has_access_to_field(cls, field_name, user, action="change"):
         """
         Checks the user has the permission to the field
 
@@ -209,22 +209,16 @@ class PermByFieldMixin(models.Model, metaclass=PermissionsBase):
         :rtype: bool
         """
         # TODO: if it's m2m field, check on the other side
-        perm_key = get_perm_key(
-            action,
-            cls._meta.model_name,
-            field_name
-        )
-        perm = user.has_perm(
-            '{}.{}'.format(cls._meta.app_label, perm_key)
-        )
+        perm_key = get_perm_key(action, cls._meta.model_name, field_name)
+        perm = user.has_perm("{}.{}".format(cls._meta.app_label, perm_key))
         # If the user does not have rights to view,
         # but has the right to change he can view the field
-        if action == 'view' and not perm:
-            return cls.has_access_to_field(field_name, user, action='change')
+        if action == "view" and not perm:
+            return cls.has_access_to_field(field_name, user, action="change")
         return perm
 
     @classmethod
-    def allowed_fields(cls, user, action='change'):
+    def allowed_fields(cls, user, action="change"):
         """
         Returns a list with the names of the fields to which the user has
         permission.
@@ -246,16 +240,15 @@ class PermByFieldMixin(models.Model, metaclass=PermissionsBase):
         result = set()
         blacklist = cls._permissions.blacklist
 
-        for field in (cls._meta.fields + cls._meta.many_to_many):
-            if (
-                field.name not in blacklist and
-                cls.has_access_to_field(field.name, user, action)
+        for field in cls._meta.fields + cls._meta.many_to_many:
+            if field.name not in blacklist and cls.has_access_to_field(
+                field.name, user, action
             ):
                 result.add(field.name)
         # If the user does not have rights to view,
         # but has the right to change he can view the field
-        if action == 'view':
-            result |= cls.allowed_fields(user, 'change')
+        if action == "view":
+            result |= cls.allowed_fields(user, "change")
         return result
 
     class Meta:
@@ -272,10 +265,7 @@ class PermissionsForObjectMixin(models.Model, metaclass=PermissionsBase):
         user_perms = self._permissions.has_access(user)
         if not user_perms:
             return True
-        return self.__class__.objects.filter(
-            user_perms,
-            pk=self.pk
-        ).exists()
+        return self.__class__.objects.filter(user_perms, pk=self.pk).exists()
 
     @classmethod
     def _get_objects_for_user(cls, user, queryset=None):
@@ -308,7 +298,7 @@ def create_permissions(
         return
 
     try:
-        Permission = apps.get_model('auth', 'Permission')
+        Permission = apps.get_model("auth", "Permission")
     except LookupError:
         return
 
@@ -329,12 +319,13 @@ def create_permissions(
             model=klass, for_concrete_model=False
         )
         if klass._meta.proxy:
-            concrete_ctype = ContentType.objects.db_manager(using).get_for_model(  # noqa
+            concrete_ctype = ContentType.objects.db_manager(
+                using
+            ).get_for_model(  # noqa
                 model=klass,
             )
             perms = Permission.objects.using(using).filter(
-                content_type=concrete_ctype,
-                codename__endswith=klass._meta.model_name
+                content_type=concrete_ctype, codename__endswith=klass._meta.model_name
             )
             if perms:
                 perms.update(content_type=ctype)
@@ -345,11 +336,13 @@ def create_permissions(
     # Find all the Permissions that have a content_type for a model we're
     # looking for.  We don't need to check for codenames since we already have
     # a list of the ones we're going to create.
-    all_perms = set(Permission.objects.using(using).filter(
-        content_type__in=ctypes,
-    ).values_list(
-        "content_type", "codename"
-    ))
+    all_perms = set(
+        Permission.objects.using(using)
+        .filter(
+            content_type__in=ctypes,
+        )
+        .values_list("content_type", "codename")
+    )
 
     perms = [
         Permission(codename=codename, name=name, content_type=ct)
@@ -358,12 +351,13 @@ def create_permissions(
     ]
     # Validate the permissions before bulk_creation to avoid cryptic
     # database error when the verbose_name is longer than 50 characters
-    permission_name_max_length = Permission._meta.get_field('name').max_length
-    verbose_name_max_length = permission_name_max_length - len('Can change ')
+    permission_name_max_length = Permission._meta.get_field("name").max_length
+    verbose_name_max_length = permission_name_max_length - len("Can change ")
     for perm in perms:
         if len(perm.name) > permission_name_max_length:
             raise exceptions.ValidationError(
-                "The verbose_name of %s.%s is longer than %s characters" % (
+                "The verbose_name of %s.%s is longer than %s characters"
+                % (
                     perm.content_type.app_label,
                     perm.content_type.model,
                     verbose_name_max_length,

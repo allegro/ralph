@@ -29,8 +29,10 @@ def Deserializer(stream_or_string, **options):  # noqa
     # This updated Deserializer is needed to get reversion (django-reversion)
     # to work in circumstances described above.
 
-    from django.core.serializers.python import \
-        Deserializer as PythonDeserializer, _get_model
+    from django.core.serializers.python import (
+        Deserializer as PythonDeserializer,
+        _get_model,
+    )
 
     ignore = options.pop("ignorenonexistent", False)
 
@@ -57,8 +59,7 @@ def Deserializer(stream_or_string, **options):  # noqa
                 field = Model._meta.get_field(field_name)
                 if isinstance(field, MoneyField) and field_value is not None:
                     try:
-                        currency = \
-                            obj["fields"][get_currency_field_name(field_name)]
+                        currency = obj["fields"][get_currency_field_name(field_name)]
                     except KeyError:
                         currency = DEFAULT_CURRENCY_CODE
                     money_fields[field_name] = Money(field_value, currency)
@@ -73,6 +74,4 @@ def Deserializer(stream_or_string, **options):  # noqa
     except (GeneratorExit, DeserializationError):
         raise
     except Exception as exc:
-        six.reraise(
-            DeserializationError, DeserializationError(exc), sys.exc_info()[2]
-        )
+        six.reraise(DeserializationError, DeserializationError(exc), sys.exc_info()[2])

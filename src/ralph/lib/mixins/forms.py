@@ -10,13 +10,13 @@ class RequestFormMixin(object):
     """
     Form which has access to request and user
     """
+
     def __init__(self, *args, **kwargs):
-        if not hasattr(self, '_request') or not self._request:
-            self._request = kwargs.pop('_request', None)
-        if not hasattr(self, '_user'):
+        if not hasattr(self, "_request") or not self._request:
+            self._request = kwargs.pop("_request", None)
+        if not hasattr(self, "_user"):
             self._user = kwargs.pop(
-                '_user',
-                self._request.user if self._request else None
+                "_user", self._request.user if self._request else None
             )
         super().__init__(*args, **kwargs)
 
@@ -25,47 +25,51 @@ class RequestModelForm(RequestFormMixin, forms.ModelForm):
     pass
 
 
-OTHER = '__other__'
-OTHER_NAME = '{}' + OTHER
+OTHER = "__other__"
+OTHER_NAME = "{}" + OTHER
 
 
 class SelectWithOtherOpitonWidget(forms.Select):
-    css_class = 'select-other'
+    css_class = "select-other"
 
     class Media:
-        js = ('src/js/widgets.js',)
+        js = ("src/js/widgets.js",)
 
     def _get_other_field(self, name, value):
         return forms.TextInput().render(
-            name=OTHER_NAME.format(name), value=value.get(OTHER) or ''
+            name=OTHER_NAME.format(name), value=value.get(OTHER) or ""
         )
 
     def render(self, name, value, attrs=None):
-        show_other = value and value.get('value') == OTHER
-        choice_value = (value.get('value') if value else '') or ''
+        show_other = value and value.get("value") == OTHER
+        choice_value = (value.get("value") if value else "") or ""
         return mark_safe(
             '<div class="{}">{}{}</div>'.format(
                 self.css_class,
                 super().render(name, choice_value, attrs=attrs),
-                self._get_other_field(name, value) if show_other else ''
+                self._get_other_field(name, value) if show_other else "",
             )
         )
 
     def value_from_datadict(self, data, files, name):
         return {
-            'value': data.get(name, None),
-            OTHER: data.get(OTHER_NAME.format(name), None)
+            "value": data.get(name, None),
+            OTHER: data.get(OTHER_NAME.format(name), None),
         }
 
 
 class ChoiceFieldWithOtherOption(forms.ChoiceField):
     widget = SelectWithOtherOpitonWidget
-    other_option_label = _('Other')
+    other_option_label = _("Other")
     other_field = forms.CharField()
 
     def __init__(
-        self, other_option_label=None, other_field=None, auto_other_choice=True,
-        *args, **kwargs
+        self,
+        other_option_label=None,
+        other_field=None,
+        auto_other_choice=True,
+        *args,
+        **kwargs,
     ):
         """
         Args:
@@ -92,8 +96,8 @@ class ChoiceFieldWithOtherOption(forms.ChoiceField):
         return self.other_field.clean(value)
 
     def clean(self, value):
-        value['value'] = super().clean(value['value'])
-        if value['value'] == OTHER:
+        value["value"] = super().clean(value["value"])
+        if value["value"] == OTHER:
             value[OTHER] = self._validate_other(value[OTHER])
         return value
 
@@ -106,20 +110,18 @@ class AssetFormMixin(forms.ModelForm):
 
     def get_model_type(self):
         if not self.MODEL_TYPE:
-            raise AttributeError('Model type attribute is missing.')
+            raise AttributeError("Model type attribute is missing.")
         return self.MODEL_TYPE
 
     def clean_model(self):
-        value = self.cleaned_data.get('model')
+        value = self.cleaned_data.get("model")
         self._validate_model_type(value)
         return value
 
     def _validate_model_type(self, value):
         model_type = self.get_model_type()
         if value.type != model_type.id:
-            raise ValidationError(
-                'Model must be of "{}" type'.format(model_type)
-            )
+            raise ValidationError('Model must be of "{}" type'.format(model_type))
 
 
 class PriceMoneyWidget(MoneyWidget):
@@ -128,11 +130,9 @@ class PriceMoneyWidget(MoneyWidget):
             '<div class="row">'
             f'<div class="small-10 columns">{rendered_widgets[0]}</div>'
             f'<div class="small-2 columns end">{rendered_widgets[1]}</div>'
-            '</div>'
+            "</div>"
         )
 
 
 class PriceFormMixin(forms.ModelForm):
-    price = MoneyField(
-        required=False, widget=PriceMoneyWidget
-    )
+    price = MoneyField(required=False, widget=PriceMoneyWidget)

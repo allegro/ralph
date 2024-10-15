@@ -11,6 +11,7 @@ class RalphWorker(Worker):
     ralph rqworker --worker-class=ralph.lib.external_services.worker.RalphWorker default  # noqa
     ```
     """
+
     def perform_job(self, *args, **kwargs):
         """
         Handles connection (wait) timeouts on RQ.

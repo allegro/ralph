@@ -7,13 +7,24 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('external_services', '0002_auto_20160804_1001'),
+        ("external_services", "0002_auto_20160804_1001"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='job',
-            name='status',
-            field=models.PositiveIntegerField(verbose_name='job status', default=1, choices=[(1, 'queued'), (2, 'finished'), (3, 'failed'), (4, 'started'), (5, 'frozen'), (6, 'killed')]),
+            model_name="job",
+            name="status",
+            field=models.PositiveIntegerField(
+                verbose_name="job status",
+                default=1,
+                choices=[
+                    (1, "queued"),
+                    (2, "finished"),
+                    (3, "failed"),
+                    (4, "started"),
+                    (5, "frozen"),
+                    (6, "killed"),
+                ],
+            ),
         ),
     ]

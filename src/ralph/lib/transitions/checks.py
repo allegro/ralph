@@ -14,33 +14,35 @@ def check_transition_templates(transition_templates):
     errors = []
     if transition_templates:
         if not isinstance(transition_templates, (list, tuple)):
-            errors.append(Error(
-                'TRANSITION_TEMPLATES must be a list or a tuple',
-                id='transitions.E001'
-            ))
+            errors.append(
+                Error(
+                    "TRANSITION_TEMPLATES must be a list or a tuple",
+                    id="transitions.E001",
+                )
+            )
         else:
             for index, item in enumerate(transition_templates):
                 try:
                     path, template = item
                 except (ValueError, TypeError):
-                    errors.append(Error(
-                        'Element #{} must be a two elements tuple'.format(
-                            index
-                        ),
-                        id='transitions.E003'
-                    ))
+                    errors.append(
+                        Error(
+                            "Element #{} must be a two elements tuple".format(index),
+                            id="transitions.E003",
+                        )
+                    )
                     continue
                 try:
                     get_template(path)
                 except TemplateDoesNotExist:
-                    errors.append(Error(
-                        'Template {} ({}) doesn\'t exist'.format(
-                            template, path
-                        ),
-                        hint='Check TRANSITION_TEMPLATES settings',
-                        id='transitions.E002'
-                    ))
-    excluded_templates = ['']
+                    errors.append(
+                        Error(
+                            "Template {} ({}) doesn't exist".format(template, path),
+                            hint="Check TRANSITION_TEMPLATES settings",
+                            id="transitions.E002",
+                        )
+                    )
+    excluded_templates = [""]
     if transition_templates:
         try:
             excluded_templates.extend(
@@ -53,19 +55,20 @@ def check_transition_templates(transition_templates):
     )
     try:
         for transition in transitions_with_custom_templates:
-            errors.append(Error(
-                'Template {} for {} transition is '
-                'defined only in transition'.format(
-                    transition.template_name, transition
-                ),
-                hint=(
-                    'Change your TRANSITION_TEMPLATES settings by adding'
-                    ' ({}, "Your template name") and then '
-                    'edit {} transition').format(
+            errors.append(
+                Error(
+                    "Template {} for {} transition is "
+                    "defined only in transition".format(
                         transition.template_name, transition
-                ),
-                id='transitions.E004'
-            ))
+                    ),
+                    hint=(
+                        "Change your TRANSITION_TEMPLATES settings by adding"
+                        ' ({}, "Your template name") and then '
+                        "edit {} transition"
+                    ).format(transition.template_name, transition),
+                    id="transitions.E004",
+                )
+            )
     except DatabaseError as e:
         logger.error(e)
     return errors

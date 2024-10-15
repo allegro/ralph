@@ -15,13 +15,13 @@ def get_redis_connection(config, is_master=True):
     Returns: StrictRedis connection
 
     """
-    if 'SENTINELS' in config:
+    if "SENTINELS" in config:
         sentinel = Sentinel(
-            config['SENTINELS'],
-            db=config.get('DB'),
-            password=config.get('PASSWORD'),
-            socket_timeout=config.get('TIMEOUT'),
-            socket_connect_timeout=config.get('CONNECT_TIMEOUT'),
+            config["SENTINELS"],
+            db=config.get("DB"),
+            password=config.get("PASSWORD"),
+            socket_timeout=config.get("TIMEOUT"),
+            socket_connect_timeout=config.get("CONNECT_TIMEOUT"),
         )
         if is_master:
             return sentinel.master_for(settings.REDIS_CLUSTER_NAME)
@@ -29,10 +29,10 @@ def get_redis_connection(config, is_master=True):
             return sentinel.slave_for(settings.REDIS_CLUSTER_NAME)
     else:
         return StrictRedis(
-            host=config['HOST'],
-            port=config['PORT'],
-            db=config.get('DB'),
-            password=config.get('PASSWORD'),
-            socket_timeout=config.get('TIMEOUT'),
-            socket_connect_timeout=config.get('CONNECT_TIMEOUT'),
+            host=config["HOST"],
+            port=config["PORT"],
+            db=config.get("DB"),
+            password=config.get("PASSWORD"),
+            socket_timeout=config.get("TIMEOUT"),
+            socket_connect_timeout=config.get("CONNECT_TIMEOUT"),
         )

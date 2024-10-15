@@ -11,39 +11,29 @@ from django.utils.deprecation import MiddlewareMixin
 from .collector import statsd
 
 PROCESSING_TIME_METRIC_PREFIX = getattr(
-    settings, 'PROCESSING_TIME_METRIC_PREFIX', 'processing_time'
+    settings, "PROCESSING_TIME_METRIC_PREFIX", "processing_time"
 )
 REQUESTS_COUNTER_METRIC_PREFIX = getattr(
-    settings, 'REQUESTS_COUNTER_METRIC_PREFIX', 'requests_count'
+    settings, "REQUESTS_COUNTER_METRIC_PREFIX", "requests_count"
 )
 
 METRIC_NAME_TMPL = getattr(
     settings,
-    'REQUESTS_METRIC_NAME_TMPL',
-    '{prefix}.{url_name}.{request_method}.{status_code}'
+    "REQUESTS_METRIC_NAME_TMPL",
+    "{prefix}.{url_name}.{request_method}.{status_code}",
 )
 ALL_URLS_METRIC_NAME_TMPL = getattr(
-    settings,
-    'REQUESTS_ALL_URLS_METRIC_NAME_TMPL',
-    '{prefix}_all_urls.{request_method}'
+    settings, "REQUESTS_ALL_URLS_METRIC_NAME_TMPL", "{prefix}_all_urls.{request_method}"
 )
-UNKNOWN_URL_NAME = 'unknown'
+UNKNOWN_URL_NAME = "unknown"
 
 REQUESTS_METRICS_ENABLED = getattr(
-    settings,
-    'ENABLE_REQUESTS_AND_QUERIES_METRICS',
-    True
+    settings, "ENABLE_REQUESTS_AND_QUERIES_METRICS", True
 )
 LARGE_NUMBER_OF_QUERIES_THRESHOLD = getattr(
-    settings,
-    'LARGE_NUMBER_OF_QUERIES_THRESHOLD',
-    25
+    settings, "LARGE_NUMBER_OF_QUERIES_THRESHOLD", 25
 )
-LONG_QUERIES_THRESHOLD_MS = getattr(
-    settings,
-    'LONG_QUERIES_THRESHOLD_MS',
-    250
-)
+LONG_QUERIES_THRESHOLD_MS = getattr(settings, "LONG_QUERIES_THRESHOLD_MS", 250)
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +47,7 @@ class QueryLogEntry:
     duration: float  # noqa
 
     def __init__(self, sql: str, duration: float):
-        self.sql = sql,
+        self.sql = (sql,)
         self.duration = duration
 
     def __str__(self):
@@ -65,7 +55,7 @@ class QueryLogEntry:
 
 
 def get_queries_log() -> deque:
-    if not hasattr(queries_data, 'queries'):
+    if not hasattr(queries_data, "queries"):
         queries_data.queries = deque(maxlen=9000)
     return queries_data.queries
 
@@ -122,12 +112,12 @@ class RequestMetricsMiddleware(MiddlewareMixin):
     """
 
     IGNORED_PATHS = (
-        'javascript-catalog',
-        'microservice_contract-health',
-        'microservice_contract-ping',
-        'microservice_contract-ping-service-id',
-        'microservice_contract-info',
-        'microservice_public_endpoints',
+        "javascript-catalog",
+        "microservice_contract-health",
+        "microservice_contract-ping",
+        "microservice_contract-ping-service-id",
+        "microservice_contract-info",
+        "microservice_public_endpoints",
     )
 
     def process_request(self, request):
@@ -144,9 +134,7 @@ class RequestMetricsMiddleware(MiddlewareMixin):
         try:
             url_name = request.resolver_match.url_name
         except AttributeError:
-            logger.warning(
-                'URL resolver not found', extra={'path': request.path}
-            )
+            logger.warning("URL resolver not found", extra={"path": request.path})
             url_name = UNKNOWN_URL_NAME
 
         view_name = request.resolver_match.view_name
@@ -154,9 +142,9 @@ class RequestMetricsMiddleware(MiddlewareMixin):
             return
 
         common_log_params = {
-            'request_method': request.method,
-            'url_name': url_name,
-            'status_code': response.status_code,
+            "request_method": request.method,
+            "url_name": url_name,
+            "status_code": response.status_code,
         }
 
         query_stats = get_queries_log()
@@ -164,8 +152,12 @@ class RequestMetricsMiddleware(MiddlewareMixin):
         # processing time
         end_resources, end_time = getrusage(RUSAGE_SELF), time.monotonic()
         real_time = (end_time - request._request_start_time) * 1000
-        sys_time = (end_resources.ru_stime - request._start_resources.ru_stime) * 1000  # noqa
-        user_time = (end_resources.ru_utime - request._start_resources.ru_utime) * 1000  # noqa
+        sys_time = (
+            end_resources.ru_stime - request._start_resources.ru_stime
+        ) * 1000  # noqa
+        user_time = (
+            end_resources.ru_utime - request._start_resources.ru_utime
+        ) * 1000  # noqa
         cpu_time = sys_time + user_time
         queries_time = sum(stat.duration for stat in query_stats) * 1000
 
@@ -188,57 +180,56 @@ class RequestMetricsMiddleware(MiddlewareMixin):
         queries_count = len(query_stats)
 
         data = {
-            'queries_time': queries_time,
-            'queries_count': queries_count,
-            'real_time': real_time,
-            'sys_time': sys_time,
-            'user_time': user_time,
-            'cpu_time': cpu_time,
-            'cpu_real_ratio': cpu_time / real_time * 100,
-            'queries_real_ratio': queries_time / real_time * 100,
+            "queries_time": queries_time,
+            "queries_count": queries_count,
+            "real_time": real_time,
+            "sys_time": sys_time,
+            "user_time": user_time,
+            "cpu_time": cpu_time,
+            "cpu_real_ratio": cpu_time / real_time * 100,
+            "queries_real_ratio": queries_time / real_time * 100,
         }
         metadata = {
-            'path': request.get_full_path(),
-            'url_name': url_name,
-            'view_name': view_name,
-            'method': request.method,
-            'http_user_agent': request.META.get('HTTP_USER_AGENT'),
-            'username': request.user.username,
+            "path": request.get_full_path(),
+            "url_name": url_name,
+            "view_name": view_name,
+            "method": request.method,
+            "http_user_agent": request.META.get("HTTP_USER_AGENT"),
+            "username": request.user.username,
         }
 
         logger.info(
-            'Request time:\n'
-            '\treal: {real_time}\n'
-            '\tsys: {sys_time}\n'
-            '\tuser: {user_time}\n'
-            '\ttotal CPU time: {cpu_time}\n'
-            '\tCPU to real time ratio: {cpu_real_ratio}\n'
-
-            'Queries:\n'
-            '\tcount: {queries_count}\n'
-            '\ttotal time: {queries_time}\n'
-            '\tqueries time to real time ratio: {queries_real_ratio}'.format(
-                **data
-            ), extra={
-                **data,
-                **metadata
-            }
+            "Request time:\n"
+            "\treal: {real_time}\n"
+            "\tsys: {sys_time}\n"
+            "\tuser: {user_time}\n"
+            "\ttotal CPU time: {cpu_time}\n"
+            "\tCPU to real time ratio: {cpu_real_ratio}\n"
+            "Queries:\n"
+            "\tcount: {queries_count}\n"
+            "\ttotal time: {queries_time}\n"
+            "\tqueries time to real time ratio: {queries_real_ratio}".format(**data),
+            extra={**data, **metadata},
         )
 
         if queries_count > LARGE_NUMBER_OF_QUERIES_THRESHOLD:
-            logger.warning("A lot of queries ({}) in {}: {}".format(
-                queries_count, view_name, get_per_query_stat(query_stats)),
-                extra={**metadata}
+            logger.warning(
+                "A lot of queries ({}) in {}: {}".format(
+                    queries_count, view_name, get_per_query_stat(query_stats)
+                ),
+                extra={**metadata},
             )
         elif queries_time > LONG_QUERIES_THRESHOLD_MS:
-            logger.warning("Long queries (total of {} ms) in {}: {}".format(
-                queries_time, view_name, get_per_query_stat(query_stats)),
-                extra={**metadata}
+            logger.warning(
+                "Long queries (total of {} ms) in {}: {}".format(
+                    queries_time, view_name, get_per_query_stat(query_stats)
+                ),
+                extra={**metadata},
             )
 
     def process_response(self, request, response):
         try:
             self._collect_metrics(request, response)
         except Exception:
-            logger.exception('Exception during collecting metrics')
+            logger.exception("Exception during collecting metrics")
         return response
