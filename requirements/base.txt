@@ -18,7 +18,7 @@ django-sitetree==1.13.0
 django-taggit-serializer==0.1.7
 django-taggit==0.22.2
 django-threadlocals==0.8
-djangorestframework==3.7.5
+djangorestframework==3.8.2
 djangorestframework_xml==1.2.0
 drf-nested-routers==0.11.1
 factory-boy==2.11.1
