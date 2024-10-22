@@ -65,7 +65,7 @@ class CustomFieldValueAdminMaxinTestCase(TestCase):
         # default_value should be placed
         self.assertContains(
             response,
-            '<input type="text" name="__empty__" value="xyz" />'
+            '<input type="text" name="__empty__" value="xyz">'
         )
 
     def test_add_new_custom_field_value_for_existing_object(self):

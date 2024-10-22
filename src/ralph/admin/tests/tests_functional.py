@@ -254,6 +254,7 @@ class ChangeListTest(TestCase):
             model=model,
             model_admin=model_admin(model, ralph_site),
             request=request,
+            sortable_by=[],
         )
 
     def _get_ordering_list(self, model, model_admin, params, list_display):

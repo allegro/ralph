@@ -1,6 +1,6 @@
 -r openstack.txt
 -r hermes.txt
-Django==2.0.13
+Django==2.1.15
 Faker==0.9.0
 Markdown<3.0  # headerid extension removed in 3.0 - see #3313 for details
 Pillow==6.2.2
@@ -8,7 +8,7 @@ Unidecode==0.04.18
 dj.choices==0.11.0
 django-cryptography==0.3
 django-extensions==2.2.9
-django-filter==1.0.4
+django-filter==2.0.0
 django-import-export==1.2.0
 django-money==0.12.3
 django-mptt==0.11

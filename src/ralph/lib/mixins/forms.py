@@ -40,13 +40,13 @@ class SelectWithOtherOpitonWidget(forms.Select):
             name=OTHER_NAME.format(name), value=value.get(OTHER) or ''
         )
 
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, renderer=None):
         show_other = value and value.get('value') == OTHER
         choice_value = (value.get('value') if value else '') or ''
         return mark_safe(
             '<div class="{}">{}{}</div>'.format(
                 self.css_class,
-                super().render(name, choice_value, attrs=attrs),
+                super().render(name, choice_value, attrs=attrs, renderer=renderer),
                 self._get_other_field(name, value) if show_other else ''
             )
         )

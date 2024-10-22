@@ -42,9 +42,9 @@ class DatepickerWidgetMixin:
             static(path) for path in js
         ])
 
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, renderer=None):
         attrs['class'] = self.css_class
-        return super().render(name, value, attrs=attrs)
+        return super().render(name, value, attrs=attrs, renderer=renderer)
 
 
 class AdminDateWidget(DatepickerWidgetMixin, forms.DateInput):
@@ -256,7 +256,7 @@ class AutocompleteWidget(forms.TextInput):
                 rows.append("- {}\n".format(field))
         return ''.join(rows)
 
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, renderer=None):
         model_options = (
             self.rel_to._meta.app_label, self.rel_to._meta.model_name
         )

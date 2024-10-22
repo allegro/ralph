@@ -36,7 +36,7 @@ class EnvironmentViewSet(RalphAPIViewSet):
 
 
 class ServiceFilterSet(django_filters.FilterSet):
-    active = BooleanFilter(name="active")
+    active = BooleanFilter(field_name="active")
 
     class Meta:
         model = models.Service

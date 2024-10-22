@@ -89,7 +89,7 @@ class SaveSecurityScanSerializer(RalphAPISaveSerializer):
 
 class IPFilter(django_filters.FilterSet):
     ip = django_filters.CharFilter(
-        name='base_object__ethernet_set__ipaddress__address'
+        field_name='base_object__ethernet_set__ipaddress__address'
     )
 
     class Meta:

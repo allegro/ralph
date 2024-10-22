@@ -176,8 +176,8 @@ class TicketIdField(NullableCharField):
 
 
 class TicketIdFieldWidget(AdminTextInputWidget):
-    def render(self, name, value, attrs=None):
-        html = super().render(name, value, attrs)
+    def render(self, name, value, attrs=None, renderer=None):
+        html = super().render(name, value, attrs, renderer)
         if value:
             url = '{}{}'.format(settings.ISSUE_TRACKER_URL, value)
             final_attrs = {'href': smart_urlquote(url), 'target': '_blank'}
@@ -253,7 +253,7 @@ class BaseObjectForeignKey(models.ForeignKey):
 
 
 class TagWidget(forms.TextInput):
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, renderer=None):
         if value is not None and not isinstance(value, six.string_types):
             value = ', '.join(sorted([
                 (t if ',' not in t else '"%s"' % t) for t in value
@@ -261,7 +261,7 @@ class TagWidget(forms.TextInput):
         if attrs is None:
             attrs = {}
         attrs['class'] = 'vTextField'
-        return super(TagWidget, self).render(name, value, attrs)
+        return super(TagWidget, self).render(name, value, attrs, renderer)
 
 
 class TaggitTagField(TagField):
