@@ -12,6 +12,7 @@ from ralph.admin.sites import ralph_site
 from ralph.admin.views.extra import RalphDetailView, RalphListView
 from ralph.admin.views.main import RalphChangeList
 from ralph.tests.admin import CarAdmin, ManufacturerAdmin
+from ralph.tests.factories import UserFactory
 from ralph.tests.mixins import ClientMixin, ReloadUrlsMixin
 from ralph.tests.models import Car, Foo, TestManufacturer
 
@@ -254,13 +255,14 @@ class ChangeListTest(TestCase):
             model=model,
             model_admin=model_admin(model, ralph_site),
             request=request,
-            sortable_by=[],
+            sortable_by=model_admin.sortable_by,
         )
 
     def _get_ordering_list(self, model, model_admin, params, list_display):
         from django.contrib.admin.views.main import ORDER_VAR
         get_params = '{}={}'.format(ORDER_VAR, '.'.join(map(str, params)))
         request = RequestFactory().get('/?' + get_params)
+        request.user = UserFactory()
         cl = self._change_list_factory(
             model=Car,
             model_admin=CarAdmin,
