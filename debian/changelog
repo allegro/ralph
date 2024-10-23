@@ -1,3 +1,10 @@
+ralph (20241023.1) bionic; urgency=medium
+
+  * Updated changelog for 20241011.1 version.
+  * Fix data not JSON-serializable
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Wed, 23 Oct 2024 10:29:45 +0000
+
 ralph (20241011.1) bionic; urgency=medium
 
   [ Paweł Szulc ]
