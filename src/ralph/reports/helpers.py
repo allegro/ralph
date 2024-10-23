@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 import tempfile
 
@@ -25,17 +26,22 @@ def generate_report(name, requester, instances, language, context):
     service_pdf = ExternalService('PDF')
 
     for n in range(0, len(context), items_per_attachment):
-        result = service_pdf.run(
-            template=template_content,
-            data={
+        # Make sure data is JSON-serializable
+        # Will throw otherwise
+        data = json.loads(json.dumps(
+            {
                 'id': ', '.join([str(obj.id) for obj in
-                                 instances[n:n+items_per_attachment]]),
-                'now': datetime.datetime.now(),
+                                 instances[n:n + items_per_attachment]]),
+                'now': str(datetime.datetime.now()),
                 'logged_user': obj_to_dict(requester),
                 'affected_user': obj_to_dict(instances[0].user),
                 'owner': obj_to_dict(instances[0].owner),
-                'assets': context[n:n+items_per_attachment],
+                'assets': context[n:n + items_per_attachment],
             }
+        ))
+        result = service_pdf.run(
+            template=template_content,
+            data=data
         )
 
         filename = "_".join([

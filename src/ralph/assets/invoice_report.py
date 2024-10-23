@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+import json
 import logging
 
 from django.contrib import messages
@@ -116,7 +117,7 @@ class InvoiceReportMixin(object):
             'model': queryset.model._meta.model_name,
             'base_info': {
                 'invoice_no': first_item.invoice_no,
-                'invoice_date': first_item.invoice_date,
+                'invoice_date': str(first_item.invoice_date),
                 'provider': first_item.provider,
                 'datetime': datetime.datetime.now().strftime(
                     self._invoice_report_datetime_format
@@ -148,6 +149,9 @@ class InvoiceReportMixin(object):
             template_content = f.read()
 
         service_pdf = ExternalService('PDF')
+        # Make sure data is JSON-serializable
+        # Will throw otherwise
+        data = json.loads(json.dumps(data))
         result = service_pdf.run(
             template=template_content,
             data=data,
