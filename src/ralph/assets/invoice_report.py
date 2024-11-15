@@ -27,7 +27,7 @@ class InvoiceReportMixin(object):
 
     _invoice_report_select_related = []
     _invoice_report_common_fields = [
-        'invoice_no', 'invoice_date', 'provider', 'price_currency'
+        'invoice_no', 'invoice_date', 'provider', 'price_currency', 'property_of__name'
     ]
     _price_field = 'price'
     _invoice_report_name = 'invoice'
@@ -122,6 +122,7 @@ class InvoiceReportMixin(object):
                 'datetime': datetime.datetime.now().strftime(
                     self._invoice_report_datetime_format
                 ),
+                'property_of': first_item.property_of.name,
             },
             'items': list(map(self._parse_item, queryset)),
             'sum_price': str(
