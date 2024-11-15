@@ -11,7 +11,7 @@
       {% trans "Go" %}
     </button>
     {% if actions_selection_counter %}
-      <span class="action-counter" data-actions-icnt="{{ cl.result_list|length }}">{{ selection_note }}</span>
+      <span class="action-counter" data-actions-icnt="{{ cl.result_list|length|default:"0" }}">{{ selection_note }}</span>
     {% endif %}
   </div>
 {% endif %}
