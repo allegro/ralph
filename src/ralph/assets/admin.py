@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db.models import Count
+from django.forms import BaseInlineFormSet
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 
@@ -129,11 +130,17 @@ class ServiceEnvironmentAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     fields = ('service', 'environment', 'remarks', 'tags')
 
 
+class PolymorphicInlineFormset(BaseInlineFormSet):
+    def get_queryset(self):
+        return super().get_queryset()[:]
+
+
 class ServiceEnvironmentInline(RalphTabularInline):
     model = ServiceEnvironment
     raw_id_fields = ['environment']
     fields = ('environment',)
     min_num = 1
+    formset = PolymorphicInlineFormset
 
 
 class BaseObjectsList(ScanStatusInTableMixin, Table):
