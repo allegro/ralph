@@ -184,6 +184,7 @@ class VirtualServerAdmin(
         except:  # noqa  # this happens when no parent or parent doesn't have a hostname
             return '-'
 
+
 class CloudHostInlineFormset(BaseInlineFormSet):
     def get_queryset(self):
         return super().get_queryset()[:]
