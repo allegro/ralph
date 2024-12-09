@@ -185,11 +185,6 @@ DATABASES = {
     }
 }
 
-TRANSITION_TEMPLATES = (
-    ('transitions/release_asset.html', 'Release asset (Metrum)'),
-    ('transitions/return_asset.html', 'Return asset (Metrum)'),
-)
-
 AUTH_USER_MODEL = 'accounts.RalphUser'
 LOGIN_URL = '/login/'
 
