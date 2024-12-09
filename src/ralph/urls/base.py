@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.conf.urls import include, url
+from django.urls import path
+from django_prometheus import exports
 from rest_framework.authtoken import views
 from sitetree.sitetreeapp import SiteTree  # noqa
 
@@ -71,3 +73,12 @@ urlpatterns = [
 
 if getattr(settings, 'ENABLE_HERMES_INTEGRATION', False):
     urlpatterns += url(r'^hermes/', include('pyhermes.apps.django.urls')),
+
+if getattr(settings, 'PROMETHEUS_METRICS_ENABLED', False):
+    urlpatterns += [
+        path(
+            "status/prometheus",
+            exports.ExportToDjangoView,
+            name="status-prometheus",
+        )
+    ]

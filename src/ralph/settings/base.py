@@ -185,6 +185,11 @@ DATABASES = {
     }
 }
 
+TRANSITION_TEMPLATES = (
+    ('transitions/release_asset.html', 'Release asset (Metrum)'),
+    ('transitions/return_asset.html', 'Return asset (Metrum)'),
+)
+
 AUTH_USER_MODEL = 'accounts.RalphUser'
 LOGIN_URL = '/login/'
 
@@ -682,6 +687,7 @@ RALPH_HOST_URL = os.environ.get('RALPH_HOST_URL', None)
 # METRICS
 COLLECT_METRICS = False
 ALLOW_PUSH_GRAPHS_DATA_TO_STATSD = False
+PROMETHEUS_METRICS_ENABLED = False
 STATSD_GRAPHS_PREFIX = 'ralph.graphs'
 
 ENABLE_REQUESTS_AND_QUERIES_METRICS = True
@@ -692,6 +698,11 @@ TRANSITION_TEMPLATES = None
 
 CONVERT_TO_DATACENTER_ASSET_DEFAULT_STATUS_ID = 1
 CONVERT_TO_BACKOFFICE_ASSET_DEFAULT_STATUS_ID = 1
+
+if PROMETHEUS_METRICS_ENABLED:
+    INSTALLED_APPS += (
+        'django_prometheus',
+    )
 
 # Currency choices for django-money
 DEFAULT_CURRENCY_CODE = 'XXX'

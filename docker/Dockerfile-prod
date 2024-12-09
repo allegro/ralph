@@ -22,6 +22,12 @@ RUN apt-get clean && \
     apt-get -y install apt-transport-https ca-certificates gnupg2 locales curl && \
     rm -rf /var/lib/apt/lists/*
 
+
+# Multiprocess mode: https://prometheus.github.io/client_python/multiprocess/
+ENV PROMETHEUS_MULTIPROC_DIR="/tmp/prometheus-metrics"
+RUN mkdir -p /tmp/prometheus-metrics
+
+
 # set UTF-8 locale
 RUN locale-gen en_US.UTF-8
 ENV LANG en_US.UTF-8
