@@ -68,6 +68,10 @@ if os.environ.get('USE_REDIS_CACHE'):
             'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
         }
 
+try:
+    MIDDLEWARE
+except NameError:
+    MIDDLEWARE = ()
 
 if bool_from_env('COLLECT_METRICS'):
     COLLECT_METRICS = True
