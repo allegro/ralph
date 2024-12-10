@@ -91,7 +91,7 @@ if bool_from_env('COLLECT_METRICS'):
             'STATSD_GRAPHS_PREFIX', 'ralph.graphs'
         )
 
-if bool_from_env('PROMETHEUS_METRICS_ENABLED', True):
+if bool_from_env('PROMETHEUS_METRICS_ENABLED', False):
     PROMETHEUS_METRICS_ENABLED = True
     MIDDLEWARE = (
         'django_prometheus.middleware.PrometheusBeforeMiddleware',
