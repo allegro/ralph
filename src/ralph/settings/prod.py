@@ -95,3 +95,6 @@ if bool_from_env('PROMETHEUS_METRICS_ENABLED', True):
     MIDDLEWARE = MIDDLEWARE + (
         'django_prometheus.middleware.PrometheusAfterMiddleware',
     )
+    INSTALLED_APPS += (
+        'django_prometheus',
+    )
