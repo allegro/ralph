@@ -79,15 +79,6 @@ if bool_from_env('COLLECT_METRICS'):
         'ralph.lib.metrics.middlewares.RequestMetricsMiddleware',
     ) + MIDDLEWARE
 
-    if bool_from_env('PROMETHEUS_METRICS_ENABLED'):
-        PROMETHEUS_METRICS_ENABLED = True
-        MIDDLEWARE = (
-            'django_prometheus.middleware.PrometheusBeforeMiddleware',
-        ) + MIDDLEWARE
-        MIDDLEWARE = MIDDLEWARE + (
-            'django_prometheus.middleware.PrometheusAfterMiddleware',
-        )
-
     ALLOW_PUSH_GRAPHS_DATA_TO_STATSD = bool_from_env(
         'ALLOW_PUSH_GRAPHS_DATA_TO_STATSD'
     )
@@ -95,3 +86,12 @@ if bool_from_env('COLLECT_METRICS'):
         STATSD_GRAPHS_PREFIX = os.environ.get(
             'STATSD_GRAPHS_PREFIX', 'ralph.graphs'
         )
+
+if bool_from_env('PROMETHEUS_METRICS_ENABLED'):
+    PROMETHEUS_METRICS_ENABLED = True
+    MIDDLEWARE = (
+        'django_prometheus.middleware.PrometheusBeforeMiddleware',
+    ) + MIDDLEWARE
+    MIDDLEWARE = MIDDLEWARE + (
+        'django_prometheus.middleware.PrometheusAfterMiddleware',
+    )
