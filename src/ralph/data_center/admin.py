@@ -59,8 +59,7 @@ from ralph.data_center.models.virtual import (
     BaseObjectCluster,
     Cluster,
     ClusterType,
-    Database,
-    VIP
+    Database
 )
 from ralph.data_center.views import RelationsView
 from ralph.data_importer import resources
