@@ -237,7 +237,7 @@ class CloudHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     select_related = [
         'parent', 'parent__cloudproject', 'cloudprovider', 'hypervisor',
         'service_env__service', 'service_env__environment', 'content_type',
-        'configuration_path__module',
+        'configuration_path__module', 'securityscan'
     ]
     prefetch_related = base_object_descendant_prefetch_related + [
         'tags', 'cloudflavor__virtualcomponent_set__model', 'licences',
@@ -280,7 +280,7 @@ class VirtualServerViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     save_serializer_class = VirtualServerSaveSerializer
     select_related = VirtualServerAdmin.list_select_related + [
         'parent', 'service_env__service', 'service_env__environment',
-        'configuration_path', 'content_type', 'parent__cluster__type'
+        'configuration_path', 'content_type', 'parent__cluster__type', 'securityscan'
     ]
     prefetch_related = base_object_descendant_prefetch_related + [
         'tags',
