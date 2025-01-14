@@ -7,7 +7,7 @@ from django.db.models import Q
 from rest_framework import status
 from rest_framework.response import Response
 
-from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
+from ralph.api import RalphAPISerializer, RalphAPIViewSet
 from ralph.api.serializers import RalphAPISaveSerializer
 from ralph.assets.models import BaseObject
 from ralph.configuration_management.models import SCMStatusCheck
@@ -100,7 +100,7 @@ class SCMInfoViewSet(RalphAPIViewSet):
         return Response(self.serializer_class(scan).data, status=res_status)
 
 
-router.register('scm-info', SCMInfoViewSet)
+# router.register('scm-info', SCMInfoViewSet)
 urlpatterns = [
     url(
             r'^scm-info/(?P<hostname>[\w\.-]+)',

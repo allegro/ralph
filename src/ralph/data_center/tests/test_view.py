@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from unittest import skip
 from urllib.parse import urlencode
 
 from django.contrib.contenttypes.models import ContentType
@@ -118,7 +119,7 @@ class DCHostViewTest(ClientMixin, TestCase):
         )
         self.assertContains(result, 'DC1 / SR1 / Rack #1')
 
-
+@skip("Security Scans are disabled")
 class DCHostScanStatusInListingTest(ClientMixin, TestCase):
 
     def setUp(self):
@@ -212,7 +213,7 @@ class DCHostScanStatusInListingTest(ClientMixin, TestCase):
         )
         self.assertContains(result, "Scan failed")
 
-
+@skip("Security Scans are disabled")
 class DCHostFilterByPatchDeadline(ClientMixin, TestCase):
     def setUp(self):
         self.login_as_user()

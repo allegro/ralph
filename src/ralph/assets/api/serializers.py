@@ -36,7 +36,6 @@ from ralph.assets.models.components import (
     Memory,
     Processor
 )
-from ralph.configuration_management.api import SCMInfoSerializer
 from ralph.lib.custom_fields.api import WithCustomFieldsSerializerMixin
 from ralph.licences.api_simple import SimpleBaseObjectLicenceSerializer
 from ralph.networks.api_simple import IPAddressSimpleSerializer
@@ -258,7 +257,6 @@ class BaseObjectPolymorphicSerializer(
     """
     __str__ = StrField(show_type=True)
     service_env = ServiceEnvironmentSerializer()
-    scmstatuscheck = SCMInfoSerializer()
 
     class Meta:
         model = BaseObject

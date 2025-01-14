@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from unittest import skip
 from urllib.parse import urlencode
 
 from ddt import data, ddt, unpack
@@ -708,6 +709,7 @@ class BaseObjectAPITests(RalphAPITestCase):
         response = self.client.get(url, format='json')
         self.assertEqual(len(response.data['results']), 1)
 
+    @skip("SCM Status is disabled")
     def test_filter_by_scm_status_check_result(self):
         status_checks = {
             SCMCheckResult.scm_error: 2,

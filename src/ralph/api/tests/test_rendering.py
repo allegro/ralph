@@ -85,8 +85,8 @@ ALL_API_ENDPOINTS = {
     "rack-accessories": "/api/rack-accessories/",
     "racks": "/api/racks/",
     "regions": "/api/regions/",
-    "scm-info": "/api/scm-info/",
-    "security-scans": "/api/security-scans/",
+    # "scm-info": "/api/scm-info/",
+    # "security-scans": "/api/security-scans/",
     "server-rooms": "/api/server-rooms/",
     "services": "/api/services/",
     "services-environments": "/api/services-environments/",
@@ -107,7 +107,7 @@ ALL_API_ENDPOINTS = {
     # "vips": "/api/vips/",
     "virtual-server-types": "/api/virtual-server-types/",
     "virtual-servers": "/api/virtual-servers/",
-    "vulnerabilities": "/api/vulnerabilities/",
+    # "vulnerabilities": "/api/vulnerabilities/",
     "warehouses": "/api/warehouses/"
 }
 

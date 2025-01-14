@@ -14,10 +14,7 @@ from ralph.admin.mixins import RalphAdmin, RalphAdminForm, RalphTabularInline
 from ralph.assets.models import BaseObject
 from ralph.assets.models.components import Ethernet
 from ralph.assets.views import ComponentsAdminView, RalphDetailViewAdmin
-from ralph.configuration_management.views import (
-    SCMCheckInfo,
-    SCMStatusCheckInChangeListMixin
-)
+from ralph.configuration_management.views import SCMCheckInfo
 from ralph.data_center.admin import generate_list_filter_with_common_fields
 from ralph.data_center.models.physical import DataCenterAsset
 from ralph.data_center.models.virtual import BaseObjectCluster
@@ -27,7 +24,7 @@ from ralph.lib.transitions.admin import TransitionAdminMixin
 from ralph.licences.models import BaseObjectLicence
 from ralph.networks.forms import SimpleNetworkForm
 from ralph.networks.views import NetworkView
-from ralph.security.views import ScanStatusInChangeListMixin, SecurityInfo
+from ralph.security.views import SecurityInfo
 from ralph.virtual.forms import CloudProviderForm
 from ralph.virtual.models import (
     CloudFlavor,
@@ -114,8 +111,6 @@ class VirtualServerSCMInfo(SCMCheckInfo):
 
 @register(VirtualServer)
 class VirtualServerAdmin(
-    SCMStatusCheckInChangeListMixin,
-    ScanStatusInChangeListMixin,
     ActiveDeploymentMessageMixin,
     CustomFieldValueAdminMixin,
     TransitionAdminMixin,
@@ -131,7 +126,7 @@ class VirtualServerAdmin(
     )
     list_display = [
         'hostname', 'type', 'sn', 'service_env', 'configuration_path',
-        'parent_', 'scan_status', 'scm_status_check'
+        'parent_'
     ]
     raw_id_fields = ['parent', 'service_env', 'configuration_path']
     fields = [
@@ -146,8 +141,6 @@ class VirtualServerAdmin(
     change_views = [
         VirtualServerComponentsView,
         VirtualServerNetworkView,
-        VirtualServerSCMInfo,
-        VirtaulServerSecurityInfoView,
         VirtualServerLicencesView,
     ]
     if settings.ENABLE_DNSAAS_INTEGRATION:
@@ -268,13 +261,11 @@ class CloudHostSCMInfo(SCMCheckInfo):
 
 @register(CloudHost)
 class CloudHostAdmin(
-    SCMStatusCheckInChangeListMixin, ScanStatusInChangeListMixin,
     CustomFieldValueAdminMixin, RalphAdmin
 ):
     list_display = ['get_hostname', 'get_ip_addresses', 'service_env',
                     'get_cloudproject', 'cloudflavor_name', 'host_id',
-                    'created', 'image_name', 'get_tags', 'scan_status',
-                    'scm_status_check']
+                    'created', 'image_name', 'get_tags']
     list_filter_prefix = [BaseObjectHostnameFilter]
     list_filter_postfix = [
         'cloudprovider', 'cloudflavor', TagsListFilter, 'hypervisor'
@@ -300,8 +291,6 @@ class CloudHostAdmin(
     inlines = [CloudNetworkInline]
     change_views = [
         CloudHostNetworkView,
-        CloudHostSCMInfo,
-        CloudHostSecurityInfoView
     ]
     fieldsets = (
         (None, {

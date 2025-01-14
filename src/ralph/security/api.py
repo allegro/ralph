@@ -5,7 +5,7 @@ import django_filters
 from django.db import transaction
 from rest_framework import serializers
 
-from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
+from ralph.api import RalphAPISerializer, RalphAPIViewSet
 from ralph.api.serializers import RalphAPISaveSerializer
 from ralph.networks.models.networks import IPAddress
 from ralph.security.models import any_exceeded, SecurityScan, Vulnerability
@@ -117,6 +117,6 @@ class SecurityScanViewSet(RalphAPIViewSet):
         return super().create(request, *args, **kwargs)
 
 
-router.register(r'vulnerabilities', VulnerabilityViewSet)
-router.register(r'security-scans', SecurityScanViewSet)
+# router.register(r'vulnerabilities', VulnerabilityViewSet)
+# router.register(r'security-scans', SecurityScanViewSet)
 urlpatterns = []

@@ -11,7 +11,6 @@ from ralph.assets.api.serializers import (
     NetworkComponentSerializerMixin,
     OwnersFromServiceEnvSerializerMixin
 )
-from ralph.configuration_management.api import SCMInfoSerializer
 from ralph.data_center.models import (
     Accessory,
     BaseObjectCluster,
@@ -25,7 +24,6 @@ from ralph.data_center.models import (
     ServerRoom,
     VIP
 )
-from ralph.security.api import SecurityScanSerializer
 
 
 class ClusterTypeSerializer(RalphAPISerializer):
@@ -126,8 +124,6 @@ class DataCenterAssetSimpleSerializer(RalphAPISerializer):
 
 class DataCenterAssetSerializer(ComponentSerializerMixin, AssetSerializer):
     rack = SimpleRackSerializer()
-    scmstatuscheck = SCMInfoSerializer()
-    securityscan = SecurityScanSerializer()
     related_hosts = serializers.SerializerMethodField()
 
     def get_related_hosts(self, obj):
