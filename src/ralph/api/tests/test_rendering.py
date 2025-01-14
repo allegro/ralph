@@ -104,7 +104,7 @@ ALL_API_ENDPOINTS = {
     "transitions-job": "/api/transitions-job/",
     "transitions-model": "/api/transitions-model/",
     "users": "/api/users/",
-    "vips": "/api/vips/",
+    # "vips": "/api/vips/",
     "virtual-server-types": "/api/virtual-server-types/",
     "virtual-servers": "/api/virtual-servers/",
     "vulnerabilities": "/api/vulnerabilities/",

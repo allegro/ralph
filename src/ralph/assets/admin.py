@@ -167,7 +167,7 @@ class ServiceBaseObjects(RalphDetailView):
             service_env__service=self.object
         ).select_related(
             'service_env__environment', 'content_type', 'securityscan'
-        )
+        ).exclude(content_type__model='vip')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

@@ -571,7 +571,7 @@ BASE_OBJECTS_FACTORIES = {
     ServiceEnvironment: ServiceEnvironmentFactory,
     SSLCertificate: SSLCertificatesFactory,
     Support: SupportFactory,
-    VIP: VIPFactory,
+    # VIP: VIPFactory,
     VirtualServer: VirtualServerFactory,
     Cluster: ClusterFactory,
     ConfigurationClass: ConfigurationClassFactory,

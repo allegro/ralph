@@ -621,7 +621,7 @@ class DatabaseAdmin(RalphAdmin):
     pass
 
 
-@register(VIP)
+# @register(VIP)
 class VIPAdmin(RalphAdmin):
     search_fields = ['name', 'ip__address']
     list_display = ['name', 'ip', 'port', 'protocol', 'service_env']
