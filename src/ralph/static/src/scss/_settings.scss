@@ -1,8 +1,8 @@
-@import 'foundation/functions';
+@import '~foundation/foundation/functions';
 @import 'colors';
-@import 'foundation/settings';
+@import '~foundation/foundation/settings';
 
-$fa-font-path: '../vendor/fonts';
+$fa-font-path: '../../../../../node_modules/font-awesome/fonts';
 
 $base-font-size: 12px;
 $rem-base: $base-font-size;
