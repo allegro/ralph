@@ -115,6 +115,6 @@ class SecurityScanViewSet(RalphAPIViewSet):
         return super().create(request, *args, **kwargs)
 
 
-#router.register(r"vulnerabilities", VulnerabilityViewSet)
-#router.register(r"security-scans", SecurityScanViewSet)
+# router.register(r"vulnerabilities", VulnerabilityViewSet)
+# router.register(r"security-scans", SecurityScanViewSet)
 urlpatterns = []

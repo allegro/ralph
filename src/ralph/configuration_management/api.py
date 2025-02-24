@@ -95,7 +95,7 @@ class SCMInfoViewSet(RalphAPIViewSet):
         return Response(self.serializer_class(scan).data, status=res_status)
 
 
-#router.register("scm-info", SCMInfoViewSet)
+# router.register("scm-info", SCMInfoViewSet)
 urlpatterns = [
     url(
         r"^scm-info/(?P<hostname>[\w\.-]+)",
