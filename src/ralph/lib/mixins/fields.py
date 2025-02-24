@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import netaddr
-
 from django import forms
 from django.apps import apps
 from django.conf import settings

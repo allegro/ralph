@@ -129,7 +129,7 @@ def _perform_async_transition(transition_job):
                         tja=tja,
                         **defaults
                     )
-                except RescheduleAsyncTransitionActionLater as e:
+                except RescheduleAsyncTransitionActionLater:
                     # action is not ready - reschedule this job later and
                     # continue when you left off
                     transition_job.reschedule()

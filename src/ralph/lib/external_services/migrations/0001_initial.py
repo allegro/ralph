@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.db import migrations, models
-import ralph.lib.mixins.fields
-import django_extensions.db.fields.json
 import uuid
+
+import django_extensions.db.fields.json
+from django.db import migrations, models
+
+import ralph.lib.mixins.fields
 
 
 class Migration(migrations.Migration):

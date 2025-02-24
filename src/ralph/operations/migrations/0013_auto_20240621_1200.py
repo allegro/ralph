@@ -6,25 +6,24 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('operations', '0012_auto_20211206_1347'),
+        ("operations", "0012_auto_20211206_1347"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='operationtype',
-            name='level',
+            model_name="operationtype",
+            name="level",
             field=models.PositiveIntegerField(editable=False),
         ),
         migrations.AlterField(
-            model_name='operationtype',
-            name='lft',
+            model_name="operationtype",
+            name="lft",
             field=models.PositiveIntegerField(editable=False),
         ),
         migrations.AlterField(
-            model_name='operationtype',
-            name='rght',
+            model_name="operationtype",
+            name="rght",
             field=models.PositiveIntegerField(editable=False),
         ),
     ]

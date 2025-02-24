@@ -7,11 +7,8 @@ from ralph.lib.transitions.migration import TransitionActionMigration
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('access_cards', '0004_auto_20200513_1014'),
+        ("access_cards", "0004_auto_20200513_1014"),
     ]
 
-    operations = [
-        TransitionActionMigration()
-    ]
+    operations = [TransitionActionMigration()]

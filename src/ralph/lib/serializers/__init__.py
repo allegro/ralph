@@ -6,7 +6,6 @@ from django.core.serializers.base import DeserializationError
 from django.core.serializers.json import Serializer as JSONSerializer
 from django.utils import six
 from djmoney.models.fields import MoneyField
-
 from djmoney.money import Money
 from djmoney.utils import get_currency_field_name
 
@@ -29,8 +28,8 @@ def Deserializer(stream_or_string, **options):  # noqa
     # This updated Deserializer is needed to get reversion (django-reversion)
     # to work in circumstances described above.
 
-    from django.core.serializers.python import \
-        Deserializer as PythonDeserializer, _get_model
+    from django.core.serializers.python import Deserializer as PythonDeserializer
+    from django.core.serializers.python import _get_model
 
     ignore = options.pop("ignorenonexistent", False)
 

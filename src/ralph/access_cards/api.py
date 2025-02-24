@@ -7,7 +7,7 @@ class AccessZoneSimpleSerializer(RalphAPISerializer):
     class Meta:
         model = AccessZone
         depth = 0
-        fields = ['id', 'name', 'parent', 'description']
+        fields = ["id", "name", "parent", "description"]
 
 
 class AccessZoneSerializer(RalphAPISerializer):
@@ -25,19 +25,30 @@ class AccessCardSerializer(RalphAPISerializer):
 
     class Meta:
         model = AccessCard
-        fields = ['id', 'status', 'user', 'owner', 'created', 'modified',
-                  'visual_number', 'system_number', 'issue_date', 'notes',
-                  'region', 'access_zones']
+        fields = [
+            "id",
+            "status",
+            "user",
+            "owner",
+            "created",
+            "modified",
+            "visual_number",
+            "system_number",
+            "issue_date",
+            "notes",
+            "region",
+            "access_zones",
+        ]
 
 
 class AccessCardViewSet(RalphAPIViewSet):
-    queryset = AccessCard.objects.order_by('id').all()
-    select_related = ['user', 'owner', 'region']
+    queryset = AccessCard.objects.order_by("id").all()
+    select_related = ["user", "owner", "region"]
     serializer_class = AccessCardSerializer
-    prefetch_related = ['access_zones']
+    prefetch_related = ["access_zones"]
     extended_filter_fields = {
-        'access_zones__name': ['access_zones__name__icontains'],
-        'access_zones__id': ['access_zones__id']
+        "access_zones__name": ["access_zones__name__icontains"],
+        "access_zones__id": ["access_zones__id"],
     }
 
 
@@ -46,6 +57,6 @@ class AccessZoneViewSet(RalphAPIViewSet):
     serializer_class = AccessZoneSerializer
 
 
-router.register(r'access-card', AccessCardViewSet)
-router.register(r'access-zone', AccessZoneViewSet)
+router.register(r"access-card", AccessCardViewSet)
+router.register(r"access-zone", AccessZoneViewSet)
 urlpatterns = []

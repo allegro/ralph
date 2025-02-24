@@ -1,1 +1,1 @@
-default_app_config = 'ralph.operations.apps.RalphOperationsConfig'
+default_app_config = "ralph.operations.apps.RalphOperationsConfig"

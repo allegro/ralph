@@ -37,18 +37,20 @@ SUPPORTS_RELATED_OBJECTS_PREFETCH_RELATED = [
     # [bos.base_object for bos in support.baseobjectssupport_set.all()]
     # without additional queries
     models.Prefetch(
-        'baseobjectssupport_set__baseobject',
+        "baseobjectssupport_set__baseobject",
         # polymorphic manager is used to get final instance of the object
         # (ex. DataCenterAsset)
-        queryset=BaseObject.polymorphic_objects.all()
+        queryset=BaseObject.polymorphic_objects.all(),
     )
 ]
 
 
 class AssignedObjectsCountManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().annotate(
-            assigned_objects_count=models.Count('base_objects')
+        return (
+            super()
+            .get_queryset()
+            .annotate(assigned_objects_count=models.Count("base_objects"))
         )
 
 
@@ -56,9 +58,12 @@ class SupportsRelatedObjectsManager(AssignedObjectsCountManager):
     """
     Prefetch related objects by-default
     """
+
     def get_queryset(self):
-        return super().get_queryset().prefetch_related(
-            *SUPPORTS_RELATED_OBJECTS_PREFETCH_RELATED
+        return (
+            super()
+            .get_queryset()
+            .prefetch_related(*SUPPORTS_RELATED_OBJECTS_PREFETCH_RELATED)
         )
 
 
@@ -68,17 +73,16 @@ class Support(
     NamedMixin.NonUnique,
     PriceMixin,
     BaseObject,
-    AutocompleteTooltipMixin
+    AutocompleteTooltipMixin,
 ):
     _allow_in_dashboard = True
 
     asset_type = models.PositiveSmallIntegerField(
-        choices=ObjectModelType(), default=ObjectModelType.all.id,
+        choices=ObjectModelType(),
+        default=ObjectModelType.all.id,
     )
     contract_id = models.CharField(
-        verbose_name=_('contract ID'),
-        max_length=50,
-        blank=False
+        verbose_name=_("contract ID"), max_length=50, blank=False
     )
     description = models.CharField(max_length=100, blank=True)
     date_from = models.DateField(null=True, blank=True)
@@ -96,20 +100,13 @@ class Support(
     producer = models.CharField(max_length=100, blank=True)
     supplier = models.CharField(max_length=100, blank=True)
     serial_no = models.CharField(
-        verbose_name=_('serial number'),
-        max_length=100,
-        blank=True
+        verbose_name=_("serial number"), max_length=100, blank=True
     )
     invoice_no = models.CharField(
-        verbose_name=_('invoice number'),
-        max_length=100,
-        blank=True,
-        db_index=True
+        verbose_name=_("invoice number"), max_length=100, blank=True, db_index=True
     )
     invoice_date = models.DateField(
-        verbose_name=_('invoice date'),
-        null=True,
-        blank=True
+        verbose_name=_("invoice date"), null=True, blank=True
     )
     period_in_months = models.IntegerField(null=True, blank=True)
     property_of = models.ForeignKey(
@@ -134,18 +131,18 @@ class Support(
     )
     base_objects = PolymorphicManyToManyField(
         BaseObject,
-        related_name='+',
-        through='BaseObjectsSupport',
+        related_name="+",
+        through="BaseObjectsSupport",
     )
 
     autocomplete_tooltip_fields = [
-        'date_from',
-        'date_to',
-        'asset_type',
-        'producer',
-        'supplier',
-        'serial_no',
-        'support_type'
+        "date_from",
+        "date_to",
+        "asset_type",
+        "producer",
+        "supplier",
+        "serial_no",
+        "support_type",
     ]
 
     polymorphic_objects = PolymorphicQuerySet.as_manager()
@@ -160,30 +157,22 @@ class Support(
         return naturaltime(datetime(*(self.date_to.timetuple()[:6])))
 
     def __str__(self):
-        return '{} ({})'.format(self.name, self.date_to)
+        return "{} ({})".format(self.name, self.date_to)
 
     @property
     def autocomplete_str(self):
-        return '{} ({}, {})'.format(
-            str(self.name), self.date_to, self.supplier
-        )
+        return "{} ({}, {})".format(str(self.name), self.date_to, self.supplier)
 
 
-class BaseObjectsSupport(
-    AdminAbsoluteUrlMixin,
-    models.Model
-):
+class BaseObjectsSupport(AdminAbsoluteUrlMixin, models.Model):
     support = models.ForeignKey(Support, on_delete=models.CASCADE)
     baseobject = BaseObjectForeignKey(
         BaseObject,
-        verbose_name=_('Asset'),
-        related_name='supports',
-        limit_models=[
-            'back_office.BackOfficeAsset',
-            'data_center.DataCenterAsset'
-        ],
-        on_delete=models.CASCADE
+        verbose_name=_("Asset"),
+        related_name="supports",
+        limit_models=["back_office.BackOfficeAsset", "data_center.DataCenterAsset"],
+        on_delete=models.CASCADE,
     )
 
     class Meta:
-        unique_together = ('support', 'baseobject')
+        unique_together = ("support", "baseobject")

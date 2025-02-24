@@ -1,1 +1,1 @@
-default_app_config = 'ralph.networks.apps.Networks'
+default_app_config = "ralph.networks.apps.Networks"

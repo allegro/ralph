@@ -6,11 +6,9 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('networks', '0016_auto_20240621_1200'),
-        ('networks', '0016_auto_20240924_1155'),
+        ("networks", "0016_auto_20240621_1200"),
+        ("networks", "0016_auto_20240924_1155"),
     ]
 
-    operations = [
-    ]
+    operations = []

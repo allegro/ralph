@@ -29,28 +29,28 @@ def _url_name_for_change_view(obj_class, view_name):
         return None
     model_admin = ralph_site._registry[obj_class]
     found_view = None
-    for change_view in getattr(model_admin, 'change_views', []):
-        if getattr(change_view, 'name', '') == view_name:
+    for change_view in getattr(model_admin, "change_views", []):
+        if getattr(change_view, "name", "") == view_name:
             found_view = change_view
             break
-    return getattr(found_view, 'url_name', None)
+    return getattr(found_view, "url_name", None)
 
 
 def _linkify(to_linkify, url):
-    return "<a href=\"{}\">{}</a>".format(url, to_linkify)
+    return '<a href="{}">{}</a>'.format(url, to_linkify)
 
 
 class ScanStatusMixin(object):
-    field_name = _('Security scan')
+    field_name = _("Security scan")
 
     def _to_span(self, css, text):
-        return'<span class="{}">{}</span>'.format(css, text)
+        return '<span class="{}">{}</span>'.format(css, text)
 
     def scan_status(self, obj):
         try:
             scan = obj.securityscan
         except ObjectDoesNotExist:
-            html = self._to_span('', 'No scan')
+            html = self._to_span("", "No scan")
         else:
             if scan.is_ok:
                 if not scan.is_patched:
@@ -60,7 +60,7 @@ class ScanStatusMixin(object):
             else:
                 html = self._to_span("warning", "Scan failed")
 
-            url_name = _url_name_for_change_view(type(obj), 'security_info')
+            url_name = _url_name_for_change_view(type(obj), "security_info")
             if not url_name:
                 logger.error("No security view for obj of type: %s", type(obj))
             else:
@@ -77,7 +77,9 @@ class ScanStatusInChangeListMixin(ScanStatusMixin):
         self.scan_status.__func__.short_description = self.field_name
 
         super().__init__(*args, **kwargs)
-        self.list_select_related += ['securityscan', ]
+        self.list_select_related += [
+            "securityscan",
+        ]
 
 
 class ScanStatusInTableMixin(ScanStatusMixin):
@@ -88,24 +90,30 @@ class ScanStatusInTableMixin(ScanStatusMixin):
 
 @register(Vulnerability)
 class VulnerabilityAdmin(RalphAdmin):
-    search_fields = ['name', ]
+    search_fields = [
+        "name",
+    ]
 
 
 class VulnerabilitiesInline(RalphTabularInline):
     verbose_name = "Vulnerability"
     verbose_name_plural = "Vulnerabilities"
     model = SecurityScan.vulnerabilities.through
-    raw_id_fields = ('vulnerability',)
+    raw_id_fields = ("vulnerability",)
 
 
 @register(SecurityScan)
 class SecurityScan(RalphAdmin):
     fields = (
-        'last_scan_date', 'scan_status', 'next_scan_date', 'details_url',
-        'rescan_url',
+        "last_scan_date",
+        "scan_status",
+        "next_scan_date",
+        "details_url",
+        "rescan_url",
     )
     list_select_related = (
-        'base_object', 'base_object__content_type',
+        "base_object",
+        "base_object__content_type",
     )
 
     inlines = [
@@ -114,12 +122,11 @@ class SecurityScan(RalphAdmin):
 
 
 class SecurityInfo(RalphDetailView):
-
-    icon = 'lock'
-    label = 'Security Info'
-    name = 'security_info'
+    icon = "lock"
+    label = "Security Info"
+    name = "security_info"
     url_name = None
-    template_name = 'security/securityinfo/security_info.html'
+    template_name = "security/securityinfo/security_info.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -127,5 +134,5 @@ class SecurityInfo(RalphDetailView):
             scan = self.object.securityscan
         except ObjectDoesNotExist:
             scan = None
-        context['security_scan'] = scan
+        context["security_scan"] = scan
         return context

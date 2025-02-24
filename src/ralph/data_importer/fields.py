@@ -9,11 +9,15 @@ logger = logging.getLogger(__name__)
 
 
 class ThroughField(fields.Field):
-
     def __init__(
-        self, through_model, through_from_field_name, through_to_field_name,
-        attribute=None, column_name=None, widget=None,
-        readonly=False
+        self,
+        through_model,
+        through_from_field_name,
+        through_to_field_name,
+        attribute=None,
+        column_name=None,
+        widget=None,
+        readonly=False,
     ):
         """
         Field for through django model import/export
@@ -49,49 +53,50 @@ class ThroughField(fields.Field):
             value = data.get(self.column_name)
             current = set(self.widget.clean(value))
             # filter old assignments to obj by through_model
-            old_objs = set([
-                getattr(i, self.through_to_field_name) for i in
-                self.through_model.objects.filter(
-                    **{self.through_from_field_name: obj}
-                ).select_related(
-                    self.through_to_field_name
-                )
-            ])
+            old_objs = set(
+                [
+                    getattr(i, self.through_to_field_name)
+                    for i in self.through_model.objects.filter(
+                        **{self.through_from_field_name: obj}
+                    ).select_related(self.through_to_field_name)
+                ]
+            )
 
             to_add = current - old_objs
             to_remove = old_objs - current
 
             to_add_list = []
             for i in to_add:
-                logger.info('Adding %s to %s/%s assignments',
-                            i.pk, self.through_model, obj.pk
-                            )
-                to_add_list.append(self.through_model(
-                    **{
-                        self.through_from_field_name: obj,
-                        self.through_to_field_name: i
-                    }
-                ))
+                logger.info(
+                    "Adding %s to %s/%s assignments", i.pk, self.through_model, obj.pk
+                )
+                to_add_list.append(
+                    self.through_model(
+                        **{
+                            self.through_from_field_name: obj,
+                            self.through_to_field_name: i,
+                        }
+                    )
+                )
 
             if to_add_list:
                 self.through_model.objects.bulk_create(to_add_list)
             if to_remove:
                 logger.warning(
-                    'Removing assignments from %s/%s: %s',
-                    self.through_model, obj.pk, [i.pk for i in to_remove]
+                    "Removing assignments from %s/%s: %s",
+                    self.through_model,
+                    obj.pk,
+                    [i.pk for i in to_remove],
                 )
                 self.through_model.objects.filter(
                     **{
                         self.through_from_field_name: obj,
-                        '{}__in'.format(self.through_to_field_name): to_remove
+                        "{}__in".format(self.through_to_field_name): to_remove,
                     }
                 ).delete()
 
 
 class PriceField(fields.Field):
     def save(self, obj, data, is_m2m=False):
-        price = Money(
-            data['price'],
-            data.get('price_currency', DEFAULT_CURRENCY_CODE)
-        )
-        setattr(obj, 'price', price)
+        price = Money(data["price"], data.get("price_currency", DEFAULT_CURRENCY_CODE))
+        setattr(obj, "price", price)

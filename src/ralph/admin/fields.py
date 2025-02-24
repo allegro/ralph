@@ -15,24 +15,22 @@ class MultilineField(forms.CharField):
     Validation:
         - separated values cannot duplicate each other,
     """
+
     widget = forms.Textarea
-    separators = r',|\n|\|'
+    separators = r",|\n|\|"
 
     def __init__(self, allow_duplicates=True, *args, **kwargs):
         self.allow_duplicates = allow_duplicates
         super().__init__(*args, **kwargs)
 
     def validate(self, values):
-
         if not values and self.required:
             error_msg = _(
                 "Field can't be empty. Please put the item OR items separated "
                 "by new line or comma."
             )
-            raise forms.ValidationError(error_msg, code='required')
-        non_empty_values = [
-            item for item in values if str(item).strip()
-        ]
+            raise forms.ValidationError(error_msg, code="required")
+        non_empty_values = [item for item in values if str(item).strip()]
         if not self.allow_duplicates:
             has_duplicates = len(set(non_empty_values)) != len(non_empty_values)
             if has_duplicates:
@@ -42,19 +40,18 @@ class MultilineField(forms.CharField):
         items = []
         if value:
             for item in re.split(self.separators, value):
-                items.append(item.strip(' \t\n\r'))
+                items.append(item.strip(" \t\n\r"))
 
         return items
 
 
 class IntegerMultilineField(MultilineField):
-
     def to_python(self, value):
         result = super().to_python(value)
         try:
             return [int(i) for i in result]
         except ValueError:
-            raise ValidationError(_('Enter a valid number.'))
+            raise ValidationError(_("Enter a valid number."))
 
 
 class MultivalueFormMixin(object):
@@ -73,6 +70,7 @@ class MultivalueFormMixin(object):
         ,2   # valid
         ,    # invalid, because neither sn nor barcode was provided
     """
+
     multivalue_fields = []
     one_of_mulitvalue_required = []
     model = None
@@ -87,12 +85,9 @@ class MultivalueFormMixin(object):
         if len(items_count_per_multi) > 1:
             for field in self.multivalue_fields:
                 if field in cleaned_data:
-                    msg = _((
-                        "Fields: %(fields)s "
-                        "- require the same number of items")
-                    ) % {
-                        'fields': ', '.join(self.multivalue_fields)
-                    }
+                    msg = _(
+                        ("Fields: %(fields)s " "- require the same number of items")
+                    ) % {"fields": ", ".join(self.multivalue_fields)}
                     self.errors.setdefault(field, []).append(msg)
 
     def any_in_multivalues_validator(self, data):
@@ -100,11 +95,12 @@ class MultivalueFormMixin(object):
         Checks if each row has filled at least one field specified
         by one_of_mulitvalue_required.
         """
+
         def rows_of_required():
             rows_of_required = [
-                self.cleaned_data[field_name] for field_name in
-                self.one_of_mulitvalue_required if field_name in
-                self.cleaned_data
+                self.cleaned_data[field_name]
+                for field_name in self.one_of_mulitvalue_required
+                if field_name in self.cleaned_data
             ]
             for multivalues_row in zip(*rows_of_required):
                 yield multivalues_row
@@ -113,11 +109,9 @@ class MultivalueFormMixin(object):
             for row_of_required in rows_of_required():
                 if not any(row_of_required):
                     for field_name in self.one_of_mulitvalue_required:
-                        errors = self._errors.setdefault(
-                            field_name, ErrorList()
-                        )
-                        msg = _('Fill at least on of %(v)s in each row') % {
-                            'v': ','.join(self.one_of_mulitvalue_required)
+                        errors = self._errors.setdefault(field_name, ErrorList())
+                        msg = _("Fill at least on of %(v)s in each row") % {
+                            "v": ",".join(self.one_of_mulitvalue_required)
                         }
                         errors.append(_(msg))
                     break
@@ -132,18 +126,17 @@ class MultivalueFormMixin(object):
         """
         if not values:
             return
-        conditions = {'{}__in'.format(field_name): values}
+        conditions = {"{}__in".format(field_name): values}
         objs = model.objects.filter(**conditions)
         if objs:
-            if hasattr(model, 'get_absolute_url'):
+            if hasattr(model, "get_absolute_url"):
                 url = '<a href="{}">{}</a>'
-                comma_items = ', '.join([
-                    url.format(obj.get_absolute_url(), obj.id)
-                    for obj in objs
-                ])
+                comma_items = ", ".join(
+                    [url.format(obj.get_absolute_url(), obj.id) for obj in objs]
+                )
             else:
-                comma_items = ', '.join([str(obj) for obj in objs])
-            msg = _('Following items already exist: ') + comma_items
+                comma_items = ", ".join([str(obj) for obj in objs])
+            msg = _("Following items already exist: ") + comma_items
             raise ValidationError(mark_safe(msg))
 
     def check_uniqness(self, data):
@@ -170,7 +163,7 @@ class MultivalueFormMixin(object):
             max_length = max(max_length, len(value))
         for field in self.multivalue_fields:
             value = data.get(field, [])
-            data[field] = value + [''] * (max_length - len(value))  # None?
+            data[field] = value + [""] * (max_length - len(value))  # None?
         # remove empty lines
         while True:
             rows = list(zip(*[data[f] for f in self.multivalue_fields]))

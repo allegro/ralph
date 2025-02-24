@@ -13,30 +13,24 @@ from ralph.tests import RalphTestCase
 class ConfigurationTest(RalphTestCase):
     def setUp(self):
         self.conf_module_1 = ConfigurationModuleFactory()
-        self.conf_module_2 = ConfigurationModuleFactory(
-            parent=self.conf_module_1
-        )
-        self.conf_module_3 = ConfigurationModuleFactory(
-            parent=self.conf_module_2
-        )
-        self.conf_class_1 = ConfigurationClassFactory(
-            module=self.conf_module_3
-        )
+        self.conf_module_2 = ConfigurationModuleFactory(parent=self.conf_module_1)
+        self.conf_module_3 = ConfigurationModuleFactory(parent=self.conf_module_2)
+        self.conf_class_1 = ConfigurationClassFactory(module=self.conf_module_3)
 
     def test_update_module_children_path(self):
-        self.conf_module_3.name = 'updated_name'
+        self.conf_module_3.name = "updated_name"
         self.conf_module_3.save()
 
         self.conf_class_1.refresh_from_db()
         self.assertTrue(
-            self.conf_class_1.path.startswith('updated_name'),
+            self.conf_class_1.path.startswith("updated_name"),
         )
 
     def test_update_class_path_update(self):
-        self.conf_class_1.class_name = 'updated_name'
+        self.conf_class_1.class_name = "updated_name"
         self.conf_class_1.save()
         self.conf_class_1.refresh_from_db()
-        self.assertTrue(self.conf_class_1.path.endswith('updated_name'))
+        self.assertTrue(self.conf_class_1.path.endswith("updated_name"))
 
 
 class EthernetTest(RalphTestCase):
@@ -59,17 +53,15 @@ class EthernetTest(RalphTestCase):
         self.ip1.save()
         self.ip1.ethernet.mac = None
         with self.assertRaises(
-            ValidationError,
-            msg='MAC cannot be empty if record is exposed in DHCP'
+            ValidationError, msg="MAC cannot be empty if record is exposed in DHCP"
         ):
             self.ip1.ethernet.clean()
 
     def test_change_mac_address_with_ip_with_dhcp_exposition_should_not_pass(self):  # noqa
         self.ip1.dhcp_expose = True
         self.ip1.save()
-        self.ip1.ethernet.mac = '11:12:13:14:15:16'
+        self.ip1.ethernet.mac = "11:12:13:14:15:16"
         with self.assertRaises(
-            ValidationError,
-            msg='Cannot change MAC when exposing in DHCP'
+            ValidationError, msg="Cannot change MAC when exposing in DHCP"
         ):
             self.ip1.ethernet.clean()

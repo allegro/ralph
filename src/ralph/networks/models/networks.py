@@ -38,84 +38,79 @@ def is_in_dnsaas(ip):
     if not settings.ENABLE_DNSAAS_INTEGRATION:
         return False
     dnsaas_client = DNSaaS()
-    url = dnsaas_client.build_url(
-        'records', get_params=[('ip', ip), ('type', 'A')]
-    )
+    url = dnsaas_client.build_url("records", get_params=[("ip", ip), ("type", "A")])
     return len(dnsaas_client.get_api_result(url)) > 0
 
 
 class NetworkKind(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
     class Meta:
-        verbose_name = _('network kind')
-        verbose_name_plural = _('network kinds')
-        ordering = ('name',)
+        verbose_name = _("network kind")
+        verbose_name_plural = _("network kinds")
+        ordering = ("name",)
 
 
 class NetworkEnvironment(
-    AdminAbsoluteUrlMixin,
-    TimeStampMixin,
-    NamedMixin,
-    models.Model
+    AdminAbsoluteUrlMixin, TimeStampMixin, NamedMixin, models.Model
 ):
     data_center = models.ForeignKey(
-        'data_center.DataCenter',
-        verbose_name=_('data center'),
-        on_delete=models.CASCADE
+        "data_center.DataCenter",
+        verbose_name=_("data center"),
+        on_delete=models.CASCADE,
     )
     queue = models.ForeignKey(
-        'DiscoveryQueue',
-        verbose_name=_('discovery queue'),
+        "DiscoveryQueue",
+        verbose_name=_("discovery queue"),
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
     )
     hostname_template_counter_length = models.PositiveIntegerField(
-        verbose_name=_('hostname template counter length'),
+        verbose_name=_("hostname template counter length"),
         default=4,
     )
     hostname_template_prefix = models.CharField(
-        verbose_name=_('hostname template prefix'),
+        verbose_name=_("hostname template prefix"),
         max_length=30,
     )
     hostname_template_postfix = models.CharField(
-        verbose_name=_('hostname template postfix'),
+        verbose_name=_("hostname template postfix"),
         max_length=30,
         help_text=_(
-            'This value will be used as a postfix when generating new hostname '
+            "This value will be used as a postfix when generating new hostname "
             'in this network environment. For example, when prefix is "s1", '
             'postfix is ".mydc.net" and counter length is 4, following '
-            ' hostnames will be generated: s10000.mydc.net, s10001.mydc.net, ..'
-            ', s19999.mydc.net.'
-        )
+            " hostnames will be generated: s10000.mydc.net, s10001.mydc.net, .."
+            ", s19999.mydc.net."
+        ),
     )
     domain = NullableCharField(
-        verbose_name=_('domain'),
+        verbose_name=_("domain"),
         max_length=255,
         blank=True,
         null=True,
-        help_text=_('Used in DHCP configuration.'),
+        help_text=_("Used in DHCP configuration."),
     )
     remarks = models.TextField(
-        verbose_name=_('remarks'),
-        help_text=_('Additional information.'),
+        verbose_name=_("remarks"),
+        help_text=_("Additional information."),
         blank=True,
         null=True,
     )
     use_hostname_counter = models.BooleanField(
         default=True,
-        help_text='If set to false hostname based on already added hostnames.'
+        help_text="If set to false hostname based on already added hostnames.",
     )
 
     def __str__(self):
         return self.name
 
     class Meta:
-        ordering = ('name',)
+        ordering = ("name",)
 
     @property
     def HOSTNAME_MODELS(self):
-        from ralph.data_center.models.virtual import Cluster
         from ralph.data_center.models.physical import DataCenterAsset
+        from ralph.data_center.models.virtual import Cluster
         from ralph.virtual.models import VirtualServer
 
         return (DataCenterAsset, VirtualServer, Cluster, IPAddress)
@@ -127,17 +122,16 @@ class NetworkEnvironment(
         """
         if self.use_hostname_counter:
             return AssetLastHostname.get_next_free_hostname(
-                    self.hostname_template_prefix,
-                    self.hostname_template_postfix,
-                    self.hostname_template_counter_length,
-                    self.check_hostname_is_available
+                self.hostname_template_prefix,
+                self.hostname_template_postfix,
+                self.hostname_template_counter_length,
+                self.check_hostname_is_available,
             )
         else:
             result = self.next_hostname_without_model_counter()
         return result
 
     def check_hostname_is_available(self, hostname):
-
         if not hostname:
             return False
 
@@ -175,12 +169,15 @@ class NetworkEnvironment(
         stop = -len(self.hostname_template_postfix)
         hostnames = []
         for model_class in self.HOSTNAME_MODELS:
-            item = model_class.objects.filter(
-                hostname__iregex='{}[0-9]+{}'.format(
-                    self.hostname_template_prefix,
-                    self.hostname_template_postfix
+            item = (
+                model_class.objects.filter(
+                    hostname__iregex="{}[0-9]+{}".format(
+                        self.hostname_template_prefix, self.hostname_template_postfix
+                    )
                 )
-            ).order_by('-hostname').first()
+                .order_by("-hostname")
+                .first()
+            )
             if item and item.hostname:
                 hostnames.append(item.hostname[start:stop])
         counter = 0
@@ -209,11 +206,9 @@ class NetworkEnvironment(
         hostname = AssetLastHostname(
             prefix=self.hostname_template_prefix,
             counter=self.next_counter_without_model(),
-            postfix=self.hostname_template_postfix
+            postfix=self.hostname_template_postfix,
         )
-        return hostname.formatted_hostname(
-            self.hostname_template_counter_length
-        )
+        return hostname.formatted_hostname(self.hostname_template_counter_length)
 
 
 class NetworkMixin(object):
@@ -239,108 +234,115 @@ class Network(
     TimeStampMixin,
     NetworkMixin,
     MPTTModel,
-    models.Model
+    models.Model,
 ):
     """
     Class for networks.
     """
-    _parent_attr = 'parent'
+
+    _parent_attr = "parent"
     parent = TreeForeignKey(
-        'self',
+        "self",
         null=True,
         blank=True,
-        related_name='children',
+        related_name="children",
         db_index=True,
         editable=False,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
     )
     address = IPNetwork(
-        verbose_name=_('network address'),
-        help_text=_('Presented as string (e.g. 192.168.0.0/24)'),
-        unique=True
+        verbose_name=_("network address"),
+        help_text=_("Presented as string (e.g. 192.168.0.0/24)"),
+        unique=True,
     )
-    address._filter_title = _('Network Class')
+    address._filter_title = _("Network Class")
     gateway = models.ForeignKey(
-        'IPAddress', verbose_name=_('Gateway address'), null=True, blank=True,
-        related_name='gateway_network', on_delete=models.SET_NULL,
+        "IPAddress",
+        verbose_name=_("Gateway address"),
+        null=True,
+        blank=True,
+        related_name="gateway_network",
+        on_delete=models.SET_NULL,
     )
     remarks = models.TextField(
-        verbose_name=_('remarks'),
-        help_text=_('Additional information.'),
+        verbose_name=_("remarks"),
+        help_text=_("Additional information."),
         blank=True,
-        default='',
+        default="",
     )
     # TODO: create ManyToManyBaseObjectField to avoid through table
     terminators = PolymorphicManyToManyField(
-        'assets.BaseObject',
-        verbose_name=_('network terminators'),
-        blank=True
+        "assets.BaseObject", verbose_name=_("network terminators"), blank=True
     )
     vlan = models.PositiveIntegerField(
-        verbose_name=_('VLAN number'),
+        verbose_name=_("VLAN number"),
         null=True,
         blank=True,
         default=None,
     )
     racks = models.ManyToManyField(
-        'data_center.Rack',
-        verbose_name=_('racks'),
+        "data_center.Rack",
+        verbose_name=_("racks"),
         blank=True,
     )
     network_environment = models.ForeignKey(
         NetworkEnvironment,
-        verbose_name=_('environment'),
+        verbose_name=_("environment"),
         null=True,
         blank=True,
         on_delete=models.SET_NULL,
     )
     network_environment._autocomplete = False
     min_ip = models.DecimalField(
-        verbose_name=_('smallest IP number'),
+        verbose_name=_("smallest IP number"),
         editable=False,
         max_digits=39,
         decimal_places=0,
     )
     max_ip = models.DecimalField(
-        verbose_name=_('largest IP number'),
+        verbose_name=_("largest IP number"),
         editable=False,
         max_digits=39,
         decimal_places=0,
     )
     kind = models.ForeignKey(
         NetworkKind,
-        verbose_name=_('network kind'),
+        verbose_name=_("network kind"),
         on_delete=models.SET_NULL,
         blank=True,
         null=True,
     )
     dhcp_broadcast = models.BooleanField(
-        verbose_name=_('Broadcast in DHCP configuration'),
+        verbose_name=_("Broadcast in DHCP configuration"),
         default=True,
         db_index=True,
     )
     service_env = models.ForeignKey(
-        'assets.ServiceEnvironment', related_name='networks', null=True,
-        default=None, blank=True, on_delete=models.CASCADE
+        "assets.ServiceEnvironment",
+        related_name="networks",
+        null=True,
+        default=None,
+        blank=True,
+        on_delete=models.CASCADE,
     )
     dns_servers_group = models.ForeignKey(
-        'dhcp.DNSServerGroup',
+        "dhcp.DNSServerGroup",
         null=True,
         blank=True,
-        related_name='networks',
+        related_name="networks",
         on_delete=models.PROTECT,
     )
     reserved_from_beginning = models.PositiveIntegerField(
         help_text=_(
-            'Number of addresses to be omitted in DHCP automatic assignment'
-            'counted from the first IP in range (excluding network address)'
+            "Number of addresses to be omitted in DHCP automatic assignment"
+            "counted from the first IP in range (excluding network address)"
         ),
         default=settings.DEFAULT_NETWORK_BOTTOM_MARGIN,
     )
     reserved_from_end = models.PositiveIntegerField(
         help_text=_(
-            'Number of addresses to be omitted in DHCP automatic assignment'
-            'counted from the last IP in range (excluding broadcast address)'
+            "Number of addresses to be omitted in DHCP automatic assignment"
+            "counted from the last IP in range (excluding broadcast address)"
         ),
         default=settings.DEFAULT_NETWORK_TOP_MARGIN,
     )
@@ -365,7 +367,7 @@ class Network(
     def netmask_dot_decimal(self):
         """Returns netmask in dot-decimal notaion (e.g. 255.255.255.0)."""
         return socket.inet_ntoa(
-            struct.pack('>I', (0xffffffff << (32 - self.netmask)) & 0xffffffff)
+            struct.pack(">I", (0xFFFFFFFF << (32 - self.netmask)) & 0xFFFFFFFF)
         )
 
     @property
@@ -403,16 +405,16 @@ class Network(
         return self.reserved_from_end
 
     class Meta:
-        verbose_name = _('network')
-        verbose_name_plural = _('networks')
-        unique_together = ('min_ip', 'max_ip')
+        verbose_name = _("network")
+        verbose_name_plural = _("networks")
+        unique_together = ("min_ip", "max_ip")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._old_address = self.address
 
     def __str__(self):
-        return '{} ({} | VLAN: {})'.format(self.name, self.address, self.vlan)
+        return "{} ({} | VLAN: {})".format(self.name, self.address, self.vlan)
 
     def save(self, *args, **kwargs):
         """
@@ -433,16 +435,10 @@ class Network(
             self.gateway.status = IPAddressStatus.reserved
             self.gateway.save()
 
-        update_subnetworks_parent = kwargs.pop(
-            'update_subnetworks_parent', True
-        )
+        update_subnetworks_parent = kwargs.pop("update_subnetworks_parent", True)
         creating = not self.pk
         # store previous subnetworks to update them when address has changed
-        if (
-            self._has_address_changed and
-            update_subnetworks_parent and
-            not creating
-        ):
+        if self._has_address_changed and update_subnetworks_parent and not creating:
             prev_subnetworks = self.get_immediate_subnetworks()
         else:
             prev_subnetworks = []
@@ -466,7 +462,7 @@ class Network(
         # Save fake address so that all children of network changed its
         # parent, only then network is removed.
         with transaction.atomic():
-            self.address = '0.0.0.0/32'
+            self.address = "0.0.0.0/32"
             self.save()
             super().delete()
 
@@ -500,13 +496,12 @@ class Network(
         (possibly) assign them to current network (according to rules in
         IPAddress.save)
         """
-        for ip in IPAddress.objects.exclude(
-            network=self,
-        ).exclude(
-            network__in=self.get_subnetworks()
-        ).filter(
-            number__gte=self.min_ip,
-            number__lte=self.max_ip
+        for ip in (
+            IPAddress.objects.exclude(
+                network=self,
+            )
+            .exclude(network__in=self.get_subnetworks())
+            .filter(number__gte=self.min_ip, number__lte=self.max_ip)
         ):
             # call save instead of update - ip might be assigned to another
             # (smaller) network, which became subnetwork of current network
@@ -530,11 +525,11 @@ class Network(
         return self.get_children()
 
     def get_first_free_ip(self):
-        used_ips = set(IPAddress.objects.filter(
-            number__range=(self.min_ip, self.max_ip)
-        ).values_list(
-            'number', flat=True
-        ))
+        used_ips = set(
+            IPAddress.objects.filter(
+                number__range=(self.min_ip, self.max_ip)
+            ).values_list("number", flat=True)
+        )
         # add one to omit network address
         min_ip = int(self.min_ip + 1 + self.reserved_from_beginning)
         # subtract 1 to omit broadcast address
@@ -544,9 +539,7 @@ class Network(
             if free_ip_as_int not in used_ips:
                 next_free_ip = ipaddress.ip_address(free_ip_as_int)
                 if is_in_dnsaas(next_free_ip):
-                    logger.warning(
-                        'IP %s is already in DNS', next_free_ip
-                    )
+                    logger.warning("IP %s is already in DNS", next_free_ip)
                 else:
                     return next_free_ip
 
@@ -561,26 +554,26 @@ class Network(
         then by max_ip ascending, to get smallest ancestor network
         containing current network.
         """
-        nets = Network.objects.filter(
-            min_ip__lte=self.min_ip,
-            max_ip__gte=self.max_ip
-        ).exclude(pk=self.id).order_by('-min_ip', 'max_ip')
+        nets = (
+            Network.objects.filter(min_ip__lte=self.min_ip, max_ip__gte=self.max_ip)
+            .exclude(pk=self.id)
+            .order_by("-min_ip", "max_ip")
+        )
         return nets
 
 
 # TODO: remove
 class DiscoveryQueue(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
-
     class Meta:
-        verbose_name = _('discovery queue')
-        verbose_name_plural = _('discovery queues')
-        ordering = ('name',)
+        verbose_name = _("discovery queue")
+        verbose_name_plural = _("discovery queues")
+        ordering = ("name",)
 
 
 class IPAddressQuerySet(models.QuerySet):
     def create(self, base_object=None, mac=None, label=None, **kwargs):
         with transaction.atomic():
-            eth = kwargs.pop('ethernet', None)
+            eth = kwargs.pop("ethernet", None)
             if base_object and not eth:
                 eth = Ethernet.objects.create(
                     base_object=base_object, mac=mac, label=label
@@ -596,9 +589,9 @@ class IPAddress(
     TimeStampMixin,
     PreviousStateMixin,
     NetworkMixin,
-    models.Model
+    models.Model,
 ):
-    _parent_attr = 'network'
+    _parent_attr = "network"
 
     ethernet = models.OneToOneField(
         Ethernet,
@@ -612,18 +605,18 @@ class IPAddress(
         null=True,
         default=None,
         editable=False,
-        related_name='ips',
+        related_name="ips",
         on_delete=models.SET_NULL,
     )
     address = models.GenericIPAddressField(
-        verbose_name=_('IP address'),
-        help_text=_('Presented as string.'),
+        verbose_name=_("IP address"),
+        help_text=_("Presented as string."),
         unique=True,
         blank=False,
         null=False,
     )
     hostname = NullableCharFieldWithAutoStrip(
-        verbose_name=_('hostname'),
+        verbose_name=_("hostname"),
         max_length=255,
         null=True,
         blank=True,
@@ -631,8 +624,8 @@ class IPAddress(
         # TODO: unique
     )
     number = models.DecimalField(
-        verbose_name=_('IP address'),
-        help_text=_('Presented as int.'),
+        verbose_name=_("IP address"),
+        help_text=_("Presented as int."),
         editable=False,
         unique=True,
         max_digits=39,
@@ -640,16 +633,16 @@ class IPAddress(
         default=None,
     )
     is_management = models.BooleanField(
-        verbose_name=_('Is management address'),
+        verbose_name=_("Is management address"),
         default=False,
     )
     is_public = models.BooleanField(
-        verbose_name=_('Is public'),
+        verbose_name=_("Is public"),
         default=False,
         editable=False,
     )
     is_gateway = models.BooleanField(
-        verbose_name=_('Is gateway'),
+        verbose_name=_("Is gateway"),
         default=False,
     )
     status = models.PositiveSmallIntegerField(
@@ -658,12 +651,12 @@ class IPAddress(
     )
     dhcp_expose = models.BooleanField(
         default=False,
-        verbose_name=_('Expose in DHCP'),
+        verbose_name=_("Expose in DHCP"),
     )
 
     class Meta:
-        verbose_name = _('IP address')
-        verbose_name_plural = _('IP addresses')
+        verbose_name = _("IP address")
+        verbose_name_plural = _("IP addresses")
 
     objects = IPAddressQuerySet.as_manager()
 
@@ -672,9 +665,9 @@ class IPAddress(
 
     def _hostname_is_unique_in_dc(self, hostname, dc):
         from ralph.dhcp.models import DHCPEntry
+
         entries_with_hostname = DHCPEntry.objects.filter(
-            hostname=hostname,
-            network__network_environment__data_center=dc
+            hostname=hostname, network__network_environment__data_center=dc
         )
         if self.pk:
             entries_with_hostname = entries_with_hostname.exclude(pk=self.pk)
@@ -686,8 +679,7 @@ class IPAddress(
             dc = network.network_environment.data_center
             if not self._hostname_is_unique_in_dc(hostname, dc):
                 raise ValidationError(
-                    'Hostname "{hostname}" is already exposed in DHCP in {dc}.'
-                    .format(
+                    'Hostname "{hostname}" is already exposed in DHCP in {dc}.'.format(
                         hostname=self.hostname, dc=dc
                     )
                 )
@@ -699,22 +691,18 @@ class IPAddress(
 
     def _validate_expose_in_dhcp_and_mac(self):
         if (
-            (not self.ethernet_id or (self.ethernet and not self.ethernet.mac)) and  # noqa
-            self.dhcp_expose
+            (not self.ethernet_id or (self.ethernet and not self.ethernet.mac))  # noqa
+            and self.dhcp_expose
         ):
-            raise ValidationError({
-                'dhcp_expose': (
-                    'Cannot expose in DHCP without MAC address'
-                )
-            })
+            raise ValidationError(
+                {"dhcp_expose": ("Cannot expose in DHCP without MAC address")}
+            )
 
     def _validate_expose_in_dhcp_and_hostname(self):
         if not self.hostname and self.dhcp_expose:
-            raise ValidationError({
-                'hostname': (
-                    'Cannot expose in DHCP without hostname'
-                )
-            })
+            raise ValidationError(
+                {"hostname": ("Cannot expose in DHCP without hostname")}
+            )
 
     def _validate_change_when_exposing_in_dhcp(self):
         """
@@ -725,15 +713,13 @@ class IPAddress(
             old_obj = self.__class__._default_manager.get(pk=self.pk)
             if old_obj.dhcp_expose:
                 for attr_name, field_name in [
-                    ('hostname', 'hostname'),
-                    ('address', 'address'),
-                    ('ethernet_id', 'ethernet'),
+                    ("hostname", "hostname"),
+                    ("address", "address"),
+                    ("ethernet_id", "ethernet"),
                 ]:
                     if getattr(old_obj, attr_name) != getattr(self, attr_name):
                         raise ValidationError(
-                            'Cannot change {} when exposing in DHCP'.format(
-                                field_name
-                            )
+                            "Cannot change {} when exposing in DHCP".format(field_name)
                         )
 
     def clean(self):
@@ -755,9 +741,7 @@ class IPAddress(
     def save(self, *args, **kwargs):
         if settings.CHECK_IP_HOSTNAME_ON_SAVE:
             if not self.address and self.hostname:
-                self.address = network_tools.hostname(
-                    self.hostname, reverse=True
-                )
+                self.address = network_tools.hostname(self.hostname, reverse=True)
             if not self.hostname and self.address:
                 self.hostname = network_tools.hostname(self.address)
         if self.number and not self.address:
@@ -797,9 +781,8 @@ class IPAddress(
         """
         int_value = int(self.ip)
         nets = Network.objects.filter(
-            min_ip__lte=int_value,
-            max_ip__gte=int_value
-        ).order_by('-min_ip', 'max_ip')
+            min_ip__lte=int_value, max_ip__gte=int_value
+        ).order_by("-min_ip", "max_ip")
         return nets
 
 
@@ -809,13 +792,13 @@ def rebuild_handler(sender, **kwargs):
     Rebuild Network tree after migration of operations app.
     """
     # post_migrate is called after each app's migrations
-    if sender.name == 'ralph.' + Network._meta.app_label:
+    if sender.name == "ralph." + Network._meta.app_label:
         try:
             Network.objects.rebuild()
         except ProgrammingError:
             # this may happen during unapplying initial migration for networks
             # app
-            logger.warning('ProgrammingError during Network rebuilding')
+            logger.warning("ProgrammingError during Network rebuilding")
 
 
 @receiver(pre_save, sender=NetworkEnvironment)
@@ -824,13 +807,11 @@ def update_counter(sender, instance, **kwargs):
         return
 
     orig = NetworkEnvironment.objects.get(id=instance.id)
-    if (
-        instance.use_hostname_counter and not orig.use_hostname_counter
-    ):
+    if instance.use_hostname_counter and not orig.use_hostname_counter:
         obj, created = AssetLastHostname.objects.update_or_create(
             prefix=instance.hostname_template_prefix,
             postfix=instance.hostname_template_postfix,
             defaults={
-                'counter': instance.current_counter_without_model(),
-            }
+                "counter": instance.current_counter_without_model(),
+            },
         )

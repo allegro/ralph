@@ -28,7 +28,7 @@ class CustomFieldValueSerializerMixin(object):
     # default field class to use for url field
     custom_field_value_url_field = CustomFieldValueHyperlinkedIdentityField
     # nested resource name used by `NestedCustomFieldsRouterMixin`
-    custom_fields_nested_resource_base_name = 'customfields'
+    custom_fields_nested_resource_basename = 'customfields'
 
     class Meta:
         model = CustomFieldValue
@@ -57,7 +57,7 @@ class CustomFieldValueSerializerMixin(object):
         return {
             'view_name': '{}-{}-detail'.format(
                 self.related_model._meta.model_name,
-                self.custom_fields_nested_resource_base_name
+                self.custom_fields_nested_resource_basename
             ),
         }
 

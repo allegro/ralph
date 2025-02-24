@@ -9,16 +9,12 @@ from ralph.tests.models import Bar, Car, Foo, TestManufacturer
 
 class FooSerializer(RalphAPISerializer):
     __str__ = StrField()
-    str_with_type = StrField(show_type=True, label='__str2__')
+    str_with_type = StrField(show_type=True, label="__str2__")
 
     class Meta:
         model = Foo
         # include view namespace for hyperlinked field
-        extra_kwargs = {
-            'url': {
-                'view_name': 'test-ralph-api:foo-detail'
-            }
-        }
+        extra_kwargs = {"url": {"view_name": "test-ralph-api:foo-detail"}}
         fields = "__all__"
 
 
@@ -31,11 +27,7 @@ class ManufacturerSerializer(RalphAPISerializer):
     class Meta:
         model = TestManufacturer
         # include view namespace for hyperlinked field
-        extra_kwargs = {
-            'url': {
-                'view_name': 'test-ralph-api:manufacturer-detail'
-            }
-        }
+        extra_kwargs = {"url": {"view_name": "test-ralph-api:manufacturer-detail"}}
 
 
 class ManufacturerSerializer2(ManufacturerSerializer):
@@ -47,11 +39,7 @@ class CarSerializer(RalphAPISerializer):
     class Meta:
         model = Car
         # include view namespace for hyperlinked field
-        extra_kwargs = {
-            'url': {
-                'view_name': 'test-ralph-api:car-detail'
-            }
-        }
+        extra_kwargs = {"url": {"view_name": "test-ralph-api:car-detail"}}
         depth = 1
         fields = "__all__"
 
@@ -70,28 +58,30 @@ class ManufacturerViewSet(RalphAPIViewSet):
     serializer_class = ManufacturerSerializer
     save_serializer_class = ManufacturerSerializer2
     extended_filter_fields = {
-        'some_field': ['name', 'country'],
+        "some_field": ["name", "country"],
     }
 
 
 class CarViewSet(RalphAPIViewSet):
     queryset = Car.objects.all()
     serializer_class = CarSerializer
-    filter_fields = ['manufacturer__name']
+    filter_fields = ["manufacturer__name"]
 
 
 class BarViewSet(RalphAPIViewSet):
     queryset = Bar.objects.all()
     serializer_class = BarSerializer
-    filter_fields = ['id']
+    filter_fields = ["id"]
 
 
 app_name = "test-ralph-api"
 router = RalphRouter()
-router.register(r'foos', FooViewSet)
-router.register(r'manufacturers', ManufacturerViewSet)
-router.register(r'cars', CarViewSet)
-router.register(r'bars', BarViewSet)
+router.register(r"foos", FooViewSet)
+router.register(r"manufacturers", ManufacturerViewSet)
+router.register(r"cars", CarViewSet)
+router.register(r"bars", BarViewSet)
 urlpatterns = [
-    url(r'test-ralph-api/', include((router.urls, app_name), namespace='test-ralph-api')),
+    url(
+        r"test-ralph-api/", include((router.urls, app_name), namespace="test-ralph-api")
+    ),
 ]

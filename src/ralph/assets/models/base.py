@@ -20,12 +20,9 @@ from ralph.lib.polymorphic.models import (
 from ralph.lib.transitions.models import TransitionWorkflowBase
 
 BaseObjectMeta = type(
-    'BaseObjectMeta', (
-        PolymorphicBase,
-        PermissionsBase,
-        CustomFieldMeta,
-        TransitionWorkflowBase
-    ), {}
+    "BaseObjectMeta",
+    (PolymorphicBase, PermissionsBase, CustomFieldMeta, TransitionWorkflowBase),
+    {},
 )
 
 
@@ -41,9 +38,8 @@ class HostFilterMixin(object):
         * CloudHost
         """
         from ralph.assets.utils import get_host_content_types
-        return self.filter(
-            content_type__in=get_host_content_types()
-        )
+
+        return self.filter(content_type__in=get_host_content_types())
 
 
 class BaseObjectPolymorphicQuerySet(HostFilterMixin, PolymorphicQuerySet):
@@ -57,7 +53,7 @@ class BaseObject(
     TimeStampMixin,
     WithCustomFieldsMixin,
     models.Model,
-    metaclass=BaseObjectMeta
+    metaclass=BaseObjectMeta,
 ):
     polymorphic_objects = BaseObjectPolymorphicQuerySet.as_manager()
     attachments = GenericRelation(AttachmentItem)
@@ -65,31 +61,32 @@ class BaseObject(
     """Base object mixin."""
     # TODO: dynamically limit parent basing on model
     parent = models.ForeignKey(
-        'self', null=True, blank=True, related_name='children',
-        on_delete=models.SET_NULL
+        "self",
+        null=True,
+        blank=True,
+        related_name="children",
+        on_delete=models.SET_NULL,
     )
     remarks = models.TextField(blank=True)
     service_env = models.ForeignKey(
-        'ServiceEnvironment', null=True, blank=True, on_delete=models.PROTECT
+        "ServiceEnvironment", null=True, blank=True, on_delete=models.PROTECT
     )
 
     @property
     def _str_with_type(self):
-        return '{}: {}'.format(
-            ContentType.objects.get_for_id(self.content_type_id),
-            str(self)
+        return "{}: {}".format(
+            ContentType.objects.get_for_id(self.content_type_id), str(self)
         )
 
     configuration_path = models.ForeignKey(
-        'ConfigurationClass',
+        "ConfigurationClass",
         null=True,
         blank=True,
-        verbose_name=_('configuration path'),
+        verbose_name=_("configuration path"),
         help_text=_(
-            'path to configuration for this object, for example path to puppet '
-            'class'
+            "path to configuration for this object, for example path to puppet " "class"
         ),
-        on_delete=models.PROTECT
+        on_delete=models.PROTECT,
     )
 
     @property
@@ -97,7 +94,4 @@ class BaseObject(
         return self.service_env.service if self.service_env else None
 
     def get_absolute_url(self):
-        return reverse('admin:view_on_site', args=(
-            self.content_type_id,
-            self.pk
-        ))
+        return reverse("admin:view_on_site", args=(self.content_type_id, self.pk))

@@ -8,12 +8,11 @@ from django.core.validators import EmailValidator
 
 from ralph.reports.resources import DataCenterAssetTextResource
 
-
 logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    SUPPORTED_FORMATS = ['.csv', '.xlsx', '.ods']
+    SUPPORTED_FORMATS = [".csv", ".xlsx", ".ods"]
     email_validator = EmailValidator()
 
     def add_arguments(self, parser):
@@ -23,37 +22,35 @@ class Command(BaseCommand):
             "--output-format",
             type=str,
             default=".xlsx",
-            help="Format of the resulting report file"
+            help="Format of the resulting report file",
         )
 
         parser.add_argument(
-            "--recipient-email",
-            type=str,
-            help="Recipient's email address"
+            "--recipient-email", type=str, help="Recipient's email address"
         )
 
-        parser.add_argument(
-            "--sender-email",
-            type=str,
-            help="Sender's email address"
-        )
+        parser.add_argument("--sender-email", type=str, help="Sender's email address")
 
     def handle(self, *args, **options):
         try:
             self._validate_options(options)
-            output_format = options.get('output_format')
-            recipient_email = options.get('recipient_email')
-            sender_email = options.get('sender_email')
+            output_format = options.get("output_format")
+            recipient_email = options.get("recipient_email")
+            sender_email = options.get("sender_email")
             dataset = DataCenterAssetTextResource().export()
             attachment_content = getattr(dataset, output_format[1:])
             attachment_mimetype = mimetypes.types_map[output_format]
             attachment_filename = "report" + output_format
             subject = "Ralph Data Center Asset Export"
-            body = "Attached to this message is a dump " \
-                   "of Ralph Data Center Assets"
+            body = "Attached to this message is a dump " "of Ralph Data Center Assets"
             send_email_with_attachment(
-                sender_email, recipient_email, subject, body,
-                attachment_content, attachment_filename, attachment_mimetype
+                sender_email,
+                recipient_email,
+                subject,
+                body,
+                attachment_content,
+                attachment_filename,
+                attachment_mimetype,
             )
         except Exception:
             logger.error(
@@ -77,22 +74,24 @@ class Command(BaseCommand):
             checking = "sender-email"
             self.email_validator(options.get("sender_email", None))
         except ValidationError as e:
-            raise CommandError(
-                "{}: {}".format(checking, e.message)
-            )
+            raise CommandError("{}: {}".format(checking, e.message))
 
 
 def send_email_with_attachment(
-    sender_email, recipient_email, subject, body, attachment_content,
+    sender_email,
+    recipient_email,
+    subject,
+    body,
+    attachment_content,
     attachment_filename,
-    attachment_mimetype
+    attachment_mimetype,
 ):
     email = EmailMessage(
-        subject=subject, body=body, from_email=sender_email,
-        to=[recipient_email]
+        subject=subject, body=body, from_email=sender_email, to=[recipient_email]
     )
     email.attach(
-        content=attachment_content, filename=attachment_filename,
-        mimetype=attachment_mimetype
+        content=attachment_content,
+        filename=attachment_filename,
+        mimetype=attachment_mimetype,
     )
     email.send()

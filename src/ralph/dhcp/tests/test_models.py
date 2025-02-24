@@ -8,6 +8,5 @@ class DNSServerGroupOrderTestCase(TestCase):
         """__str__ from DNSServerGroupOrder is crucial for DHCP"""
         server_group_order = DNSServerGroupOrderFactory()
         self.assertEqual(
-            str(server_group_order.dns_server.ip_address),
-            str(server_group_order)
+            str(server_group_order.dns_server.ip_address), str(server_group_order)
         )

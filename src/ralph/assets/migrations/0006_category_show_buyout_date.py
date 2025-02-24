@@ -5,15 +5,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('assets', '0005_category_depreciation_rate'),
+        ("assets", "0005_category_depreciation_rate"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='category',
-            name='show_buyout_date',
+            model_name="category",
+            name="show_buyout_date",
             field=models.BooleanField(default=False),
         ),
     ]

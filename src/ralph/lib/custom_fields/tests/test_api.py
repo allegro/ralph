@@ -8,6 +8,7 @@ from rest_framework.test import APITestCase
 from ralph.accounts.models import RalphUser
 from ralph.accounts.tests.factories import GroupFactory
 from ralph.tests.factories import UserFactory
+
 from ..models import CustomField, CustomFieldTypes, CustomFieldValue
 from ..signals import api_post_create, api_post_update
 from .models import ModelA, ModelB, SomeModel

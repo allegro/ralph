@@ -9,15 +9,14 @@ from ralph.security.models import Risk, ScanStatus, SecurityScan, Vulnerability
 
 
 class SecurityScanFactory(DjangoModelFactory):
-
     class Meta:
         model = SecurityScan
 
     last_scan_date = datetime(2015, 1, 1)
     scan_status = ScanStatus.ok
     next_scan_date = datetime(2016, 1, 1)
-    details_url = 'https://www.example.com/details'
-    rescan_url = 'https://www.example.com/rescan'
+    details_url = "https://www.example.com/details"
+    rescan_url = "https://www.example.com/rescan"
     base_object = factory.SubFactory(BaseObjectFactory)
 
     @factory.post_generation
@@ -40,8 +39,7 @@ class SecurityScanFactory(DjangoModelFactory):
 
 
 class VulnerabilityFactory(DjangoModelFactory):
-
-    name = factory.Sequence(lambda n: 'vulnserability %d' % n)
+    name = factory.Sequence(lambda n: "vulnserability %d" % n)
     patch_deadline = factory.LazyAttribute(
         lambda o: (datetime.now() + timedelta(days=10)).replace(microsecond=0)
     )

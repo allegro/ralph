@@ -8,7 +8,6 @@ from ralph.lib.transitions.models import (
     Transition,
     TransitionModel,
 )
-
 from ralph.tests.models import Order
 
 

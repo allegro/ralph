@@ -9,7 +9,7 @@ from ralph.lib.metrics import patch_cursor
 
 class RalphAppConfig(AppConfig):
     def get_load_modules_when_ready(self):
-        return ['subscribers', 'views']
+        return ["subscribers", "views"]
 
     def ready(self):
         """
@@ -23,7 +23,7 @@ class RalphAppConfig(AppConfig):
         package = self.module.__name__
         for module in self.get_load_modules_when_ready():
             try:
-                import_module('{}.{}'.format(package, module))
+                import_module("{}.{}".format(package, module))
             except ImportError:
                 pass
 

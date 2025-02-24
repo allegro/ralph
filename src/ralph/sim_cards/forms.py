@@ -9,5 +9,5 @@ class SIMCardForm(RalphAdminForm):
         model = SIMCard
         exclude = []
         widgets = {
-            'features': CheckboxSelectMultiple,
+            "features": CheckboxSelectMultiple,
         }

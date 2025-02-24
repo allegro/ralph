@@ -3,19 +3,23 @@
 from __future__ import unicode_literals
 
 from django.db import migrations
+
 import ralph.lib.polymorphic.fields
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('supports', '0009_auto_20240506_1633'),
+        ("supports", "0009_auto_20240506_1633"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='support',
-            name='base_objects',
-            field=ralph.lib.polymorphic.fields.PolymorphicManyToManyField(related_name='_support_base_objects_+', through='supports.BaseObjectsSupport', to='assets.BaseObject'),
+            model_name="support",
+            name="base_objects",
+            field=ralph.lib.polymorphic.fields.PolymorphicManyToManyField(
+                related_name="_support_base_objects_+",
+                through="supports.BaseObjectsSupport",
+                to="assets.BaseObject",
+            ),
         ),
     ]

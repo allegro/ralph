@@ -21,9 +21,9 @@ def get_model_view_url_name(model, view_name, with_admin_namespace=True):
     'admin:data_center_datacenterasset_attachment'
     """
     params = model._meta.app_label, model._meta.model_name
-    url = '{}_{}_{view_name}'.format(*params, view_name=view_name)
+    url = "{}_{}_{view_name}".format(*params, view_name=view_name)
     if with_admin_namespace:
-        url = 'admin:' + url
+        url = "admin:" + url
     return url
 
 
@@ -34,9 +34,10 @@ def generate_pdf_response(pdf_data, file_name):
     """
     # TODO: unify with attachments
     response = HttpResponse(
-        content=pdf_data, content_type='application/pdf',
+        content=pdf_data,
+        content_type="application/pdf",
     )
-    response['Content-Disposition'] = 'attachment; filename="{}"'.format(
+    response["Content-Disposition"] = 'attachment; filename="{}"'.format(
         file_name,
     )
     return response
@@ -59,25 +60,24 @@ def cache(seconds=300, cache_name=DEFAULT_CACHE_ALIAS, skip_first=False):
           when calculating hash of arguments (useful when first argument
           is instance of a class (self)).
     """
+
     def _cache(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
             cache_proxy = caches[cache_name]
-            key = _cache_key_hash(
-                func, *(args[1:] if skip_first else args), **kwargs
-            )
+            key = _cache_key_hash(func, *(args[1:] if skip_first else args), **kwargs)
             result = cache_proxy.get(key, default=CACHE_DEFAULT)
             if result is CACHE_DEFAULT:
-                logger.debug('Recalculating result of {}'.format(func.__name__))
+                logger.debug("Recalculating result of {}".format(func.__name__))
                 result = func(*args, **kwargs)
                 cache_proxy.set(key, result, seconds)
             else:
-                logger.debug(
-                    'Taking result of {} from cache'.format(func.__name__)
-                )
+                logger.debug("Taking result of {} from cache".format(func.__name__))
             return result
+
         if settings.USE_CACHE:
             return wrapper
         else:
             return func
+
     return _cache

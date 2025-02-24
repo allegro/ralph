@@ -24,34 +24,34 @@ from ralph.networks.models.networks import IPAddress
 
 class Database(AdminAbsoluteUrlMixin, BaseObject):
     class Meta:
-        verbose_name = _('database')
-        verbose_name_plural = _('databases')
+        verbose_name = _("database")
+        verbose_name_plural = _("databases")
 
     def __str__(self):
-        return 'Database: {}'.format(self.service_env)
+        return "Database: {}".format(self.service_env)
 
 
 class VIPProtocol(Choices):
     _ = Choices.Choice
 
-    TCP = _('TCP')
-    UDP = _('UDP')
+    TCP = _("TCP")
+    UDP = _("UDP")
 
 
 class VIP(AdminAbsoluteUrlMixin, BaseObject):
-    name = models.CharField(_('name'), max_length=255)
+    name = models.CharField(_("name"), max_length=255)
     ip = models.ForeignKey(IPAddress, on_delete=models.CASCADE)
-    port = models.PositiveIntegerField(verbose_name=_('port'), default=0)
+    port = models.PositiveIntegerField(verbose_name=_("port"), default=0)
     protocol = models.PositiveIntegerField(
-        verbose_name=_('protocol'),
+        verbose_name=_("protocol"),
         choices=VIPProtocol(),
         default=VIPProtocol.TCP.id,
     )
 
     class Meta:
-        verbose_name = _('VIP')
-        verbose_name_plural = _('VIPs')
-        unique_together = ('ip', 'port', 'protocol')
+        verbose_name = _("VIP")
+        verbose_name_plural = _("VIPs")
+        unique_together = ("ip", "port", "protocol")
 
     def __str__(self):
         return "IP: {}, port: {}, protocol: {}".format(
@@ -65,17 +65,17 @@ class ClusterType(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
     show_master_summary = models.BooleanField(
         default=False,
         help_text=_(
-            'show master information on cluster page, ex. hostname, model, '
-            'location etc.'
-        )
+            "show master information on cluster page, ex. hostname, model, "
+            "location etc."
+        ),
     )
 
 
 class ClusterStatus(Choices):
     _ = Choices.Choice
 
-    in_use = _('in use')
-    for_deploy = _('for deploy')
+    in_use = _("in use")
+    for_deploy = _("for deploy")
 
 
 class Cluster(
@@ -85,31 +85,27 @@ class Cluster(
     WithManagementIPMixin,
     NetworkableBaseObject,
     BaseObject,
-    models.Model
+    models.Model,
 ):
-    name = models.CharField(_('name'), max_length=255, blank=True, null=True)
+    name = models.CharField(_("name"), max_length=255, blank=True, null=True)
     hostname = NullableCharField(
-        unique=True,
-        null=True,
-        blank=True,
-        max_length=255,
-        verbose_name=_('hostname')
+        unique=True, null=True, blank=True, max_length=255, verbose_name=_("hostname")
     )
     type = models.ForeignKey(ClusterType, on_delete=models.CASCADE)
     base_objects = models.ManyToManyField(
         BaseObject,
-        verbose_name=_('Assigned base objects'),
-        through='BaseObjectCluster',
-        related_name='+',
+        verbose_name=_("Assigned base objects"),
+        through="BaseObjectCluster",
+        related_name="+",
     )
     status = TransitionField(
         default=ClusterStatus.in_use.id,
         choices=ClusterStatus(),
     )
-    previous_dc_host_update_fields = ['hostname']
+    previous_dc_host_update_fields = ["hostname"]
 
     def __str__(self):
-        return '{} ({})'.format(self.name or self.hostname, self.type)
+        return "{} ({})".format(self.name or self.hostname, self.type)
 
     def get_location(self):
         return self.masters[0].get_location() if self.masters else []
@@ -134,7 +130,7 @@ class Cluster(
                 if cast_base_object and not isinstance(
                     bo,
                     # list equal to BaseObjectCluster.base_object.limit_models
-                    (Database, DataCenterAsset, CloudHost, VirtualServer)
+                    (Database, DataCenterAsset, CloudHost, VirtualServer),
                 ):
                     bo = bo.last_descendant
                 result.append(bo)
@@ -153,10 +149,8 @@ class Cluster(
 
     def _validate_name_hostname(self):
         if not self.name and not self.hostname:
-            error_message = [_('At least one of name or hostname is required')]
-            raise ValidationError(
-                {'name': error_message, 'hostname': error_message}
-            )
+            error_message = [_("At least one of name or hostname is required")]
+            raise ValidationError({"name": error_message, "hostname": error_message})
 
     def clean(self):
         errors = {}
@@ -176,16 +170,16 @@ class BaseObjectCluster(models.Model):
     cluster = models.ForeignKey(Cluster, on_delete=models.CASCADE)
     base_object = BaseObjectForeignKey(
         BaseObject,
-        related_name='clusters',
+        related_name="clusters",
         limit_models=[
-            'data_center.Database',
-            'data_center.DataCenterAsset',
-            'virtual.CloudHost',
-            'virtual.VirtualServer'
+            "data_center.Database",
+            "data_center.DataCenterAsset",
+            "virtual.CloudHost",
+            "virtual.VirtualServer",
         ],
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
     )
     is_master = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = ('cluster', 'base_object')
+        unique_together = ("cluster", "base_object")

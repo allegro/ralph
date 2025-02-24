@@ -55,7 +55,7 @@ def history_for_object(parser, token):
         _, job, obj, _as, var_name = token.split_contents()
         if _as != 'as':
             error = True
-    except:
+    except:  # noqa
         error = True
 
     if error:

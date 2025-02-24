@@ -8,10 +8,11 @@ class UserFactory(factory.Factory):
     """
     User *password* is 'ralph'.
     """
+
     class Meta:
         model = get_user_model()
 
-    username = factory.Sequence(lambda n: 'user_{}'.format(n))
+    username = factory.Sequence(lambda n: "user_{}".format(n))
 
     @factory.post_generation
     def groups(self, create, extracted, **kwargs):
@@ -25,21 +26,20 @@ class UserFactory(factory.Factory):
 
     @factory.lazy_attribute
     def email(self):
-        return '%s@example.com' % self.username
+        return "%s@example.com" % self.username
 
     @classmethod
     def _generate(cls, create, attrs):
         user = super(UserFactory, cls)._generate(create, attrs)
-        user.set_password('ralph')
+        user.set_password("ralph")
         user.save()
         return user
 
 
 class TestManufacturerFactory(factory.django.DjangoModelFactory):
-
-    name = factory.Iterator(['Foxconn', 'Brother', 'Nokia', 'HTC'])
-    country = factory.Iterator(['Poland', 'Germany', 'Italy'])
+    name = factory.Iterator(["Foxconn", "Brother", "Nokia", "HTC"])
+    country = factory.Iterator(["Poland", "Germany", "Italy"])
 
     class Meta:
         model = TestManufacturer
-        django_get_or_create = ['name', 'country']
+        django_get_or_create = ["name", "country"]

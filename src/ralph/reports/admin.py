@@ -12,13 +12,13 @@ class ReportTemplateInline(RalphTabularInline):
 
 @register(ReportLanguage)
 class ReportLanguage(RalphAdmin):
-    list_display = ['name', 'default']
+    list_display = ["name", "default"]
 
 
 @register(Report)
 class ReportAdmin(RalphAdmin):
-    search_fields = ('name',)
-    list_display = ('name', )
+    search_fields = ("name",)
+    list_display = ("name",)
     inlines = [
         ReportTemplateInline,
     ]

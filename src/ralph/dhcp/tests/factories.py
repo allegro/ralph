@@ -10,21 +10,21 @@ from ralph.dhcp.models import (
 
 
 class DNSServerFactory(DjangoModelFactory):
-    ip_address = factory.Faker('ipv4')
+    ip_address = factory.Faker("ipv4")
 
     class Meta:
         model = DNSServer
 
 
 class DHCPServerFactory(DjangoModelFactory):
-    ip = factory.Faker('ipv4')
+    ip = factory.Faker("ipv4")
 
     class Meta:
         model = DHCPServer
 
 
 class DNSServerGroupFactory(DjangoModelFactory):
-    name = factory.Faker('name')
+    name = factory.Faker("name")
 
     class Meta:
         model = DNSServerGroup

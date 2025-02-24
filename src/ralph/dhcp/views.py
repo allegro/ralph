@@ -29,7 +29,7 @@ def last_modified_date(qs, filter_dict=None):
     last_date = None
     if filter_dict is None:
         filter_dict = {}
-    obj = qs.filter(**filter_dict).order_by('-modified').first()
+    obj = qs.filter(**filter_dict).order_by("-modified").first()
     if obj:
         last_date = obj.modified
     return last_date
@@ -40,11 +40,11 @@ class LastModifiedMixin(object):
 
     @property
     def last_timestamp(self):
-        last_modified = getattr(self, 'last_modified', None)
+        last_modified = getattr(self, "last_modified", None)
         return last_modified and int(last_modified.timestamp())
 
     def is_modified(self, request):
-        http_modified_since = request.META.get('HTTP_IF_MODIFIED_SINCE')
+        http_modified_since = request.META.get("HTTP_IF_MODIFIED_SINCE")
         if http_modified_since is None or self.last_timestamp is None:
             return True
         return self.last_timestamp > parse_http_date_safe(http_modified_since)
@@ -53,12 +53,12 @@ class LastModifiedMixin(object):
         response = super().dispatch(request, *args, **kwargs)
         if not self.is_modified(request):
             return HttpResponseNotModified()
-        response['Last-Modified'] = http_date(self.last_timestamp)
+        response["Last-Modified"] = http_date(self.last_timestamp)
         return response
 
 
 class DHCPConfigMixin(object):
-    content_type = 'text/plain'
+    content_type = "text/plain"
 
     @staticmethod
     def check_objects_existence_by_names(model_class, names):
@@ -67,18 +67,16 @@ class DHCPConfigMixin(object):
         return found, not_found
 
     def dispatch(self, request, *args, **kwargs):
-        dc_names = request.GET.getlist('dc', None)
-        env_names = request.GET.getlist('env', None)
+        dc_names = request.GET.getlist("dc", None)
+        env_names = request.GET.getlist("env", None)
         if dc_names and env_names:
             return HttpResponseBadRequest(
-                'Only DC or ENV mode available.',
-                content_type=self.content_type
+                "Only DC or ENV mode available.", content_type=self.content_type
             )
 
         if not (dc_names or env_names):
             return HttpResponseBadRequest(
-                'Please specify DC or ENV.',
-                content_type=self.content_type
+                "Please specify DC or ENV.", content_type=self.content_type
             )
 
         if dc_names:
@@ -87,26 +85,22 @@ class DHCPConfigMixin(object):
             )
             if not_found:
                 return HttpResponseNotFound(
-                    'DC: {} doesn\'t exists.'.format(', '.join(not_found)),
-                    content_type='text/plain'
+                    "DC: {} doesn't exists.".format(", ".join(not_found)),
+                    content_type="text/plain",
                 )
 
-            environments = NetworkEnvironment.objects.filter(
-                data_center__in=found
-            )
+            environments = NetworkEnvironment.objects.filter(data_center__in=found)
         elif env_names:
             found, not_found = self.check_objects_existence_by_names(
                 NetworkEnvironment, env_names
             )
             if not_found:
                 return HttpResponseNotFound(
-                    'ENV: {} doesn\'t exists.'.format(', '.join(not_found)),
-                    content_type='text/plain'
+                    "ENV: {} doesn't exists.".format(", ".join(not_found)),
+                    content_type="text/plain",
                 )
             environments = found
-        self.networks = Network.objects.select_related(
-            'network_environment'
-        ).filter(
+        self.networks = Network.objects.select_related("network_environment").filter(
             network_environment__in=environments,
             dhcp_broadcast=True,
         )
@@ -117,19 +111,17 @@ class DHCPConfigMixin(object):
 class DHCPSyncView(APIView):
     def get(self, request, *args, **kwargs):
         ip = get_client_ip(request)
-        logger.info('Sync request DHCP server with IP: %s', ip)
+        logger.info("Sync request DHCP server with IP: %s", ip)
         if not DHCPServer.update_last_synchronized(ip):
             return HttpResponseNotFound(
-                'DHCP server doesn\'t exist.', content_type='text/plain'
+                "DHCP server doesn't exist.", content_type="text/plain"
             )
-        return HttpResponse('OK', content_type='text/plain')
+        return HttpResponse("OK", content_type="text/plain")
 
 
-class DHCPEntriesView(
-    DHCPConfigMixin, LastModifiedMixin, TemplateView, APIView
-):
-    http_method_names = ['get']
-    template_name = 'dhcp/entries.conf'
+class DHCPEntriesView(DHCPConfigMixin, LastModifiedMixin, TemplateView, APIView):
+    http_method_names = ["get"]
+    template_name = "dhcp/entries.conf"
 
     def get_last_modified(self, networks):
         """
@@ -139,24 +131,20 @@ class DHCPEntriesView(
         last_items = []
 
         try:
-            last_items.append(Deployment.objects.latest('modified').modified)
+            last_items.append(Deployment.objects.latest("modified").modified)
         except Deployment.DoesNotExist:
             pass
         last_items.append(last_modified_date(networks))
         last_items.append(
-            last_modified_date(DHCPEntry.objects, filter_dict={
-                'network__in': networks
-            })
+            last_modified_date(DHCPEntry.objects, filter_dict={"network__in": networks})
         )
         last_items.append(
-            last_modified_date(Ethernet.objects, filter_dict={
-                'ipaddress__network__in': networks
-            })
+            last_modified_date(
+                Ethernet.objects, filter_dict={"ipaddress__network__in": networks}
+            )
         )
         last_items.append(
-            last_modified_date(IPAddress.objects, filter_dict={
-                'network__in': networks
-            })
+            last_modified_date(IPAddress.objects, filter_dict={"network__in": networks})
         )
         last_items = [item for item in last_items if item is not None]
         if not last_items:
@@ -167,50 +155,49 @@ class DHCPEntriesView(
         """
         Exclude entries with duplicated hostnames.
         """
-        duplicated_hostnames = [e['hostname'] for e in entries.values(
-            'hostname'
-        ).annotate(c=Count('id')).filter(c__gt=1)]
+        duplicated_hostnames = [
+            e["hostname"]
+            for e in entries.values("hostname").annotate(c=Count("id")).filter(c__gt=1)
+        ]
         for hostname in duplicated_hostnames:
-            logger.error(
-                'Duplicated hostname for DHCP entry: %s', hostname
-            )
+            logger.error("Duplicated hostname for DHCP entry: %s", hostname)
         return entries.exclude(hostname__in=duplicated_hostnames)
 
     def _get_dhcp_entries(self, networks):
         """
         Returns filtered DHCP entries for given networks.
         """
-        return self._filter_dhcp_entries(DHCPEntry.objects.filter(
-            network__in=networks
-        ).order_by('hostname'))
+        return self._filter_dhcp_entries(
+            DHCPEntry.objects.filter(network__in=networks).order_by("hostname")
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({
-            'last_modified': self.last_modified,
-            'entries': self._get_dhcp_entries(self.networks),
-        })
+        context.update(
+            {
+                "last_modified": self.last_modified,
+                "entries": self._get_dhcp_entries(self.networks),
+            }
+        )
         return context
 
 
-class DHCPNetworksView(
-    DHCPConfigMixin, LastModifiedMixin, TemplateView, APIView
-):
-    template_name = 'dhcp/networks.conf'
+class DHCPNetworksView(DHCPConfigMixin, LastModifiedMixin, TemplateView, APIView):
+    template_name = "dhcp/networks.conf"
 
     def get_last_modified(self, networks):
         last_items = []
         last_items.append(last_modified_date(networks))
         last_items.append(
-            last_modified_date(NetworkEnvironment.objects, filter_dict={
-                'network__in': networks
-            })
+            last_modified_date(
+                NetworkEnvironment.objects, filter_dict={"network__in": networks}
+            )
         )
         last_items.append(
-            last_modified_date(IPAddress.objects, filter_dict={
-                'network__in': networks,
-                'is_gateway': True
-            })
+            last_modified_date(
+                IPAddress.objects,
+                filter_dict={"network__in": networks, "is_gateway": True},
+            )
         )
         last_items = [item for item in last_items if item is not None]
         if not last_items:
@@ -219,25 +206,27 @@ class DHCPNetworksView(
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        networks = self.networks.filter(
-            network_environment__domain__isnull=False,
-            dhcp_broadcast=True,
-            gateway__isnull=False,
-        ).exclude(
-            network_environment=False
-        ).select_related(
-            'dns_servers_group',
-            'gateway'
-        ).prefetch_related(
-            Prefetch(
-                'dns_servers_group__server_group_order__dns_server',
-                queryset=DNSServer.objects.all().order_by(
-                    'server_group_order__order'
+        networks = (
+            self.networks.filter(
+                network_environment__domain__isnull=False,
+                dhcp_broadcast=True,
+                gateway__isnull=False,
+            )
+            .exclude(network_environment=False)
+            .select_related("dns_servers_group", "gateway")
+            .prefetch_related(
+                Prefetch(
+                    "dns_servers_group__server_group_order__dns_server",
+                    queryset=DNSServer.objects.all().order_by(
+                        "server_group_order__order"
+                    ),
                 )
             )
         )
-        context.update({
-            'last_modified': self.last_modified,
-            'entries': networks,
-        })
+        context.update(
+            {
+                "last_modified": self.last_modified,
+                "entries": networks,
+            }
+        )
         return context

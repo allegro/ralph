@@ -5,23 +5,18 @@ from ralph.apps import RalphAppConfig
 
 
 class Networks(RalphAppConfig):
-    name = 'ralph.networks'
+    name = "ralph.networks"
 
     def ready(self):
         if (
-            not settings.ENABLE_DNSAAS_INTEGRATION or
-            not settings.DNSAAS_AUTO_UPDATE_HOST_DNS
+            not settings.ENABLE_DNSAAS_INTEGRATION
+            or not settings.DNSAAS_AUTO_UPDATE_HOST_DNS
         ):
             return
-        from ralph.networks.receivers import (
-            delete_dns_record,
-            update_dns_record
-        )
-        ip_model = self.get_model('IPAddress')
-        post_save.connect(
-            receiver=update_dns_record,
-            sender=ip_model
-        )
+        from ralph.networks.receivers import delete_dns_record, update_dns_record
+
+        ip_model = self.get_model("IPAddress")
+        post_save.connect(receiver=update_dns_record, sender=ip_model)
         pre_delete.connect(
             receiver=delete_dns_record,
             sender=ip_model,

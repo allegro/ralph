@@ -13,23 +13,22 @@ from ralph.lib.transitions.models import TransitionsHistory
 
 
 class RalphTagsTest(TestCase):
-
     def setUp(self):
         super().setUp()
         user = UserFactory()
         back_office = BackOfficeAssetFactory()
-        content_type=ContentType.objects.get_for_model(BackOfficeAsset)
+        content_type = ContentType.objects.get_for_model(BackOfficeAsset)
         content = str.encode(str(random.random()))
         attachment = Attachment.objects.create(
-            file=SimpleUploadedFile('test', content),
+            file=SimpleUploadedFile("test", content),
             uploaded_by=user,
         )
         self.history = TransitionsHistory.objects.create(
-            transition_name='test',
+            transition_name="test",
             content_type=content_type,
-            source='new',
-            target='used',
+            source="new",
+            target="used",
             object_id=back_office.pk,
             logged_user=user,
-            attachment=attachment
+            attachment=attachment,
         )

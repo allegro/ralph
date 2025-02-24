@@ -16,8 +16,7 @@ from ralph.domains.models.domains import DomainProviderAdditionalServices
 
 
 class DomainFactory(DjangoModelFactory):
-
-    name = factory.Sequence(lambda n: 'www.domain{}.com'.format(n))
+    name = factory.Sequence(lambda n: "www.domain{}.com".format(n))
     domain_status = DomainStatus.active
     technical_owner = factory.SubFactory(UserFactory)
     business_owner = factory.SubFactory(UserFactory)
@@ -28,21 +27,20 @@ class DomainFactory(DjangoModelFactory):
 
 
 class DNSProviderFactory(DjangoModelFactory):
-    name = factory.Sequence(lambda n: 'dns-provider{}'.format(n))
+    name = factory.Sequence(lambda n: "dns-provider{}".format(n))
 
     class Meta:
         model = DNSProvider
 
 
 class DomainCategoryFactory(DjangoModelFactory):
-    name = factory.Sequence(lambda n: 'domain-contract{}'.format(n))
+    name = factory.Sequence(lambda n: "domain-contract{}".format(n))
 
     class Meta:
         model = DomainCategory
 
 
 class DomainContractFactory(DjangoModelFactory):
-
     domain = factory.SubFactory(DomainFactory)
 
     class Meta:
@@ -50,16 +48,16 @@ class DomainContractFactory(DjangoModelFactory):
 
 
 class DomainRegistrantFactory(DjangoModelFactory):
-
-    name = factory.Iterator(['ovh', 'home.pl', 'nazwa.pl'])
+    name = factory.Iterator(["ovh", "home.pl", "nazwa.pl"])
 
     class Meta:
         model = DomainRegistrant
-        django_get_or_create = ['name']
+        django_get_or_create = ["name"]
+
 
 class DomainProviderAdditionalServicesFactory(DjangoModelFactory):
-    name = factory.Iterator(['Masking', 'Backorder', 'Acquisition'])
+    name = factory.Iterator(["Masking", "Backorder", "Acquisition"])
 
     class Meta:
         model = DomainProviderAdditionalServices
-        django_get_or_create = ['name']
+        django_get_or_create = ["name"]

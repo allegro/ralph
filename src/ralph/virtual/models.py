@@ -39,24 +39,22 @@ logger = logging.getLogger(__name__)
 
 class CloudProvider(AdminAbsoluteUrlMixin, NamedMixin):
     class Meta:
-        verbose_name = _('Cloud provider')
-        verbose_name_plural = _('Cloud providers')
+        verbose_name = _("Cloud provider")
+        verbose_name_plural = _("Cloud providers")
 
-    cloud_sync_enabled = models.BooleanField(
-        null=False, blank=False, default=False
-    )
+    cloud_sync_enabled = models.BooleanField(null=False, blank=False, default=False)
     cloud_sync_driver = models.CharField(max_length=128, null=True, blank=True)
     client_config = encrypt(
         JSONField(
             blank=True,
             null=True,
-            verbose_name='client configuration',
+            verbose_name="client configuration",
         )
     )
 
 
 class CloudFlavor(AdminAbsoluteUrlMixin, BaseObject):
-    name = models.CharField(_('name'), max_length=255)
+    name = models.CharField(_("name"), max_length=255)
     cloudprovider = models.ForeignKey(CloudProvider, on_delete=models.CASCADE)
     cloudprovider._autocomplete = False
 
@@ -66,9 +64,9 @@ class CloudFlavor(AdminAbsoluteUrlMixin, BaseObject):
         return self.name
 
     def _set_component(self, model_args):
-        """ create/modify component cpu, mem or disk"""
+        """create/modify component cpu, mem or disk"""
         try:
-            model = ComponentModel.objects.get(name=model_args['name'])
+            model = ComponentModel.objects.get(name=model_args["name"])
         except ObjectDoesNotExist:
             model = ComponentModel()
             for key, value in model_args.items():
@@ -78,7 +76,7 @@ class CloudFlavor(AdminAbsoluteUrlMixin, BaseObject):
             VirtualComponent.objects.get(base_object=self, model=model)
         except ObjectDoesNotExist:
             for component in self.virtualcomponent_set.filter(
-                model__type=model_args['type']
+                model__type=model_args["type"]
             ):
                 component.delete()
 
@@ -88,11 +86,13 @@ class CloudFlavor(AdminAbsoluteUrlMixin, BaseObject):
         # use cached components if already prefetched (using prefetch_related)
         # otherwise, perform regular SQL query
         try:
-            components = self._prefetched_objects_cache['virtualcomponent_set']
+            components = self._prefetched_objects_cache["virtualcomponent_set"]
         except (KeyError, AttributeError):
-            return self.virtualcomponent_set.filter(
-                model__type=model_type
-            ).values_list(field_path, flat=True).first()
+            return (
+                self.virtualcomponent_set.filter(model__type=model_type)
+                .values_list(field_path, flat=True)
+                .first()
+            )
         else:
             for component in components:
                 if component.model.type == model_type:
@@ -102,15 +102,15 @@ class CloudFlavor(AdminAbsoluteUrlMixin, BaseObject):
     @property
     def cores(self):
         """Number of cores"""
-        return self._get_component(ComponentType.processor, 'model__cores')
+        return self._get_component(ComponentType.processor, "model__cores")
 
     @cores.setter
     def cores(self, new_cores):
         cpu = {
-            'name': "{} cores vCPU".format(new_cores),
-            'cores': new_cores,
-            'family': 'vcpu',
-            'type': ComponentType.processor
+            "name": "{} cores vCPU".format(new_cores),
+            "cores": new_cores,
+            "family": "vcpu",
+            "type": ComponentType.processor,
         }
         if self.cores != new_cores:
             self._set_component(cpu)
@@ -118,14 +118,14 @@ class CloudFlavor(AdminAbsoluteUrlMixin, BaseObject):
     @property
     def memory(self):
         """RAM memory size in MiB"""
-        return self._get_component(ComponentType.memory, 'model__size')
+        return self._get_component(ComponentType.memory, "model__size")
 
     @memory.setter
     def memory(self, new_memory):
         ram = {
-            'name': "{} MiB vMEM".format(new_memory),
-            'size': new_memory,
-            'type': ComponentType.memory,
+            "name": "{} MiB vMEM".format(new_memory),
+            "size": new_memory,
+            "type": ComponentType.memory,
         }
         if self.memory != new_memory:
             self._set_component(ram)
@@ -133,14 +133,14 @@ class CloudFlavor(AdminAbsoluteUrlMixin, BaseObject):
     @property
     def disk(self):
         """Disk size in MiB"""
-        return self._get_component(ComponentType.disk, 'model__size')
+        return self._get_component(ComponentType.disk, "model__size")
 
     @disk.setter
     def disk(self, new_disk):
         disk = {
-            'name': "{} GiB vHDD".format(int(new_disk / 1024)),
-            'size': new_disk,
-            'type': ComponentType.disk,
+            "name": "{} GiB vHDD".format(int(new_disk / 1024)),
+            "size": new_disk,
+            "type": ComponentType.disk,
         }
         if self.disk != new_disk:
             self._set_component(disk)
@@ -149,31 +149,27 @@ class CloudFlavor(AdminAbsoluteUrlMixin, BaseObject):
 class CloudProject(PreviousStateMixin, AdminAbsoluteUrlMixin, BaseObject):
     cloudprovider = models.ForeignKey(CloudProvider, on_delete=models.CASCADE)
     cloudprovider._autocomplete = False
-    custom_fields_inheritance = OrderedDict([
-        ('service_env', 'assets.ServiceEnvironment'),
-    ])
+    custom_fields_inheritance = OrderedDict(
+        [
+            ("service_env", "assets.ServiceEnvironment"),
+        ]
+    )
 
     project_id = models.CharField(
-        verbose_name=_('project ID'),
-        unique=True,
-        max_length=100
+        verbose_name=_("project ID"), unique=True, max_length=100
     )
     name = models.CharField(max_length=100)
 
     def __str__(self):
-        return 'Cloud Project: {}'.format(self.name)
+        return "Cloud Project: {}".format(self.name)
 
 
 class CloudImage(AdminAbsoluteUrlMixin, models.Model):
-    image_id = models.CharField(
-        verbose_name=_('image ID'),
-        unique=True,
-        max_length=100
-    )
+    image_id = models.CharField(verbose_name=_("image ID"), unique=True, max_length=100)
     name = models.CharField(max_length=200, unique=False)
 
     def __str__(self):
-        return 'Cloud Image: {}'.format(self.name)
+        return "Cloud Image: {}".format(self.name)
 
 
 @receiver(models.signals.post_save, sender=CloudProject)
@@ -183,18 +179,19 @@ def update_service_env_on_cloudproject_save(sender, instance, **kwargs):
         instance.children.all().update(service_env=instance.service_env)
 
 
-class CloudHost(PreviousStateMixin,
-                AdminAbsoluteUrlMixin,
-                NetworkableBaseObject,
-                BaseObject):
+class CloudHost(
+    PreviousStateMixin, AdminAbsoluteUrlMixin, NetworkableBaseObject, BaseObject
+):
     _allow_in_dashboard = True
-    previous_dc_host_update_fields = ['hostname']
-    custom_fields_inheritance = OrderedDict([
-        ('parent__cloudproject', 'virtual.CloudProject'),
-        ('configuration_path', 'assets.ConfigurationClass'),
-        ('configuration_path__module', 'assets.ConfigurationModule'),
-        ('service_env', 'assets.ServiceEnvironment'),
-    ])
+    previous_dc_host_update_fields = ["hostname"]
+    custom_fields_inheritance = OrderedDict(
+        [
+            ("parent__cloudproject", "virtual.CloudProject"),
+            ("configuration_path", "assets.ConfigurationClass"),
+            ("configuration_path__module", "assets.ConfigurationModule"),
+            ("service_env", "assets.ServiceEnvironment"),
+        ]
+    )
 
     def save(self, *args, **kwargs):
         try:
@@ -204,28 +201,21 @@ class CloudHost(PreviousStateMixin,
         super(CloudHost, self).save(*args, **kwargs)
 
     cloudflavor = models.ForeignKey(
-        CloudFlavor,
-        verbose_name='Instance Type',
-        on_delete=models.CASCADE
+        CloudFlavor, verbose_name="Instance Type", on_delete=models.CASCADE
     )
     cloudprovider = models.ForeignKey(CloudProvider, on_delete=models.CASCADE)
     cloudprovider._autocomplete = False
 
-    host_id = models.CharField(
-        verbose_name=_('host ID'),
-        unique=True,
-        max_length=100
+    host_id = models.CharField(verbose_name=_("host ID"), unique=True, max_length=100)
+    hostname = models.CharField(verbose_name=_("hostname"), max_length=255)
+    hypervisor = models.ForeignKey(
+        DataCenterAsset, blank=True, null=True, on_delete=models.CASCADE
     )
-    hostname = models.CharField(
-        verbose_name=_('hostname'),
-        max_length=255
-    )
-    hypervisor = models.ForeignKey(DataCenterAsset, blank=True, null=True, on_delete=models.CASCADE)
     image_name = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
-        verbose_name = _('Cloud host')
-        verbose_name_plural = _('Cloud hosts')
+        verbose_name = _("Cloud host")
+        verbose_name_plural = _("Cloud hosts")
 
     def __str__(self):
         return self.hostname
@@ -247,8 +237,8 @@ class CloudHost(PreviousStateMixin,
 
     @property
     def ip_addresses(self):
-        return self.ethernet_set.select_related('ipaddress').values_list(
-            'ipaddress__address', flat=True
+        return self.ethernet_set.select_related("ipaddress").values_list(
+            "ipaddress__address", flat=True
         )
 
     @ip_addresses.setter
@@ -263,15 +253,15 @@ class CloudHost(PreviousStateMixin,
                     new_ip.save()
                 else:
                     logger.warning(
-                        'Cannot assign IP %s to %s - it is already in use by '
-                        'another asset',
-                        ip, self.hostname
+                        "Cannot assign IP %s to %s - it is already in use by "
+                        "another asset",
+                        ip,
+                        self.hostname,
                     )
             except ObjectDoesNotExist:
-                logger.info('Creating new IP {} for {}'.format(ip, self))
+                logger.info("Creating new IP {} for {}".format(ip, self))
                 new_ip = IPAddress(
-                    ethernet=Ethernet.objects.create(base_object=self),
-                    address=ip
+                    ethernet=Ethernet.objects.create(base_object=self), address=ip
                 )
                 new_ip.save()
         # refresh hostnames
@@ -280,11 +270,11 @@ class CloudHost(PreviousStateMixin,
                 try:
                     ip = IPAddress.objects.get(address=address)
                 except IPAddress.DoesNotExist:
-                    logger.debug('IP {} not found'.format(address))
+                    logger.debug("IP {} not found".format(address))
                 else:
                     if ip.hostname != hostname:
                         logger.info(
-                            'Setting {} for IP {} (previous value: {})'.format(
+                            "Setting {} for IP {} (previous value: {})".format(
                                 hostname, address, ip.hostname
                             )
                         )
@@ -293,7 +283,7 @@ class CloudHost(PreviousStateMixin,
 
         to_delete = set(self.ip_addresses) - set(value)
         for ip in to_delete:
-            logger.warning('Deleting %s from %s', ip, self)
+            logger.warning("Deleting %s from %s", ip, self)
         Ethernet.objects.filter(
             base_object=self, ipaddress__address__in=to_delete
         ).delete()
@@ -320,10 +310,7 @@ class VirtualComponent(Component):
 
 
 class VirtualServerType(
-    AdminAbsoluteUrlMixin,
-    NamedMixin,
-    TimeStampMixin,
-    models.Model
+    AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model
 ):
     pass
 
@@ -331,10 +318,10 @@ class VirtualServerType(
 class VirtualServerStatus(Choices):
     _ = Choices.Choice
 
-    new = _('new')
-    used = _('in use')
-    to_deploy = _('to deploy')
-    liquidated = _('liquidated')
+    new = _("new")
+    used = _("in use")
+    to_deploy = _("to deploy")
+    liquidated = _("liquidated")
 
 
 class VirtualServer(
@@ -342,7 +329,7 @@ class VirtualServer(
     DNSaaSPublisherMixin,
     AdminAbsoluteUrlMixin,
     NetworkableBaseObject,
-    BaseObject
+    BaseObject,
 ):
     # parent field for VirtualServer is hypervisor!
     # TODO: limit parent to DataCenterAsset and CloudHost
@@ -351,30 +338,30 @@ class VirtualServer(
         choices=VirtualServerStatus(),
     )
     type = models.ForeignKey(
-        VirtualServerType,
-        related_name='virtual_servers',
-        on_delete=models.CASCADE
+        VirtualServerType, related_name="virtual_servers", on_delete=models.CASCADE
     )
     hostname = NullableCharField(
         blank=True,
         default=None,
         max_length=255,
         null=True,
-        verbose_name=_('hostname'),
+        verbose_name=_("hostname"),
         unique=True,
     )
     sn = NullableCharField(
         max_length=200,
-        verbose_name=_('SN'),
+        verbose_name=_("SN"),
         blank=True,
         default=None,
         null=True,
         unique=True,
     )
     # TODO: remove this field
-    cluster = models.ForeignKey(Cluster, blank=True, null=True, on_delete=models.CASCADE)
+    cluster = models.ForeignKey(
+        Cluster, blank=True, null=True, on_delete=models.CASCADE
+    )
 
-    previous_dc_host_update_fields = ['hostname']
+    previous_dc_host_update_fields = ["hostname"]
     _allow_in_dashboard = True
 
     @cached_property
@@ -383,10 +370,9 @@ class VirtualServer(
 
     def get_location(self):
         if (
-            self.parent_id and
-            self.parent.content_type_id == ContentType.objects.get_for_model(
-                DataCenterAsset
-            ).id
+            self.parent_id
+            and self.parent.content_type_id
+            == ContentType.objects.get_for_model(DataCenterAsset).id
         ):
             parent = self.parent.asset.datacenterasset
             location = parent.get_location()
@@ -408,16 +394,16 @@ class VirtualServer(
     def rack(self):
         if self.parent_id:
             polymorphic_parent = self.polymorphic_parent.last_descendant
-            if (isinstance(polymorphic_parent, (DataCenterAsset, CloudHost))):
+            if isinstance(polymorphic_parent, (DataCenterAsset, CloudHost)):
                 return polymorphic_parent.rack
         return None
 
     class Meta:
-        verbose_name = _('Virtual server (VM)')
-        verbose_name_plural = _('Virtual servers (VM)')
+        verbose_name = _("Virtual server (VM)")
+        verbose_name_plural = _("Virtual servers (VM)")
 
     def __str__(self):
-        return 'VirtualServer: {} ({})'.format(self.hostname, self.sn)
+        return "VirtualServer: {} ({})".format(self.hostname, self.sn)
 
 
 post_commit(publish_host_update, VirtualServer)

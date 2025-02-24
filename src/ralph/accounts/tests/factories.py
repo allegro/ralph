@@ -7,33 +7,30 @@ from ralph.accounts.models import RalphUser, Region, Team
 
 
 class RegionFactory(DjangoModelFactory):
-
-    name = factory.Iterator(['pl', 'de', 'ua'])
+    name = factory.Iterator(["pl", "de", "ua"])
 
     class Meta:
         model = Region
-        django_get_or_create = ['name']
+        django_get_or_create = ["name"]
 
 
 class GroupFactory(DjangoModelFactory):
-
-    name = factory.Iterator(['DBA', 'sysadmins', 'devops'])
+    name = factory.Iterator(["DBA", "sysadmins", "devops"])
 
     class Meta:
         model = Group
-        django_get_or_create = ['name']
+        django_get_or_create = ["name"]
 
 
 class UserFactory(DjangoModelFactory):
-
-    username = factory.Faker('user_name')
-    first_name = factory.Faker('first_name')
-    last_name = factory.Faker('last_name')
+    username = factory.Faker("user_name")
+    first_name = factory.Faker("first_name")
+    last_name = factory.Faker("last_name")
     is_active = True
 
     class Meta:
         model = RalphUser
-        django_get_or_create = ['username']
+        django_get_or_create = ["username"]
 
     @factory.post_generation
     def groups(self, create, extracted, **kwargs):
@@ -49,8 +46,8 @@ class UserFactory(DjangoModelFactory):
 
 
 class TeamFactory(DjangoModelFactory):
-    name = factory.Iterator(['DBA', 'sysadmins', 'devops'])
+    name = factory.Iterator(["DBA", "sysadmins", "devops"])
 
     class Meta:
         model = Team
-        django_get_or_create = ['name']
+        django_get_or_create = ["name"]

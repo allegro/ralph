@@ -39,16 +39,14 @@ def post_commit(func, model, signal=post_save, single_call=True):
     * if transaction is not started for current request, then this hook will
       behave as post_save (will be called immediately)
     """
+
     @receiver(signal, sender=model, weak=False)
     def wrap(sender, instance, **kwargs):
         def wrapper():
             # prevent from calling the same func multiple times for single
             # instance
-            called_already_attr = '_' + func.__name__ + '_called'
-            if not (
-                getattr(instance, called_already_attr, False) and
-                single_call
-            ):
+            called_already_attr = "_" + func.__name__ + "_called"
+            if not (getattr(instance, called_already_attr, False) and single_call):
                 func(instance)
                 setattr(instance, called_already_attr, True)
 

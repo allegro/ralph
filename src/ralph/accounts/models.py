@@ -30,13 +30,14 @@ def has_region(user):
 
 class Region(AdminAbsoluteUrlMixin, PermissionsForObjectMixin, NamedMixin):
     country = models.PositiveIntegerField(
-        verbose_name=_('country'),
+        verbose_name=_("country"),
         choices=Country(),
         default=Country.pl.id,
     )
     stocktaking_enabled = models.BooleanField(default=False)
 
     """Used for distinguishing the origin of the object by region"""
+
     class Permissions:
         has_access = has_region
 
@@ -50,7 +51,9 @@ def object_has_region(user):
 
 
 class Regionalizable(PermissionsForObjectMixin):
-    region = models.ForeignKey(Region, blank=False, null=False, on_delete=models.CASCADE)
+    region = models.ForeignKey(
+        Region, blank=False, null=False, on_delete=models.CASCADE
+    )
 
     class Meta:
         abstract = True
@@ -64,14 +67,10 @@ class Team(AdminAbsoluteUrlMixin, NamedMixin):
 
 
 class RalphUser(
-    PermByFieldMixin,
-    AbstractUser,
-    AdminAbsoluteUrlMixin,
-    AutocompleteTooltipMixin
+    PermByFieldMixin, AbstractUser, AdminAbsoluteUrlMixin, AutocompleteTooltipMixin
 ):
-
     country = models.PositiveIntegerField(
-        verbose_name=_('country'),
+        verbose_name=_("country"),
         choices=Country(),
         default=Country.pl.id,
     )
@@ -81,65 +80,70 @@ class RalphUser(
         blank=True,
     )
     company = models.CharField(
-        verbose_name=_('company'),
+        verbose_name=_("company"),
         max_length=64,
         blank=True,
     )
     employee_id = models.CharField(
-        verbose_name=_('employee id'),
+        verbose_name=_("employee id"),
         max_length=64,
         blank=True,
     )
     profit_center = models.CharField(
-        verbose_name=_('profit center'),
+        verbose_name=_("profit center"),
         max_length=1024,
         blank=True,
     )
     cost_center = models.CharField(
-        verbose_name=_('cost center'),
+        verbose_name=_("cost center"),
         max_length=1024,
         blank=True,
     )
     department = models.CharField(
-        verbose_name=_('department'),
+        verbose_name=_("department"),
         max_length=128,
         blank=True,
     )
     manager = models.CharField(
-        verbose_name=_('manager'),
+        verbose_name=_("manager"),
         max_length=1024,
         blank=True,
     )
     location = models.CharField(
-        verbose_name=_('location'),
+        verbose_name=_("location"),
         max_length=128,
         blank=True,
     )
     segment = models.CharField(
-        verbose_name=_('segment'),
+        verbose_name=_("segment"),
         max_length=256,
         blank=True,
     )
-    regions = models.ManyToManyField(Region, related_name='users', blank=True)
-    team = models.ForeignKey(Team, null=True, blank=True, on_delete=models.CASCADE, )
+    regions = models.ManyToManyField(Region, related_name="users", blank=True)
+    team = models.ForeignKey(
+        Team,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+    )
 
     autocomplete_tooltip_fields = [
-        'employee_id',
-        'company',
-        'department',
-        'manager',
-        'profit_center',
-        'cost_center'
+        "employee_id",
+        "company",
+        "department",
+        "manager",
+        "profit_center",
+        "cost_center",
     ]
     autocomplete_words_split = True
 
     class Meta(AbstractUser.Meta):
-        swappable = 'AUTH_USER_MODEL'
+        swappable = "AUTH_USER_MODEL"
 
     def __str__(self):
         full_name = self.get_full_name()
         if full_name:
-            return '{} ({})'.format(full_name, self.username)
+            return "{} ({})".format(full_name, self.username)
         return super().__str__()
 
     @property
@@ -154,10 +158,8 @@ class RalphUser(
         """
         Get region ids without additional SQL joins.
         """
-        return self.regions.through.objects.filter(
-            ralphuser=self
-        ).values_list(
-            'region_id', flat=True
+        return self.regions.through.objects.filter(ralphuser=self).values_list(
+            "region_id", flat=True
         )
 
     def has_any_perms(self, perms, obj=None):
@@ -172,7 +174,7 @@ class RalphUser(
 
     @property
     def autocomplete_str(self):
-        return '{} <i>{}</i>'.format(str(self), self.department)
+        return "{} <i>{}</i>".format(str(self), self.department)
 
     @property
     def permissions_hash(self):
@@ -181,7 +183,7 @@ class RalphUser(
         Hash for caching is calculated from user ID and its permissions.
         """
         perms_set = frozenset(self.get_all_permissions())
-        key = ':'.join((str(self.id), str(hash(perms_set))))
+        key = ":".join((str(self.id), str(hash(perms_set))))
         return hashlib.md5(force_bytes(key)).hexdigest()
 
 

@@ -15,7 +15,7 @@ class APIPermissionsTestMixin(object):
     def setUpClass(cls):
         super().setUpClass()
 
-        cls.foo = Foo.objects.create(bar='rab')
+        cls.foo = Foo.objects.create(bar="rab")
 
         def create_user(name, **kwargs):
             params = dict(
@@ -25,20 +25,23 @@ class APIPermissionsTestMixin(object):
             )
             params.update(kwargs)
             return get_user_model().objects.create(**params)
-        cls.user1 = create_user('user1')
-        cls.user2 = create_user('user2')
-        cls.user3 = create_user('user3')
-        cls.user_not_staff = create_user('user_not_staff', is_staff=False)
+
+        cls.user1 = create_user("user1")
+        cls.user2 = create_user("user2")
+        cls.user3 = create_user("user3")
+        cls.user_not_staff = create_user("user_not_staff", is_staff=False)
 
         def add_perm(user, perm):
-            user.user_permissions.add(Permission.objects.get(
-                content_type=ContentType.objects.get_for_model(Foo),
-                codename=perm
-            ))
-        add_perm(cls.user1, 'change_foo')
-        add_perm(cls.user1, 'delete_foo')
-        add_perm(cls.user2, 'add_foo')
-        add_perm(cls.user_not_staff, 'change_foo')
+            user.user_permissions.add(
+                Permission.objects.get(
+                    content_type=ContentType.objects.get_for_model(Foo), codename=perm
+                )
+            )
+
+        add_perm(cls.user1, "change_foo")
+        add_perm(cls.user1, "delete_foo")
+        add_perm(cls.user2, "add_foo")
+        add_perm(cls.user_not_staff, "change_foo")
 
 
 class _AssertNumQueriesMoreOrLessContext(CaptureQueriesContext):
@@ -53,20 +56,27 @@ class _AssertNumQueriesMoreOrLessContext(CaptureQueriesContext):
             return
         executed = len(self)
         self.test_case.assertIn(
-            executed, self.range,
-            "%d queries executed, %s expected\nCaptured queries were:\n%s" % (
-                executed, self.range,
-                '\n'.join(
-                    '%d. %s' % (i, query['sql']) for i, query in enumerate(self.captured_queries, start=1)
-                )
-            )
+            executed,
+            self.range,
+            "%d queries executed, %s expected\nCaptured queries were:\n%s"
+            % (
+                executed,
+                self.range,
+                "\n".join(
+                    "%d. %s" % (i, query["sql"])
+                    for i, query in enumerate(self.captured_queries, start=1)
+                ),
+            ),
         )
+
+
 class RalphAPITestCase(APITestCase):
     """
     Base test for Ralph API Test Case.
 
     By default there are some users created.
     """
+
     @classmethod
     def _create_users(cls):
         def create_user(name, **kwargs):
@@ -78,11 +88,9 @@ class RalphAPITestCase(APITestCase):
             params.update(kwargs)
             return get_user_model().objects.create(**params)
 
-        cls.user1 = create_user('user1')
-        cls.user2 = create_user('user2')
-        cls.superuser = create_user(
-            'superuser', is_staff=True, is_superuser=True
-        )
+        cls.user1 = create_user("user1")
+        cls.user2 = create_user("user2")
+        cls.superuser = create_user("superuser", is_staff=True, is_superuser=True)
 
     @classmethod
     def setUpClass(cls):
@@ -100,9 +108,17 @@ class RalphAPITestCase(APITestCase):
         """
         # testserver is default name of server using by Django test client
         # see django/test/client.py for details
-        return 'http://testserver{}'.format(url)
+        return "http://testserver{}".format(url)
 
-    def assertQueriesMoreOrLess(self, number: int, plus_minus: int, func=None, *args, using=DEFAULT_DB_ALIAS, **kwargs):
+    def assertQueriesMoreOrLess(
+        self,
+        number: int,
+        plus_minus: int,
+        func=None,
+        *args,
+        using=DEFAULT_DB_ALIAS,
+        **kwargs,
+    ):
         conn = connections[using]
 
         context = _AssertNumQueriesMoreOrLessContext(self, number, plus_minus, conn)

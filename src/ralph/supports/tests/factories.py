@@ -20,37 +20,59 @@ date_now = datetime.now().date()
 
 
 class SupportTypeFactory(DjangoModelFactory):
-
-    name = factory.Iterator(['warranty', 'additional'])
+    name = factory.Iterator(["warranty", "additional"])
 
     class Meta:
         model = SupportType
-        django_get_or_create = ['name']
+        django_get_or_create = ["name"]
 
 
 class SupportFactory(DjangoModelFactory):
-
     region = factory.SubFactory(RegionFactory)
     support_type = factory.SubFactory(SupportTypeFactory)
     status = SupportStatus.new
-    contract_id = factory.Sequence(lambda n: 'c{}'.format(n))
+    contract_id = factory.Sequence(lambda n: "c{}".format(n))
     date_to = date(2020, 12, 31)
     name = factory.Iterator(
         [
-            'cisco', 'hp', 'ibm', 'intel', 'dell', 'sun', 'google', 'juniper',
-            '2hp', 'ironport', 'microsoft', 'oracle', '3par', 'tk'
+            "cisco",
+            "hp",
+            "ibm",
+            "intel",
+            "dell",
+            "sun",
+            "google",
+            "juniper",
+            "2hp",
+            "ironport",
+            "microsoft",
+            "oracle",
+            "3par",
+            "tk",
         ]
     )
     date_from = date_now - timedelta(days=15)
     date_to = date_now + timedelta(days=365)
     producer = factory.Iterator(
         [
-            'cisco', 'hp', 'ibm', 'intel', 'dell', 'sun', 'google', 'juniper',
-            '2hp', 'ironport', 'microsoft', 'oracle', '3par', 'tk'
+            "cisco",
+            "hp",
+            "ibm",
+            "intel",
+            "dell",
+            "sun",
+            "google",
+            "juniper",
+            "2hp",
+            "ironport",
+            "microsoft",
+            "oracle",
+            "3par",
+            "tk",
         ]
     )
     serial_no = FuzzyText()
-    invoice_no = factory.Sequence(lambda n: 'Invoice number ' + str(n))
+    invoice_no = factory.Sequence(lambda n: "Invoice number " + str(n))
     invoice_date = date_now - timedelta(days=15)
     budget_info = factory.SubFactory(BudgetInfoFactory)
     property_of = factory.SubFactory(AssetHolderFactory)
@@ -60,7 +82,6 @@ class SupportFactory(DjangoModelFactory):
 
 
 class BaseObjectsSupportFactory(DjangoModelFactory):
-
     baseobject = factory.SubFactory(BackOfficeAssetFactory)
     support = factory.SubFactory(SupportFactory)
 

@@ -5,22 +5,22 @@ from django.conf import settings
 from ralph.back_office.models import BackOfficeAssetStatus
 from ralph.data_center.models import DataCenterAssetStatus
 
-EmailContext = namedtuple('EmailContext', 'from_email subject body')
+EmailContext = namedtuple("EmailContext", "from_email subject body")
 
 
 def get_email_context_for_transition(transition_name: str) -> EmailContext:
     """Default method used in action (send_attachments_to_user)."""
     default = {
-        'from_email': settings.EMAIL_FROM,
-        'subject': 'Documents for {}'.format(transition_name),
-        'body': 'Please see documents provided in attachments for "{}".'.format(transition_name)  # noqa
+        "from_email": settings.EMAIL_FROM,
+        "subject": "Documents for {}".format(transition_name),
+        "body": 'Please see documents provided in attachments for "{}".'.format(
+            transition_name
+        ),  # noqa
     }
     return EmailContext(**default)
 
 
-def _status_converter(
-    old_status_id, target_status_id, from_status_cls, to_status_cls
-):
+def _status_converter(old_status_id, target_status_id, from_status_cls, to_status_cls):
     """
     Convert BackOfficeAsset (BO) status to DatacenterAsset (DC) status (or the
     other way round).
@@ -55,7 +55,7 @@ def bo_asset_to_dc_asset_status_converter(old_status_id, target_status_id):
         old_status_id,
         target_status_id,
         from_status_cls=BackOfficeAssetStatus,
-        to_status_cls=DataCenterAssetStatus
+        to_status_cls=DataCenterAssetStatus,
     )
 
 
@@ -64,5 +64,5 @@ def dc_asset_to_bo_asset_status_converter(old_status_id, target_status_id):
         old_status_id,
         target_status_id,
         from_status_cls=DataCenterAssetStatus,
-        to_status_cls=BackOfficeAssetStatus
+        to_status_cls=BackOfficeAssetStatus,
     )

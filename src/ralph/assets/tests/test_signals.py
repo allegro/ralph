@@ -25,7 +25,7 @@ from ralph.virtual.tests.factories import CloudHostFactory, VirtualServerFactory
 class TestCustomFieldChangeHandler(RalphTestCase):
     def setUp(self):
         self.custom_field_str = CustomField.objects.create(
-            name='test str', type=CustomFieldTypes.STRING, default_value='xyz'
+            name="test str", type=CustomFieldTypes.STRING, default_value="xyz"
         )
 
     @unpack
@@ -33,32 +33,24 @@ class TestCustomFieldChangeHandler(RalphTestCase):
         (CloudHostFactory,),
         (ClusterFactory,),
         (DataCenterAssetFactory,),
-        (VirtualServerFactory,)
+        (VirtualServerFactory,),
     )
     def test_should_publish_host_update_event_when_dc_host(self, m_factory):
         m_instance = m_factory()
         cfv = CustomFieldValue.objects.create(
-            object=m_instance,
-            custom_field=self.custom_field_str,
-            value='sample_value'
+            object=m_instance, custom_field=self.custom_field_str, value="sample_value"
         )
-        with patch('ralph.assets.signals.publish_host_update') as mock:
-            custom_field_change(
-                sender=m_instance.__class__, instance=cfv
-            )
+        with patch("ralph.assets.signals.publish_host_update") as mock:
+            custom_field_change(sender=m_instance.__class__, instance=cfv)
             mock.assert_called_once_with(m_instance)
 
     def test_should_not_publish_host_update_event_when_not_dc_host(self):
         bo_asset = BackOfficeAssetFactory()
         cfv = CustomFieldValue.objects.create(
-            object=bo_asset,
-            custom_field=self.custom_field_str,
-            value='sample_value'
+            object=bo_asset, custom_field=self.custom_field_str, value="sample_value"
         )
-        with patch('ralph.assets.signals.publish_host_update') as mock:
-            custom_field_change(
-                sender=bo_asset.__class__, instance=cfv
-            )
+        with patch("ralph.assets.signals.publish_host_update") as mock:
+            custom_field_change(sender=bo_asset.__class__, instance=cfv)
             self.assertFalse(mock.called)
 
 
@@ -69,17 +61,12 @@ class TestRelatedObjectsChangeHandler(TransactionTestCase):
         (CloudHostFactory,),
         (ClusterFactory,),
         (DataCenterAssetFactory,),
-        (VirtualServerFactory,)
+        (VirtualServerFactory,),
     )
-    def test_should_publish_host_update_when_ipaddress_added(
-        self, model_factory
-    ):
+    def test_should_publish_host_update_when_ipaddress_added(self, model_factory):
         model_instance = model_factory()
-        with patch('ralph.data_center.publishers.publish_host_update') as mock:
-            IPAddress.objects.create(
-                address='10.20.30.40',
-                base_object=model_instance
-            )
+        with patch("ralph.data_center.publishers.publish_host_update") as mock:
+            IPAddress.objects.create(address="10.20.30.40", base_object=model_instance)
             # will be called 2 times: for Ethernet and for IPAddress
             mock.assert_called_with(model_instance)
 
@@ -88,17 +75,12 @@ class TestRelatedObjectsChangeHandler(TransactionTestCase):
         (CloudHostFactory,),
         (ClusterFactory,),
         (DataCenterAssetFactory,),
-        (VirtualServerFactory,)
+        (VirtualServerFactory,),
     )
-    def test_should_publish_host_update_when_ethernet_added(
-        self, model_factory
-    ):
+    def test_should_publish_host_update_when_ethernet_added(self, model_factory):
         model_instance = model_factory()
-        with patch('ralph.data_center.publishers.publish_host_update') as mock:
-            Ethernet.objects.create(
-                mac='aa:bb:cc:dd:ee:ff',
-                base_object=model_instance
-            )
+        with patch("ralph.data_center.publishers.publish_host_update") as mock:
+            Ethernet.objects.create(mac="aa:bb:cc:dd:ee:ff", base_object=model_instance)
             mock.assert_called_once_with(model_instance)
 
     @unpack
@@ -106,17 +88,15 @@ class TestRelatedObjectsChangeHandler(TransactionTestCase):
         (CloudHostFactory,),
         (ClusterFactory,),
         (DataCenterAssetFactory,),
-        (VirtualServerFactory,)
+        (VirtualServerFactory,),
     )
-    def test_should_publish_host_update_when_conf_class_changed(
-        self, model_factory
-    ):
+    def test_should_publish_host_update_when_conf_class_changed(self, model_factory):
         conf_class = ConfigurationClassFactory()
         model_factory.create_batch(2, configuration_path=conf_class)
-        with patch('ralph.data_center.publishers.publish_host_update') as mock:
+        with patch("ralph.data_center.publishers.publish_host_update") as mock:
             # refresh instance to not fall into post_commit single event
             conf_class = ConfigurationClass.objects.get(pk=conf_class.pk)
-            conf_class.name = 'another_class'
+            conf_class.name = "another_class"
             conf_class.save()
             self.assertEqual(mock.call_count, 2)
 
@@ -125,14 +105,12 @@ class TestRelatedObjectsChangeHandler(TransactionTestCase):
         (CloudHostFactory,),
         (ClusterFactory,),
         (DataCenterAssetFactory,),
-        (VirtualServerFactory,)
+        (VirtualServerFactory,),
     )
-    def test_should_publish_host_update_when_conf_module_changed(
-        self, model_factory
-    ):
+    def test_should_publish_host_update_when_conf_module_changed(self, model_factory):
         conf_class = ConfigurationClassFactory()
         model_factory.create_batch(2, configuration_path=conf_class)
-        with patch('ralph.data_center.publishers.publish_host_update') as mock:
-            conf_class.module.name = 'another_module'
+        with patch("ralph.data_center.publishers.publish_host_update") as mock:
+            conf_class.module.name = "another_module"
             conf_class.module.save()
             self.assertEqual(mock.call_count, 2)

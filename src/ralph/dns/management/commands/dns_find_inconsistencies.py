@@ -31,16 +31,16 @@ def get_ptr(ip):
     """
     ip_obj = ipaddress.ip_address(ip)
     if isinstance(ip_obj, ipaddress.IPv6Address):
-        reverse_chars = ip_obj.exploded[::-1].replace(':', '')
-        rev_ptr = '.'.join(reverse_chars) + '.ip6.arpa'
+        reverse_chars = ip_obj.exploded[::-1].replace(":", "")
+        rev_ptr = ".".join(reverse_chars) + ".ip6.arpa"
     else:
-        reverse_octets = str(ip_obj).split('.')[::-1]
-        rev_ptr = '.'.join(reverse_octets) + '.in-addr.arpa'
+        reverse_octets = str(ip_obj).split(".")[::-1]
+        rev_ptr = ".".join(reverse_octets) + ".in-addr.arpa"
     return rev_ptr
 
 
 class Command(BaseCommand):
-    help = 'Compare DNS records in DNSaaS with state of IP-hostname in Ralph'
+    help = "Compare DNS records in DNSaaS with state of IP-hostname in Ralph"
 
     # TODO (mkurek): add possibility to exclude some domains
 
@@ -87,21 +87,20 @@ class Command(BaseCommand):
         )
         """
         url = self.dns.build_url(
-            'records',
+            "records",
             get_params=[
-                ('limit', 1000),
-                ('offset', 0),
-            ] + [('type', t) for t in {'A', 'PTR'}]
+                ("limit", 1000),
+                ("offset", 0),
+            ]
+            + [("type", t) for t in {"A", "PTR"}],
         )
         api_results = self.dns.get_api_result(url)
         records_by_types = defaultdict(lambda: defaultdict(list))
         records_by_types_rev = defaultdict(lambda: defaultdict(list))
         for record in api_results:
-            records_by_types[record['type']][record['name']].append(
-                record['content']
-            )
-            records_by_types_rev[record['type']][record['content']].append(
-                record['name']
+            records_by_types[record["type"]][record["name"]].append(record["content"])
+            records_by_types_rev[record["type"]][record["content"]].append(
+                record["name"]
             )
         return records_by_types, records_by_types_rev
 
@@ -110,9 +109,8 @@ class Command(BaseCommand):
         Return dict with IP-hostname from Ralph.
         """
         ips = IPAddress.objects.filter(
-            ethernet__base_object__cloudhost__isnull=True,
-            hostname__isnull=False
-        ).values_list('address', 'hostname')
+            ethernet__base_object__cloudhost__isnull=True, hostname__isnull=False
+        ).values_list("address", "hostname")
         return dict(ips)
 
     def get_missing_a_records_in_dnsaas(self, ips, dns, dns_rev):
@@ -121,7 +119,7 @@ class Command(BaseCommand):
         DNSaaS
         """
         for ip, hostname in ips.items():
-            if ip not in dns_rev['A']:
+            if ip not in dns_rev["A"]:
                 yield (ip, hostname)
 
     def get_wrong_a_records_in_dnsaas(self, ips, dns, dns_rev):
@@ -130,8 +128,8 @@ class Command(BaseCommand):
         are both in Ralph and DNSaaS, but are inconsistent
         """
         for ip, hostname in ips.items():
-            if ip in dns_rev['A']:
-                dns_hostnames = dns_rev['A'][ip]
+            if ip in dns_rev["A"]:
+                dns_hostnames = dns_rev["A"][ip]
                 if hostname not in dns_hostnames or len(dns_hostnames) != 1:
                     yield (ip, hostname, dns_hostnames)
 
@@ -140,7 +138,7 @@ class Command(BaseCommand):
         Return pairs of (ip, list of hostnames) for Records (ips) which are
         present in DNSaaS, but they are not in Ralph.
         """
-        for ip, hostnames in dns_rev['A'].items():
+        for ip, hostnames in dns_rev["A"].items():
             if ip not in ips:
                 yield (ip, hostnames)
 
@@ -150,20 +148,20 @@ class Command(BaseCommand):
         records.
         """
         for ip, hostname in ips.items():
-            if ip in dns_rev['A'] and hostname in dns_rev['A'][ip]:
+            if ip in dns_rev["A"] and hostname in dns_rev["A"][ip]:
                 ptr = get_ptr(ip)
-                if ptr not in dns['PTR'] or hostname not in dns['PTR'][ptr]:
-                    yield (ip, hostname, dns['PTR'].get(ptr))
+                if ptr not in dns["PTR"] or hostname not in dns["PTR"][ptr]:
+                    yield (ip, hostname, dns["PTR"].get(ptr))
 
     def get_zombie_ptrs(self, ips, dns, dns_rev):
         """
         Return pairs of (ip, hostname) which has not properly configured PTR
         records.
         """
-        for hostname, ptrs in dns_rev['PTR'].items():
+        for hostname, ptrs in dns_rev["PTR"].items():
             for ptr in ptrs:
-                ip = '.'.join(ptr.split('.')[3::-1])
-                if hostname not in dns['A'] or ip not in dns['A'][hostname]:
+                ip = ".".join(ptr.split(".")[3::-1])
+                if hostname not in dns["A"] or ip not in dns["A"][hostname]:
                     yield ptr, hostname
 
     def get_duplicated_ptrs(self, ips, dns, dns_rev):
@@ -171,7 +169,7 @@ class Command(BaseCommand):
         Return pairs of (ip, hostname) which has not properly configured PTR
         records.
         """
-        for ptr, hostnames in dns['PTR'].items():
+        for ptr, hostnames in dns["PTR"].items():
             if len(hostnames) > 1:
                 yield ptr, hostnames
 
@@ -181,40 +179,32 @@ class Command(BaseCommand):
         for func, headers, description in [
             (
                 self.get_missing_a_records_in_dnsaas,
-                ['IP', 'hostname'],
-                'A records missing in DNSaaS'
+                ["IP", "hostname"],
+                "A records missing in DNSaaS",
             ),
             (
                 self.get_missing_a_records_in_ralph,
-                ['IP', 'hostname'],
-                'A records missing in Ralph'
+                ["IP", "hostname"],
+                "A records missing in Ralph",
             ),
             (
                 self.get_wrong_a_records_in_dnsaas,
-                ['IP', 'ralph hostname', 'dnsaas hostnames'],
-                'Inconsistent A records'
+                ["IP", "ralph hostname", "dnsaas hostnames"],
+                "Inconsistent A records",
             ),
             (
                 self.check_ralph_ptrs,
-                ['IP', 'ralph hostname', 'PTR content'],
-                'Missing or wrong PTR records'
+                ["IP", "ralph hostname", "PTR content"],
+                "Missing or wrong PTR records",
             ),
-            (
-                self.get_zombie_ptrs,
-                ['PTR', 'hostname (content)'],
-                'Zombie PTR records'
-            ),
-            (
-                self.get_duplicated_ptrs,
-                ['PTR', 'hostnames'],
-                'Duplicated PTR records'
-            ),
+            (self.get_zombie_ptrs, ["PTR", "hostname (content)"], "Zombie PTR records"),
+            (self.get_duplicated_ptrs, ["PTR", "hostnames"], "Duplicated PTR records"),
         ]:
             result = func(ips, dns, dns_rev)
-            self.stdout.write(TEMPLATE.format(
-                description=description,
-                headers='\t'.join(headers),
-                content='\n'.join(
-                    ['\t'.join(map(str, line)) for line in result]
-                ),
-            ))
+            self.stdout.write(
+                TEMPLATE.format(
+                    description=description,
+                    headers="\t".join(headers),
+                    content="\n".join(["\t".join(map(str, line)) for line in result]),
+                )
+            )

@@ -28,40 +28,72 @@ class DomainAdmin(AttachmentsMixin, RalphAdmin):
     form = DomainForm
     resource_class = DomainResource
     list_select_related = [
-        'technical_owner', 'business_owner', 'domain_holder',
+        "technical_owner",
+        "business_owner",
+        "domain_holder",
     ]
     list_filter = [
-        'name', 'service_env', 'domain_status', 'business_segment',
-        'domain_holder', ('domaincontract__expiration_date', DateListFilter),
-        'website_type', 'website_url',
-        'dns_provider', 'domain_category', 'domain_type',
-        'additional_services'
+        "name",
+        "service_env",
+        "domain_status",
+        "business_segment",
+        "domain_holder",
+        ("domaincontract__expiration_date", DateListFilter),
+        "website_type",
+        "website_url",
+        "dns_provider",
+        "domain_category",
+        "domain_type",
+        "additional_services",
     ]
     list_display = [
-        'name', 'business_owner',
-        'technical_owner', 'domain_holder', 'service_env', 'expiration_date'
+        "name",
+        "business_owner",
+        "technical_owner",
+        "domain_holder",
+        "service_env",
+        "expiration_date",
     ]
     raw_id_fields = [
-        'service_env', 'business_owner', 'technical_owner', 'domain_holder'
+        "service_env",
+        "business_owner",
+        "technical_owner",
+        "domain_holder",
     ]
     fieldsets = (
-        (_('Basic info'), {
-            'fields': (
-                'name', 'remarks', 'domain_status', 'website_type',
-                'website_url', 'domain_category', 'domain_type',
-                'dns_provider', 'additional_services'
-            )
-        }),
-        (_('Ownership info'), {
-            'fields': (
-                'service_env',
-                'business_segment', 'business_owner',
-                'technical_owner', 'domain_holder'
-            )
-        })
+        (
+            _("Basic info"),
+            {
+                "fields": (
+                    "name",
+                    "remarks",
+                    "domain_status",
+                    "website_type",
+                    "website_url",
+                    "domain_category",
+                    "domain_type",
+                    "dns_provider",
+                    "additional_services",
+                )
+            },
+        ),
+        (
+            _("Ownership info"),
+            {
+                "fields": (
+                    "service_env",
+                    "business_segment",
+                    "business_owner",
+                    "technical_owner",
+                    "domain_holder",
+                )
+            },
+        ),
     )
-    search_fields = ['name', ]
-    inlines = (DomainContractInline, )
+    search_fields = [
+        "name",
+    ]
+    inlines = (DomainContractInline,)
 
     def expiration_date(self, obj):
         links = []
@@ -69,38 +101,28 @@ class DomainAdmin(AttachmentsMixin, RalphAdmin):
             link = '<a href="{}">{} ({})</a>'.format(
                 contract.get_absolute_url(),
                 contract.expiration_date,
-                contract.registrant or '-',
-
+                contract.registrant or "-",
             )
             links.append(link)
-        return format_html('<br>'.join(links))
-    expiration_date.short_description = 'Expiration date'
+        return format_html("<br>".join(links))
+
+    expiration_date.short_description = "Expiration date"
 
 
 @register(DomainContract)
 class DomainContractAdmin(AttachmentsMixin, RalphAdmin):
     form = DomainContractForm
     resource_class = DomainContractResource
-    list_select_related = ['domain', 'domain__service_env']
-    list_filter = [
-        'domain__name', 'domain__service_env__service__name'
-    ]
-    list_display = [
-        'domain', 'expiration_date', 'price'
-    ]
+    list_select_related = ["domain", "domain__service_env"]
+    list_filter = ["domain__name", "domain__service_env__service__name"]
+    list_display = ["domain", "expiration_date", "price"]
     fieldsets = (
-        (_('Basic info'), {
-            'fields': (
-                'domain', 'expiration_date', 'registrant'
-            )
-        }),
-        (_('Financial info'), {
-            'fields': (
-                'price',
-            )
-        }),
+        (_("Basic info"), {"fields": ("domain", "expiration_date", "registrant")}),
+        (_("Financial info"), {"fields": ("price",)}),
     )
-    search_fields = ['domain__name', ]
+    search_fields = [
+        "domain__name",
+    ]
 
 
 @register(DomainProviderAdditionalServices)

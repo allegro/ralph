@@ -6,35 +6,54 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('assets', '0008_auto_20160122_1429'),
-        ('data_center', '0007_auto_20160225_1818'),
+        ("assets", "0008_auto_20160122_1429"),
+        ("data_center", "0007_auto_20160225_1818"),
     ]
 
     # move models from data_center app
     state_operations = [
         migrations.CreateModel(
-            name='CloudProject',
+            name="CloudProject",
             fields=[
-                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', auto_created=True, parent_link=True, serialize=False, on_delete=django.db.models.deletion.CASCADE)),
+                (
+                    "baseobject_ptr",
+                    models.OneToOneField(
+                        primary_key=True,
+                        to="assets.BaseObject",
+                        auto_created=True,
+                        parent_link=True,
+                        serialize=False,
+                        on_delete=django.db.models.deletion.CASCADE,
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
-            bases=('assets.baseobject',),
+            bases=("assets.baseobject",),
         ),
         migrations.CreateModel(
-            name='VirtualServer',
+            name="VirtualServer",
             fields=[
-                ('baseobject_ptr', models.OneToOneField(primary_key=True, to='assets.BaseObject', auto_created=True, parent_link=True, serialize=False, on_delete=django.db.models.deletion.CASCADE)),
+                (
+                    "baseobject_ptr",
+                    models.OneToOneField(
+                        primary_key=True,
+                        to="assets.BaseObject",
+                        auto_created=True,
+                        parent_link=True,
+                        serialize=False,
+                        on_delete=django.db.models.deletion.CASCADE,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Virtual server (VM)',
-                'verbose_name_plural': 'Virtual servers (VM)',
-                'abstract': False,
+                "verbose_name": "Virtual server (VM)",
+                "verbose_name_plural": "Virtual servers (VM)",
+                "abstract": False,
             },
-            bases=('assets.baseobject',),
+            bases=("assets.baseobject",),
         ),
     ]
 

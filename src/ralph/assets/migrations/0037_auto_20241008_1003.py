@@ -6,15 +6,27 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('assets', '0036_auto_20240904_1126'),
+        ("assets", "0036_auto_20240904_1126"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='ethernet',
-            name='speed',
-            field=models.PositiveIntegerField(choices=[(1, '10 Mbps'), (2, '100 Mbps'), (3, '1 Gbps'), (4, '10 Gbps'), (5, '40 Gbps'), (6, '100 Gbps'), (7, '25 Gbps'), (11, 'unknown speed')], default=11, verbose_name='speed'),
+            model_name="ethernet",
+            name="speed",
+            field=models.PositiveIntegerField(
+                choices=[
+                    (1, "10 Mbps"),
+                    (2, "100 Mbps"),
+                    (3, "1 Gbps"),
+                    (4, "10 Gbps"),
+                    (5, "40 Gbps"),
+                    (6, "100 Gbps"),
+                    (7, "25 Gbps"),
+                    (11, "unknown speed"),
+                ],
+                default=11,
+                verbose_name="speed",
+            ),
         ),
     ]

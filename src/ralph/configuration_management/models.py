@@ -11,34 +11,25 @@ from ralph.lib.permissions.models import PermByFieldMixin
 class SCMCheckResult(Choices):
     _ = Choices.Choice
 
-    scm_ok = _("OK").extra(alert='success', icon_class='fa-check-circle')
+    scm_ok = _("OK").extra(alert="success", icon_class="fa-check-circle")
     check_failed = _("Check failed").extra(
-        alert='warning',
-        icon_class='fa-question-circle'
+        alert="warning", icon_class="fa-question-circle"
     )
-    scm_error = _("Error").extra(
-        alert='alert',
-        icon_class='fa-exclamation-triangle'
-    )
+    scm_error = _("Error").extra(alert="alert", icon_class="fa-exclamation-triangle")
 
 
-class SCMStatusCheck(
-    PermByFieldMixin,
-    TimeStampMixin,
-    models.Model
-):
+class SCMStatusCheck(PermByFieldMixin, TimeStampMixin, models.Model):
     """Represents software configuration management scan."""
 
     base_object = models.OneToOneField(BaseObject, on_delete=models.CASCADE)
     last_checked = models.DateTimeField(
-        blank=False, null=False,
-        verbose_name=_("Last SCM check")
+        blank=False, null=False, verbose_name=_("Last SCM check")
     )
     check_result = ChoiceField(
         choices=SCMCheckResult,
         blank=False,
         null=False,
-        verbose_name=_("SCM check result")
+        verbose_name=_("SCM check result"),
     )
     ok = models.BooleanField(default=False, editable=False)
 

@@ -42,19 +42,22 @@ from ralph.lib.permissions.views import PermissionViewMetaClass
 logger = logging.getLogger(__name__)
 
 FORMFIELD_FOR_DBFIELD_DEFAULTS = {
-    models.DateField: {'widget': widgets.AdminDateWidget},
-    models.DateTimeField: {'widget': widgets.ReadOnlyWidget},
-    TicketIdField: {'widget': TicketIdFieldWidget},
+    models.DateField: {"widget": widgets.AdminDateWidget},
+    models.DateTimeField: {"widget": widgets.ReadOnlyWidget},
+    TicketIdField: {"widget": TicketIdFieldWidget},
 }
 
 
 def get_inline_media():
-    js = map(lambda x: os.path.join(*x), [
-        ('admin', 'js', 'inlines.js'),
-        ('src', 'js', 'ralph-autocomplete.js'),
-    ])
+    js = map(
+        lambda x: os.path.join(*x),
+        [
+            ("admin", "js", "inlines.js"),
+            ("src", "js", "ralph-autocomplete.js"),
+        ],
+    )
     return forms.Media(
-        js=[static('%s' % url) for url in js],
+        js=[static("%s" % url) for url in js],
     )
 
 
@@ -73,13 +76,13 @@ def initialize_search_form(model, context):
         try:
             field = get_field_by_relation_path(model, field_name)
         except FieldDoesNotExist:
-            verbose_search_fields.append(field_name.split('__')[-1])
+            verbose_search_fields.append(field_name.split("__")[-1])
         else:
             verbose_search_fields.append(field.verbose_name)
-    context['search_fields'] = sorted(set(verbose_search_fields))
-    context['model_verbose_name'] = model._meta.verbose_name
-    context['search_url'] = reverse(
-        'admin:{app_label}_{model_name}_changelist'.format(
+    context["search_fields"] = sorted(set(verbose_search_fields))
+    context["model_verbose_name"] = model._meta.verbose_name
+    context["search_url"] = reverse(
+        "admin:{app_label}_{model_name}_changelist".format(
             app_label=model._meta.app_label,
             model_name=model._meta.model_name,
         )
@@ -97,11 +100,14 @@ class RalphAutocompleteMixin(object):
         if db_field.name in self.raw_id_fields:
             kw = {}
             if db_field.name in self.raw_id_override_parent:
-                kw['rel_to'] = self.raw_id_override_parent[db_field.name]
+                kw["rel_to"] = self.raw_id_override_parent[db_field.name]
 
-            kwargs['widget'] = widgets.AutocompleteWidget(
-                field=db_field, admin_site=self.admin_site,
-                using=kwargs.get('using'), request=request, **kw
+            kwargs["widget"] = widgets.AutocompleteWidget(
+                field=db_field,
+                admin_site=self.admin_site,
+                using=kwargs.get("using"),
+                request=request,
+                **kw,
             )
             return db_field.formfield(**kwargs)
         else:
@@ -109,13 +115,16 @@ class RalphAutocompleteMixin(object):
 
     def formfield_for_manytomany(self, db_field, request=None, **kwargs):
         if db_field.name in self.raw_id_fields:
-            kw = {'multi': True}
+            kw = {"multi": True}
             if db_field.name in self.raw_id_override_parent:
-                kw['rel_to'] = self.raw_id_override_parent[db_field.name]
+                kw["rel_to"] = self.raw_id_override_parent[db_field.name]
 
-            kwargs['widget'] = widgets.AutocompleteWidget(
-                field=db_field, admin_site=self.admin_site,
-                using=kwargs.get('using'), request=request, **kw
+            kwargs["widget"] = widgets.AutocompleteWidget(
+                field=db_field,
+                admin_site=self.admin_site,
+                using=kwargs.get("using"),
+                request=request,
+                **kw,
             )
             return db_field.formfield(**kwargs)
         else:
@@ -139,14 +148,14 @@ class RedirectSearchToObjectMixin(object):
 
     def changelist_view(self, request, *args, **kwargs):
         response = super().changelist_view(request, *args, **kwargs)
-        context_data = getattr(response, 'context_data', None)
-        cl = context_data.get('cl') if context_data else None
+        context_data = getattr(response, "context_data", None)
+        cl = context_data.get("cl") if context_data else None
         if (
-            not context_data or
-            not cl or
-            not hasattr(cl, 'result_count') or
-            not settings.REDIRECT_TO_DETAIL_VIEW_IF_ONE_SEARCH_RESULT or
-            not self.redirect_to_detail_view_if_one_search_result
+            not context_data
+            or not cl
+            or not hasattr(cl, "result_count")
+            or not settings.REDIRECT_TO_DETAIL_VIEW_IF_ONE_SEARCH_RESULT
+            or not self.redirect_to_detail_view_if_one_search_result
         ):
             return response
         filtered_results = list(request.GET.keys())
@@ -154,18 +163,16 @@ class RedirectSearchToObjectMixin(object):
         if filtered_results and not ordering and cl.result_count == 1:
             obj = cl.result_list[0]
             if issubclass(obj.__class__, AdminAbsoluteUrlMixin):
-                messages.info(request, _('Found exactly one result.'))
-                return HttpResponseRedirect(
-                    cl.result_list[0].get_absolute_url()
-                )
+                messages.info(request, _("Found exactly one result."))
+                return HttpResponseRedirect(cl.result_list[0].get_absolute_url())
         return response
 
 
 class RalphAdminChecks(admin.checks.ModelAdminChecks):
     exclude_models = (
-        ('auth', 'Group'.lower()),
-        ('assets', 'BaseObject'.lower()),
-        ('contenttypes', 'ContentType'.lower())
+        ("auth", "Group".lower()),
+        ("assets", "BaseObject".lower()),
+        ("contenttypes", "ContentType".lower()),
     )
 
     def check(self, model, **kwargs):
@@ -178,15 +185,9 @@ class RalphAdminChecks(admin.checks.ModelAdminChecks):
         Check if form subclasses RalphAdminFormMixin
         """
         result = super()._check_form(model)
-        if (
-            hasattr(model, 'form') and
-            not issubclass(model.form, RalphAdminFormMixin)
-        ):
+        if hasattr(model, "form") and not issubclass(model.form, RalphAdminFormMixin):
             result += admin.checks.must_inherit_from(
-                parent='RalphAdminFormMixin',
-                option='form',
-                obj=model,
-                id='admin.E016'
+                parent="RalphAdminFormMixin", option="form", obj=model, id="admin.E016"
             )
         return result
 
@@ -198,14 +199,14 @@ class RalphAdminChecks(admin.checks.ModelAdminChecks):
         if (opts.app_label, opts.model_name) in self.exclude_models:
             return []
         msg = "The model '{}' must inherit from 'AdminAbsoluteUrlMixin'."
-        hint = 'Add AdminAbsoluteUrlMixin from ralph.lib.mixns.models to model.'  # noqa
+        hint = "Add AdminAbsoluteUrlMixin from ralph.lib.mixns.models to model."  # noqa
         if not issubclass(model, AdminAbsoluteUrlMixin):
             return [
                 checks.Error(
                     msg.format(model),
                     hint=hint,
                     obj=model,
-                    id='admin.E101',
+                    id="admin.E101",
                 ),
             ]
         return []
@@ -218,18 +219,17 @@ class DashboardChangelistMixin(object):
         return True
 
     def _is_graph_preview_view(self, request):
-        return request.GET.get('graph-query', '')
+        return request.GET.get("graph-query", "")
 
     def changelist_view(self, request, extra_context=None):
-        extra_context['is_graph_preview_view'] = self._is_graph_preview_view(
-            request
-        )
+        extra_context["is_graph_preview_view"] = self._is_graph_preview_view(request)
         return super().changelist_view(request, extra_context)
 
     def get_list_filter(self, request):
         from ralph.dashboards.admin_filters import ByGraphFilter
+
         filters = super().get_list_filter(request) or []
-        is_graph_model = getattr(self.model, '_allow_in_dashboard', False)
+        is_graph_model = getattr(self.model, "_allow_in_dashboard", False)
         if is_graph_model and ByGraphFilter not in filters:
             filters.append(ByGraphFilter)
 
@@ -241,8 +241,8 @@ class RalphAdminMixin(DashboardChangelistMixin, RalphAutocompleteMixin):
 
     list_views = None
     change_views = None
-    change_list_template = 'admin/change_list.html'
-    change_form_template = 'admin/change_form.html'
+    change_list_template = "admin/change_list.html"
+    change_form_template = "admin/change_form.html"
     checks_class = RalphAdminChecks
     form = RalphAdminForm
     # List of fields that are to be excluded from fillable on bulk edit
@@ -251,8 +251,8 @@ class RalphAdminMixin(DashboardChangelistMixin, RalphAutocompleteMixin):
 
     def __init__(self, *args, **kwargs):
         self.list_views = copy(self.list_views) or []
-        if kwargs.get('change_views'):
-            self.change_views = copy(kwargs.pop('change_views', []))
+        if kwargs.get("change_views"):
+            self.change_views = copy(kwargs.pop("change_views", []))
         else:
             self.change_views = copy(self.change_views) or []
         super().__init__(*args, **kwargs)
@@ -266,8 +266,8 @@ class RalphAdminMixin(DashboardChangelistMixin, RalphAutocompleteMixin):
 
     def has_view_permission(self, request, obj=None):
         opts = self.opts
-        codename = get_permission_codename('view', opts)
-        return request.user.has_perm('%s.%s' % (opts.app_label, codename))
+        codename = get_permission_codename("view", opts)
+        return request.user.has_perm("%s.%s" % (opts.app_label, codename))
 
     def has_change_permission(self, request, obj=None):
         if obj:
@@ -277,6 +277,7 @@ class RalphAdminMixin(DashboardChangelistMixin, RalphAutocompleteMixin):
 
     def get_changelist(self, request, **kwargs):
         from ralph.admin.views.main import RalphChangeList
+
         return RalphChangeList
 
     def get_list_display_links(self, request, list_display):
@@ -292,30 +293,28 @@ class RalphAdminMixin(DashboardChangelistMixin, RalphAutocompleteMixin):
         """Override change list from django."""
         if extra_context is None:
             extra_context = {}
-        extra_context['app_label'] = self.model._meta.app_label
-        extra_context['header_obj_name'] = self.model._meta.verbose_name_plural
+        extra_context["app_label"] = self.model._meta.app_label
+        extra_context["header_obj_name"] = self.model._meta.verbose_name_plural
         views = []
         for view in self.list_views:
             views.append(view)
-        extra_context['list_views'] = views
+        extra_context["list_views"] = views
         if self.get_actions(request) or self.list_filter:
-            extra_context['has_filters'] = True
+            extra_context["has_filters"] = True
 
-        extra_context['bulk_edit'] = request.GET.get(BULK_EDIT_VAR, False)
-        if extra_context['bulk_edit']:
-            bulk_back_url = request.session.get('bulk_back_url')
+        extra_context["bulk_edit"] = request.GET.get(BULK_EDIT_VAR, False)
+        if extra_context["bulk_edit"]:
+            bulk_back_url = request.session.get("bulk_back_url")
             if not bulk_back_url:
-                bulk_back_url = request.META.get('HTTP_REFERER')
-                request.session['bulk_back_url'] = bulk_back_url
-            extra_context['bulk_back_url'] = bulk_back_url
-            extra_context['has_filters'] = False
+                bulk_back_url = request.META.get("HTTP_REFERER")
+                request.session["bulk_back_url"] = bulk_back_url
+            extra_context["bulk_back_url"] = bulk_back_url
+            extra_context["has_filters"] = False
         else:
-            request.session['bulk_back_url'] = None
+            request.session["bulk_back_url"] = None
 
         self._initialize_search_form(extra_context)
-        return super(RalphAdminMixin, self).changelist_view(
-            request, extra_context
-        )
+        return super(RalphAdminMixin, self).changelist_view(request, extra_context)
 
     def get_actions(self, request):
         """Override get actions method."""
@@ -323,33 +322,28 @@ class RalphAdminMixin(DashboardChangelistMixin, RalphAutocompleteMixin):
             # Hide checkbox on bulk edit page
             return []
         actions = super().get_actions(request)
-        if (
-            not self.has_delete_permission(request) and
-            'delete_selected' in actions
-        ):
-            del actions['delete_selected']
+        if not self.has_delete_permission(request) and "delete_selected" in actions:
+            del actions["delete_selected"]
         return actions
 
-    def changeform_view(
-        self, request, object_id=None, form_url='', extra_context=None
-    ):
+    def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
         if extra_context is None:
             extra_context = {}
         views = []
         if object_id:
             for view in self.change_views:
                 views.append(view)
-            extra_context['change_views'] = views
-        extra_context['header_obj_name'] = self.model._meta.verbose_name
+            extra_context["change_views"] = views
+        extra_context["header_obj_name"] = self.model._meta.verbose_name
         self._initialize_search_form(extra_context)
-        extra_context['admin_view'] = self
+        extra_context["admin_view"] = self
         return super(RalphAdminMixin, self).changeform_view(
             request, object_id, form_url, extra_context
         )
 
     def formfield_for_manytomany(self, db_field, request=None, **kwargs):
-        if db_field.name in ('user_permissions', 'permissions'):
-            kwargs['widget'] = widgets.PermissionsSelectWidget()
+        if db_field.name in ("user_permissions", "permissions"):
+            kwargs["widget"] = widgets.PermissionsSelectWidget()
             return db_field.formfield(**kwargs)
         return super().formfield_for_manytomany(db_field, request, **kwargs)
 
@@ -365,24 +359,20 @@ class RalphAdminMixin(DashboardChangelistMixin, RalphAutocompleteMixin):
                 widget = field.formfield().widget
                 # Added vTextField CSS class to widget,
                 # because Django admin form has it default
-                widget.attrs['class'] = 'vTextField no-fillable'
+                widget.attrs["class"] = "vTextField no-fillable"
                 widgets[field_name] = widget
             if widgets:
-                kwargs['widgets'] = widgets
+                kwargs["widgets"] = widgets
         return super().get_changelist_form(request, **kwargs)
 
     def _add_recovery_to_extra_context(self, extra_context):
         extra_context = extra_context or {}
-        extra_context['in_recovery_mode'] = True
+        extra_context["in_recovery_mode"] = True
         return extra_context
 
-    def revision_view(
-        self, request, object_id, version_id, extra_context=None
-    ):
+    def revision_view(self, request, object_id, version_id, extra_context=None):
         extra_context = self._add_recovery_to_extra_context(extra_context)
-        return super().revision_view(
-            request, object_id, version_id, extra_context
-        )
+        return super().revision_view(request, object_id, version_id, extra_context)
 
     def recover_view(self, request, version_id, extra_context=None):
         extra_context = self._add_recovery_to_extra_context(extra_context)
@@ -405,20 +395,18 @@ class RalphAdminImportExportMixin(ImportExportModelAdmin):
         fk_fields = []
         for name, field in resource.fields.items():
             if (
-                isinstance(field.widget, ForeignKeyWidget) and
-                not getattr(field, '_exclude_in_select_related', False) and
-                not isinstance(getattr(queryset.model, name, None), property)
+                isinstance(field.widget, ForeignKeyWidget)
+                and not getattr(field, "_exclude_in_select_related", False)
+                and not isinstance(getattr(queryset.model, name, None), property)
             ):
                 fk_fields.append(field.attribute)
         if fk_fields:
             queryset = queryset.select_related(*fk_fields)
-        resource_select_related = getattr(resource._meta, 'select_related', [])
+        resource_select_related = getattr(resource._meta, "select_related", [])
         if resource_select_related:
             queryset = queryset.select_related(*resource_select_related)
 
-        resource_prefetch_related = getattr(
-            resource._meta, 'prefetch_related', []
-        )
+        resource_prefetch_related = getattr(resource._meta, "prefetch_related", [])
         if resource_prefetch_related:
             queryset = queryset.prefetch_related(*resource_prefetch_related)
         return list(queryset)
@@ -428,7 +416,7 @@ class RalphAdminImportExportMixin(ImportExportModelAdmin):
         If `export_class` is defined in Admin, use it.
         """
         resource_class = self.get_resource_class()
-        export_class = getattr(resource_class, 'export_class', None)
+        export_class = getattr(resource_class, "export_class", None)
         if export_class:
             return export_class
         return resource_class
@@ -436,35 +424,34 @@ class RalphAdminImportExportMixin(ImportExportModelAdmin):
     def get_queryset(self, request):
         # if it is "exporter" request, try to use `_export_queryset_manager`
         # manager defined in admin
-        if hasattr(request, '_is_export') and self._export_queryset_manager:
-            logger.info('Using {} manager for export'.format(
-                self._export_queryset_manager
-            ))
+        if hasattr(request, "_is_export") and self._export_queryset_manager:
+            logger.info(
+                "Using {} manager for export".format(self._export_queryset_manager)
+            )
             return getattr(self.model, self._export_queryset_manager).all()
         return super().get_queryset(request)
 
 
 class ProxyModelsPermissionsMixin(object):
-
     def has_add_permission(self, request):
         if not self.model._meta.proxy:
             return super().has_add_permission(request)
         opts = self.model._meta
-        codename = get_permission_codename('add', opts)
+        codename = get_permission_codename("add", opts)
         return request.user.has_perm("%s.%s" % (opts.app_label, codename))
 
     def has_change_permission(self, request, obj=None):
         if not self.model._meta.proxy:
             return super().has_change_permission(request, obj)
         opts = self.model._meta
-        codename = get_permission_codename('change', opts)
+        codename = get_permission_codename("change", opts)
         return request.user.has_perm("%s.%s" % (opts.app_label, codename))
 
     def has_delete_permission(self, request, obj=None):
         if not self.model._meta.proxy:
             return super().has_delete_permission(request, obj)
         opts = self.model._meta
-        codename = get_permission_codename('delete', opts)
+        codename = get_permission_codename("delete", opts)
         return request.user.has_perm("%s.%s" % (opts.app_label, codename))
 
 
@@ -488,29 +475,19 @@ class RalphMPTTAdmin(MPTTModelAdmin, RalphAdmin):
 
 class RalphInlineMixin(object):
     # display change link for inline row in popup
-    change_link_url_params = '_popup=1'
+    change_link_url_params = "_popup=1"
 
 
-class RalphTabularInline(
-    RalphInlineMixin,
-    RalphAutocompleteMixin,
-    admin.TabularInline
-):
+class RalphTabularInline(RalphInlineMixin, RalphAutocompleteMixin, admin.TabularInline):
     pass
 
 
-class RalphStackedInline(
-    RalphInlineMixin,
-    RalphAutocompleteMixin,
-    admin.StackedInline
-):
+class RalphStackedInline(RalphInlineMixin, RalphAutocompleteMixin, admin.StackedInline):
     pass
 
 
 class RalphGenericTabularInline(
-    RalphInlineMixin,
-    RalphAutocompleteMixin,
-    GenericTabularInline
+    RalphInlineMixin, RalphAutocompleteMixin, GenericTabularInline
 ):
     pass
 
@@ -518,21 +495,18 @@ class RalphGenericTabularInline(
 class RalphBaseTemplateView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['site_header'] = settings.ADMIN_SITE_HEADER
-        context['site_title'] = settings.ADMIN_SITE_TITLE
+        context["site_header"] = settings.ADMIN_SITE_HEADER
+        context["site_title"] = settings.ADMIN_SITE_TITLE
         # checks if user is allowed to see elements in template
-        context['has_permission'] = self.request.user.is_authenticated
+        context["has_permission"] = self.request.user.is_authenticated
         return context
 
 
-class RalphTemplateView(
-    RalphBaseTemplateView, metaclass=PermissionViewMetaClass
-):
+class RalphTemplateView(RalphBaseTemplateView, metaclass=PermissionViewMetaClass):
     pass
 
 
 class BulkEditChangeListMixin(object):
-
     def get_queryset(self, request):
         """Override django admin get queryset method."""
         qs = super().get_queryset(request)
@@ -554,21 +528,23 @@ class BulkEditChangeListMixin(object):
             bulk_list_edit = self.bulk_edit_list
             if issubclass(self.model, PermByFieldMixin):
                 bulk_list_display = [
-                    field for field in self.bulk_edit_list
+                    field
+                    for field in self.bulk_edit_list
                     if self.model.has_access_to_field(
-                        field, request.user, action='view'
+                        field, request.user, action="view"
                     )
                 ]
                 bulk_list_edit = [
-                    field for field in bulk_list_display
+                    field
+                    for field in bulk_list_display
                     if self.model.has_access_to_field(
-                        field, request.user, action='change'
+                        field, request.user, action="change"
                     )
                 ]
             # overwrite displayed fields in bulk-edit mode
             list_display = bulk_list_display.copy()
-            if 'id' not in list_display:
-                list_display.insert(0, 'id')
+            if "id" not in list_display:
+                list_display.insert(0, "id")
             # list editable is subset of list display in this case
             self.list_editable = bulk_list_edit
             return list_display
@@ -579,14 +555,14 @@ class BulkEditChangeListMixin(object):
         Custom bulk edit action.
         """
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
-        url = reverse('admin:{}'.format(request.resolver_match.url_name))
+        url = reverse("admin:{}".format(request.resolver_match.url_name))
         id_list = [(BULK_EDIT_VAR_IDS, i) for i in selected]
         return HttpResponseRedirect(
-            '{}?{}=1&{}'.format(
+            "{}?{}=1&{}".format(
                 url,
                 BULK_EDIT_VAR,
                 urllib.parse.urlencode(id_list),
             )
         )
 
-    bulk_edit_action.short_description = 'Bulk edit'
+    bulk_edit_action.short_description = "Bulk edit"

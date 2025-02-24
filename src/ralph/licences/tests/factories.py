@@ -32,27 +32,30 @@ date_now = datetime.now().date()
 
 
 class LicenceTypeFactory(DjangoModelFactory):
-
-    name = factory.Iterator([
-        'per user', 'per install', 'msdn', 'disk drive', 'vl (per core)'
-    ])
+    name = factory.Iterator(
+        ["per user", "per install", "msdn", "disk drive", "vl (per core)"]
+    )
 
     class Meta:
         model = LicenceType
-        django_get_or_create = ['name']
+        django_get_or_create = ["name"]
 
 
 class SoftwareFactory(DjangoModelFactory):
-
-    name = factory.Iterator([
-        'MS EA CoreCal', 'DB Boost', 'Twilio', 'Infographics',
-        'Oracle Business Intelligence Server Administrator',
-        'Oracle Advanced Compression'
-    ])
+    name = factory.Iterator(
+        [
+            "MS EA CoreCal",
+            "DB Boost",
+            "Twilio",
+            "Infographics",
+            "Oracle Business Intelligence Server Administrator",
+            "Oracle Advanced Compression",
+        ]
+    )
 
     class Meta:
         model = Software
-        django_get_or_create = ['name']
+        django_get_or_create = ["name"]
 
 
 class MoneyProvider(BaseProvider):
@@ -64,7 +67,6 @@ factory.Faker.add_provider(MoneyProvider)
 
 
 class LicenceFactory(DjangoModelFactory):
-
     licence_type = factory.SubFactory(LicenceTypeFactory)
     software = factory.SubFactory(SoftwareFactory)
     region = factory.SubFactory(RegionFactory)
@@ -73,14 +75,14 @@ class LicenceFactory(DjangoModelFactory):
     number_bought = 10
     invoice_date = date_now - timedelta(days=15)
     valid_thru = date_now + timedelta(days=365)
-    invoice_no = factory.Sequence(lambda n: 'Invoice number ' + str(n))
+    invoice_no = factory.Sequence(lambda n: "Invoice number " + str(n))
     budget_info = factory.SubFactory(BudgetInfoFactory)
-    sn = factory.Faker('ssn')
-    order_no = factory.Sequence(lambda n: 'Order number ' + str(n))
+    sn = factory.Faker("ssn")
+    order_no = factory.Sequence(lambda n: "Order number " + str(n))
     property_of = factory.SubFactory(AssetHolderFactory)
     office_infrastructure = factory.SubFactory(OfficeInfrastructureFactory)
-    depreciation_rate = '100.00'
-    price = factory.Faker('money')
+    depreciation_rate = "100.00"
+    price = factory.Faker("money")
 
     class Meta:
         model = Licence
@@ -115,5 +117,5 @@ class DataCenterAssetLicenceFactory(DjangoModelFactory):
 
 
 class LicenceWithUserAndBaseObjectsFactory(LicenceFactory):
-    users = factory.RelatedFactory(LicenceUserFactory, 'licence')
-    base_objects = factory.RelatedFactory(BaseObjectLicenceFactory, 'licence')
+    users = factory.RelatedFactory(LicenceUserFactory, "licence")
+    base_objects = factory.RelatedFactory(BaseObjectLicenceFactory, "licence")

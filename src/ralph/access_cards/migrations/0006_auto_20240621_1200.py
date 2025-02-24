@@ -6,25 +6,24 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('access_cards', '0005_auto_20211022_1038'),
+        ("access_cards", "0005_auto_20211022_1038"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='accesszone',
-            name='level',
+            model_name="accesszone",
+            name="level",
             field=models.PositiveIntegerField(editable=False),
         ),
         migrations.AlterField(
-            model_name='accesszone',
-            name='lft',
+            model_name="accesszone",
+            name="lft",
             field=models.PositiveIntegerField(editable=False),
         ),
         migrations.AlterField(
-            model_name='accesszone',
-            name='rght',
+            model_name="accesszone",
+            name="rght",
             field=models.PositiveIntegerField(editable=False),
         ),
     ]

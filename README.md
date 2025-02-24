@@ -1,10 +1,13 @@
 # Ralph
 
-Effective January 1, 2024, all development and maintenance activities associated with the Ralph project on Allegro's GitHub will be discontinued. This means that no further updates or modifications will be applied to the codebase. However, the current version of the code available in the repository will remain the property of the community, allowing individuals to continue contributing to and developing Ralph as they deem appropriate.
+## Update - 2025/02
 
-Allegro intends to continue the development of Ralph through its internal processes. However, this development will not be publicly accessible, and any updates or modifications made by Allegro will not reflect in the community version of the code. Nevertheless, Allegro may opt to release new versions of Ralph based on its internal development endeavors at a later date.
+As Allegro, we continue to publish Ralph's source code and will maintain its development under a "Sources only" model, without guarantees. We believe this approach will be beneficial, allowing everyone to use and build upon the software. Our current goal is to modernize the software and ensure its long-term maintainability, and we're investing into it in 2025.
 
-We express our heartfelt gratitude to everyone who has contributed to Ralph's development thus far. Without the dedicated efforts of the community, Ralph would not have evolved into the powerful tool it is today. Although our active development of Ralph will cease, we encourage the community to persist in utilizing and expanding upon the codebase in the years ahead.
+However, we are not operating under a contribution-based model. While we welcome discussions, we do not guarantee responses to issues or support for pull requests. If you require commercial support, please visit http://ralph.discourse.group.
+
+We sincerely appreciate all past contributions that have shaped Ralph into the powerful tool it is today, and encourage the community to continue using it.
+
 
 ## Overview
 

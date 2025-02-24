@@ -5,12 +5,12 @@ from django.conf import settings
 from django.utils.encoding import force_text
 from django_auth_ldap.config import ActiveDirectoryGroupType
 
-
 logger = logging.getLogger(__name__)
 
 
 class MappedGroupOfNamesType(ActiveDirectoryGroupType):
     """Provide group mappings described in project settings."""
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._ldap_groups = None
@@ -24,13 +24,9 @@ class MappedGroupOfNamesType(ActiveDirectoryGroupType):
         Returns: dict with both flat and nested LDAP groups.
         """
         if not self._ldap_groups:
-            logger.debug('Evaluating LDAP groupd from settings')
-            self._ldap_flat_groups = getattr(
-                settings, 'AUTH_LDAP_GROUP_MAPPING', {}
-            )
-            self._ldap_nested_groups = getattr(
-                settings, 'AUTH_LDAP_NESTED_GROUPS', {}
-            )
+            logger.debug("Evaluating LDAP groupd from settings")
+            self._ldap_flat_groups = getattr(settings, "AUTH_LDAP_GROUP_MAPPING", {})
+            self._ldap_nested_groups = getattr(settings, "AUTH_LDAP_NESTED_GROUPS", {})
             self._ldap_groups = self._ldap_flat_groups.copy()
             self._ldap_groups.update(self._ldap_nested_groups)
         return self._ldap_groups
@@ -62,32 +58,26 @@ class MappedGroupOfNamesType(ActiveDirectoryGroupType):
 
         # handle flat groups first (to which user belongs directly)
         try:
-            flat_groups_dns = set(map(force_text, ldap_user.attrs['memberOf']))
+            flat_groups_dns = set(map(force_text, ldap_user.attrs["memberOf"]))
         except KeyError:
             flat_groups_dns = set()
-        logger.info('Flat groups DNs for {}: {}'.format(
-            username, flat_groups_dns
-        ))
+        logger.info("Flat groups DNs for {}: {}".format(username, flat_groups_dns))
         handle_groups(flat_groups_dns)
         from ralph.accounts.management.commands.ldap_sync import get_nested_groups  # noqa
+
         # handle nested groups
         nested_groups_dns = get_nested_groups()[1].get(username, set())
-        logger.info('Nested groups DNs for {}: {}'.format(
-            username, nested_groups_dns
-        ))
+        logger.info("Nested groups DNs for {}: {}".format(username, nested_groups_dns))
         handle_groups(nested_groups_dns)
         return group_map
 
     def group_name_from_info(self, group_info):
         """Map ldap group names into ralph names if mapping defined."""
         if self.ldap_groups:
-            for dn in group_info[1]['distinguishedname']:
+            for dn in group_info[1]["distinguishedname"]:
                 mapped = self.ldap_groups.get(dn)
                 if mapped:
                     return mapped
         # return original name if mapping not defined
         else:
-            return super(
-                MappedGroupOfNamesType,
-                self
-            ).group_name_from_info(group_info)
+            return super(MappedGroupOfNamesType, self).group_name_from_info(group_info)

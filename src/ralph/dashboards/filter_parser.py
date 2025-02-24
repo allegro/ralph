@@ -6,12 +6,11 @@ from functools import reduce
 from dateutil.relativedelta import relativedelta
 from django.db.models import Q
 
-FILTER_FROM_NOW = re.compile(r'([+-]?\d+)(\w)')
+FILTER_FROM_NOW = re.compile(r"([+-]?\d+)(\w)")
 
 
 class FilterParser(object):
-
-    or_sep = ','
+    or_sep = ","
 
     def __init__(self, queryset, filters_dict, exclude_mode=False):
         self.filters = filters_dict
@@ -24,11 +23,11 @@ class FilterParser(object):
         parsed_kwargs = {}
         parsed_args = []
         for key, value in self.filters.items():
-            params = key.split('|')
+            params = key.split("|")
             if len(params) == 1:
                 parsed_kwargs[key] = value
             elif len(params) == 2:
-                filter_func = getattr(self, 'filter_' + params[1], None)
+                filter_func = getattr(self, "filter_" + params[1], None)
                 if not filter_func:
                     continue
                 args, kwargs = filter_func(params[0], value)
@@ -50,12 +49,12 @@ class FilterParser(object):
 
     def filter_from_now(self, key, value):
         period_mapper = {
-            'd': 'days',
-            'm': 'months',
-            'y': 'years',
+            "d": "days",
+            "m": "months",
+            "y": "years",
         }
         val, period = FILTER_FROM_NOW.match(value).groups()
-        result = datetime.date.today() + relativedelta(**{
-            period_mapper.get(period): int(val)
-        })
-        return [], {key: result.strftime('%Y-%m-%d')}
+        result = datetime.date.today() + relativedelta(
+            **{period_mapper.get(period): int(val)}
+        )
+        return [], {key: result.strftime("%Y-%m-%d")}

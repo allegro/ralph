@@ -1,5 +1,4 @@
 from django.core.exceptions import ValidationError
-
 from rest_framework.exceptions import ValidationError as DRFValidationError
 from rest_framework.views import exception_handler as drf_exception_handler
 

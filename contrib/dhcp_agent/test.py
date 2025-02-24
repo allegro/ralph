@@ -1,14 +1,14 @@
-import unittest
 import logging
-from mock import patch, MagicMock, Mock
+import unittest
 from optparse import Values
 
 from dhcp_agent import (
+    Cache,
+    DHCPConfigManager,
     _check_params,
     _get_cmd_params_from_parser,
-    Cache,
-    DHCPConfigManager
 )
+from mock import MagicMock, Mock, patch
 
 logger = logging.getLogger(__file__)
 mocked_parser = MagicMock()

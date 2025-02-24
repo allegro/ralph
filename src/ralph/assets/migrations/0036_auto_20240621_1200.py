@@ -6,40 +6,39 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('assets', '0035_auto_20240506_1633'),
+        ("assets", "0035_auto_20240506_1633"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='category',
-            name='level',
+            model_name="category",
+            name="level",
             field=models.PositiveIntegerField(editable=False),
         ),
         migrations.AlterField(
-            model_name='category',
-            name='lft',
+            model_name="category",
+            name="lft",
             field=models.PositiveIntegerField(editable=False),
         ),
         migrations.AlterField(
-            model_name='category',
-            name='rght',
+            model_name="category",
+            name="rght",
             field=models.PositiveIntegerField(editable=False),
         ),
         migrations.AlterField(
-            model_name='configurationmodule',
-            name='level',
+            model_name="configurationmodule",
+            name="level",
             field=models.PositiveIntegerField(editable=False),
         ),
         migrations.AlterField(
-            model_name='configurationmodule',
-            name='lft',
+            model_name="configurationmodule",
+            name="lft",
             field=models.PositiveIntegerField(editable=False),
         ),
         migrations.AlterField(
-            model_name='configurationmodule',
-            name='rght',
+            model_name="configurationmodule",
+            name="rght",
             field=models.PositiveIntegerField(editable=False),
         ),
     ]

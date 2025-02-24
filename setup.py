@@ -1,9 +1,10 @@
 # -*- encoding: utf-8 -*-
 
 import os
-import sys
-from setuptools import setup, find_packages
 import subprocess
+import sys
+
+from setuptools import find_packages, setup
 
 assert sys.version_info >= (3, 3), 'Python 3.3+ required.'
 

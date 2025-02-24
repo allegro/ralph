@@ -10,10 +10,10 @@ from rest_framework.fields import (
 
 class StrField(Field):
     def __init__(self, **kwargs):
-        self._show_type = kwargs.pop('show_type', False)
-        kwargs['read_only'] = True
-        if 'label' not in kwargs:
-            kwargs['label'] = '__str__'
+        self._show_type = kwargs.pop("show_type", False)
+        kwargs["read_only"] = True
+        if "label" not in kwargs:
+            kwargs["label"] = "__str__"
         super().__init__(**kwargs)
 
     def get_attribute(self, obj):
@@ -22,7 +22,7 @@ class StrField(Field):
 
     def to_representation(self, obj):
         if self._show_type:
-            return '{}: {}'.format(obj._meta.verbose_name, str(obj))
+            return "{}: {}".format(obj._meta.verbose_name, str(obj))
         else:
             return str(obj)
 
@@ -37,6 +37,7 @@ class ReversedChoiceField(ChoiceField):
 
     This field works perfectly with `dj.choices.Choices`.
     """
+
     def __init__(self, choices, **kwargs):
         super(ReversedChoiceField, self).__init__(choices, **kwargs)
         # mapping by value
@@ -69,8 +70,9 @@ class ModelMultipleChoiceField(MultipleChoiceField):
 
     Changes list of integer data to Django Model queryset
     """
+
     def __init__(self, *args, **kwargs):
-        self.model = kwargs['choices'].queryset.model
+        self.model = kwargs["choices"].queryset.model
         super().__init__(*args, **kwargs)
 
     def to_internal_value(self, data):
@@ -85,9 +87,9 @@ class AbsoluteUrlField(ReadOnlyField):
     """
 
     def get_attribute(self, obj):
-        request = self.context.get('request', None)
-        obj_url_func = getattr(obj, 'get_absolute_url', None)
-        value = ''
+        request = self.context.get("request", None)
+        obj_url_func = getattr(obj, "get_absolute_url", None)
+        value = ""
         if request and obj_url_func:
             value = request.build_absolute_uri(obj_url_func())
         return value

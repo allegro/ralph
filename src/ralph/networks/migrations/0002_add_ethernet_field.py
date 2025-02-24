@@ -6,15 +6,20 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('networks', '0001_initial'),
+        ("networks", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='ipaddress',
-            name='ethernet',
-            field=models.OneToOneField(to='assets.Ethernet', default=None, blank=True, null=True, on_delete=django.db.models.deletion.CASCADE),
+            model_name="ipaddress",
+            name="ethernet",
+            field=models.OneToOneField(
+                to="assets.Ethernet",
+                default=None,
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+            ),
         ),
     ]

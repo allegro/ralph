@@ -34,29 +34,29 @@ class _BaseDeploymentTransitionTestCase(object):
         cls.hypervisor = DataCenterAssetFactory()
         cls.rack = RackFactory()
         cls.net_env = NetworkEnvironmentFactory(
-            hostname_template_prefix='server_1',
-            hostname_template_postfix='.mydc.net',
+            hostname_template_prefix="server_1",
+            hostname_template_postfix=".mydc.net",
             hostname_template_counter_length=5,
         )
         cls.net_env_2 = NetworkEnvironmentFactory(
-            hostname_template_prefix='server_2',
-            hostname_template_postfix='.mydc2.net',
+            hostname_template_prefix="server_2",
+            hostname_template_postfix=".mydc2.net",
             hostname_template_counter_length=5,
         )
         cls.net_env_3 = NetworkEnvironmentFactory(
-            hostname_template_prefix='server_3',
-            hostname_template_postfix='.mydc3.net',
+            hostname_template_prefix="server_3",
+            hostname_template_postfix=".mydc3.net",
             hostname_template_counter_length=5,
         )
         cls.net = NetworkFactory(
             network_environment=cls.net_env,
-            address='10.20.30.0/24',
+            address="10.20.30.0/24",
             # reserve 10.20.30.1, 10.20.30.2, 10.20.30.3, 10.20.30.4, 10.20.30.5
-            reserved_from_beginning=5
+            reserved_from_beginning=5,
         )
         cls.net_2 = NetworkFactory(
             network_environment=cls.net_env_2,
-            address='11.20.30.0/24',
+            address="11.20.30.0/24",
         )
         cls.net.racks.add(cls.rack)
         cls.net_2.racks.add(cls.rack)
@@ -65,13 +65,13 @@ class _BaseDeploymentTransitionTestCase(object):
         super().setUp()
 
         self.superuser = get_user_model().objects.create_superuser(
-            'test', 'test@test.test', 'test'
+            "test", "test@test.test", "test"
         )
         self.api_client = APIClient()
         self.api_client.force_authenticate(self.superuser)
 
         self.gui_client = Client()
-        self.gui_client.login(username='test', password='test')
+        self.gui_client.login(username="test", password="test")
 
         AssetLastHostname.objects.create(
             prefix=self.net_env.hostname_template_prefix,
@@ -83,81 +83,75 @@ class _BaseDeploymentTransitionTestCase(object):
     # Assign new hostname
     # =========================================================================
     def _prepare_assign_new_hostname_transition(self):
-        actions = ['assign_new_hostname']
+        actions = ["assign_new_hostname"]
         self.assign_new_hostname_transition = self._create_transition(
-            self.model, 'assign hostname', actions, 'status',
-            source=list(dict(
-                self.model._meta.get_field('status').choices
-            ).keys()),
-            target=str(TRANSITION_ORIGINAL_STATUS[0])
+            self.model,
+            "assign hostname",
+            actions,
+            "status",
+            source=list(dict(self.model._meta.get_field("status").choices).keys()),
+            target=str(TRANSITION_ORIGINAL_STATUS[0]),
         )[1]
 
     def _prepare_assign_new_ip_transition(self):
-        actions = ['assign_new_ip']
+        actions = ["assign_new_ip"]
         self.assign_assign_new_ip_transition = self._create_transition(
-            self.model, 'assign new ip', actions, 'status',
-            source=list(dict(
-                self.model._meta.get_field('status').choices
-            ).keys()),
-            target=str(TRANSITION_ORIGINAL_STATUS[0])
+            self.model,
+            "assign new ip",
+            actions,
+            "status",
+            source=list(dict(self.model._meta.get_field("status").choices).keys()),
+            target=str(TRANSITION_ORIGINAL_STATUS[0]),
         )[1]
 
     def _prepare_assign_new_ip_with_dns_transition(self):
-        actions = ['assign_new_ip', 'assign_new_hostname']
+        actions = ["assign_new_ip", "assign_new_hostname"]
         self.assign_assign_new_ip_with_dns_transition = self._create_transition(
-            self.model, 'assign new ip with dns', actions, 'status',
-            source=list(dict(
-                self.model._meta.get_field('status').choices
-            ).keys()),
-            target=str(TRANSITION_ORIGINAL_STATUS[0])
+            self.model,
+            "assign new ip with dns",
+            actions,
+            "status",
+            source=list(dict(self.model._meta.get_field("status").choices).keys()),
+            target=str(TRANSITION_ORIGINAL_STATUS[0]),
         )[1]
 
     def _prepare_replace_ip_transition(self):
-        actions = ['replace_ip']
+        actions = ["replace_ip"]
         self.assign_replace_ip_transition = self._create_transition(
-            self.model, 'replace ip', actions, 'status',
-            source=list(dict(
-                self.model._meta.get_field('status').choices
-            ).keys()),
-            target=str(TRANSITION_ORIGINAL_STATUS[0])
+            self.model,
+            "replace ip",
+            actions,
+            "status",
+            source=list(dict(self.model._meta.get_field("status").choices).keys()),
+            target=str(TRANSITION_ORIGINAL_STATUS[0]),
         )[1]
 
     def _get_transition_view_url(
-        self, url_name, instance_id, transition_id=None, transition_name=None,
-        app_label=None, model=None
+        self,
+        url_name,
+        instance_id,
+        transition_id=None,
+        transition_name=None,
+        app_label=None,
+        model=None,
     ):
         if app_label and model:
             args = (
                 app_label,
                 model,
                 instance_id,
-                transition_name if transition_name else transition_id
+                transition_name if transition_name else transition_id,
             )
         else:
-            args = (
-                transition_id,
-                instance_id
-            )
+            args = (transition_id, instance_id)
         return reverse(url_name, args=args)
 
     @unpack
     @data(
-        (
-            lambda t: t._get_transition_view_url, 'transition-view',
-            False, False
-        ),
-        (
-            lambda t: t._get_transition_view_url, 'transitions-view',
-            False, False
-        ),
-        (
-            lambda t: t._get_transition_view_url, 'transitions-by-id-view',
-            True, True
-        ),
-        (
-            lambda t: t._get_transition_view_url, 'transitions-by-name-view',
-            True, False
-        ),
+        (lambda t: t._get_transition_view_url, "transition-view", False, False),
+        (lambda t: t._get_transition_view_url, "transitions-view", False, False),
+        (lambda t: t._get_transition_view_url, "transitions-by-id-view", True, True),
+        (lambda t: t._get_transition_view_url, "transitions-by-name-view", True, False),
     )
     def test_assign_new_hostname_through_api(
         self, data_func, url_name, new_transition, transition_by_id
@@ -165,116 +159,92 @@ class _BaseDeploymentTransitionTestCase(object):
         self._prepare_assign_new_hostname_transition()
         if new_transition:
             if transition_by_id:
-                kwargs = {
-                    'transition_id': self.assign_new_hostname_transition.id
-                }
+                kwargs = {"transition_id": self.assign_new_hostname_transition.id}
             else:
-                kwargs = {
-                    'transition_name': self.assign_new_hostname_transition.name
-                }
+                kwargs = {"transition_name": self.assign_new_hostname_transition.name}
             url = data_func(self)(
                 url_name,
                 self.instance.pk,
                 app_label=self.instance._meta.app_label,
                 model=self.instance._meta.model_name,
-                **kwargs
+                **kwargs,
             )
         else:
             url = data_func(self)(
-                url_name,
-                self.instance.pk,
-                self.assign_new_hostname_transition.id
+                url_name, self.instance.pk, self.assign_new_hostname_transition.id
             )
 
-        response = self.api_client.post(
-            url,
-            {'network_environment': self.net_env.pk}
-        )
+        response = self.api_client.post(url, {"network_environment": self.net_env.pk})
         self.assertEqual(response.status_code, 201)
         self.instance.refresh_from_db()
-        self.assertEqual(self.instance.hostname, 'server_100011.mydc.net')
+        self.assertEqual(self.instance.hostname, "server_100011.mydc.net")
         # another request
         response = self.api_client.post(
             reverse(
-                'transitions-view',
-                args=(
-                    self.assign_new_hostname_transition.id,
-                    self.instance.pk
-                )
+                "transitions-view",
+                args=(self.assign_new_hostname_transition.id, self.instance.pk),
             ),
-            {'network_environment': self.net_env.pk}
+            {"network_environment": self.net_env.pk},
         )
         self.instance.refresh_from_db()
-        self.assertEqual(self.instance.hostname, 'server_100012.mydc.net')
+        self.assertEqual(self.instance.hostname, "server_100012.mydc.net")
 
     def test_assign_new_hostname_through_api_custom_hostname(self):
         self._prepare_assign_new_hostname_transition()
         response = self.api_client.post(
             reverse(
-                'transitions-view',
-                args=(
-                    self.assign_new_hostname_transition.id,
-                    self.instance.pk
-                )
+                "transitions-view",
+                args=(self.assign_new_hostname_transition.id, self.instance.pk),
             ),
             {
-                'network_environment': {
-                    'value': '__other__',
-                    '__other__': 's12345.mydc.net',
+                "network_environment": {
+                    "value": "__other__",
+                    "__other__": "s12345.mydc.net",
                 }
             },
-            format='json',
+            format="json",
         )
         self.assertEqual(response.status_code, 201)
         self.instance.refresh_from_db()
-        self.assertEqual(self.instance.hostname, 's12345.mydc.net')
+        self.assertEqual(self.instance.hostname, "s12345.mydc.net")
 
     def test_assign_new_hostname_through_api_without_asset_last_hostname(self):
         self._prepare_assign_new_hostname_transition()
         response = self.api_client.post(
             reverse(
-                'transitions-view',
-                args=(
-                    self.assign_new_hostname_transition.id,
-                    self.instance.pk
-                )
+                "transitions-view",
+                args=(self.assign_new_hostname_transition.id, self.instance.pk),
             ),
-            {'network_environment': self.net_env_2.pk}
+            {"network_environment": self.net_env_2.pk},
         )
         self.assertEqual(response.status_code, 201)
         self.instance.refresh_from_db()
-        self.assertEqual(self.instance.hostname, 'server_200001.mydc2.net')
+        self.assertEqual(self.instance.hostname, "server_200001.mydc2.net")
         # another request
         response = self.api_client.post(
             reverse(
-                'transitions-view',
-                args=(
-                    self.assign_new_hostname_transition.id,
-                    self.instance.pk
-                )
+                "transitions-view",
+                args=(self.assign_new_hostname_transition.id, self.instance.pk),
             ),
-            {'network_environment': self.net_env_2.pk}
+            {"network_environment": self.net_env_2.pk},
         )
         self.instance.refresh_from_db()
-        self.assertEqual(self.instance.hostname, 'server_200002.mydc2.net')
+        self.assertEqual(self.instance.hostname, "server_200002.mydc2.net")
 
     def test_assign_new_hostname_through_api_wrong_network_env(self):
         self._prepare_assign_new_hostname_transition()
         response = self.api_client.post(
             reverse(
-                'transitions-view',
-                args=(
-                    self.assign_new_hostname_transition.id,
-                    self.instance.pk
-                )
+                "transitions-view",
+                args=(self.assign_new_hostname_transition.id, self.instance.pk),
             ),
-            {'network_environment': self.net_env_3.pk}
+            {"network_environment": self.net_env_3.pk},
         )
         self.assertEqual(response.status_code, 400)
-        self.assertIn('network_environment', response.data)
+        self.assertIn("network_environment", response.data)
         self.assertIn(
             '"{}" is not a valid choice.'.format(self.net_env_3.pk),
-            response.data['network_environment']
+            response.data["network_environment"],
         )
 
     def test_assign_new_hostname_through_gui(self):
@@ -282,29 +252,29 @@ class _BaseDeploymentTransitionTestCase(object):
         response = self.gui_client.post(
             reverse(
                 self.transition_url_name,
-                args=(self.instance.id, self.assign_new_hostname_transition.id)
+                args=(self.instance.id, self.assign_new_hostname_transition.id),
             ),
-            {'assign_new_hostname__network_environment': self.net_env.pk},
-            follow=True
+            {"assign_new_hostname__network_environment": self.net_env.pk},
+            follow=True,
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(
             response.redirect_chain[0][0],
-            reverse(self.redirect_url_name, args=(self.instance.id,))
+            reverse(self.redirect_url_name, args=(self.instance.id,)),
         )
         self.instance.refresh_from_db()
-        self.assertEqual(self.instance.hostname, 'server_100011.mydc.net')
+        self.assertEqual(self.instance.hostname, "server_100011.mydc.net")
         # another assignment
         self.gui_client.post(
             reverse(
                 self.transition_url_name,
-                args=(self.instance.id, self.assign_new_hostname_transition.id)
+                args=(self.instance.id, self.assign_new_hostname_transition.id),
             ),
-            {'assign_new_hostname__network_environment': self.net_env.pk},
-            follow=True
+            {"assign_new_hostname__network_environment": self.net_env.pk},
+            follow=True,
         )
         self.instance.refresh_from_db()
-        self.assertEqual(self.instance.hostname, 'server_100012.mydc.net')
+        self.assertEqual(self.instance.hostname, "server_100012.mydc.net")
 
     def test_assign_new_ip_through_gui(self):
         self._prepare_assign_new_ip_transition()
@@ -313,27 +283,18 @@ class _BaseDeploymentTransitionTestCase(object):
         response = self.gui_client.post(
             reverse(
                 self.transition_url_name,
-                args=(
-                    self.instance.id,
-                    self.assign_assign_new_ip_transition.id
-                )
+                args=(self.instance.id, self.assign_assign_new_ip_transition.id),
             ),
-            {
-                'assign_new_ip__network': network.id
-            },
-            follow=True
+            {"assign_new_ip__network": network.id},
+            follow=True,
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(
             response.redirect_chain[0][0],
-            reverse(self.redirect_url_name, args=(self.instance.id,))
+            reverse(self.redirect_url_name, args=(self.instance.id,)),
         )
         self.instance.refresh_from_db()
-        self.assertTrue(
-            self.instance.ipaddresses.filter(
-                address=ip
-            ).exists()
-        )
+        self.assertTrue(self.instance.ipaddresses.filter(address=ip).exists())
 
     def test_assign_new_ip_with_dns_through_gui(self):
         self._prepare_assign_new_ip_with_dns_transition()
@@ -344,195 +305,179 @@ class _BaseDeploymentTransitionTestCase(object):
                 self.transition_url_name,
                 args=(
                     self.instance.id,
-                    self.assign_assign_new_ip_with_dns_transition.id
-                )
+                    self.assign_assign_new_ip_with_dns_transition.id,
+                ),
             ),
             {
-                'assign_new_hostname__network_environment': '__other__',
-                'assign_new_hostname__network_environment__other__': 'hostname',  # noqa
-                'assign_new_ip__network': network.id,
+                "assign_new_hostname__network_environment": "__other__",
+                "assign_new_hostname__network_environment__other__": "hostname",  # noqa
+                "assign_new_ip__network": network.id,
             },
-            follow=True
+            follow=True,
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(
             response.redirect_chain[0][0],
-            reverse(self.redirect_url_name, args=(self.instance.id,))
+            reverse(self.redirect_url_name, args=(self.instance.id,)),
         )
         self.instance.refresh_from_db()
-        self.assertTrue(
-            self.instance.ipaddresses.filter(
-                address=ip
-            ).exists()
-        )
-        self.assertEqual(self.instance.hostname, 'hostname')
+        self.assertTrue(self.instance.ipaddresses.filter(address=ip).exists())
+        self.assertEqual(self.instance.hostname, "hostname")
 
     def test_replace_ip_through_gui(self):
         self._prepare_replace_ip_transition()
         ethernet = EthernetFactory(base_object=self.instance)
         ipaddress = IPAddressFactory(
-            address='10.20.30.1',
-            ethernet=ethernet,
-            hostname='test_hostname'
+            address="10.20.30.1", ethernet=ethernet, hostname="test_hostname"
         )
         network = self.instance._get_available_networks()[0]
         response = self.gui_client.post(
             reverse(
                 self.transition_url_name,
-                args=(
-                    self.instance.id,
-                    self.assign_replace_ip_transition.id
-                )
+                args=(self.instance.id, self.assign_replace_ip_transition.id),
             ),
-            {
-                'replace_ip__ipaddress': ipaddress.id,
-                'replace_ip__network': network.id
-            },
-            follow=True
+            {"replace_ip__ipaddress": ipaddress.id, "replace_ip__network": network.id},
+            follow=True,
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(
             response.redirect_chain[0][0],
-            reverse(self.redirect_url_name, args=(self.instance.id,))
+            reverse(self.redirect_url_name, args=(self.instance.id,)),
         )
         ipaddress.refresh_from_db()
-        self.assertNotEqual(ipaddress.address, '10.20.30.1')
+        self.assertNotEqual(ipaddress.address, "10.20.30.1")
 
     def test_assign_new_hostname_through_gui_with_other_value(self):
         self._prepare_assign_new_hostname_transition()
         response = self.gui_client.post(
             reverse(
                 self.transition_url_name,
-                args=(self.instance.id, self.assign_new_hostname_transition.id)
+                args=(self.instance.id, self.assign_new_hostname_transition.id),
             ),
             {
-                'assign_new_hostname__network_environment': '__other__',
-                'assign_new_hostname__network_environment__other__': 's1234.mydc.net'  # noqa
+                "assign_new_hostname__network_environment": "__other__",
+                "assign_new_hostname__network_environment__other__": "s1234.mydc.net",  # noqa
             },
-            follow=True
+            follow=True,
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(
             response.redirect_chain[0][0],
-            reverse(self.redirect_url_name, args=(self.instance.id,))
+            reverse(self.redirect_url_name, args=(self.instance.id,)),
         )
         self.instance.refresh_from_db()
-        self.assertEqual(self.instance.hostname, 's1234.mydc.net')
+        self.assertEqual(self.instance.hostname, "s1234.mydc.net")
 
     def test_assign_new_hostname_through_gui_without_asset_last_hostname(self):
         self._prepare_assign_new_hostname_transition()
         response = self.gui_client.post(
             reverse(
                 self.transition_url_name,
-                args=(self.instance.id, self.assign_new_hostname_transition.id)
+                args=(self.instance.id, self.assign_new_hostname_transition.id),
             ),
-            {'assign_new_hostname__network_environment': self.net_env_2.pk},
-            follow=True
+            {"assign_new_hostname__network_environment": self.net_env_2.pk},
+            follow=True,
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(
             response.redirect_chain[0][0],
-            reverse(self.redirect_url_name, args=(self.instance.id,))
+            reverse(self.redirect_url_name, args=(self.instance.id,)),
         )
         self.instance.refresh_from_db()
-        self.assertEqual(self.instance.hostname, 'server_200001.mydc2.net')
+        self.assertEqual(self.instance.hostname, "server_200001.mydc2.net")
         # another assignment
         self.gui_client.post(
             reverse(
                 self.transition_url_name,
-                args=(self.instance.id, self.assign_new_hostname_transition.id)
+                args=(self.instance.id, self.assign_new_hostname_transition.id),
             ),
-            {'assign_new_hostname__network_environment': self.net_env_2.pk},
-            follow=True
+            {"assign_new_hostname__network_environment": self.net_env_2.pk},
+            follow=True,
         )
         self.instance.refresh_from_db()
-        self.assertEqual(self.instance.hostname, 'server_200002.mydc2.net')
+        self.assertEqual(self.instance.hostname, "server_200002.mydc2.net")
 
     def test_assign_new_hostname_through_gui_with_wrong_network_env(self):
         self._prepare_assign_new_hostname_transition()
         response = self.gui_client.post(
             reverse(
                 self.transition_url_name,
-                args=(self.instance.id, self.assign_new_hostname_transition.id)
+                args=(self.instance.id, self.assign_new_hostname_transition.id),
             ),
-            {'assign_new_hostname__network_environment': self.net_env_3.pk},
+            {"assign_new_hostname__network_environment": self.net_env_3.pk},
             # no following redirects here!
         )
         self.assertEqual(response.status_code, 200)
         self.assertIn(
-            'assign_new_hostname__network_environment',
-            response.context_data['form'].errors
+            "assign_new_hostname__network_environment",
+            response.context_data["form"].errors,
         )
 
     # =========================================================================
     # Create DHCP entries
     # =========================================================================
     def _prepare_create_dhcp_entries_transition(self):
-        actions = ['create_dhcp_entries', 'clean_ipaddresses', 'clean_dhcp']
+        actions = ["create_dhcp_entries", "clean_ipaddresses", "clean_dhcp"]
         self.create_dhcp_entries_transition = self._create_transition(
-            self.model, 'create dhcp entries', actions, 'status',
-            source=list(dict(
-                self.model._meta.get_field('status').choices
-            ).keys()),
-            target=str(TRANSITION_ORIGINAL_STATUS[0])
+            self.model,
+            "create dhcp entries",
+            actions,
+            "status",
+            source=list(dict(self.model._meta.get_field("status").choices).keys()),
+            target=str(TRANSITION_ORIGINAL_STATUS[0]),
         )[1]
 
     def _get_create_dhcp_entries_primitive_data(self):
         return {
-            'ip_or_network': self.net.pk,
-            'ethernet': self.eth.id,
+            "ip_or_network": self.net.pk,
+            "ethernet": self.eth.id,
         }
 
     def _get_create_dhcp_entries_compound_data(self):
         return {
-            'ip_or_network': {
-                'value': self.net.pk,
+            "ip_or_network": {
+                "value": self.net.pk,
             },
-            'ethernet': self.eth.id,
+            "ethernet": self.eth.id,
         }
 
     def _get_create_dhcp_entries_compound_data_other(self):
         return {
-            'ip_or_network': {
-                'value': '__other__',
-                '__other__': '10.20.30.22',
+            "ip_or_network": {
+                "value": "__other__",
+                "__other__": "10.20.30.22",
             },
-            'ethernet': self.eth.id,
+            "ethernet": self.eth.id,
         }
 
     def _get_create_dhcp_entries_gui(self):
         return {
-            'create_dhcp_entries__ip_or_network': self.net.pk,
-            'create_dhcp_entries__ethernet': self.eth.id,
+            "create_dhcp_entries__ip_or_network": self.net.pk,
+            "create_dhcp_entries__ethernet": self.eth.id,
         }
 
     def _get_create_dhcp_entries_gui_with_other(self):
         return {
-            'create_dhcp_entries__ip_or_network': '__other__',
-            'create_dhcp_entries__ip_or_network__other__': '10.20.30.22',
-            'create_dhcp_entries__ethernet': self.eth.id,
+            "create_dhcp_entries__ip_or_network": "__other__",
+            "create_dhcp_entries__ip_or_network__other__": "10.20.30.22",
+            "create_dhcp_entries__ethernet": self.eth.id,
         }
 
     @unpack
     @data(
-        (lambda t: t._get_create_dhcp_entries_primitive_data(), '10.20.30.6'),
-        (lambda t: t._get_create_dhcp_entries_compound_data(), '10.20.30.6'),
-        (lambda t: t._get_create_dhcp_entries_compound_data_other(), '10.20.30.22'),
+        (lambda t: t._get_create_dhcp_entries_primitive_data(), "10.20.30.6"),
+        (lambda t: t._get_create_dhcp_entries_compound_data(), "10.20.30.6"),
+        (lambda t: t._get_create_dhcp_entries_compound_data_other(), "10.20.30.22"),
     )
-    def test_create_dhcp_entries_through_api(
-        self, data_func, assigned_ip
-    ):
+    def test_create_dhcp_entries_through_api(self, data_func, assigned_ip):
         self._prepare_create_dhcp_entries_transition()
         response = self.api_client.post(
             reverse(
-                'transitions-view',
-                args=(
-                    self.create_dhcp_entries_transition.id,
-                    self.instance.pk
-                )
+                "transitions-view",
+                args=(self.create_dhcp_entries_transition.id, self.instance.pk),
             ),
             data_func(self),
-            format='json',
+            format="json",
         )
         self.assertEqual(response.status_code, 201)
         self.instance.refresh_from_db()
@@ -545,66 +490,56 @@ class _BaseDeploymentTransitionTestCase(object):
         eth = EthernetFactory().pk
         response = self.api_client.post(
             reverse(
-                'transitions-view',
-                args=(
-                    self.create_dhcp_entries_transition.id,
-                    self.instance.pk
-                )
+                "transitions-view",
+                args=(self.create_dhcp_entries_transition.id, self.instance.pk),
             ),
             {
-                'ip_or_network': self.net.pk,
-                'ethernet': eth,
+                "ip_or_network": self.net.pk,
+                "ethernet": eth,
             },
-            format='json',
+            format="json",
         )
         self.assertEqual(response.status_code, 400)
         self.assertIn(
-            '"{}" is not a valid choice.'.format(eth),
-            response.data['ethernet']
+            '"{}" is not a valid choice.'.format(eth), response.data["ethernet"]
         )
 
     def test_create_dhcp_entries_through_api_with_occupied_ip(self):
         self._prepare_create_dhcp_entries_transition()
         IPAddressFactory(
-            address='10.20.30.40',
-            ethernet__base_object=DataCenterAssetFactory()
+            address="10.20.30.40", ethernet__base_object=DataCenterAssetFactory()
         )
         response = self.api_client.post(
             reverse(
-                'transitions-view',
-                args=(
-                    self.create_dhcp_entries_transition.id,
-                    self.instance.pk
-                )
+                "transitions-view",
+                args=(self.create_dhcp_entries_transition.id, self.instance.pk),
             ),
             {
-                'ip_or_network': {
-                    'value': '__other__',
-                    '__other__': '10.20.30.40',
+                "ip_or_network": {
+                    "value": "__other__",
+                    "__other__": "10.20.30.40",
                 },
-                'ethernet': self.eth.id,
+                "ethernet": self.eth.id,
             },
-            format='json',
+            format="json",
         )
         self.assertEqual(response.status_code, 400)
         self.assertIn(
-            'IP 10.20.30.40 is already assigned to other object!',
-            response.data['ip_or_network']
+            "IP 10.20.30.40 is already assigned to other object!",
+            response.data["ip_or_network"],
         )
 
     @unpack
     @data(
-        (lambda t: t._get_create_dhcp_entries_gui(), '10.20.30.6'),
-        (lambda t: t._get_create_dhcp_entries_gui_with_other(), '10.20.30.22'),
+        (lambda t: t._get_create_dhcp_entries_gui(), "10.20.30.6"),
+        (lambda t: t._get_create_dhcp_entries_gui_with_other(), "10.20.30.22"),
     )
-    def test_create_dhcp_entries_through_gui(
-        self, data_func, assigned_ip
-    ):
+    def test_create_dhcp_entries_through_gui(self, data_func, assigned_ip):
         self._prepare_create_dhcp_entries_transition()
         response = self.gui_client.post(
             reverse(
                 self.transition_url_name,
-                args=(self.instance.id, self.create_dhcp_entries_transition.id)
+                args=(self.instance.id, self.create_dhcp_entries_transition.id),
             ),
             data_func(self),
             follow=True,
@@ -612,7 +547,7 @@ class _BaseDeploymentTransitionTestCase(object):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(
             response.redirect_chain[0][0],
-            reverse(self.redirect_url_name, args=(self.instance.id,))
+            reverse(self.redirect_url_name, args=(self.instance.id,)),
         )
         self.instance.refresh_from_db()
         self.eth.refresh_from_db()
@@ -625,40 +560,38 @@ class _BaseDeploymentTransitionTestCase(object):
         response = self.gui_client.post(
             reverse(
                 self.transition_url_name,
-                args=(self.instance.id, self.create_dhcp_entries_transition.id)
+                args=(self.instance.id, self.create_dhcp_entries_transition.id),
             ),
             {
-                'create_dhcp_entries__ip_or_network': self.net.pk,
-                'create_dhcp_entries__ethernet': eth,
+                "create_dhcp_entries__ip_or_network": self.net.pk,
+                "create_dhcp_entries__ethernet": eth,
             },
         )
         self.assertEqual(response.status_code, 200)
         self.assertIn(
-            'create_dhcp_entries__ethernet',
-            response.context_data['form'].errors
+            "create_dhcp_entries__ethernet", response.context_data["form"].errors
         )
 
     def test_create_dhcp_entries_through_gui_with_occupied_ip(self):
         self._prepare_create_dhcp_entries_transition()
         IPAddressFactory(
-            address='10.20.30.40',
-            ethernet__base_object=DataCenterAssetFactory()
+            address="10.20.30.40", ethernet__base_object=DataCenterAssetFactory()
         )
         response = self.gui_client.post(
             reverse(
                 self.transition_url_name,
-                args=(self.instance.id, self.create_dhcp_entries_transition.id)
+                args=(self.instance.id, self.create_dhcp_entries_transition.id),
             ),
             {
-                'create_dhcp_entries__ip_or_network': '__other__',
-                'create_dhcp_entries__ip_or_network__other__': '10.20.30.40',
-                'create_dhcp_entries__ethernet': self.eth.id,
+                "create_dhcp_entries__ip_or_network": "__other__",
+                "create_dhcp_entries__ip_or_network__other__": "10.20.30.40",
+                "create_dhcp_entries__ethernet": self.eth.id,
             },
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
-            response.context_data['form'].errors['create_dhcp_entries__ip_or_network'],  # noqa
-            ['IP 10.20.30.40 is already assigned to other object!']
+            response.context_data["form"].errors["create_dhcp_entries__ip_or_network"],  # noqa
+            ["IP 10.20.30.40 is already assigned to other object!"],
         )
 
 
@@ -667,8 +600,8 @@ class VirtualServerDeploymentTransitionTestCase(
 ):
     model = VirtualServer
     factory = VirtualServerFactory
-    transition_url_name = 'admin:virtual_virtualserver_transition'
-    redirect_url_name = 'admin:virtual_virtualserver_change'
+    transition_url_name = "admin:virtual_virtualserver_transition"
+    redirect_url_name = "admin:virtual_virtualserver_change"
 
     @classmethod
     def setUpClass(cls):
@@ -680,9 +613,7 @@ class VirtualServerDeploymentTransitionTestCase(
     def setUp(self):
         super().setUp()
         self.instance = VirtualServerFactory(parent=self.parent)
-        self.eth = EthernetFactory(
-            base_object=self.instance, mac='10:20:30:40:50:60'
-        )
+        self.eth = EthernetFactory(base_object=self.instance, mac="10:20:30:40:50:60")
 
 
 class DataCenterAssetDeploymentTransitionTestCase(
@@ -690,12 +621,10 @@ class DataCenterAssetDeploymentTransitionTestCase(
 ):
     model = DataCenterAsset
     factory = DataCenterAssetFactory
-    transition_url_name = 'admin:data_center_datacenterasset_transition'
-    redirect_url_name = 'admin:data_center_datacenterasset_change'
+    transition_url_name = "admin:data_center_datacenterasset_transition"
+    redirect_url_name = "admin:data_center_datacenterasset_change"
 
     def setUp(self):
         super().setUp()
         self.instance = DataCenterAssetFactory(rack=self.rack)
-        self.eth = EthernetFactory(
-            base_object=self.instance, mac='10:20:30:40:50:60'
-        )
+        self.eth = EthernetFactory(base_object=self.instance, mac="10:20:30:40:50:60")

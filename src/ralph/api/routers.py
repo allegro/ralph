@@ -15,6 +15,7 @@ class RalphRouter(NestedCustomFieldsRouterMixin, routers.DefaultRouter):
     Acts like DefaultRouter + checks if user has permissions to see viewset.
     Viewsets for which user doesn't have permissions are hidden in root view.
     """
+
     # skip .json style formatting suffixes in urls
     include_format_suffixes = False
 
@@ -22,9 +23,7 @@ class RalphRouter(NestedCustomFieldsRouterMixin, routers.DefaultRouter):
         api_root_dict = {}
         list_name = self.routes[0].name
         for prefix, viewset, basename in self.registry:
-            api_root_dict[prefix] = (
-                list_name.format(basename=basename), viewset
-            )
+            api_root_dict[prefix] = (list_name.format(basename=basename), viewset)
         # present resources in alphabetical order (sort by key, which is url)
         api_root_dict = OrderedDict(sorted(api_root_dict.items()))
         from rest_framework import views
@@ -42,14 +41,14 @@ class RalphRouter(NestedCustomFieldsRouterMixin, routers.DefaultRouter):
                     if not self._check_viewset_permissions(request, viewset):
                         continue
                     if namespace:
-                        url_name = namespace + ':' + url_name
+                        url_name = namespace + ":" + url_name
                     try:
                         ret[key] = reverse(
                             url_name,
                             args=args,
                             kwargs=kwargs,
                             request=request,
-                            format=kwargs.get('format', None)
+                            format=kwargs.get("format", None),
                         )
                     except NoReverseMatch:
                         continue

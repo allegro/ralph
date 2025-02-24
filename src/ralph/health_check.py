@@ -19,7 +19,7 @@ def _test_redis_conn():
 
 
 def _test_db_conn():
-    connections['default'].cursor()
+    connections["default"].cursor()
 
 
 def _perform_all_health_checks():
@@ -28,30 +28,24 @@ def _perform_all_health_checks():
         try:
             health_check_func()
         except Exception as e:
-            msg = 'Health check failed. Function: {}, exception: {}'.format(
+            msg = "Health check failed. Function: {}, exception: {}".format(
                 health_check_func.__name__, e
             )
-            logger.critical(
-                msg,
-                extra={
-                    'action_type': 'HEALTH_CHECK',
-                    'error': str(e)
-                }
-            )
+            logger.critical(msg, extra={"action_type": "HEALTH_CHECK", "error": str(e)})
             messages.append(msg)
     return messages
 
 
 @require_GET
 def status_ping(request):
-    return HttpResponse('pong', content_type='text/plain')
+    return HttpResponse("pong", content_type="text/plain")
 
 
 @require_GET
 def status_health(request):
     health_checks_errors = _perform_all_health_checks()
     if not health_checks_errors:
-        return HttpResponse('Healthy', content_type='text/plain')
+        return HttpResponse("Healthy", content_type="text/plain")
     else:
-        response = 'Not Healthy\n' + "\n".join(health_checks_errors)
-        return HttpResponse(response, status=503, content_type='text/plain')
+        response = "Not Healthy\n" + "\n".join(health_checks_errors)
+        return HttpResponse(response, status=503, content_type="text/plain")

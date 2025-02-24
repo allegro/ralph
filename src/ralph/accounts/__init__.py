@@ -1,1 +1,1 @@
-default_app_config = 'ralph.accounts.apps.AccountsConfig'
+default_app_config = "ralph.accounts.apps.AccountsConfig"

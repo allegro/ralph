@@ -1,1 +1,1 @@
-default_app_config = 'ralph.reports.apps.ReportsConfig'
+default_app_config = "ralph.reports.apps.ReportsConfig"

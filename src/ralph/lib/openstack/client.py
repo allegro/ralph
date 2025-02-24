@@ -8,10 +8,10 @@ from ralph.lib import network
 from ralph.settings import DEFAULT_OPENSTACK_PROVIDER_NAME
 
 try:
-    from keystoneclient.v2_0 import client as ks_v2_client
-    from keystoneclient.v3 import client as ks_v3_client
     from keystoneauth1 import session as ks_session
     from keystoneauth1.identity import v3 as ks_v3_identity
+    from keystoneclient.v2_0 import client as ks_v2_client
+    from keystoneclient.v3 import client as ks_v3_client
     keystone_client_exists = True
 except ImportError:
     keystone_client_exists = False

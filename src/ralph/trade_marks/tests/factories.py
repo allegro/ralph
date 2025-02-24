@@ -26,11 +26,11 @@ date_now = datetime.now().date()
 
 class TradeMarkFactory(DjangoModelFactory):
     valid_to = date_now + timedelta(days=365)
-    number = factory.Sequence(lambda n: 'Registrant number ' + str(n))
-    name = factory.Sequence(lambda n: 'Trade Mark name ' + str(n))
+    number = factory.Sequence(lambda n: "Registrant number " + str(n))
+    name = factory.Sequence(lambda n: "Trade Mark name " + str(n))
     technical_owner = factory.SubFactory(UserFactory)
     business_owner = factory.SubFactory(UserFactory)
-    classes = factory.Sequence(lambda n: 'Registrant class ' + str(n))
+    classes = factory.Sequence(lambda n: "Registrant class " + str(n))
     holder = factory.SubFactory(AssetHolderFactory)
 
     class Meta:
@@ -39,11 +39,11 @@ class TradeMarkFactory(DjangoModelFactory):
 
 class PatentFactory(DjangoModelFactory):
     valid_to = date_now + timedelta(days=365)
-    number = factory.Sequence(lambda n: 'Registrant number ' + str(n))
-    name = factory.Sequence(lambda n: 'Patent name ' + str(n))
+    number = factory.Sequence(lambda n: "Registrant number " + str(n))
+    name = factory.Sequence(lambda n: "Patent name " + str(n))
     technical_owner = factory.SubFactory(UserFactory)
     business_owner = factory.SubFactory(UserFactory)
-    classes = factory.Sequence(lambda n: 'Registrant class ' + str(n))
+    classes = factory.Sequence(lambda n: "Registrant class " + str(n))
     holder = factory.SubFactory(AssetHolderFactory)
 
     class Meta:
@@ -52,11 +52,11 @@ class PatentFactory(DjangoModelFactory):
 
 class DesignFactory(DjangoModelFactory):
     valid_to = date_now + timedelta(days=365)
-    number = factory.Sequence(lambda n: 'Registrant number ' + str(n))
-    name = factory.Sequence(lambda n: 'Design name ' + str(n))
+    number = factory.Sequence(lambda n: "Registrant number " + str(n))
+    name = factory.Sequence(lambda n: "Design name " + str(n))
     technical_owner = factory.SubFactory(UserFactory)
     business_owner = factory.SubFactory(UserFactory)
-    classes = factory.Sequence(lambda n: 'Registrant class ' + str(n))
+    classes = factory.Sequence(lambda n: "Registrant class " + str(n))
     holder = factory.SubFactory(AssetHolderFactory)
 
     class Meta:
@@ -64,11 +64,11 @@ class DesignFactory(DjangoModelFactory):
 
 
 class TradeMarkRegistrarInstitutionFactory(DjangoModelFactory):
-    name = factory.Iterator(['WNIP', 'WIP', 'PUP'])
+    name = factory.Iterator(["WNIP", "WIP", "PUP"])
 
     class Meta:
         model = TradeMarkRegistrarInstitution
-        django_get_or_create = ['name']
+        django_get_or_create = ["name"]
 
 
 class TradeMarkCountryFactory(DjangoModelFactory):
@@ -87,11 +87,11 @@ class TradeMarksLinkedDomainsFactory(DjangoModelFactory):
 
 
 class ProviderAdditionalMarkingFactory(DjangoModelFactory):
-    name = factory.Iterator(['Masking', 'Backside', 'Acquisition'])
+    name = factory.Iterator(["Masking", "Backside", "Acquisition"])
 
     class Meta:
         model = ProviderAdditionalMarking
-        django_get_or_create = ['name']
+        django_get_or_create = ["name"]
 
 
 class TradeMarkAdditionalCountryFactory(DjangoModelFactory):
@@ -104,11 +104,11 @@ class TradeMarkAdditionalCountryFactory(DjangoModelFactory):
 
 class UtilityModelFactory(DjangoModelFactory):
     valid_to = date_now + timedelta(days=365)
-    number = factory.Sequence(lambda n: 'Registrant number ' + str(n))
-    name = factory.Sequence(lambda n: 'Trade Mark name ' + str(n))
+    number = factory.Sequence(lambda n: "Registrant number " + str(n))
+    name = factory.Sequence(lambda n: "Trade Mark name " + str(n))
     technical_owner = factory.SubFactory(UserFactory)
     business_owner = factory.SubFactory(UserFactory)
-    classes = factory.Sequence(lambda n: 'Registrant class ' + str(n))
+    classes = factory.Sequence(lambda n: "Registrant class " + str(n))
     holder = factory.SubFactory(AssetHolderFactory)
 
     class Meta:

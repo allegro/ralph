@@ -1,3 +1,103 @@
+ralph (20250214.1) bionic; urgency=medium
+
+  * Fix invoice report action missing because of changes in django 2.2
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Fri, 14 Feb 2025 11:56:16 +0000
+
+ralph (20250214.1) bionic; urgency=medium
+
+  * Fix invoice report action missing because of changes in django 2.2
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Fri, 14 Feb 2025 11:55:20 +0000
+
+ralph (20250205.1) bionic; urgency=medium
+
+  [ Olga Matyla ]
+  * Django 2.1
+  * Bump drf
+  * Fix tests_functional
+  * Fix custom fields tests
+  * Fix jQuery error in tabularFormset
+
+  [ Paweł Szulc ]
+  * Django 2.2
+  * Fix basename
+  * Up Markdown to 3.0 - seems to be working fine
+  * Add ruff to reqs
+  * Remove ruff - available only in >=python3.8
+  * Bump pyflakes
+
+  [ Olga Matyla ]
+  * Fix Tags Filter value in GUI (#3879)
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Wed, 05 Feb 2025 11:56:26 +0000
+
+ralph (20250205.1) bionic; urgency=medium
+
+  [ Olga Matyla ]
+  * Django 2.1
+  * Bump drf
+  * Fix tests_functional
+  * Fix custom fields tests
+  * Fix jQuery error in tabularFormset
+
+  [ Paweł Szulc ]
+  * Django 2.2
+  * Fix basename
+  * Up Markdown to 3.0 - seems to be working fine
+  * Add ruff to reqs
+  * Remove ruff - available only in >=python3.8
+  * Bump pyflakes
+
+  [ Olga Matyla ]
+  * Fix Tags Filter value in GUI (#3879)
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Wed, 05 Feb 2025 11:55:35 +0000
+
+ralph (20250205.1) bionic; urgency=medium
+
+  [ Olga Matyla ]
+  * Django 2.1
+  * Bump drf
+  * Fix tests_functional
+  * Fix custom fields tests
+  * Fix jQuery error in tabularFormset
+
+  [ Paweł Szulc ]
+  * Django 2.2
+  * Fix basename
+  * Up Markdown to 3.0 - seems to be working fine
+  * Add ruff to reqs
+  * Remove ruff - available only in >=python3.8
+  * Bump pyflakes
+
+  [ Olga Matyla ]
+  * Fix Tags Filter value in GUI (#3879)
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Wed, 05 Feb 2025 11:55:04 +0000
+
+ralph (20250205.1) bionic; urgency=medium
+
+  [ Olga Matyla ]
+  * Django 2.1
+  * Bump drf
+  * Fix tests_functional
+  * Fix custom fields tests
+  * Fix jQuery error in tabularFormset
+
+  [ Paweł Szulc ]
+  * Django 2.2
+  * Fix basename
+  * Up Markdown to 3.0 - seems to be working fine
+  * Add ruff to reqs
+  * Remove ruff - available only in >=python3.8
+  * Bump pyflakes
+
+  [ Olga Matyla ]
+  * Fix Tags Filter value in GUI (#3879)
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Wed, 05 Feb 2025 11:53:17 +0000
+
 ralph (20241211.1) bionic; urgency=medium
 
   [ Olga Matyla ]

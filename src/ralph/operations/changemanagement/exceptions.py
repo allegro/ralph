@@ -1,2 +1,2 @@
 class IgnoreOperation(Exception):
-    message = 'Ignoring the opertaion.'
+    message = "Ignoring the opertaion."

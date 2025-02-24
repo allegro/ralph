@@ -22,46 +22,47 @@ date_now = datetime.now().date()
 
 
 class OfficeInfrastructureFactory(DjangoModelFactory):
-
-    name = factory.Iterator([
-        'Office infrastructure Poland', 'Office infrastructure Germany',
-        'Office infrastructure France', 'Office infrastructure UK'
-    ])
+    name = factory.Iterator(
+        [
+            "Office infrastructure Poland",
+            "Office infrastructure Germany",
+            "Office infrastructure France",
+            "Office infrastructure UK",
+        ]
+    )
 
     class Meta:
         model = OfficeInfrastructure
-        django_get_or_create = ['name']
+        django_get_or_create = ["name"]
 
 
 class WarehouseFactory(DjangoModelFactory):
-
-    name = factory.Iterator([
-        'Warehouse 1', 'Warehouse 2', 'Warehouse 3', 'Warehouse 4'
-    ])
+    name = factory.Iterator(
+        ["Warehouse 1", "Warehouse 2", "Warehouse 3", "Warehouse 4"]
+    )
 
     class Meta:
         model = Warehouse
-        django_get_or_create = ['name']
+        django_get_or_create = ["name"]
 
 
 class BackOfficeAssetFactory(DjangoModelFactory):
-
-    hostname = factory.Sequence(lambda n: 'c%04d' % n)
+    hostname = factory.Sequence(lambda n: "c%04d" % n)
     region = factory.SubFactory(RegionFactory)
     model = factory.SubFactory(BackOfficeAssetModelFactory)
     warehouse = factory.SubFactory(WarehouseFactory)
     force_depreciation = False
     office_infrastructure = factory.SubFactory(OfficeInfrastructureFactory)
-    sn = factory.Faker('ssn')
-    barcode = factory.Sequence(lambda n: 'bo' + str(n + 10**8))
-    order_no = factory.Sequence(lambda n: 'Order number ' + str(n))
+    sn = factory.Faker("ssn")
+    barcode = factory.Sequence(lambda n: "bo" + str(n + 10**8))
+    order_no = factory.Sequence(lambda n: "Order number " + str(n))
     budget_info = factory.SubFactory(BudgetInfoFactory)
     invoice_date = date_now - timedelta(days=15)
-    invoice_no = factory.Sequence(lambda n: 'Invoice number ' + str(n))
+    invoice_no = factory.Sequence(lambda n: "Invoice number " + str(n))
     price = FuzzyDecimal(10, 300)
-    securityscan = factory.RelatedFactory(SecurityScanFactory, 'base_object')
+    securityscan = factory.RelatedFactory(SecurityScanFactory, "base_object")
     property_of = factory.SubFactory(AssetHolderFactory)
 
     class Meta:
         model = BackOfficeAsset
-        django_get_or_create = ['sn', 'barcode']
+        django_get_or_create = ["sn", "barcode"]

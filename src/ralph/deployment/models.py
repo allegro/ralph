@@ -25,49 +25,42 @@ class PrebootItemType(Choices):
     _ = Choices.Choice
 
     LINUX = Choices.Group(0)
-    kernel = _('kernel')
-    initrd = _('initrd')
-    netboot = _('netboot')
+    kernel = _("kernel")
+    initrd = _("initrd")
+    netboot = _("netboot")
 
     CONFIGURATION = Choices.Group(40)
-    ipxe = _('iPXE')
-    kickstart = _('kickstart')
-    preseed = _('preseed')
-    script = _('script')
-    meta_data = _('meta-data')
-    user_data = _('user-data')
+    ipxe = _("iPXE")
+    kickstart = _("kickstart")
+    preseed = _("preseed")
+    script = _("script")
+    meta_data = _("meta-data")
+    user_data = _("user-data")
 
     OTHER = Choices.Group(100)
-    other = _('other')
+    other = _("other")
 
 
 def get_choices_from_group(choices_group):
-    return (
-        (choice.id, choice.name) for choice in choices_group.choices
-    )
+    return ((choice.id, choice.name) for choice in choices_group.choices)
 
 
 def preboot_file_name(instance, filename):
-    return os.sep.join(
-        ('pxe', instance.get_type_display(), slugify(instance.name))
-    )
+    return os.sep.join(("pxe", instance.get_type_display(), slugify(instance.name)))
 
 
 class PrebootItem(
-    AdminAbsoluteUrlMixin,
-    NamedMixin,
-    Polymorphic,
-    metaclass=PolymorphicBase
+    AdminAbsoluteUrlMixin, NamedMixin, Polymorphic, metaclass=PolymorphicBase
 ):
     description = models.TextField(
-        verbose_name=_('description'),
+        verbose_name=_("description"),
         blank=True,
-        default='',
+        default="",
     )
 
     @property
     def autocomplete_str(self):
-        return '<i>{}</i> {}'.format(self.get_type_display(), self.name)
+        return "<i>{}</i> {}".format(self.get_type_display(), self.name)
 
 
 CONFIGURATION_HELP_TEXT = """
@@ -95,39 +88,37 @@ All newline characters will be converted to Unix \\n newlines.
 <br>  - ralph_instance (eg. '{ralph_instance}')
 <br>  - service_env (eg. 'Backup systems - prod')
 <br>  - service_uid (eg. 'sc-123')
-""".format(ralph_instance=settings.RALPH_INSTANCE.rstrip('/')).strip()  # noqa
+""".format(ralph_instance=settings.RALPH_INSTANCE.rstrip("/")).strip()  # noqa
 
 
 class PrebootConfiguration(PrebootItem):
     type = models.PositiveIntegerField(
-        verbose_name=_('type'),
+        verbose_name=_("type"),
         choices=get_choices_from_group(PrebootItemType.CONFIGURATION),
         default=PrebootItemType.ipxe.id,
     )
     configuration = NUMP(
         models.TextField(
-            _('configuration'),
-            blank=True,
-            help_text=_(CONFIGURATION_HELP_TEXT)
+            _("configuration"), blank=True, help_text=_(CONFIGURATION_HELP_TEXT)
         )
     )
 
     class Meta:
-        verbose_name = _('preboot configuration')
-        verbose_name_plural = _('preboot configuration')
+        verbose_name = _("preboot configuration")
+        verbose_name_plural = _("preboot configuration")
 
     def __str__(self):
-        return '{} - {}'.format(self.name, self.get_type_display())
+        return "{} - {}".format(self.name, self.get_type_display())
 
 
 class PrebootFile(PrebootItem):
     type = models.PositiveIntegerField(
-        verbose_name=_('type'),
+        verbose_name=_("type"),
         choices=get_choices_from_group(PrebootItemType.LINUX),
         default=PrebootItemType.kernel.id,
     )
     file = models.FileField(
-        _('file'),
+        _("file"),
         upload_to=preboot_file_name,
         null=True,
         blank=True,
@@ -135,15 +126,20 @@ class PrebootFile(PrebootItem):
     )
 
     class Meta:
-        verbose_name = _('preboot file')
-        verbose_name_plural = _('preboot files')
+        verbose_name = _("preboot file")
+        verbose_name_plural = _("preboot files")
 
 
 class ActiveObjectsManager(Manager):
     def get_queryset(self):
-        return super().get_queryset().filter(
-            Q(disappears_after__isnull=True)
-            | Q(disappears_after__gte=timezone.now()))
+        return (
+            super()
+            .get_queryset()
+            .filter(
+                Q(disappears_after__isnull=True)
+                | Q(disappears_after__gte=timezone.now())
+            )
+        )
 
 
 class Preboot(AdminAbsoluteUrlMixin, NamedMixin):
@@ -153,12 +149,12 @@ class Preboot(AdminAbsoluteUrlMixin, NamedMixin):
     items = PolymorphicManyToManyField(
         PrebootItem,
         blank=True,
-        verbose_name=_('files'),
+        verbose_name=_("files"),
     )
     description = models.TextField(
-        verbose_name=_('description'),
+        verbose_name=_("description"),
         blank=True,
-        default='',
+        default="",
     )
     warning_after = models.DateField(null=True, blank=False)
     critical_after = models.DateField(null=True, blank=False)
@@ -167,19 +163,19 @@ class Preboot(AdminAbsoluteUrlMixin, NamedMixin):
     used_counter = models.PositiveIntegerField(default=0, editable=False)
 
     class Meta:
-        verbose_name = _('preboot')
-        verbose_name_plural = _('preboots')
-        ordering = ('name',)
+        verbose_name = _("preboot")
+        verbose_name_plural = _("preboots")
+        ordering = ("name",)
 
     def increment_used_counter(self):
-        self.used_counter = F('used_counter') + 1
+        self.used_counter = F("used_counter") + 1
         self.save()
 
     def _get_item(self, model_name, item_type):
         item = None
         try:
             queryset_kwargs = {
-                '{}__type'.format(model_name): PrebootItemType.id_from_name(item_type)  # noqa
+                "{}__type".format(model_name): PrebootItemType.id_from_name(item_type)  # noqa
             }
             item = self.items.get(**queryset_kwargs)
         except PrebootItem.DoesNotExist:
@@ -187,14 +183,13 @@ class Preboot(AdminAbsoluteUrlMixin, NamedMixin):
         return item
 
     def get_file_url(self, file_type):
-        item = self._get_item(model_name='prebootfile', item_type=file_type)
+        item = self._get_item(model_name="prebootfile", item_type=file_type)
         if item is not None and item.file:
             return item.file.url
 
     def get_configuration(self, configuration_type):
         item = self._get_item(
-            model_name='prebootconfiguration',
-            item_type=configuration_type
+            model_name="prebootconfiguration", item_type=configuration_type
         )
         if item is not None:
             return item.configuration
@@ -203,10 +198,9 @@ class Preboot(AdminAbsoluteUrlMixin, NamedMixin):
 class DeploymentManager(Manager.from_queryset(JobQuerySet)):
     def get_queryset(self):
         from ralph.deployment.deployment import deploy
+
         # TODO: test it
-        return super().get_queryset().filter(
-            transition__actions__name=deploy.__name__
-        )
+        return super().get_queryset().filter(transition__actions__name=deploy.__name__)
 
 
 class Deployment(AdminAbsoluteUrlMixin, TransitionJob):
@@ -219,13 +213,12 @@ class Deployment(AdminAbsoluteUrlMixin, TransitionJob):
     def get_deployment_for_ip(cls, ip):
         base_object = Ethernet.objects.get(ipaddress__address=ip).base_object
         return cls.objects.active().get(
-            content_type_id=base_object.content_type_id,
-            object_id=base_object.id
+            content_type_id=base_object.content_type_id, object_id=base_object.id
         )
 
     @property
     def preboot(self):
-        return self.params['data']['deploy__preboot']
+        return self.params["data"]["deploy__preboot"]
 
     @classmethod
     def mark_as_done(cls, deployment_id):
@@ -233,6 +226,4 @@ class Deployment(AdminAbsoluteUrlMixin, TransitionJob):
         if deployment.is_frozen:
             deployment.unfreeze()
         else:
-            logger.warning(
-                'Deployment %s was already unfrozen', deployment
-            )
+            logger.warning("Deployment %s was already unfrozen", deployment)

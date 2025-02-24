@@ -3,19 +3,21 @@
 from __future__ import unicode_literals
 
 from django.db import migrations
+
 import ralph.lib.polymorphic.fields
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('networks', '0015_auto_20211115_1125'),
+        ("networks", "0015_auto_20211115_1125"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='network',
-            name='terminators',
-            field=ralph.lib.polymorphic.fields.PolymorphicManyToManyField(blank=True, to='assets.BaseObject', verbose_name='network terminators'),
+            model_name="network",
+            name="terminators",
+            field=ralph.lib.polymorphic.fields.PolymorphicManyToManyField(
+                blank=True, to="assets.BaseObject", verbose_name="network terminators"
+            ),
         ),
     ]

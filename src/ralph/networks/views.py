@@ -14,16 +14,17 @@ class NetworkInline(RalphTabularInline):
     form = NetworkForm
     formset = NetworkInlineFormset
     model = Ethernet
-    exclude = ['model']
+    exclude = ["model"]
 
 
 class NetworkTerminatorReadOnlyInline(RalphTabularM2MInline):
     model = Network
     extra = 0
     show_change_link = True
-    verbose_name_plural = _('Terminators of')
+    verbose_name_plural = _("Terminators of")
     fields = [
-        'name', 'address',
+        "name",
+        "address",
     ]
 
     def get_readonly_fields(self, request, obj=None):
@@ -34,39 +35,34 @@ class NetworkTerminatorReadOnlyInline(RalphTabularM2MInline):
 
 
 class NetworkView(RalphDetailViewAdmin):
-    icon = 'chain'
-    name = 'network'
-    label = 'Network'
-    url_name = 'network'
-    admin_attribute_list_to_copy = ['available_networks']
-    readonly_fields = ('available_networks',)
+    icon = "chain"
+    name = "network"
+    label = "Network"
+    url_name = "network"
+    admin_attribute_list_to_copy = ["available_networks"]
+    readonly_fields = ("available_networks",)
     inlines = [
         NetworkInline,
     ]
-    fields = ('available_networks', )
+    fields = ("available_networks",)
 
     @mark_safe
     def available_networks(self, instance):
-        networks = instance._get_available_networks(
-            as_query=True
-        ).select_related('network_environment')
+        networks = instance._get_available_networks(as_query=True).select_related(
+            "network_environment"
+        )
         if networks:
             result = TableWithUrl(
                 networks,
-                ['name', 'address', 'network_environment'],
-                url_field='name',
+                ["name", "address", "network_environment"],
+                url_field="name",
             ).render()
         else:
-            result = '&ndash;'
+            result = "&ndash;"
         return result
-    available_networks.short_description = _('Available networks')
-    fieldsets = (
-        (_(''), {
-            'fields': (
-                'available_networks',
-            )
-        }),
-    )
+
+    available_networks.short_description = _("Available networks")
+    fieldsets = ((_(""), {"fields": ("available_networks",)}),)
 
 
 class NetworkWithTerminatorsView(NetworkView):

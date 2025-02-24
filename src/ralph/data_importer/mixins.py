@@ -21,35 +21,33 @@ class ImportForeignKeyMeta(type):
         for display ForeignKey fields.
         """
         # https://bugs.python.org/issue29270
-        attrs.pop('__classcell__', None)
+        attrs.pop("__classcell__", None)
         new_class = super().__new__(cls, name, bases, attrs)
         # Generate second class only for export which has added
         # additional *_str fields
-        export_class = super().__new__(
-            cls, '{}Exporter'.format(name), bases, attrs
-        )
+        export_class = super().__new__(cls, "{}Exporter".format(name), bases, attrs)
         update_fields = []
         for name, field in new_class.fields.items():
             update_fields.append((name, field))
-            field_name = '{}_str'.format(name)
+            field_name = "{}_str".format(name)
             field_params = dict(
-                column_name='{}_str'.format(field.column_name),
+                column_name="{}_str".format(field.column_name),
                 attribute=field.attribute,
-                readonly=True
+                readonly=True,
             )
             # skip str field if pointer implicitly
-            if getattr(field, '_skip_str_field', False):
+            if getattr(field, "_skip_str_field", False):
                 continue
             elif isinstance(field.widget, widgets.ForeignKeyWidget):
-                field_params['widget'] = ExportForeignKeyStrWidget()
+                field_params["widget"] = ExportForeignKeyStrWidget()
             elif isinstance(field.widget, ManyToManyThroughWidget):
-                field_params['widget'] = ExportManyToManyStrTroughWidget(
+                field_params["widget"] = ExportManyToManyStrTroughWidget(
                     model=field.widget.model,
                     related_model=field.widget.related_model,
                     through_field=field.widget.through_field,
                 )
             elif isinstance(field.widget, widgets.ManyToManyWidget):
-                field_params['widget'] = ExportManyToManyStrWidget(
+                field_params["widget"] = ExportManyToManyStrWidget(
                     model=field.widget.model
                 )
             else:
@@ -61,13 +59,11 @@ class ImportForeignKeyMeta(type):
                 # to `select_related` - usefull when it's need to be fetched
                 # using `prefetch_related` (ex. for `parent` field with more
                 # logic in fetching it)
-                '_exclude_in_select_related'
+                "_exclude_in_select_related"
             ]:
                 if hasattr(field, extra_param_name):
                     setattr(
-                        new_field,
-                        extra_param_name,
-                        getattr(field, extra_param_name)
+                        new_field, extra_param_name, getattr(field, extra_param_name)
                     )
             update_fields.append((field_name, new_field))
         export_class.fields = OrderedDict(update_fields)
@@ -76,33 +72,27 @@ class ImportForeignKeyMeta(type):
 
 
 class ImportForeignKeyMixin(object):
-
     """ImportForeignKeyMixin class for django import-export resources."""
 
     def get_or_init_instance(self, instance_loader, row):
-        self.old_object_pk = row.get('id', None)
-        remove_id = getattr(settings, 'REMOVE_ID_FROM_IMPORT', False)
+        self.old_object_pk = row.get("id", None)
+        remove_id = getattr(settings, "REMOVE_ID_FROM_IMPORT", False)
         if remove_id:
-            row['id'] = None
+            row["id"] = None
 
         return super(ImportForeignKeyMixin, self).get_or_init_instance(
             instance_loader, row
         )
 
     def after_save_instance(
-        self,
-        instance,
-        using_transactions: bool,
-        dry_run: bool,
-        *args,
-        **kwargs
+        self, instance, using_transactions: bool, dry_run: bool, *args, **kwargs
     ):
         if not dry_run and self.old_object_pk:
             content_type = ContentType.objects.get_for_model(self._meta.model)
             ImportedObjects.objects.update_or_create(
                 content_type=content_type,
                 old_object_pk=self.old_object_pk,
-                defaults={'object_pk': instance.pk}
+                defaults={"object_pk": instance.pk},
             )
 
     def import_field(self, field, obj, data, is_m2m=False):
@@ -110,7 +100,7 @@ class ImportForeignKeyMixin(object):
         Calls :meth:`import_export.fields.Field.save` if ``Field.attribute``
         and ``Field.column_name`` are found in ``data``.
         """
-        if field.column_name == 'management_ip':
+        if field.column_name == "management_ip":
             field.save(obj, data, is_m2m=False)
         elif field.attribute and field.column_name in data:
             field.save(obj, data, is_m2m)

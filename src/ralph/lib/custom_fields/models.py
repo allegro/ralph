@@ -1,11 +1,10 @@
 import logging
-import six
 
+import six
 from dj.choices import Choices
 from django import forms
 from django.contrib.auth.models import Group
 from django.contrib.contenttypes import fields
-
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -14,6 +13,7 @@ from django.utils.text import capfirst, slugify
 from django.utils.translation import ugettext_lazy as _
 
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
+
 from .fields import (
     CustomFieldsWithInheritanceRelation,
     CustomFieldValueQuerySet

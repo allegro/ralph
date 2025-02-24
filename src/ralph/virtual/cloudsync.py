@@ -17,7 +17,7 @@ from ralph.virtual.models import CloudProvider
 logger = logging.getLogger(__name__)
 
 
-ENTRY_POINTS_GROUP = 'ralph.cloud_sync_processors'
+ENTRY_POINTS_GROUP = "ralph.cloud_sync_processors"
 CLOUD_SYNC_DRIVERS = None
 LOCK = threading.Lock()
 
@@ -34,7 +34,7 @@ def load_processors():
         if CLOUD_SYNC_DRIVERS is not None:
             return
 
-        logger.info('Loading cloud sync processors.')
+        logger.info("Loading cloud sync processors.")
 
         CLOUD_SYNC_DRIVERS = {}
 
@@ -43,8 +43,7 @@ def load_processors():
                 CLOUD_SYNC_DRIVERS[ep.name] = ep.resolve()
             except ImportError:
                 logger.error(
-                    'Could not import DC asset event processor from %s.',
-                    ep.module_name
+                    "Could not import DC asset event processor from %s.", ep.module_name
                 )
 
 
@@ -53,29 +52,28 @@ def load_processors():
 def cloud_sync_router(request, cloud_provider_id):
     load_processors()
 
-    raw_data = request.read().decode('utf-8')
+    raw_data = request.read().decode("utf-8")
 
     try:
         event_data = json.loads(raw_data)
     except ValueError:
-        return HttpResponseBadRequest('Content must be a valid JSON text.')
+        return HttpResponseBadRequest("Content must be a valid JSON text.")
 
     try:
         cloud_provider = CloudProvider.objects.get(
             Q(
                 pk=cloud_provider_id,
                 cloud_sync_enabled=True,
-                cloud_sync_driver__isnull=False
-            ) & ~Q(cloud_sync_driver='')
+                cloud_sync_driver__isnull=False,
+            )
+            & ~Q(cloud_sync_driver="")
         )
 
-        processor = CLOUD_SYNC_DRIVERS[
-            cloud_provider.cloud_sync_driver
-        ]
+        processor = CLOUD_SYNC_DRIVERS[cloud_provider.cloud_sync_driver]
     except CloudProvider.DoesNotExist:
         return HttpResponseNotFound()
     except KeyError:
-        return HttpResponse('Specified processor is not available', status=501)
+        return HttpResponse("Specified processor is not available", status=501)
 
     processor(cloud_provider, event_data)
 

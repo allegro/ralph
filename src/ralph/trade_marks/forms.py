@@ -6,9 +6,9 @@ from ralph.trade_marks.models import Design, Patent, TradeMark, UtilityModel
 
 class IntellectualPropertyForm(RalphAdminForm):
     class Meta:
-        fields = ['additional_markings']
+        fields = ["additional_markings"]
         widgets = {
-            'additional_markings': CheckboxSelectMultiple,
+            "additional_markings": CheckboxSelectMultiple,
         }
 
 

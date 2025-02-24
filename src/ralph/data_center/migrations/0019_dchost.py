@@ -1,24 +1,22 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.db import migrations, models
+from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('assets', '0019_auto_20160719_1443'),
-        ('data_center', '0018_auto_20160729_1401'),
+        ("assets", "0019_auto_20160719_1443"),
+        ("data_center", "0018_auto_20160729_1401"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='DCHost',
-            fields=[
-            ],
+            name="DCHost",
+            fields=[],
             options={
-                'proxy': True,
+                "proxy": True,
             },
-            bases=('assets.baseobject',),
+            bases=("assets.baseobject",),
         ),
     ]

@@ -4,24 +4,53 @@ from __future__ import unicode_literals
 
 import django.core.validators
 from django.db import migrations
+
 import ralph.lib.mixins.fields
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('assets', '0035_auto_20240506_1633'),
+        ("assets", "0035_auto_20240506_1633"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='asset',
-            name='barcode',
-            field=ralph.lib.mixins.fields.NullableCharField(blank=True, default=None, max_length=200, null=True, unique=True, validators=[django.core.validators.RegexValidator('\\s', 'No spaces allowed', code='no_spaces_allowed', inverse_match=True)], verbose_name='barcode'),
+            model_name="asset",
+            name="barcode",
+            field=ralph.lib.mixins.fields.NullableCharField(
+                blank=True,
+                default=None,
+                max_length=200,
+                null=True,
+                unique=True,
+                validators=[
+                    django.core.validators.RegexValidator(
+                        "\\s",
+                        "No spaces allowed",
+                        code="no_spaces_allowed",
+                        inverse_match=True,
+                    )
+                ],
+                verbose_name="barcode",
+            ),
         ),
         migrations.AlterField(
-            model_name='asset',
-            name='sn',
-            field=ralph.lib.mixins.fields.NullableCharField(blank=True, max_length=200, null=True, unique=True, validators=[django.core.validators.RegexValidator('\\s', 'No spaces allowed', code='no_spaces_allowed', inverse_match=True)], verbose_name='SN'),
+            model_name="asset",
+            name="sn",
+            field=ralph.lib.mixins.fields.NullableCharField(
+                blank=True,
+                max_length=200,
+                null=True,
+                unique=True,
+                validators=[
+                    django.core.validators.RegexValidator(
+                        "\\s",
+                        "No spaces allowed",
+                        code="no_spaces_allowed",
+                        inverse_match=True,
+                    )
+                ],
+                verbose_name="SN",
+            ),
         ),
     ]

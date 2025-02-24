@@ -16,7 +16,7 @@ def hook_name_to_env_name(name, prefix='HOOKS'):
 
 
 @lru_cache.lru_cache(maxsize=None)
-def get_hook(name: str, variant: Optional[str]=None) -> Callable[..., Any]:
+def get_hook(name: str, variant: Optional[str] = None) -> Callable[..., Any]:
     """Returns function based on configuration and entry_points."""
     loaded_func = None
 

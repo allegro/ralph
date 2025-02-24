@@ -10,8 +10,8 @@ from ralph.back_office.tests.factories import WarehouseFactory
 class AccessoryFactory(DjangoModelFactory):
     manufacturer = SubFactory(ManufacturerFactory)
     category = SubFactory(CategoryFactory)
-    accessory_name = Sequence(lambda n: 'Accessory {}'.format(n))
-    product_number = Sequence(lambda n: 'Product number {}'.format(n))
+    accessory_name = Sequence(lambda n: "Accessory {}".format(n))
+    product_number = Sequence(lambda n: "Product number {}".format(n))
     owner = SubFactory(UserFactory)
     status = AccessoryStatus.new
     number_bought = 1

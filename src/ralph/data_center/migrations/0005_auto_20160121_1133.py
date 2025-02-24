@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.db import migrations, models
+from django.db import migrations
+
 from ralph.data_center.models.physical import ACCESSORY_DATA
 
 
@@ -17,13 +18,10 @@ def unload_initial_accessory(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('data_center', '0004_auto_20151204_0758'),
+        ("data_center", "0004_auto_20151204_0758"),
     ]
 
     operations = [
-        migrations.RunPython(
-            initial_accessory, reverse_code=unload_initial_accessory
-        ),
+        migrations.RunPython(initial_accessory, reverse_code=unload_initial_accessory),
     ]

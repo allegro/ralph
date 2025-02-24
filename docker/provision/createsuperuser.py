@@ -7,7 +7,6 @@ django.setup()
 
 from django.contrib.auth import get_user_model
 
-
 User = get_user_model()
 
 username = os.getenv('RALPH_DEFAULT_SUPERUSER_NAME', 'ralph')

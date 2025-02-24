@@ -227,7 +227,7 @@ class PolymorphicQuerySet(models.QuerySet):
         try:
             cache_ = self._my_cache.copy()
             pks = [pk for pk in self._pks_order]
-        except AttributeError as e:
+        except AttributeError:
             yield from self._result_cache
         else:
             for pk in pks:

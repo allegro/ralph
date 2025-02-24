@@ -6,13 +6,13 @@ from dj.choices import Choices
 class DataCenterAssetStatus(Choices):
     _ = Choices.Choice
 
-    new = _('new')
-    used = _('in use')
-    free = _('free')
-    damaged = _('damaged')
-    liquidated = _('liquidated')
-    to_deploy = _('to deploy')
-    cleaned = _('cleaned')
+    new = _("new")
+    used = _("in use")
+    free = _("free")
+    damaged = _("damaged")
+    liquidated = _("liquidated")
+    to_deploy = _("to deploy")
+    cleaned = _("cleaned")
     pre_liquidated = _("pre liquidated")
 
 
@@ -30,16 +30,12 @@ class Orientation(Choices):
 
     @classmethod
     def is_width(cls, orientation):
-        is_width = orientation in set(
-            [choice.id for choice in cls.WIDTH.choices]
-        )
+        is_width = orientation in set([choice.id for choice in cls.WIDTH.choices])
         return is_width
 
     @classmethod
     def is_depth(cls, orientation):
-        is_depth = orientation in set(
-            [choice.id for choice in cls.DEPTH.choices]
-        )
+        is_depth = orientation in set([choice.id for choice in cls.DEPTH.choices])
         return is_depth
 
 

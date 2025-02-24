@@ -11,20 +11,21 @@ import os
 import subprocess
 import sys
 import tempfile
-from optparse import OptionParser
 from logging import handlers as logging_handlers
+from optparse import OptionParser
 
 IS_PY3 = sys.version_info[0] == 3
 if IS_PY3:
     from dbm import gnu as cache_db
-    from urllib.request import urlopen, Request
-    from urllib.parse import urlencode
     from urllib.error import HTTPError
+    from urllib.parse import urlencode
+    from urllib.request import Request, urlopen
     string_types = (str,)
 else:
     import dbm as cache_db
     from urllib import urlencode
-    from urllib2 import urlopen, Request, HTTPError
+
+    from urllib2 import HTTPError, Request, urlopen
     string_types = (basestring,)
 
 

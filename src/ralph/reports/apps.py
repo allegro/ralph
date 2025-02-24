@@ -3,5 +3,5 @@ from ralph.apps import RalphAppConfig
 
 
 class ReportsConfig(RalphAppConfig):
-    name = 'ralph.reports'
-    verbose_name = 'Reports'
+    name = "ralph.reports"
+    verbose_name = "Reports"

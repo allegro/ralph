@@ -5,8 +5,8 @@ import uuid
 class ReportNode(object):
     """The basic report node. It is simple object which store name, count,
     parent and children."""
-    def __init__(self, name, count=0, parent=None, children=[],
-                 link=None, **kwargs):
+
+    def __init__(self, name, count=0, parent=None, children=[], link=None, **kwargs):
         self.name = name
         self.count = count
         self.parent = parent
@@ -34,17 +34,18 @@ class ReportNode(object):
 
     def to_dict(self):
         return {
-            'name': self.name,
-            'count': self.count,
+            "name": self.name,
+            "count": self.count,
         }
 
     def __str__(self):
-        return '{} ({})'.format(self.name, self.count)
+        return "{} ({})".format(self.name, self.count)
 
 
 class ReportContainer(list):
     """Container for nodes. This class provides few helpful methods to
     manipulate on node set."""
+
     def get(self, name):
         return next((node for node in self if node.name == name), None)
 
@@ -84,8 +85,9 @@ class ReportContainer(list):
     def to_dict(self):
         def traverse(node):
             ret = node.to_dict()
-            ret['children'] = []
+            ret["children"] = []
             for child in node.children:
-                ret['children'].append(traverse(child))
+                ret["children"].append(traverse(child))
             return ret
+
         return [traverse(root) for root in self.roots]

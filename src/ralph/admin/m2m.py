@@ -39,6 +39,7 @@ class AuthorAdmin(admin.ModelAdmin):
     inlines = [AuthorArticlesM2MInline]
 ```
 """
+
 from functools import partial
 
 from django import forms

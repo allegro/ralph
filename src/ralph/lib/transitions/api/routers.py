@@ -22,7 +22,7 @@ router.register(r'transitions-history', TransitionsHistoryViewSet)
 router.register(
     r'(?P<app_label>\w+)/(?P<model>\w+)/(?P<obj_pk>\w+)/transitions',
     AvailableTransitionViewSet,
-    base_name='available-transiton'
+    basename='available-transiton'
 )
 
 urlpatterns = [

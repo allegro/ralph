@@ -6,25 +6,24 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('networks', '0015_auto_20211115_1125'),
+        ("networks", "0015_auto_20211115_1125"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='network',
-            name='level',
+            model_name="network",
+            name="level",
             field=models.PositiveIntegerField(editable=False),
         ),
         migrations.AlterField(
-            model_name='network',
-            name='lft',
+            model_name="network",
+            name="lft",
             field=models.PositiveIntegerField(editable=False),
         ),
         migrations.AlterField(
-            model_name='network',
-            name='rght',
+            model_name="network",
+            name="rght",
             field=models.PositiveIntegerField(editable=False),
         ),
     ]

@@ -11,27 +11,21 @@ class ImportedObjectDoesNotExist(Exception):
 
 
 class ImportedObjects(TimeStampMixin, models.Model):
-
     """Django models for imported objects."""
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_pk = models.IntegerField(db_index=True)
     old_object_pk = models.CharField(max_length=255, db_index=True)
-    old_ci_uid = models.CharField(
-        max_length=255, db_index=True, null=True, blank=True
-    )
-    object = fields.GenericForeignKey('content_type', 'object_pk')
+    old_ci_uid = models.CharField(max_length=255, db_index=True, null=True, blank=True)
+    object = fields.GenericForeignKey("content_type", "object_pk")
 
     def __str__(self):
-        return "{} - {}".format(
-            self.content_type.app_label,
-            self.content_type.model
-        )
+        return "{} - {}".format(self.content_type.app_label, self.content_type.model)
 
     class Meta:
         unique_together = [
-            ('content_type', 'object_pk'),
-            ('content_type', 'old_object_pk')
+            ("content_type", "object_pk"),
+            ("content_type", "old_object_pk"),
         ]
 
     @classmethod
@@ -42,7 +36,7 @@ class ImportedObjects(TimeStampMixin, models.Model):
         try:
             imported_obj = cls.objects.get(
                 old_object_pk=old_pk,
-                content_type=ContentType.objects.get_for_model(model)
+                content_type=ContentType.objects.get_for_model(model),
             )
         except cls.DoesNotExist:
             raise ImportedObjectDoesNotExist()
@@ -51,7 +45,7 @@ class ImportedObjects(TimeStampMixin, models.Model):
                 return model.objects.get(id=imported_obj.object_pk)
             except model.DoesNotExist:
                 raise ImportedObjectDoesNotExist(
-                    'Target object does not exist (it was probably removed)'
+                    "Target object does not exist (it was probably removed)"
                 )
 
     @classmethod
@@ -69,7 +63,7 @@ class ImportedObjects(TimeStampMixin, models.Model):
         return cls.objects.create(
             content_type=ContentType.objects.get_for_model(obj._meta.model),
             object_pk=obj.pk,
-            old_object_pk=old_pk
+            old_object_pk=old_pk,
         )
 
     @classmethod
@@ -86,7 +80,7 @@ class ImportedObjects(TimeStampMixin, models.Model):
         try:
             imported_obj = cls.objects.get(
                 object_pk=obj.pk,
-                content_type=ContentType.objects.get_for_model(obj._meta.model)
+                content_type=ContentType.objects.get_for_model(obj._meta.model),
             )
         except cls.DoesNotExist:
             raise ImportedObjectDoesNotExist()

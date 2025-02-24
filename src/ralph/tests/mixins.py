@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 from importlib import import_module, reload
+
 from django.conf import settings
 from django.urls import clear_url_caches
 
@@ -8,8 +9,7 @@ from ralph.tests.factories import UserFactory
 
 
 class ClientMixin(object):
-
-    def login_as_user(self, user=None, password='ralph', *args, **kwargs):
+    def login_as_user(self, user=None, password="ralph", *args, **kwargs):
         if not user:
             user = UserFactory(*args, **kwargs)
             user.is_superuser = True
@@ -23,6 +23,7 @@ class ReloadUrlsMixin(object):
     """
     Use this mixin if you register dynamically models to admin.
     """
+
     def reload_urls(self):
         """
         Reload all url configs specified in `URLCONF_MODULES` list in settings.

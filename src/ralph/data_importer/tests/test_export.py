@@ -41,16 +41,20 @@ class SimulateAdminExportTestCase(TestCase):
         filters = filters or {}
         admin_class = ralph_site._registry[model]
         request = RequestFactory().get(
-            reverse('admin:{}_{}_export'.format(
-                model._meta.app_label, model._meta.model_name
-            )),
-            filters
+            reverse(
+                "admin:{}_{}_export".format(
+                    model._meta.app_label, model._meta.model_name
+                )
+            ),
+            filters,
         )
         request.user = self.user
 
         file_format = RawFormat()
         queryset = admin_class.get_export_queryset(request)
-        export_data = admin_class.get_export_data(file_format, queryset, request=request)
+        export_data = admin_class.get_export_data(
+            file_format, queryset, request=request
+        )
         return export_data
 
     def _init(self, num=10):
@@ -64,17 +68,18 @@ class SimulateAdminExportTestCase(TestCase):
         first, second = nums
 
         self._init(first)
-        with CaptureQueriesContext(connections['default']) as cqc:
+        with CaptureQueriesContext(connections["default"]) as cqc:
             func()
             first_queries = len(cqc)
 
         self._init(second)
-        with CaptureQueriesContext(connections['default']) as cqc:
+        with CaptureQueriesContext(connections["default"]) as cqc:
             func()
             second_queries = len(cqc)
         self.assertEqual(
-            first_queries, second_queries,
-            msg=f'Different queries count. First: {first_queries}, second {second_queries}'
+            first_queries,
+            second_queries,
+            msg=f"Different queries count. First: {first_queries}, second {second_queries}",
         )
         self.assertLessEqual(second_queries, max_queries)
 
@@ -110,20 +115,19 @@ class DataCenterAssetExporterTestCase(SimulateAdminExportTestCase):
             self.data_center_assets_map[dca.id] = dca
 
     def test_data_center_asset_export_queries_count(self):
-        self._test_queries_count(func=lambda: self._export(
-            DataCenterAsset
-        ), max_queries=12)
+        self._test_queries_count(
+            func=lambda: self._export(DataCenterAsset), max_queries=12
+        )
 
     def test_data_center_asset_export_filtered(self):
         self._init(10)
         first_id = next(iter(self.data_center_assets_map.keys()))
-        with CaptureQueriesContext(connections['default']) as cqc:
-            export_data = self._export(
-                DataCenterAsset, filters={'id': first_id}
-            )
+        with CaptureQueriesContext(connections["default"]) as cqc:
+            export_data = self._export(DataCenterAsset, filters={"id": first_id})
             queries = len(cqc)
         self.assertEqual(len(export_data.dict), 1)
         self.assertLessEqual(queries, 12)
+
 
 class DataCenterAssetExporterTestCaseWithParent(DataCenterAssetExporterTestCase):
     def _init(self, num=10):
@@ -131,7 +135,7 @@ class DataCenterAssetExporterTestCaseWithParent(DataCenterAssetExporterTestCase)
         self.data_center_assets_map = {}
         for i, dca in enumerate(self.data_center_assets, start=num * 2):
             dca.parent = DataCenterAssetFullFactory()
-            dca.parent.management_ip = '10.20.30.{}'.format(i)
+            dca.parent.management_ip = "10.20.30.{}".format(i)
             dca.save()
             self.data_center_assets_map[dca.id] = dca
             self.data_center_assets_map[dca.parent.id] = dca.parent
@@ -140,43 +144,40 @@ class DataCenterAssetExporterTestCaseWithParent(DataCenterAssetExporterTestCase)
         self._init(10)
         export_data = self._export(DataCenterAsset)
         # check if management ip is properly exported
-        self.assertNotEqual(export_data.dict[0]['management_ip'], '')
+        self.assertNotEqual(export_data.dict[0]["management_ip"], "")
 
     def test_data_center_asset_export_with_parent_queries_count(self):
-        self._test_queries_count(func=lambda: self._export(
-            DataCenterAsset
-        ), max_queries=12)
+        self._test_queries_count(
+            func=lambda: self._export(DataCenterAsset), max_queries=12
+        )
 
     def test_data_center_asset_export_with_parent(self):
         self._init(10)
-        export_data = self._export(
-            DataCenterAsset, filters={'parent__isnull': False}
-        )
+        export_data = self._export(DataCenterAsset, filters={"parent__isnull": False})
 
-        dca_with_parent = next(dca for dca in export_data.dict if dca['parent'])
-        dca_0_parent = self.data_center_assets_map[int(dca_with_parent['parent'])]
+        dca_with_parent = next(dca for dca in export_data.dict if dca["parent"])
+        dca_0_parent = self.data_center_assets_map[int(dca_with_parent["parent"])]
         # check if parent management ip is properly exported
-        self.assertNotEqual(dca_with_parent['parent_management_ip'], '')
-        self.assertEqual(dca_with_parent['parent_str'], dca_0_parent.baseobject_ptr._str_with_type)
+        self.assertNotEqual(dca_with_parent["parent_management_ip"], "")
+        self.assertEqual(
+            dca_with_parent["parent_str"], dca_0_parent.baseobject_ptr._str_with_type
+        )
 
 
 @ddt
 class BaseObjectsSupportExporterTestCase(SimulateAdminExportTestCase):
-
     def test_support_export_works_with_support_without_price(self):
         support = SupportFactory(price=None)
         BaseObjectsSupportFactory(support=support)
         export_data = self._export(BaseObjectsSupport)
-        self.assertEqual(export_data.dict[0]['support__price'], '')
-        self.assertEqual(
-            export_data.dict[0]['support__price_per_object'], '0.00'
-        )
+        self.assertEqual(export_data.dict[0]["support__price"], "")
+        self.assertEqual(export_data.dict[0]["support__price_per_object"], "0.00")
 
     @unpack
     @data(
-        (Decimal('11477.95'), 11, Decimal('1043.45')),
-        (Decimal('10000'), 1, Decimal('10000.00')),
-        (Decimal('0.0'), 100, Decimal('0.00'))
+        (Decimal("11477.95"), 11, Decimal("1043.45")),
+        (Decimal("10000"), 1, Decimal("10000.00")),
+        (Decimal("0.0"), 100, Decimal("0.00")),
     )
     def test_get_content_type_for_model(
         self, support_price, objects_count, expected_price
@@ -185,6 +186,5 @@ class BaseObjectsSupportExporterTestCase(SimulateAdminExportTestCase):
         BaseObjectsSupportFactory.create_batch(objects_count, support=support)
         export_data = self._export(BaseObjectsSupport)
         self.assertEqual(
-            export_data.dict[0]['support__price_per_object'],
-            str(expected_price)
+            export_data.dict[0]["support__price_per_object"], str(expected_price)
         )

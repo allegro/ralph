@@ -259,9 +259,7 @@ class DCHostFilterSet(NetworkableObjectFilters):
 
 # TODO: move to data_center and use DCHost proxy model
 class DCHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
-    queryset = (
-        BaseObject.polymorphic_objects
-    )
+    queryset = BaseObject.polymorphic_objects
     serializer_class = ralph.assets.api.serializers_dchosts.DCHostSerializer
     renderer_classes = renderer_classes_without_form(RalphAPIViewSet.renderer_classes)
     http_method_names = ["get", "options", "head", "patch", "post"]
@@ -308,19 +306,27 @@ class DCHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
                 obj_ = self.get_object()
                 if isinstance(obj_, VirtualServer):
                     from ralph.virtual.api import VirtualServerSaveSerializer
+
                     return VirtualServerSaveSerializer
                 elif isinstance(obj_, DataCenterAsset):
-                    from ralph.data_center.api.serializers import DataCenterAssetSaveSerializer
+                    from ralph.data_center.api.serializers import (
+                        DataCenterAssetSaveSerializer,
+                    )
+
                     return DataCenterAssetSaveSerializer
                 elif isinstance(obj_, CloudHost):
                     from ralph.virtual.api import SaveCloudHostSerializer
+
                     return SaveCloudHostSerializer
                 elif isinstance(obj_, Cluster):
                     from ralph.data_center.api.serializers import ClusterSerializer
+
                     return ClusterSerializer
                 else:
                     raise NotFound()
-            except AssertionError:  # for some reason when opening browsable api this raises
+            except (
+                AssertionError
+            ):  # for some reason when opening browsable api this raises
                 pass
         return ralph.assets.api.serializers_dchosts.DCHostSerializer
 
@@ -328,7 +334,7 @@ class DCHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         return (
             self.queryset.dc_hosts()
             .select_related(*self.select_related)
-            .polymorphic_select_related(Cluster=['type'], CloudHost=['hypervisor'])
+            .polymorphic_select_related(Cluster=["type"], CloudHost=["hypervisor"])
             .polymorphic_prefetch_related(
                 Cluster=[*self.prefetch_related],
                 DataCenterAsset=[*self.prefetch_related],

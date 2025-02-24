@@ -1,1 +1,1 @@
-default_app_config = 'ralph.notifications.apps.NotificationConfig'
+default_app_config = "ralph.notifications.apps.NotificationConfig"

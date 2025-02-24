@@ -8,6 +8,7 @@ from resource import getrusage, RUSAGE_SELF
 from django.conf import settings
 from django.db.backends.utils import CursorWrapper
 from django.utils.deprecation import MiddlewareMixin
+
 from .collector import statsd
 
 PROCESSING_TIME_METRIC_PREFIX = getattr(

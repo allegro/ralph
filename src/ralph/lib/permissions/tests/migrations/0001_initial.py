@@ -2,8 +2,8 @@
 from __future__ import unicode_literals
 
 import django
-from django.db import migrations, models
 from django.conf import settings
+from django.db import migrations, models
 
 
 class Migration(migrations.Migration):

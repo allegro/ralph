@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """SAM module models."""
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -30,13 +31,7 @@ _SELECT_USED_LICENCES_QUERY = """
 """
 
 
-class LicenceType(
-    AdminAbsoluteUrlMixin,
-    PermByFieldMixin,
-    NamedMixin,
-    models.Model
-):
-
+class LicenceType(AdminAbsoluteUrlMixin, PermByFieldMixin, NamedMixin, models.Model):
     """The type of a licence"""
 
     @classmethod
@@ -44,14 +39,9 @@ class LicenceType(
         return cls(name=string_name)
 
 
-class Software(
-    AdminAbsoluteUrlMixin,
-    PermByFieldMixin,
-    NamedMixin,
-    models.Model
-):
-
+class Software(AdminAbsoluteUrlMixin, PermByFieldMixin, NamedMixin, models.Model):
     """The category of the licensed software"""
+
     _allow_in_dashboard = True
 
     asset_type = models.PositiveSmallIntegerField(
@@ -69,7 +59,7 @@ class Software(
             yield licence
 
     class Meta:
-        verbose_name_plural = _('software categories')
+        verbose_name_plural = _("software categories")
 
 
 class LicencesUsedFreeManager(models.Manager):
@@ -84,8 +74,8 @@ class LicencesUsedFreeManager(models.Manager):
         # about default value for Sum
         id_column = Licence.baseobject_ptr.field.column
 
-        user_quantity_field = Licence.users.through._meta.get_field('quantity')
-        user_licence_field = Licence.users.through._meta.get_field('licence')
+        user_quantity_field = Licence.users.through._meta.get_field("quantity")
+        user_licence_field = Licence.users.through._meta.get_field("licence")
         user_count_query = _SELECT_USED_LICENCES_QUERY.format(
             assignment_table=Licence.users.through._meta.db_table,
             quantity_column=user_quantity_field.db_column or user_quantity_field.column,  # noqa
@@ -94,35 +84,45 @@ class LicencesUsedFreeManager(models.Manager):
             id_column=id_column,
         )
 
-        base_object_quantity_field = Licence.base_objects.through._meta.get_field('quantity')  # noqa
-        base_object_licence_field = Licence.base_objects.through._meta.get_field('licence')  # noqa
+        base_object_quantity_field = Licence.base_objects.through._meta.get_field(
+            "quantity"
+        )  # noqa
+        base_object_licence_field = Licence.base_objects.through._meta.get_field(
+            "licence"
+        )  # noqa
         base_object_count_query = _SELECT_USED_LICENCES_QUERY.format(
             assignment_table=Licence.base_objects.through._meta.db_table,
-            quantity_column=base_object_quantity_field.db_column or base_object_quantity_field.column,  # noqa
-            licence_id_column=base_object_licence_field.db_column or base_object_licence_field.column,  # noqa
+            quantity_column=base_object_quantity_field.db_column
+            or base_object_quantity_field.column,  # noqa
+            licence_id_column=base_object_licence_field.db_column
+            or base_object_licence_field.column,  # noqa
             licence_table=Licence._meta.db_table,
             id_column=id_column,
         )
 
-        return super().get_queryset().extra(
-            select={
-                'user_count': user_count_query,
-                'baseobject_count': base_object_count_query,
-            }
+        return (
+            super()
+            .get_queryset()
+            .extra(
+                select={
+                    "user_count": user_count_query,
+                    "baseobject_count": base_object_count_query,
+                }
+            )
         )
 
 
 LICENCES_RELATED_OBJECTS_PREFETCH_RELATED = [
-    'users',
+    "users",
     # prefetch all baseobjects related with licence; this allows to call
     # [bol.base_object for bol in licence.baseobjectlicence_set.all()]
     # without additional queries
     Prefetch(
-        'baseobjectlicence_set__base_object',
+        "baseobjectlicence_set__base_object",
         # polymorphic manager is used to get final instance of the object
         # (ex. DataCenterAsset)
-        queryset=BaseObject.polymorphic_objects.all()
-    )
+        queryset=BaseObject.polymorphic_objects.all(),
+    ),
 ]
 
 
@@ -130,9 +130,12 @@ class LicencesRelatedObjectsManager(models.Manager):
     """
     Prefetch related objects by-default
     """
+
     def get_queryset(self):
-        return super().get_queryset().prefetch_related(
-            *LICENCES_RELATED_OBJECTS_PREFETCH_RELATED
+        return (
+            super()
+            .get_queryset()
+            .prefetch_related(*LICENCES_RELATED_OBJECTS_PREFETCH_RELATED)
         )
 
 
@@ -143,8 +146,8 @@ class LicencesUsedFreeRelatedObjectsManager(
 
 
 class Licence(Regionalizable, AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
-
     """A set of licences for a single software with a single expiration date"""
+
     _allow_in_dashboard = True
 
     manufacturer = models.ForeignKey(
@@ -171,22 +174,22 @@ class Licence(Regionalizable, AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
         on_delete=models.PROTECT,
     )
     number_bought = models.IntegerField(
-        verbose_name=_('number of purchased items'),
+        verbose_name=_("number of purchased items"),
     )
     sn = models.TextField(
-        verbose_name=_('SN / key'),
+        verbose_name=_("SN / key"),
         null=True,
         blank=True,
     )
     niw = models.CharField(
         max_length=200,
-        verbose_name=_('inventory number'),
+        verbose_name=_("inventory number"),
         null=False,
         unique=True,
-        default='N/A',
+        default="N/A",
     )
     invoice_date = models.DateField(
-        verbose_name=_('invoice date'),
+        verbose_name=_("invoice date"),
         null=True,
         blank=True,
     )
@@ -203,7 +206,7 @@ class Licence(Regionalizable, AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
         decimal_places=2,
         default=settings.DEFAULT_LICENCE_DEPRECIATION_RATE,
         help_text=_(
-            'This value is in percentage.'
+            "This value is in percentage."
             ' For example value: "100" means it depreciates during a year.'
             ' Value: "25" means it depreciates during 4 years, and so on... .'
         ),
@@ -214,33 +217,31 @@ class Licence(Regionalizable, AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
         null=True,
         blank=True,
         help_text=_(
-            'Any value to help your accounting department '
-            'identify this licence'
+            "Any value to help your accounting department " "identify this licence"
         ),
     )
     base_objects = models.ManyToManyField(
         BaseObject,
-        verbose_name=_('assigned base objects'),
-        through='BaseObjectLicence',
-        related_name='+',
+        verbose_name=_("assigned base objects"),
+        through="BaseObjectLicence",
+        related_name="+",
     )
     users = models.ManyToManyField(
-        settings.AUTH_USER_MODEL,
-        through='LicenceUser',
-        related_name='+'
+        settings.AUTH_USER_MODEL, through="LicenceUser", related_name="+"
     )
     provider = models.CharField(max_length=100, null=True, blank=True)
-    invoice_no = models.CharField(
-        max_length=128, db_index=True, null=True, blank=True
-    )
+    invoice_no = models.CharField(max_length=128, db_index=True, null=True, blank=True)
     license_details = models.CharField(
-        verbose_name=_('license details'),
+        verbose_name=_("license details"),
         max_length=1024,
         blank=True,
-        default='',
+        default="",
     )
     office_infrastructure = models.ForeignKey(
-        'back_office.OfficeInfrastructure', null=True, blank=True, on_delete=models.CASCADE
+        "back_office.OfficeInfrastructure",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
     )
     budget_info = models.ForeignKey(
         BudgetInfo,
@@ -252,9 +253,7 @@ class Licence(Regionalizable, AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
     start_usage = models.DateField(
         blank=True,
         null=True,
-        help_text=(
-            'Fill it if date of first usage is different then date of creation'
-        )
+        help_text=("Fill it if date of first usage is different then date of creation"),
     )
 
     polymorphic_objects = PolymorphicQuerySet.as_manager()
@@ -288,22 +287,23 @@ class Licence(Regionalizable, AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
             # try use fields from objects_used_free manager
             return (self.user_count or 0) + (self.baseobject_count or 0)
         except AttributeError:
-            base_objects_qs = self.base_objects.through.objects.filter(
-                licence=self
-            )
+            base_objects_qs = self.base_objects.through.objects.filter(licence=self)
             users_qs = self.users.through.objects.filter(licence=self)
 
             def get_sum(qs):
-                return qs.aggregate(sum=Sum('quantity'))['sum'] or 0
+                return qs.aggregate(sum=Sum("quantity"))["sum"] or 0
+
             return sum(map(get_sum, [base_objects_qs, users_qs]))
-    used._permission_field = 'number_bought'
+
+    used._permission_field = "number_bought"
 
     @cached_property
     def free(self):
         if not self.pk:
             return 0
         return self.number_bought - self.used
-    free._permission_field = 'number_bought'
+
+    free._permission_field = "number_bought"
 
     @classmethod
     def get_autocomplete_queryset(cls):
@@ -319,52 +319,47 @@ class BaseObjectLicence(models.Model):
     licence = models.ForeignKey(Licence, on_delete=models.CASCADE)
     base_object = BaseObjectForeignKey(
         BaseObject,
-        related_name='licences',
-        verbose_name=_('Asset'),
+        related_name="licences",
+        verbose_name=_("Asset"),
         limit_models=[
-            'back_office.BackOfficeAsset',
-            'data_center.DataCenterAsset',
-            'virtual.VirtualServer',
-            'data_center.Cluster',
+            "back_office.BackOfficeAsset",
+            "data_center.DataCenterAsset",
+            "virtual.VirtualServer",
+            "data_center.Cluster",
         ],
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
     )
     quantity = models.PositiveIntegerField(default=1)
 
     class Meta:
-        unique_together = ('licence', 'base_object')
+        unique_together = ("licence", "base_object")
 
     def __str__(self):
-        return '{} of {} assigned to {}'.format(
+        return "{} of {} assigned to {}".format(
             self.quantity, self.licence, self.base_object
         )
 
     def clean(self):
-        bo_asset = getattr_dunder(
-            self.base_object, 'asset__backofficeasset'
-        )
-        if (
-            bo_asset and self.licence and
-            self.licence.region_id != bo_asset.region_id
-        ):
+        bo_asset = getattr_dunder(self.base_object, "asset__backofficeasset")
+        if bo_asset and self.licence and self.licence.region_id != bo_asset.region_id:
             raise ValidationError(
-                _('Asset region is in a different region than licence.')
+                _("Asset region is in a different region than licence.")
             )
 
 
 class LicenceUser(models.Model):
     licence = models.ForeignKey(Licence, on_delete=models.CASCADE)
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        related_name='licences',
-        on_delete=models.CASCADE
+        settings.AUTH_USER_MODEL, related_name="licences", on_delete=models.CASCADE
     )
     quantity = models.PositiveIntegerField(default=1)
 
     class Meta:
-        unique_together = ('licence', 'user')
+        unique_together = ("licence", "user")
 
     def __str__(self):
-        return '{} of {} assigned to {}'.format(
-            self.quantity, self.licence, self.user,
+        return "{} of {} assigned to {}".format(
+            self.quantity,
+            self.licence,
+            self.user,
         )

@@ -5,15 +5,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('back_office', '0004_warehouse_stocktaking_enabled'),
+        ("back_office", "0004_warehouse_stocktaking_enabled"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='warehouse',
-            name='stocktaking_tag_suffix',
-            field=models.CharField(max_length=8, default=''),
+            model_name="warehouse",
+            name="stocktaking_tag_suffix",
+            field=models.CharField(max_length=8, default=""),
         ),
     ]

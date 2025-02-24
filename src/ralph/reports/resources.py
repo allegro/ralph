@@ -13,7 +13,6 @@ from ralph.data_center.models import (
 
 
 class ChoiceWidget(Widget):
-
     def __init__(self, choice: Type[Choices]) -> None:
         self.choice = choice
 
@@ -21,20 +20,27 @@ class ChoiceWidget(Widget):
         if value:
             return self.choice.from_id(value).name
         else:
-            return ''
+            return ""
 
 
 class ReadonlyField(Field):
-
-    def __init__(
-        self, attribute=None, column_name=None, widget=None, default=None
-    ):
+    def __init__(self, attribute=None, column_name=None, widget=None, default=None):
         super().__init__(attribute, column_name, widget, default, False)
 
 
 DATA_CENTER_ASSET_FIELDS = (
-    'dc', 'server_room', 'rack', 'rack_orientation', 'orientation', 'position',
-    'model', 'hostname', 'management_ip', 'ip', 'barcode', 'sn'
+    "dc",
+    "server_room",
+    "rack",
+    "rack_orientation",
+    "orientation",
+    "position",
+    "model",
+    "hostname",
+    "management_ip",
+    "ip",
+    "barcode",
+    "sn",
 )
 
 
@@ -44,52 +50,31 @@ class DataCenterAssetTextResource(ModelResource):
     human friendly text form instead of database `id` field
     of the related object.
     """
-    dc = ReadonlyField(
-        attribute='rack__server_room__data_center__name'
-    )
-    server_room = ReadonlyField(
-        attribute='rack__server_room__name'
-    )
-    rack = ReadonlyField(
-        attribute='rack__name'
-    )
+
+    dc = ReadonlyField(attribute="rack__server_room__data_center__name")
+    server_room = ReadonlyField(attribute="rack__server_room__name")
+    rack = ReadonlyField(attribute="rack__name")
     rack_orientation = ReadonlyField(
-        attribute='rack__orientation',
-        widget=ChoiceWidget(choice=RackOrientation)
+        attribute="rack__orientation", widget=ChoiceWidget(choice=RackOrientation)
     )
     orientation = ReadonlyField(
-        attribute='orientation',
-        widget=ChoiceWidget(choice=Orientation)
+        attribute="orientation", widget=ChoiceWidget(choice=Orientation)
     )
-    model = ReadonlyField(
-        attribute='model__name'
-    )
-    management_ip = ReadonlyField(
-        attribute='management_ip'
-    )
-    ip = ReadonlyField(
-        attribute='ip'
-    )
-    service_uid = ReadonlyField(
-        attribute='service_env__service__uid'
-    )
-    service = ReadonlyField(
-        attribute='service_env__service'
-    )
-    environment = ReadonlyField(
-        attribute='service_env__environment'
-    )
-    configuration_path = ReadonlyField(
-        attribute='configuration_path'
-    )
+    model = ReadonlyField(attribute="model__name")
+    management_ip = ReadonlyField(attribute="management_ip")
+    ip = ReadonlyField(attribute="ip")
+    service_uid = ReadonlyField(attribute="service_env__service__uid")
+    service = ReadonlyField(attribute="service_env__service")
+    environment = ReadonlyField(attribute="service_env__environment")
+    configuration_path = ReadonlyField(attribute="configuration_path")
 
     def get_queryset(self):
         return DataCenterAsset.objects.all().select_related(
-            'service_env__service',
-            'service_env__environment',
-            'rack__server_room__data_center',
-            'model',
-            'configuration_path',
+            "service_env__service",
+            "service_env__environment",
+            "rack__server_room__data_center",
+            "model",
+            "configuration_path",
         )
 
     class Meta:
@@ -103,10 +88,12 @@ class DataCenterAssetTextResource(ModelResource):
         # a separate query will be issued here to fetch related `ethernet_set`.
         # To minimise the number of queries to the possible extent,
         # `select_related` for `ipaddress` field is used here.
-        ethernet = dc_asset.ethernet_set.select_related('ipaddress').filter(
-            ipaddress__is_management=is_management
-        ).first()
-        return getattr(ethernet, 'ipaddress', None)
+        ethernet = (
+            dc_asset.ethernet_set.select_related("ipaddress")
+            .filter(ipaddress__is_management=is_management)
+            .first()
+        )
+        return getattr(ethernet, "ipaddress", None)
 
     def dehydrate_management_ip(self, dc_asset):
         return str(self._get_ip(dc_asset))
