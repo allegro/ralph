@@ -23,7 +23,7 @@ jobs:
       - name: Downgrade pip
         run: pip3 install pip==19.3.1
       - name: Cache pip dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('base.txt', 'dev.txt', 'docs.txt', 'hermes.txt', 'openstack.txt', 'prod.txt', 'prod_ldap.txt', '', 'test.txt') }}
@@ -102,7 +102,7 @@ jobs:
         run: pip3 install "${GITHUB_WORKSPACE}"
 
       - name: Cache pip dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('base.txt', 'code_style.txt', 'dev.txt', 'docs.txt', 'hermes.txt', 'openstack.txt', 'prod.txt', 'prod_ldap.txt', '', 'test.txt') }}
@@ -151,7 +151,7 @@ jobs:
         run: pip3 install "${GITHUB_WORKSPACE}"
 
       - name: Cache pip dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('base.txt', 'code_style.txt', 'dev.txt', 'docs.txt', 'hermes.txt', 'openstack.txt', 'prod.txt', 'prod_ldap.txt', '', 'test.txt') }}
@@ -244,7 +244,7 @@ jobs:
         run: pip3 install "${GITHUB_WORKSPACE}"
 
       - name: Cache pip dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('base.txt', 'code_style.txt', 'dev.txt', 'docs.txt', 'hermes.txt', 'openstack.txt', 'prod.txt', 'prod_ldap.txt', '', 'test.txt') }}
