@@ -270,7 +270,9 @@ def my_services(user):
                 queryset=ServiceEnvironment.objects.prefetch_related(
                     Prefetch(
                         "baseobject_set",
-                        queryset=BaseObject.objects.order_by("content_type_id"),
+                        queryset=BaseObject.objects.exclude(
+                            content_type__model="vip"
+                        ).order_by("content_type_id"),
                     )
                 ),
             ),
