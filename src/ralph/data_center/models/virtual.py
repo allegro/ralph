@@ -16,7 +16,6 @@ from ralph.lib.mixins.models import (
     PreviousStateMixin,
 )
 from ralph.lib.transitions.fields import TransitionField
-from ralph.networks.models.networks import IPAddress
 
 
 class Database(AdminAbsoluteUrlMixin, BaseObject):
@@ -26,36 +25,6 @@ class Database(AdminAbsoluteUrlMixin, BaseObject):
 
     def __str__(self):
         return "Database: {}".format(self.service_env)
-
-
-class VIPProtocol(Choices):
-    _ = Choices.Choice
-
-    TCP = _("TCP")
-    UDP = _("UDP")
-
-
-class VIP(AdminAbsoluteUrlMixin, BaseObject):
-    name = models.CharField(_("name"), max_length=255)
-    ip = models.ForeignKey(IPAddress, on_delete=models.CASCADE)
-    port = models.PositiveIntegerField(verbose_name=_("port"), default=0)
-    protocol = models.PositiveIntegerField(
-        verbose_name=_("protocol"),
-        choices=VIPProtocol(),
-        default=VIPProtocol.TCP.id,
-    )
-
-    class Meta:
-        verbose_name = _("VIP")
-        verbose_name_plural = _("VIPs")
-        unique_together = ("ip", "port", "protocol")
-
-    def __str__(self):
-        return "IP: {}, port: {}, protocol: {}".format(
-            self.ip,
-            self.port,
-            VIPProtocol.from_id(self.protocol).name,
-        )
 
 
 class ClusterType(AdminAbsoluteUrlMixin, NamedMixin, models.Model):

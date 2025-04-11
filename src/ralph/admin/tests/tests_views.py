@@ -58,7 +58,6 @@ FACTORY_MAP = {
     "ralph.data_center.models.virtual.Cluster": "ralph.data_center.tests.factories.ClusterFactory",  # noqa
     "ralph.data_center.models.virtual.ClusterType": "ralph.data_center.tests.factories.ClusterTypeFactory",  # noqa
     "ralph.data_center.models.virtual.Database": "ralph.data_center.tests.factories.DatabaseFactory",  # noqa
-    "ralph.data_center.models.virtual.VIP": "ralph.data_center.tests.factories.VIPFactory",  # noqa
     "ralph.deployment.models.Preboot": "ralph.deployment.tests.factories.PrebootFactory",  # noqa
     "ralph.deployment.models.PrebootConfiguration": "ralph.deployment.tests.factories.PrebootConfigurationFactory",  # noqa
     "ralph.dhcp.models.DHCPServer": "ralph.dhcp.tests.factories.DHCPServerFactory",  # noqa

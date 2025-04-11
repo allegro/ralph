@@ -154,7 +154,7 @@ class ServiceBaseObjects(RalphDetailView):
         return (
             BaseObject.polymorphic_objects.filter(service_env__service=self.object)
             .select_related("service_env__environment", "content_type", "securityscan")
-            .exclude(content_type__model="vip")
+            .exclude(content_type__model="vip") # TODO remove after vip deletion
         )
 
     def get_context_data(self, **kwargs):

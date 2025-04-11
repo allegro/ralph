@@ -22,7 +22,6 @@ from ralph.data_center.models import (
     Rack,
     RackAccessory,
     ServerRoom,
-    VIP,
 )
 
 
@@ -166,10 +165,4 @@ class DataCenterAssetSaveSerializer(RalphAPISaveSerializer):
 class DatabaseSerializer(BaseObjectSerializer):
     class Meta(BaseObjectSerializer.Meta):
         model = Database
-        depth = 1
-
-
-class VIPSerializer(BaseObjectSerializer):
-    class Meta(BaseObjectSerializer.Meta):
-        model = VIP
         depth = 1

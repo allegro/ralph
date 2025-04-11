@@ -27,7 +27,6 @@ from ralph.data_center.api.serializers import (
     RackAccessorySerializer,
     RackSerializer,
     ServerRoomSerializer,
-    VIPSerializer,
 )
 from ralph.data_center.models import (
     Accessory,
@@ -40,7 +39,6 @@ from ralph.data_center.models import (
     Rack,
     RackAccessory,
     ServerRoom,
-    VIP,
 )
 from ralph.lib.visibility_scope.filters import visibility_scope_filter
 from ralph.virtual.models import CloudHost, VirtualServer
@@ -147,12 +145,6 @@ class DatabaseViewSet(RalphAPIViewSet):
         "service_env__service",
         "service_env__environment",
     )
-
-
-class VIPViewSet(RalphAPIViewSet):
-    prefetch_related = ("licences__tags", "tags", "custom_fields", "content_type")
-    queryset = VIP.objects.all()
-    serializer_class = VIPSerializer
 
 
 class ClusterTypeViewSet(RalphAPIViewSet):

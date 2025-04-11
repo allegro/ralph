@@ -701,26 +701,6 @@ class DatabaseAdmin(RalphAdmin):
     pass
 
 
-# @register(VIP)
-class VIPAdmin(RalphAdmin):
-    search_fields = ["name", "ip__address"]
-    list_display = ["name", "ip", "port", "protocol", "service_env"]
-    list_filter = ["ip", "port", "protocol", "service_env", "parent"]
-    list_select_related = ["ip", "service_env__service", "service_env__environment"]
-    raw_id_fields = ["ip", "service_env", "parent", "configuration_path"]
-    raw_id_override_parent = {"parent": Cluster}
-    fields = (
-        "name",
-        "ip",
-        "port",
-        "protocol",
-        "service_env",
-        "parent",
-        "remarks",
-        "tags",
-    )
-
-
 @register(Connection)
 class ConnectionAdmin(RalphAdmin):
     resource_class = resources.ConnectionResource
