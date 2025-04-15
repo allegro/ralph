@@ -850,17 +850,6 @@ class DataCenterAsset(
                 # RunTransitionView.get_success_url()
                 instances[i] = back_office_asset
 
-    @classmethod
-    @transition_action(
-        verbose_name=_("Cleanup scm status"),
-    )
-    def cleanup_scm_statuscheck(cls, instances, **kwargs):
-        with transaction.atomic():
-            for instance in instances:
-                try:
-                    instance.scmstatuscheck.delete()
-                except DataCenterAsset.scmstatuscheck.RelatedObjectDoesNotExist:
-                    pass
 
     @classmethod
     @transition_action(

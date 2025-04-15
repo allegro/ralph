@@ -14,7 +14,6 @@ from ralph.admin.mixins import RalphAdmin, RalphAdminForm, RalphTabularInline
 from ralph.assets.models import BaseObject
 from ralph.assets.models.components import Ethernet
 from ralph.assets.views import ComponentsAdminView, RalphDetailViewAdmin
-from ralph.configuration_management.views import SCMCheckInfo
 from ralph.data_center.admin import generate_list_filter_with_common_fields
 from ralph.data_center.models.physical import DataCenterAsset
 from ralph.data_center.models.virtual import BaseObjectCluster
@@ -104,9 +103,6 @@ class VirtualServerLicencesView(RalphDetailViewAdmin):
 
     inlines = [VirtualServerLicenceInline]
 
-
-class VirtualServerSCMInfo(SCMCheckInfo):
-    url_name = "virtualserver_scm_info"
 
 
 @register(VirtualServer)
@@ -273,10 +269,6 @@ class CloudNetworkInline(RalphTabularInline):
 
 class CloudHostNetworkView(NetworkView):
     pass
-
-
-class CloudHostSCMInfo(SCMCheckInfo):
-    url_name = "cloudhost_scm_info"
 
 
 @register(CloudHost)

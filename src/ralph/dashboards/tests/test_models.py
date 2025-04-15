@@ -3,7 +3,6 @@ from django.test import TestCase
 
 from ralph.assets.models import ServiceEnvironment
 from ralph.assets.tests.factories import ServiceEnvironmentFactory
-from ralph.configuration_management.models import SCMCheckResult
 from ralph.dashboards.models import AggregateType
 from ralph.dashboards.tests.factories import GraphFactory
 from ralph.data_center.models import DataCenterAsset
@@ -94,23 +93,22 @@ class GraphQuerysetForFilterTestCase(TestCase):
     def test_filtering_queryset_with_additional_filters(self):
         service_env_a = ServiceEnvironmentFactory(service__name="ServiceA")
         DataCenterAssetFullFactory.create_batch(
-            2, service_env=service_env_a, scmstatuscheck=None
+            2, service_env=service_env_a, invoice_no="12345"
         )
         DataCenterAssetFullFactory.create_batch(
             3,
             service_env=service_env_a,
-            scmstatuscheck__check_result=SCMCheckResult.scm_error,
-        )
-        DataCenterAssetFullFactory.create_batch(
-            4, service_env=service_env_a, scmstatuscheck__ok=True
+            invoice_no="67890",
         )
         DataCenterAssetFullFactory.create_batch(
             1,
             service_env__service__name="ServiceB",
+            invoice_no="12345"
         )
         DataCenterAssetFullFactory.create_batch(
             3,
             service_env__service__name="ServiceC",
+            invoice_no="12345"
         )
         ServiceEnvironmentFactory.create(service__name="ServiceD")
 
@@ -123,7 +121,7 @@ class GraphQuerysetForFilterTestCase(TestCase):
                     "model": "DataCenterAsset",
                     "filter": "service_env__service__name__in",
                     "value": "service__name",
-                    "additional_filters": {"scmstatuscheck__ok": False},
+                    "additional_filters": {"invoice_no": "12345"},
                 },
             },
             model=ContentType.objects.get_for_model(ServiceEnvironment),
@@ -133,12 +131,12 @@ class GraphQuerysetForFilterTestCase(TestCase):
         filtered_qs = graph.get_queryset_for_filter(
             dca_qs, {"service__name": "ServiceA"}
         )
-        self.assertEqual(filtered_qs.count(), 3)
+        self.assertEqual(filtered_qs.count(), 2)
         self.assertEqual(
             list(
                 filtered_qs.values_list(
-                    "service_env__service__name", "scmstatuscheck__ok"
+                    "service_env__service__name", "invoice_no"
                 )
             ),
-            [("ServiceA", False)] * 3,
+            [("ServiceA", "12345")] * 2,
         )

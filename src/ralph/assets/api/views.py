@@ -145,7 +145,6 @@ class BaseObjectViewSet(PolymorphicViewSetMixin, RalphAPIViewSet):
         "service_env",
         "service_env__service__uid",
         "content_type",
-        "scmstatuscheck__check_result",
     ]
     extended_filter_fields = {
         "name": BASE_OBJECT_NAME_FILTER_FIELDS,

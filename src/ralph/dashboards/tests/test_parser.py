@@ -7,19 +7,18 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.test import SimpleTestCase, TestCase
 
-from ralph.assets.tests.factories import ServiceEnvironmentFactory
-from ralph.configuration_management.models import SCMCheckResult
-from ralph.configuration_management.tests.factories import SCMStatusCheckFactory
+from ralph.assets.models import Service
+from ralph.assets.tests.factories import ServiceEnvironmentFactory, ServiceFactory
 from ralph.dashboards.admin_filters import ByGraphFilter
 from ralph.dashboards.filter_parser import FilterParser
 from ralph.dashboards.helpers import encode_params
 from ralph.dashboards.models import AggregateType, Graph
 from ralph.dashboards.tests.factories import GraphFactory
-from ralph.data_center.admin import DataCenterAdmin
-from ralph.data_center.models import DataCenterAsset
+from ralph.data_center.models import RackOrientation, Rack
 from ralph.data_center.tests.factories import (
     DataCenterAssetFactory,
     DataCenterAssetFullFactory,
+    RackFactory,
 )
 from ralph.security.models import Vulnerability
 from ralph.security.tests.factories import SecurityScanFactory, VulnerabilityFactory
@@ -84,61 +83,52 @@ class GraphModelTest(TestCase):
 
     def test_get_data_for_choices_field_returns_names(self):
         test_data = {
-            SCMCheckResult.scm_ok: 3,
-            SCMCheckResult.check_failed: 2,
-            SCMCheckResult.scm_error: 1,
+            RackOrientation.top.id: 3,
+            RackOrientation.bottom.id: 2,
+            RackOrientation.left.id: 1,
         }
 
-        data_center_assets = DataCenterAssetFullFactory.create_batch(
-            10, scmstatuscheck=None
-        )
-        scm_checks = []
-
-        dca_number = 0
-        for check_result in test_data:
-            for i in range(test_data[check_result]):
-                scm_checks.append(
-                    SCMStatusCheckFactory(
-                        check_result=check_result,
-                        base_object=data_center_assets[dca_number],
-                    )
-                )
-                dca_number += 1
+        rack_orientations = []
+        for orientation, count in test_data.items():
+            rack_orientations.extend(
+                RackFactory.create_batch(count, orientation=orientation)
+            )
 
         graph = GraphFactory(
+            model=ContentType.objects.get_for_model(Rack),
             params=self._get_graph_params(
                 {
                     "filters": {},
-                    "labels": "scmstatuscheck__check_result",
+                    "labels": "orientation",
                     "series": "id",
                     "sort": "series",
                 }
-            )
+            ),
         )
 
-        for check_result in test_data:
+        for orientation, count in test_data.items():
             encoded_params = encode_params(
                 {
                     "pk": graph.pk,
-                    "filters": {"scmstatuscheck__check_result": check_result.id},
+                    "filters": {"orientation": orientation},
                 }
             )
             graph_filter = ByGraphFilter(
-                None, {"graph-query": encoded_params}, DataCenterAsset, DataCenterAdmin
+                None, {"graph-query": encoded_params}, Rack, None
             )
-            qs = graph_filter.queryset(None, DataCenterAsset.objects.all())
+            qs = graph_filter.queryset(None, Rack.objects.all())
 
-            self.assertEqual(len(qs), test_data[check_result])
+            self.assertEqual(len(qs), count)
 
         encoded_params = encode_params(
-            {"pk": graph.pk, "filters": {"scmstatuscheck__check_result": None}}
+            {"pk": graph.pk, "filters": {"orientation": None}}
         )
         graph_filter = ByGraphFilter(
-            None, {"graph-query": encoded_params}, DataCenterAsset, DataCenterAdmin
+            None, {"graph-query": encoded_params}, Rack, None
         )
-        qs = graph_filter.queryset(None, DataCenterAsset.objects.all())
+        qs = graph_filter.queryset(None, Rack.objects.all())
 
-        self.assertEqual(len(qs), len(data_center_assets) - dca_number)
+        self.assertEqual(len(qs), len(Rack.objects.all()) - len(rack_orientations))
 
     def _get_graph_params(self, update):
         data = {
@@ -377,7 +367,7 @@ class LabelGroupingTest(TestCase):
             aggregate_type=AggregateType.aggregate_count.id,
             params=self._get_graph_params(
                 {
-                    "aggregate_expression": "scmstatuscheck",
+                    "aggregate_expression": "rack__orientation",
                     "filters": {},
                     "labels": "id",
                     "series": "id",
@@ -390,20 +380,20 @@ class LabelGroupingTest(TestCase):
             self.assertEqual(item["series"], 0)
 
     def test_count_aggregate_sum_bool_values(self):
-        assets_num = 2
-        a, b = DataCenterAssetFactory.create_batch(assets_num)
-        SCMStatusCheckFactory(base_object=a, check_result=SCMCheckResult.scm_ok.id)
-        SCMStatusCheckFactory(base_object=b, check_result=SCMCheckResult.scm_error.id)
+        service1 = ServiceFactory(active=True)
+        service2 = ServiceFactory(active=False)
+
         graph = GraphFactory(
+            model=ContentType.objects.get_for_model(Service),
             aggregate_type=AggregateType.aggregate_sum_bool_values.id,
             params=self._get_graph_params(
                 {
                     "filters": {},
                     "labels": "id",
-                    "series": "scmstatuscheck__ok",
+                    "series": "active",
                 }
             ),
         )
         qs = graph.build_queryset()
-        self.assertTrue(qs.get(id=a.id)["series"] == 1)
-        self.assertTrue(qs.get(id=b.id)["series"] == 0)
+        self.assertTrue(qs.get(id=service1.id)["series"] == 1)
+        self.assertTrue(qs.get(id=service2.id)["series"] == 0)

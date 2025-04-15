@@ -25,7 +25,6 @@ api_urls = list(
             "ralph.accounts.api",
             "ralph.assets.api.routers",
             "ralph.back_office.api",
-            "ralph.configuration_management.api",
             "ralph.dashboards.api.routers",
             "ralph.data_center.api.routers",
             "ralph.dc_view.urls.api",

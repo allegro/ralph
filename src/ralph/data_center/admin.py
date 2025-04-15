@@ -37,7 +37,6 @@ from ralph.assets.models.base import BaseObject, BaseObjectPolymorphicQuerySet
 from ralph.assets.models.components import Ethernet
 from ralph.assets.views import ComponentsAdminView
 from ralph.attachments.admin import AttachmentsMixin
-from ralph.configuration_management.views import SCMCheckInfo
 from ralph.data_center.admin_actions import assign_management_hostname_and_ip
 from ralph.data_center.forms import DataCenterAssetForm
 from ralph.data_center.models.components import DiskShare, DiskShareMount
@@ -346,10 +345,6 @@ class DataCenterAssetChangeList(RalphChangeList):
                     continue  # Invalid ordering specified, skip it.
 
         return ordering
-
-
-class DataCenterAssetSCMInfo(SCMCheckInfo):
-    url_name = "datacenterasset_scm_info"
 
 
 class DataCenterAssetRelationsView(RelationsView):
@@ -719,10 +714,6 @@ class DiskShareMountAdmin(RalphAdmin):
 class DCHostChangeList(ChangeList):
     def url_for_result(self, result):
         return result.get_absolute_url()
-
-
-class DCHostSCMInfo(SCMCheckInfo):
-    url_name = "dchost_scm_info"
 
 
 @register(DCHost)
