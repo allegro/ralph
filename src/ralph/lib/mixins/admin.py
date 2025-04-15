@@ -17,8 +17,9 @@ class ParentChangeMixin(MemorizeBeforeStateMixin):
     Mixin display message when parent was changed. Works with admin when model
     has specified `_parent_attr` attribute.
     """
-    add_message = ''
-    change_message = ''
+
+    add_message = ""
+    change_message = ""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -46,13 +47,10 @@ class ParentChangeMixin(MemorizeBeforeStateMixin):
         message = None
         old_parent = getattr(obj._before_state, self.parent_attr)
         if parent and old_parent != parent:
-            old_url = old_parent and old_parent.get_absolute_url() or ''
-            parent_url = parent and parent.get_absolute_url() or ''
+            old_url = old_parent and old_parent.get_absolute_url() or ""
+            parent_url = parent and parent.get_absolute_url() or ""
             message = self.get_change_message().format(
-                old_url,
-                old_parent,
-                parent_url,
-                parent
+                old_url, old_parent, parent_url, parent
             )
         if message:
             self.message_user(request, mark_safe(message))

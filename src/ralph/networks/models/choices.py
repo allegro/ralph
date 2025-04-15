@@ -1,4 +1,4 @@
-from dj.choices import Choices
+from ralph.lib.dj_choices import Choices
 
 
 class IPAddressStatus(Choices):

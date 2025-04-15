@@ -1,7 +1,6 @@
 """Low-level network utilities, silently returning empty answers in place of
 domain-related exceptions."""
 
-
 import socket
 
 # moved from old ralph's source code

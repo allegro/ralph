@@ -1,7 +1,7 @@
 from django.db.models import Prefetch
 from django.template.defaultfilters import date, timesince_filter
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from ralph.admin.decorators import register
 from ralph.admin.mixins import RalphAdmin, RalphTabularInline

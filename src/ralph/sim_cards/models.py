@@ -1,7 +1,7 @@
 import datetime
 from functools import partial
 
-from dj.choices import Choices
+from ralph.lib.dj_choices import Choices
 from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -11,7 +11,7 @@ from django.core.validators import (
     RegexValidator,
 )
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from ralph.assets.models import AssetHolder
 from ralph.attachments.utils import send_transition_attachments_to_user

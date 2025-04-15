@@ -9,7 +9,7 @@ from urllib import parse
 
 from django import forms
 from django.apps import apps
-from django.contrib.admin.templatetags.admin_static import static
+from django.templatetags.static import static
 from django.contrib.admin.views.main import TO_FIELD_VAR
 from django.core.exceptions import FieldDoesNotExist
 from django.forms.utils import flatatt
@@ -19,7 +19,7 @@ from django.template.defaultfilters import slugify, title
 from django.urls import reverse
 from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from ralph.admin.autocomplete import get_results
 from ralph.admin.helpers import get_field_by_relation_path

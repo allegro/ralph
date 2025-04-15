@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import factory
 from django.core.exceptions import ValidationError
 from django.urls import reverse
 
@@ -236,7 +235,7 @@ class TestReportAssetAndLicence(RalphTestCase):
             list(licence_relation.prepare(DataCenterAsset))
 
     def test_num_queries_bo(self):
-        factory.build_batch(LicenceWithUserAndBaseObjectsFactory, 100)
+        LicenceWithUserAndBaseObjectsFactory.create_batch(100)
         licence_relation = LicenceRelationsReport()
         with self.assertNumQueries(3):
             list(licence_relation.prepare(BackOfficeAsset))

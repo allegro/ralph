@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from collections import OrderedDict
 
-from dj.choices import Choices
+from ralph.lib.dj_choices import Choices
 from rest_framework.exceptions import ValidationError
 
 from ralph.api.fields import ReversedChoiceField, StrField

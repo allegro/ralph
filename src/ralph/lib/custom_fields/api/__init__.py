@@ -3,8 +3,8 @@ from .routers import NestedCustomFieldsRouter, NestedCustomFieldsRouterMixin
 from .serializers import WithCustomFieldsSerializerMixin
 
 __all__ = [
-    'CustomFieldsFilterBackend',
-    'NestedCustomFieldsRouter',
-    'NestedCustomFieldsRouterMixin',
-    'WithCustomFieldsSerializerMixin',
+    "CustomFieldsFilterBackend",
+    "NestedCustomFieldsRouter",
+    "NestedCustomFieldsRouterMixin",
+    "WithCustomFieldsSerializerMixin",
 ]

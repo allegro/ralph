@@ -9,34 +9,8 @@ on:
     branches: [ ng ]
 
 jobs:
-  code_style:
-    name: Code style
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout source code
-        uses: actions/checkout@v2
-
-      - name: Install system packages
-        run: |
-          sudo apt-get update
-          sudo apt-get -y --no-install-recommends install libldap2-dev libsasl2-dev libssl-dev
-
-      - name: Install and configure Mise
-        run: |
-          curl https://mise.run | sh
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-          echo 'eval "$(mise activate bash)"' >> ~/.bashrc
-          bash -c "source ~/.bashrc"
-
-      - name: Mise install tools
-        run: |
-          mise install
-
-      - name: Check formatting
-        run: mise run checks
-
-  missing_migrations:
-    name: Missing migrations
+  ci:
+    name: Tests
     runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
@@ -44,9 +18,11 @@ jobs:
         db-engine: ["ci-psql", "ci-mysql"]
     env:
         MISE_ENV: ${{ matrix.db-engine }}
+        DATABASE_USER: ralph_ng
+        DATABASE_PASSWORD: ralph_ng
     services:
       postgres:
-        image: postgres:9.4.26
+        image: postgres:14.17
         env:
           POSTGRES_USER: ralph_ng
           POSTGRES_PASSWORD: ralph_ng
@@ -57,7 +33,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
       # NOTE(romcheg): Running mysql image of a more recent version will cause user
       #                ralph_ng to not being able to create a test database.
       mysql:
@@ -74,6 +49,14 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
 
     steps:
       - name: Checkout source code
@@ -90,76 +73,18 @@ jobs:
       - name: Install and configure Mise
         run: |
           curl https://mise.run | sh
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-          echo 'eval "$(mise activate bash)"' >> ~/.bashrc
-          bash -c "source ~/.bashrc"
+          echo "$HOME/.local/share/mise/bin" >> $GITHUB_PATH
+          echo "$HOME/.local/share/mise/shims" >> $GITHUB_PATH
 
       - name: Mise install tools
         run: |
-          mise install
+          mise install uv ruff
 
-      # Runs a set of commands using the runners shell
+      - name: Check formatting
+        run: mise run checks
+
       - name: Check missing migrations
-        run: "mise run check-missing-migrations"
-
-  settings_test:
-    name: Settings tests
-    runs-on: ubuntu-22.04
-    env:
-      MISE_ENV: ci-psql
-
-    services:
-      postgres:
-        image: postgres:9.4.26
-        env:
-          POSTGRES_USER: ralph_ng
-          POSTGRES_PASSWORD: ralph_ng
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-      # NOTE(romcheg): See the note regarging the mysql service above.
-      mysql:
-        image: mysql:5.6.45
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_USER: ralph_ng
-          MYSQL_PASSWORD: ralph_ng
-          MYSQL_DATABASE: ralph_ng
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd "mysqladmin ping --silent"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-    steps:
-      - name: Checkout source code
-        uses: actions/checkout@v2
-
-      - name: Unshallow local copy
-        run: git fetch --prune --unshallow
-
-      - name: Install system packages
-        run: |
-          sudo apt-get update
-          sudo apt-get -y --no-install-recommends install libldap2-dev libsasl2-dev libssl-dev
-
-      - name: Install and configure Mise
-        run: |
-          curl https://mise.run | sh
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-          echo 'eval "$(mise activate bash)"' >> ~/.bashrc
-          bash -c "source ~/.bashrc"
-
-      - name: Mise install tools
-        run: |
-          mise install
+        run: mise run check-missing-migrations
 
       - name: Test Ralph's test settings
         run: mise run manage >/dev/null
@@ -170,79 +95,6 @@ jobs:
         run: mise run manage >/dev/null
         env:
           DJANGO_SETTINGS_MODULE: ralph.settings.prod
-
-  python_tests:
-    name: Python tests
-    runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        db-engine: ["ci-psql", "ci-mysql"]
-    env:
-      MISE_ENV: ${{ matrix.db-engine }}
-      DATABASE_USER: ralph_ng
-      DATABASE_PASSWORD: ralph_ng
-
-    services:
-      redis:
-        image: redis
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-
-      postgres:
-        image: postgres:9.4.26
-        env:
-          POSTGRES_USER: ralph_ng
-          POSTGRES_PASSWORD: ralph_ng
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-      # NOTE(romcheg): See the note regarging the mysql service above.
-      mysql:
-        image: mysql:5.6.45
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_USER: ralph_ng
-          MYSQL_PASSWORD: ralph_ng
-          MYSQL_DATABASE: ralph_ng
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd "mysqladmin ping --silent"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-    steps:
-      - name: Checkout source code
-        uses: actions/checkout@v2
-
-      - name: Unshallow local copy
-        run: git fetch --prune --unshallow
-
-      - name: Install system packages
-        run: |
-          sudo apt-get update
-          sudo apt-get -y --no-install-recommends install libldap2-dev libsasl2-dev libssl-dev
-
-      - name: Install and configure Mise
-        run: |
-          curl https://mise.run | sh
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-          echo 'eval "$(mise activate bash)"' >> ~/.bashrc
-          bash -c "source ~/.bashrc"
-
-      - name: Mise install tools
-        run: |
-          mise install
 
       - name: Test Ralph with coverage
         run: mise run coverage

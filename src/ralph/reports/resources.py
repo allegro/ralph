@@ -1,6 +1,6 @@
 from typing import Type
 
-from dj.choices import Choices
+from ralph.lib.dj_choices import Choices
 from import_export.fields import Field
 from import_export.resources import ModelResource
 from import_export.widgets import Widget

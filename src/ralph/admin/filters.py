@@ -14,10 +14,10 @@ from django.db import models
 from django.db.models import Q
 from django.forms.utils import flatatt
 from django.urls import reverse
-from django.utils.encoding import smart_text
+from django.utils.encoding import smart_str
 from django.utils.formats import get_format
 from django.utils.html import conditional_escape, mark_safe
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from mptt.fields import TreeForeignKey
 from mptt.settings import DEFAULT_LEVEL_INDICATOR
 from taggit.managers import TaggableManager
@@ -129,7 +129,7 @@ class ChoicesListFilter(BaseCustomFilter):
 
         for lookup, title in self.choices_list:
             yield {
-                "selected": smart_text(lookup) == self.value(),
+                "selected": smart_str(lookup) == self.value(),
                 "value": lookup,
                 "display": title,
                 "parameter_name": self.field_path,
@@ -319,7 +319,7 @@ class RelatedFieldListFilter(ChoicesListFilter):
     """
 
     def label_for_instance(self, obj):
-        return smart_text(obj)
+        return smart_str(obj)
 
     @property
     def choices_list(self):
@@ -434,7 +434,7 @@ class TreeRelatedFieldListFilter(RelatedFieldListFilter):
 
     def label_for_instance(self, obj):
         level_indicator = self._get_level_indicator(obj)
-        return mark_safe(level_indicator + " " + conditional_escape(smart_text(obj)))
+        return mark_safe(level_indicator + " " + conditional_escape(smart_str(obj)))
 
     def queryset(self, request, queryset):
         """

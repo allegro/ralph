@@ -10,7 +10,7 @@ from django.db import models, transaction
 from django.db.models.signals import post_migrate, pre_save
 from django.db.utils import ProgrammingError
 from django.dispatch import receiver
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from mptt.models import MPTTModel, TreeForeignKey
 
 from ralph.assets.models import AssetLastHostname, Ethernet

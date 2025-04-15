@@ -8,7 +8,7 @@ from django.db.models import Count, Prefetch
 from django.http import HttpResponse
 from django.urls import reverse
 from django.utils.encoding import smart_str
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from ralph.admin.helpers import getattr_dunder
 from ralph.admin.mixins import RalphTemplateView

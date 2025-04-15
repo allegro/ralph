@@ -7,13 +7,13 @@ from ..models import CustomField
 
 class CustomFieldChoicesField(serializers.Field):
     def to_representation(self, obj):
-        return obj.split('|')
+        return obj.split("|")
 
     def to_internal_value(self, data):
         if not isinstance(data, list):
-            msg = 'Incorrect type. Expected a list, but got %s'
+            msg = "Incorrect type. Expected a list, but got %s"
             raise serializers.ValidationError(msg % type(data).__name__)
-        return '|'.join(data)
+        return "|".join(data)
 
 
 class CustomFieldSerializer(RalphAPISerializer):
@@ -22,8 +22,13 @@ class CustomFieldSerializer(RalphAPISerializer):
     class Meta:
         model = CustomField
         fields = (
-            'name', 'attribute_name', 'type', 'default_value', 'choices',
-            'use_as_configuration_variable', 'url'
+            "name",
+            "attribute_name",
+            "type",
+            "default_value",
+            "choices",
+            "use_as_configuration_variable",
+            "url",
         )
 
 
@@ -33,5 +38,5 @@ class CustomFieldViewSet(RalphAPIViewSet):
     queryset = CustomField.objects.all()
 
 
-router.register(r'custom-fields', CustomFieldViewSet)
+router.register(r"custom-fields", CustomFieldViewSet)
 urlpatterns = []

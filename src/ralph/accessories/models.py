@@ -1,11 +1,11 @@
-from dj.choices import Choices
+from ralph.lib.dj_choices import Choices
 from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.db.models import Sum
 from django.utils.functional import cached_property
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from mptt.fields import TreeForeignKey
 from reversion import revisions as reversion
 

@@ -1,5 +1,4 @@
 from ralph.settings import *  # noqa
-import json
 import os
 from ralph.settings import (
     REDIS_CONNECTION,
@@ -24,50 +23,32 @@ REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] = (
 )
 
 if os.environ.get("STORE_SESSIONS_IN_REDIS"):
-    SESSION_ENGINE = "redis_sessions.session"
-    if REDIS_SENTINEL_ENABLED:
-        SESSION_REDIS_SENTINEL_LIST = REDIS_SENTINEL_HOSTS
-        SESSION_REDIS_SENTINEL_MASTER_ALIAS = REDIS_CLUSTER_NAME
-    else:
-        SESSION_REDIS_HOST = REDIS_CONNECTION["HOST"]
-        SESSION_REDIS_PORT = REDIS_CONNECTION["PORT"]
-    SESSION_REDIS_DB = REDIS_CONNECTION["DB"]
-    SESSION_REDIS_PASSWORD = REDIS_CONNECTION["PASSWORD"]
-    SESSION_REDIS_PREFIX = "session"
+    SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 
 if os.environ.get("USE_REDIS_CACHE"):
-    DEFAULT_CACHE_OPTIONS = {
-        "DB": os.environ.get("REDIS_CACHE_DB", REDIS_CONNECTION["DB"]),
-        "PASSWORD": os.environ.get(
-            "REDIS_CACHE_PASSWORD", REDIS_CONNECTION["PASSWORD"]
-        ),
-        "PARSER_CLASS": os.environ.get(
-            "REDIS_CACHE_PARSER", "redis.connection.HiredisParser"
-        ),
-        "CONNECTION_POOL_CLASS": os.environ.get(
-            "REDIS_CACHE_CONNECTION_POOL_CLASS", "redis.BlockingConnectionPool"
-        ),
-        "PICKLE_VERSION": -1,
-    }
-
     CACHES = {
         "default": {
-            "OPTIONS": (
-                json.loads(os.environ.get("REDIS_CACHE_OPTIONS", "{}"))
-                or DEFAULT_CACHE_OPTIONS
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": os.environ.get(
+                "REDIS_CACHE_LOCATION",
+                f"redis://{REDIS_CLUSTER_NAME}/{os.environ.get('REDIS_CACHE_DB', REDIS_CONNECTION['DB'])}",
             ),
+            "OPTIONS": {
+                "DB": os.environ.get("REDIS_CACHE_DB", REDIS_CONNECTION["DB"]),
+                "PASSWORD": os.environ.get(
+                    "REDIS_CACHE_PASSWORD", REDIS_CONNECTION["PASSWORD"]
+                ),
+                "PARSER_CLASS": os.environ.get(
+                    "REDIS_CACHE_PARSER", "redis.connection.HiredisParser"
+                ),
+                "PICKLE_VERSION": -1,
+                "CLIENT_CLASS": "django_redis.client.DefaultClient"
+                if not REDIS_SENTINEL_ENABLED
+                else "django_redis.client.SentinelClient",
+                "SENTINELS": REDIS_SENTINEL_HOSTS or [],
+            },
         },
     }
-    if REDIS_SENTINEL_ENABLED:
-        CACHES["default"]["BACKEND"] = "ralph.lib.cache.DjangoConnectionPoolCache"  # noqa
-    else:
-        CACHES["default"]["BACKEND"] = "redis_cache.RedisCache"
-        CACHES["default"]["LOCATION"] = json.loads(
-            os.environ.get(
-                "REDIS_CACHE_LOCATION",
-                '"{}:{}"'.format(REDIS_CONNECTION["HOST"], REDIS_CONNECTION["PORT"]),
-            )
-        )
 
     if bool_from_env("RALPH_DISABLE_CACHE_FRAGMENTS", False):
         CACHES["template_fragments"] = {

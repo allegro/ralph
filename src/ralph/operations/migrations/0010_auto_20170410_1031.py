@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 import django.db.models.deletion
-from dj.choices import Choices
+from ralph.lib.dj_choices import Choices
 from django.conf import settings
 from django.db import migrations, models
 

@@ -3,7 +3,7 @@ from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.urls import reverse
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from ralph.attachments.models import AttachmentItem
 from ralph.lib.custom_fields.models import CustomFieldMeta, WithCustomFieldsMixin

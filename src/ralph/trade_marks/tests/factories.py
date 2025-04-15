@@ -2,7 +2,7 @@
 from datetime import datetime, timedelta
 
 import factory
-from dj.choices import Country
+from ralph.lib.dj_choices import Country
 from factory.django import DjangoModelFactory
 
 from ralph.accounts.tests.factories import UserFactory

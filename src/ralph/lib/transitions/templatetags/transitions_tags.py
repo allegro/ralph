@@ -4,25 +4,23 @@ register = template.Library()
 
 
 @register.inclusion_tag(
-    'transitions/templatetags/available_transitions.html', takes_context=True
+    "transitions/templatetags/available_transitions.html", takes_context=True
 )
 def available_transitions(context, obj, field):
     """Render available transitions for instance."""
     get_available_transitions = getattr(
-        obj, 'get_available_transitions_for_{}'.format(field), lambda user: []
+        obj, "get_available_transitions_for_{}".format(field), lambda *_, user: []
     )
     if get_available_transitions:
         transitions = []
-        for transition in get_available_transitions(user=context.request.user):
+        for transition in get_available_transitions(obj, user=context.request.user):
             transition.show_form = transition.has_form()
             transitions.append(transition)
-        context.update({
-            'transitions': transitions
-        })
+        context.update({"transitions": transitions})
     return context
 
 
-@register.filter(name='choice_str')
+@register.filter(name="choice_str")
 def choice_str(obj, field_name):
     field = obj._meta.get_field(field_name)
     value = getattr(obj, field_name)
@@ -33,7 +31,7 @@ def choice_str(obj, field_name):
 
 
 class HistoryForObjectNode(template.Node):
-    def __init__(self, job, obj, var_name='data'):
+    def __init__(self, job, obj, var_name="data"):
         self.job = job
         self.obj = obj
         self.var_name = var_name
@@ -44,25 +42,25 @@ class HistoryForObjectNode(template.Node):
         try:
             # !! All _dumped_params are restored unnecessarily,
             # we need only history_kwargs for history
-            history = job.params['history_kwargs']
+            history = job.params["history_kwargs"]
             context[self.var_name] = history[obj.pk].items()
             if not context[self.var_name]:
-                return '&ndash;'
-            return ''
-        except: # noqa
-            history = job._dumped_params['history_kwargs'] # noqa
+                return "&ndash;"
+            return ""
+        except:  # noqa
+            history = job._dumped_params["history_kwargs"]  # noqa
             context[self.var_name] = history[str(obj.pk)].items()
             if not context[self.var_name]:
-                return '&ndash;'
-            return ''
+                return "&ndash;"
+            return ""
 
 
-@register.tag(name='history_for_object')
+@register.tag(name="history_for_object")
 def history_for_object(parser, token):
     error = False
     try:
         _, job, obj, _as, var_name = token.split_contents()
-        if _as != 'as':
+        if _as != "as":
             error = True
     except:  # noqa
         error = True

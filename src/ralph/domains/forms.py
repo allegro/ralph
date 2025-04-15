@@ -1,5 +1,5 @@
 from django.forms import CheckboxSelectMultiple
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from ralph.admin.mixins import RalphAdminForm
 from ralph.domains.models import Domain

@@ -94,11 +94,11 @@ run = [
 description = "Compile requirements"
 
 [tasks.checks]
-run = "ruff check src"
+run = "ruff check"
 description = "Check code formatting and linting"
 
 [tasks.format]
-run = "ruff format src"
+run = "ruff format"
 description = "Format the code"
 
 [tasks.clean]
@@ -108,6 +108,7 @@ hide = true
 [tasks.check-missing-migrations]
 depends = ["db"]
 run = "uv run ralph makemigrations --check --dry-run"
+hide = true
 
 [tasks.test]
 depends = ['db']

@@ -42,7 +42,7 @@ class AdditionalDjangoFilterBackend(DjangoFilterBackend):
     which uses fields from `filter_fields` property.
     """
 
-    def get_filter_class(self, view, queryset=None):
+    def get_filterset_class(self, view, queryset=None):
         return getattr(view, "additional_filter_class", None)
 
 

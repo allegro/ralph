@@ -3,7 +3,7 @@ import operator
 import re
 from functools import reduce
 
-from dj.choices import Choices
+from ralph.lib.dj_choices import Choices
 from django.apps import apps
 from django.conf.urls import url
 from django.core.exceptions import FieldDoesNotExist

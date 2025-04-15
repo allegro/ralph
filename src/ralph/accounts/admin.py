@@ -12,7 +12,7 @@ from django.forms.models import model_to_dict
 from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from reversion import revisions as reversion
 
 from ralph.accounts.models import RalphUser, Region, Team

@@ -8,7 +8,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.management.base import BaseCommand
-from django.utils.lru_cache import lru_cache
+from functools import lru_cache
 from ldap.controls import SimplePagedResultsControl
 
 from ralph.helpers import cache

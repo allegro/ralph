@@ -1,4 +1,4 @@
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from ralph.admin.mixins import RalphTabularInline
 from ralph.admin.views.extra import RalphDetailViewAdmin

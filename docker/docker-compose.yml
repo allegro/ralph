@@ -52,8 +52,10 @@ services:
       - "6379"
 
   inkpy:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile-inkpy
     platform: linux/amd64
-    image: allegro/inkpy:latest
     restart: always
     links:
       - redis:redis

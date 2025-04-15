@@ -3,9 +3,9 @@ import logging
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.urls import NoReverseMatch
-from django.utils.lru_cache import lru_cache
+from functools import lru_cache
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from ralph.admin.decorators import register
 from ralph.admin.helpers import get_admin_url

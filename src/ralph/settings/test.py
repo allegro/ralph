@@ -15,7 +15,7 @@ TEST_DB_ENGINE = os.environ.get("TEST_DB_ENGINE", "mysql")
 if TEST_DB_ENGINE == "psql":
     DATABASES["default"].update(
         {
-            "ENGINE": "django.db.backends.postgresql_psycopg2",
+            "ENGINE": "django.db.backends.postgresql",
             "PORT": os.environ.get("DATABASE_PORT", 5432),
             "OPTIONS": {},
         }

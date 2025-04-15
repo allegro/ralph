@@ -2,13 +2,13 @@
 import logging
 from collections import OrderedDict
 
-from dj.choices import Choices
+from ralph.lib.dj_choices import Choices
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import models
 from django.dispatch import receiver
 from django.utils.functional import cached_property
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django_cryptography.fields import encrypt
 from django_extensions.db.fields.json import JSONField
 
@@ -435,7 +435,9 @@ class VirtualServer(
     def _validate_hostname(self):
         if self.status == VirtualServerStatus.used.id:
             if not self.hostname:
-                raise ValidationError({"hostname": _("Hostname is required for status 'in use'")})
+                raise ValidationError(
+                    {"hostname": _("Hostname is required for status 'in use'")}
+                )
 
 
 post_commit(publish_host_update, VirtualServer)

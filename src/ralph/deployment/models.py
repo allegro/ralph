@@ -1,14 +1,14 @@
 import logging
 import os
 
-from dj.choices import Choices
+from ralph.lib.dj_choices import Choices
 from django.conf import settings
 from django.db import models
 from django.db.models import F, Q
 from django.db.models.manager import Manager
 from django.utils import timezone
 from django.utils.text import slugify
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from ralph.assets.models import Ethernet
 from ralph.lib.external_services.models import JobQuerySet

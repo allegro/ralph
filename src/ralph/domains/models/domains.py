@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from dj.choices import Choices
+from ralph.lib.dj_choices import Choices
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from ralph.assets.models import BaseObject
 from ralph.assets.models.assets import AssetHolder, BusinessSegment

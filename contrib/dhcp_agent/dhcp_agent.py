@@ -23,29 +23,31 @@ try:
     from urllib.error import HTTPError
     from urllib.parse import urlencode
     from urllib.request import Request, urlopen
+
     string_types = (str,)
 except:  # noqa
     from urllib import urlencode
     from urllib2 import HTTPError, Request, urlopen
+
     string_types = (basestring,)  # noqa
 
 
-APP_DIR = os.path.expanduser('~/.ralph-dhcp-agent')
+APP_DIR = os.path.expanduser("~/.ralph-dhcp-agent")
 
-PROTOS = ('http', 'https')
+PROTOS = ("http", "https")
 PROTO_HTTP, PROTO_HTTPS = PROTOS
 
-CACHE_LAST_MODIFIED_PREFIX = 'http-last-modified'
-DEFAULT_DHCP_SERVICE_NAME = 'isc-dhcp-server'
+CACHE_LAST_MODIFIED_PREFIX = "http-last-modified"
+DEFAULT_DHCP_SERVICE_NAME = "isc-dhcp-server"
 
 
 @contextlib.contextmanager
 def open_file_or_stdout_to_writing(filename=None):
     """Context manager opens file or stdout and returns its handle."""
-    if filename in ['-', None]:
+    if filename in ["-", None]:
         handler = sys.stdout
     else:
-        handler = open(filename, 'w')
+        handler = open(filename, "w")
     try:
         yield handler
     finally:
@@ -55,12 +57,13 @@ def open_file_or_stdout_to_writing(filename=None):
 
 class Cache(object):
     """Simple key-value cache based on dbm."""
+
     def __init__(self, cache_path):
         if not os.path.exists(cache_path):
             os.makedirs(cache_path)
-        self._cache = cache_db.open(os.path.join(cache_path, 'cache'), 'c')
+        self._cache = cache_db.open(os.path.join(cache_path, "cache"), "c")
 
-    def get(self, key, prefix=''):
+    def get(self, key, prefix=""):
         url_hash = get_url_hash(key)
         try:
             last = self._cache[prefix + url_hash]
@@ -68,7 +71,7 @@ class Cache(object):
             last = None
         return last
 
-    def set(self, key, value, prefix=''):
+    def set(self, key, value, prefix=""):
         url_hash = get_url_hash(key)
         self._cache[prefix + url_hash] = value
 
@@ -111,90 +114,91 @@ def convert_to_request_params(params):
 
 def _get_cmd_parser():
     parser = OptionParser(
-        description='Update configuration in DHCP server.',
+        description="Update configuration in DHCP server.",
     )
-    parser.add_option('-H', '--host', help='Ralph instance host.')
-    parser.add_option('-k', '--key', help='Ralph API key.')
+    parser.add_option("-H", "--host", help="Ralph instance host.")
+    parser.add_option("-k", "--key", help="Ralph API key.")
     parser.add_option(
-        '-m',
-        '--sections',
-        type='choice',
+        "-m",
+        "--sections",
+        type="choice",
         choices=DHCPConfigManager.DHCP_SECTIONS,
-        action='append',
-        help='Choose what part of config you want to upgrade. '
-             '[Default: all; Options: {}]'.format(', '.join(DHCPConfigManager.DHCP_SECTIONS)),  # noqa
+        action="append",
+        help="Choose what part of config you want to upgrade. "
+        "[Default: all; Options: {}]".format(
+            ", ".join(DHCPConfigManager.DHCP_SECTIONS)
+        ),  # noqa
     )
     parser.add_option(
-        '-l',
-        '--log-path',
-        help='Path to log file. [Default: STDOUT]',
-        default='STDOUT',
+        "-l",
+        "--log-path",
+        help="Path to log file. [Default: STDOUT]",
+        default="STDOUT",
     )
     parser.add_option(
-        '-c',
-        '--dhcp-config-entries',
-        help='Path to the DHCP entries configuration file.',
+        "-c",
+        "--dhcp-config-entries",
+        help="Path to the DHCP entries configuration file.",
     )
     parser.add_option(
-        '-n',
-        '--dhcp-config-networks',
-        help='Path to the DHCP networks configuration file.',
+        "-n",
+        "--dhcp-config-networks",
+        help="Path to the DHCP networks configuration file.",
     )
     parser.add_option(
-        '-p',
-        '--proto',
-        type='choice',
-        choices=PROTOS,
-        default=PROTO_HTTPS
+        "-p", "--proto", type="choice", choices=PROTOS, default=PROTO_HTTPS
     )
     parser.add_option(
-        '-e',
-        '--net-env',
-        help='Only get config for the specified network environment.',
+        "-e",
+        "--net-env",
+        help="Only get config for the specified network environment.",
     )
     parser.add_option(
-        '-d',
-        '--dc',
-        help='Only get config for the specified data center.',
+        "-d",
+        "--dc",
+        help="Only get config for the specified data center.",
     )
     parser.add_option(
-        '-r',
-        '--restart',
-        help='Restart service after fetching config?',
-        action='store_true',
+        "-r",
+        "--restart",
+        help="Restart service after fetching config?",
+        action="store_true",
     )
     parser.add_option(
-        '-v',
-        '--verbose',
-        help='Increase verbosity.',
-        action='store_true',
+        "-v",
+        "--verbose",
+        help="Increase verbosity.",
+        action="store_true",
         default=False,
     )
     parser.add_option(
-        '-s',
-        '--dhcp-service-name',
-        help='Name of the service to restart.',
-        default=DEFAULT_DHCP_SERVICE_NAME
+        "-s",
+        "--dhcp-service-name",
+        help="Name of the service to restart.",
+        default=DEFAULT_DHCP_SERVICE_NAME,
     )
     return parser
 
 
 def _setup_logging(filename, verbose=False):
-    log_size = os.getenv('DHCP_AGENT_LOG_SIZE', 20)  # MB
+    log_size = os.getenv("DHCP_AGENT_LOG_SIZE", 20)  # MB
     logger = logging.getLogger(__file__)
     if verbose:
         logger.setLevel(logging.INFO)
     else:
         logger.setLevel(logging.WARNING)
-    if not filename or filename in ('-', 'STDOUT'):
+    if not filename or filename in ("-", "STDOUT"):
         handler = logging.StreamHandler()
     else:
         handler = logging_handlers.RotatingFileHandler(
             filename, maxBytes=(log_size * (1 << 20)), backupCount=5
         )
-    fmt = logging.Formatter("[%(asctime)-12s.%(msecs)03d] "
-                            "%(levelname)-8s %(filename)s:%(lineno)d  "
-                            "%(message)s", "%Y-%m-%d %H:%M:%S")
+    fmt = logging.Formatter(
+        "[%(asctime)-12s.%(msecs)03d] "
+        "%(levelname)-8s %(filename)s:%(lineno)d  "
+        "%(message)s",
+        "%Y-%m-%d %H:%M:%S",
+    )
     handler.setFormatter(fmt)
 
     logger.addHandler(handler)
@@ -202,22 +206,22 @@ def _setup_logging(filename, verbose=False):
 
 
 def _remove_application_lock(lockfile, logger):
-    logger.info('Removing lock')
+    logger.info("Removing lock")
     os.unlink(lockfile)
 
 
 def _set_script_lock(logger):
-    lockfile = '{}.lock'.format(
+    lockfile = "{}.lock".format(
         os.path.join(tempfile.gettempdir(), os.path.split(sys.argv[0])[1])
     )
     f = os.open(lockfile, os.O_TRUNC | os.O_CREAT | os.O_RDWR)
     try:
         fcntl.lockf(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        os.write(f, '{}'.format(os.getpid()).encode())
+        os.write(f, "{}".format(os.getpid()).encode())
         atexit.register(_remove_application_lock, lockfile, logger)
     except IOError as e:
         if e.errno == errno.EAGAIN:
-            logger.critical('Script already running.')
+            logger.critical("Script already running.")
             sys.exit(2)
         raise
 
@@ -242,25 +246,27 @@ def _check_params(params, error_callback):
     Returns:
         bool: True if all conditions are met, False otherwise
     """
-    required_params = {'host', 'key'}
+    required_params = {"host", "key"}
     diff = required_params - {k for k, v in params.items() if v}
     if diff:
-        error_callback('ERROR: {} are required.'.format(
-            ', '.join(['--{}'.format(d) for d in diff]))
+        error_callback(
+            "ERROR: {} are required.".format(
+                ", ".join(["--{}".format(d) for d in diff])
+            )
         )
         return False
 
-    dc = params.get('dc')
-    net_env = params.get('net_env')
+    dc = params.get("dc")
+    net_env = params.get("net_env")
     if (dc and net_env) or (not dc and not net_env):
         error_callback(
-            'ERROR: Only DC or ENV mode available.',
+            "ERROR: Only DC or ENV mode available.",
         )
         return False
-    sections = params.get('sections')
+    sections = params.get("sections")
     if not sections:
         error_callback(
-            'ERROR: option `sections` are required.',
+            "ERROR: option `sections` are required.",
         )
         return False
     return True
@@ -271,14 +277,24 @@ class DHCPConfigManager(object):
     DHCP server.
     """
 
-    DHCP_SECTIONS = ('networks', 'entries')
+    DHCP_SECTIONS = ("networks", "entries")
 
     def __init__(
-        self, logger, cache, host, key, sections, dc=None, net_env=None,
-        verbose=False, restart=False, proto=PROTO_HTTPS,
-        dhcp_config_entries=None, dhcp_config_networks=None,
+        self,
+        logger,
+        cache,
+        host,
+        key,
+        sections,
+        dc=None,
+        net_env=None,
+        verbose=False,
+        restart=False,
+        proto=PROTO_HTTPS,
+        dhcp_config_entries=None,
+        dhcp_config_networks=None,
         dhcp_service_name=DEFAULT_DHCP_SERVICE_NAME,
-        **kwargs
+        **kwargs,
     ):
         self.cache = cache
         self.logger = logger
@@ -287,12 +303,12 @@ class DHCPConfigManager(object):
         self.proto = proto
         self.can_restart_dhcp_server = restart
         self.dhcp_service_name = dhcp_service_name
-        self.envs = net_env.split(',') if net_env else []
-        self.dcs = dc.split(',') if dc else []
+        self.envs = net_env.split(",") if net_env else []
+        self.dcs = dc.split(",") if dc else []
         self.sections = sections
         self.section_config_path_mapper = {
-            'entries': dhcp_config_entries,
-            'networks': dhcp_config_networks,
+            "entries": dhcp_config_entries,
+            "networks": dhcp_config_networks,
         }
 
     def download_and_apply_configuration(self):
@@ -328,57 +344,52 @@ class DHCPConfigManager(object):
         last = self.cache.get(prefix=CACHE_LAST_MODIFIED_PREFIX, key=url)
         if last:
             self.logger.info(
-                'Using If-Modified-Since with value {} for url {}'.format(
-                    last, url
-                )
+                "Using If-Modified-Since with value {} for url {}".format(last, url)
             )
-            headers['If-Modified-Since'] = last
+            headers["If-Modified-Since"] = last
         else:
-            self.logger.info(
-                'Last modified not found in cache for url {}'.format(url)
-            )
-        headers.update({'Authorization': 'Token {}'.format(self.key)})
+            self.logger.info("Last modified not found in cache for url {}".format(url))
+        headers.update({"Authorization": "Token {}".format(self.key)})
         return urlopen(Request(url, headers=headers))
 
     def _get_configuration(self, mode):
         """Fetches configuration for DHCP server from Ralph server."""
-        params = convert_to_request_params({'dc': self.dcs, 'env': self.envs})
-        url = '{}://{}/dhcp/{}/'.format(
+        params = convert_to_request_params({"dc": self.dcs, "env": self.envs})
+        url = "{}://{}/dhcp/{}/".format(
             self.proto,
             self.host,
             mode,
         )
         if params:
             params = urlencode(params)
-            url += '?' + params
+            url += "?" + params
         configuration = None
 
-        self.logger.info('Sending request to {}'.format(url))
+        self.logger.info("Sending request to {}".format(url))
         try:
             response = self.make_authorized_request(url)
         except HTTPError as e:
             if e.code != 304:
                 self.logger.error(
                     'Server returned %s status code with message "%s"',
-                    e.code, e.fp.read().decode()
+                    e.code,
+                    e.fp.read().decode(),
                 )
             else:
                 self.logger.info(
-                    'Server return status 304 NOT MODIFIED. Nothing to do.'
+                    "Server return status 304 NOT MODIFIED. Nothing to do."
                 )
             return False
         else:
             configuration = response.read()
-            last_modified = response.headers.get('Last-Modified')
+            last_modified = response.headers.get("Last-Modified")
             self.logger.info(
-                'Storing Last-Modified for url {} with value {}'.format(
+                "Storing Last-Modified for url {} with value {}".format(
                     url, last_modified
                 )
             )
             self.cache.set(
-                prefix=CACHE_LAST_MODIFIED_PREFIX,
-                key=url,
-                value=last_modified
+                prefix=CACHE_LAST_MODIFIED_PREFIX, key=url, value=last_modified
             )
         return configuration
 
@@ -389,7 +400,7 @@ class DHCPConfigManager(object):
         Returns:
             bool: True if server returns 200 status code, otherwise False
         """
-        url = '{}://{}/dhcp/sync/'.format(
+        url = "{}://{}/dhcp/sync/".format(
             self.proto,
             self.host,
         )
@@ -397,12 +408,13 @@ class DHCPConfigManager(object):
             self.make_authorized_request(url)
         except HTTPError as e:
             self.logger.error(
-                'Could not send confirmation to Ralph. '
-                'Server returned %s status code with message: %s',
-                e.code, e.fp.read().decode()
+                "Could not send confirmation to Ralph. "
+                "Server returned %s status code with message: %s",
+                e.code,
+                e.fp.read().decode(),
             )
             return False
-        self.logger.info('Confirmation sent to {}.'.format(self.host))
+        self.logger.info("Confirmation sent to {}.".format(self.host))
         return True
 
     def _set_new_configuration(self, config, path_to_config=None):
@@ -420,15 +432,12 @@ class DHCPConfigManager(object):
             with open_file_or_stdout_to_writing(path_to_config) as f:
                 f.write(str(config))
                 self.logger.info(
-                    'Configuration written to {}'.format(
-                        path_to_config or 'stdout'
-                    )
+                    "Configuration written to {}".format(path_to_config or "stdout")
                 )
             return True
         except IOError as e:
             self.logger.error(
-                'Could not write new DHCP configuration. Error message: %s',
-                e
+                "Could not write new DHCP configuration. Error message: %s", e
             )
             return False
 
@@ -438,23 +447,21 @@ class DHCPConfigManager(object):
         Returns:
             bool: True if DHCP server restarted successfully, otherwise False
         """
-        self.logger.info('Restarting {}...'.format(self.dhcp_service_name))
-        command = ['service', self.dhcp_service_name, 'restart']
+        self.logger.info("Restarting {}...".format(self.dhcp_service_name))
+        command = ["service", self.dhcp_service_name, "restart"]
         proc = subprocess.Popen(
-            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
         )
         proc.wait()
         restart_successful = proc.returncode == 0
         if restart_successful:
             self.logger.info(
-                'Service {} successfully restarted.'.format(
-                    self.dhcp_service_name
-                )
+                "Service {} successfully restarted.".format(self.dhcp_service_name)
             )
         else:
-            self.logger.error(
-                'Failed to restart service %s.', self.dhcp_service_name
-            )
+            self.logger.error("Failed to restart service %s.", self.dhcp_service_name)
         return restart_successful
 
 
@@ -463,12 +470,12 @@ def main():
     params = _get_cmd_params_from_parser(parser)
     _check_params(params, parser.error)
 
-    logger = _setup_logging(params['log_path'], params['verbose'])
+    logger = _setup_logging(params["log_path"], params["verbose"])
     _set_script_lock(logger)
     with Cache(APP_DIR) as cache:
         dhcp_manager = DHCPConfigManager(cache=cache, logger=logger, **params)
         dhcp_manager.download_and_apply_configuration()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

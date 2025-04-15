@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from django.db import models
+from django.db.models import QuerySet
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from djmoney.models.fields import MoneyField
 from taggit.managers import TaggableManager as TaggableManagerOriginal
 from taggit.managers import _TaggableManager  # noqa
@@ -13,22 +14,24 @@ from ralph.settings import DEFAULT_CURRENCY_CODE
 
 class NamedMixin(models.Model):
     """Describes an abstract model with a unique ``name`` field."""
-    name = models.CharField(_('name'), max_length=255, unique=True)
+
+    name = models.CharField(_("name"), max_length=255, unique=True)
 
     class Meta:
         abstract = True
-        ordering = ['name']
+        ordering = ["name"]
 
     def __str__(self):
         return self.name
 
     class NonUnique(models.Model):
         """Describes an abstract model with a non-unique ``name`` field."""
+
         name = models.CharField(verbose_name=_("name"), max_length=75)
 
         class Meta:
             abstract = True
-            ordering = ['name']
+            ordering = ["name"]
 
         def __str__(self):
             return self.name
@@ -36,25 +39,28 @@ class NamedMixin(models.Model):
 
 class TimeStampMixin(models.Model):
     created = models.DateTimeField(
-        verbose_name=_('date created'),
+        verbose_name=_("date created"),
         auto_now_add=True,
     )
     modified = models.DateTimeField(
-        verbose_name=_('last modified'),
+        verbose_name=_("last modified"),
         auto_now=True,
     )
 
     class Meta:
         abstract = True
-        ordering = ('-modified', '-created',)
+        ordering = (
+            "-modified",
+            "-created",
+        )
 
     class Permissions:
-        blacklist = set(['created', 'modified'])
+        blacklist = set(["created", "modified"])
 
 
 class LastSeenMixin(models.Model):
     last_seen = models.DateTimeField(
-        verbose_name=_('last seen'),
+        verbose_name=_("last seen"),
         auto_now_add=True,
     )
 
@@ -74,9 +80,8 @@ class AdminAbsoluteUrlMixin(object):
         if opts.proxy:
             opts = opts.concrete_model._meta
         return reverse(
-            'admin:{}_{}_change'.format(
-                opts.app_label, opts.model_name
-            ), args=(self.pk,)
+            "admin:{}_{}_change".format(opts.app_label, opts.model_name),
+            args=(self.pk,),
         )
 
 
@@ -88,15 +93,15 @@ class ManagerOfManager(_TaggableManager):
                     yield from _flatten(item)
                 else:
                     yield item
+
         flattened_tags = list(_flatten(tags))
         super().set(*flattened_tags, **kwargs)
 
 
 class TaggableManager(TaggableManagerOriginal):
-
     def __init__(self, *args, **kwargs):
         super().__init__(manager=ManagerOfManager, *args, **kwargs)
-        self.manager.name = 'tags'
+        self.manager.name = "tags"
 
     def value_from_object(self, instance):
         """
@@ -106,7 +111,10 @@ class TaggableManager(TaggableManagerOriginal):
         directly to resulting dict.
         """
         qs = super().value_from_object(instance)
-        return list(qs.values_list('tag__name', flat=True))
+        if isinstance(qs, QuerySet):
+            return list(qs.values_list("tag__name", flat=True))
+        else:
+            return [t.name for t in qs]
 
     def formfield(self, form_class=TaggitTagField, **kwargs):
         return super().formfield(form_class, **kwargs)
@@ -123,12 +131,9 @@ class PreviousStateMixin(models.Model):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         fields = [
-            getattr(f, 'attname', None) or f.name
-            for f in self._meta.get_fields()
+            getattr(f, "attname", None) or f.name for f in self._meta.get_fields()
         ]
-        self._previous_state = {
-            k: v for k, v in self.__dict__.items() if k in fields
-        }
+        self._previous_state = {k: v for k, v in self.__dict__.items() if k in fields}
 
     class Meta:
         abstract = True
@@ -136,8 +141,11 @@ class PreviousStateMixin(models.Model):
 
 class PriceMixin(models.Model):
     price = MoneyField(
-        max_digits=15, decimal_places=2, null=True, default=0,
-        default_currency=DEFAULT_CURRENCY_CODE
+        max_digits=15,
+        decimal_places=2,
+        null=True,
+        default=0,
+        default_currency=DEFAULT_CURRENCY_CODE,
     )
 
     class Meta:

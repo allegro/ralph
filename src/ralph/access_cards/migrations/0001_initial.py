@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import dj.choices.fields
+from ralph.lib.dj_choices.fields import ChoiceField
 import django.db.models.deletion
 from django.conf import settings
 from django.db import migrations, models
@@ -67,7 +67,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "status",
-                    dj.choices.fields.ChoiceField(
+                    ChoiceField(
                         default=1,
                         choices=ralph.access_cards.models.AccessCardStatus,
                         help_text="Access card status",

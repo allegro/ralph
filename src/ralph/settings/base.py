@@ -5,7 +5,9 @@ from collections import ChainMap
 from datetime import datetime
 
 from django.contrib.messages import constants as messages
+from django.core.exceptions import ImproperlyConfigured
 from moneyed import CURRENCIES
+from typing import List, Tuple
 
 from ralph.settings.hooks import HOOKS_CONFIGURATION  # noqa: F401
 
@@ -31,18 +33,21 @@ def bool_from_env(var, default: bool = False) -> bool:
         return str_to_bool(os_var)
 
 
-def get_sentinels(sentinels_string):
+def get_sentinels(sentinels_string) -> List[Tuple[str, int]]:
     """Helper for converting sentinel hosts string into list of tuples.
 
     sentinel_string must be a string in the following format:
     <sentinel_ip>:<sentinel_port>;<sentinel_ip>:<sentinel_port>
-
-    Returns a list of sentinel host and port tuples
     """
-    if sentinels_string:
-        sentinels = sentinels_string.split(";")
-        result = [tuple(sentinel.split(":")) for sentinel in sentinels]
-        return result
+
+    def _gen():
+        if sentinels_string:
+            sentinels = sentinels_string.split(";")
+            for sentinel_ in sentinels:
+                host, port = sentinel_.split(":")
+                yield host.strip(), int(port.strip())
+
+    return list(_gen())
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -337,7 +342,10 @@ REDIS_COMMAND_TIMEOUT = float(os.environ.get("REDIS_COMMAND_TIMEOUT", 10.0))
 if REDIS_SENTINEL_ENABLED:
     from redis.sentinel import Sentinel
 
+    DJANGO_REDIS_CONNECTION_FACTORY = "django_redis.pool.SentinelConnectionFactory"
     REDIS_SENTINEL_HOSTS = get_sentinels(os.environ.get("REDIS_SENTINEL_HOSTS", None))  # noqa
+    if not REDIS_SENTINEL_HOSTS:
+        raise ImproperlyConfigured("No sentinel hosts configured")
     REDIS_CLUSTER_NAME = os.environ.get("REDIS_CLUSTER_NAME", "ralph_ng")
     REDIS_SENTINEL_SOCKET_TIMEOUT = float(
         os.environ.get("REDIS_SENTINEL_SOCKET_TIMEOUT", 1.0)

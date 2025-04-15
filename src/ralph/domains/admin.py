@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.utils.html import format_html
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from ralph.admin.decorators import register
 from ralph.admin.filters import DateListFilter

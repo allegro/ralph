@@ -1,5 +1,6 @@
 from django.contrib.contenttypes.models import ContentType
-from factory import DjangoModelFactory, Sequence, SubFactory
+from factory import Sequence, SubFactory
+from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyText
 
 from ralph.accounts.tests.factories import UserFactory
@@ -11,17 +12,21 @@ from ralph.lib.transitions.models import (
     Transition,
     TransitionJob,
     TransitionModel,
-    TransitionsHistory
+    TransitionsHistory,
 )
 
 
 class TransitionModelFactory(DjangoModelFactory):
-    content_type =  Sequence(lambda n: ContentType.objects.get_for_model([BackOfficeAsset, DataCenterAsset][n % 2]))
-    field_name = 'status'
+    content_type = Sequence(
+        lambda n: ContentType.objects.get_for_model(
+            [BackOfficeAsset, DataCenterAsset][n % 2]
+        )
+    )
+    field_name = "status"
 
     class Meta:
         model = TransitionModel
-        django_get_or_create = ['content_type', 'field_name']
+        django_get_or_create = ["content_type", "field_name"]
 
 
 class TransitionFactory(DjangoModelFactory):
@@ -32,12 +37,20 @@ class TransitionFactory(DjangoModelFactory):
 
     class Meta:
         model = Transition
-        django_get_or_create = ['name', ]
+        django_get_or_create = [
+            "name",
+        ]
 
 
 class TransitionJobFactory(DjangoModelFactory):
-    content_type = Sequence(lambda n: ContentType.objects.get_for_model([BackOfficeAsset, DataCenterAsset][n % 2]))
-    object_id = Sequence(lambda n: [BackOfficeAssetFactory, DataCenterAssetFullFactory][n % 2]().id)
+    content_type = Sequence(
+        lambda n: ContentType.objects.get_for_model(
+            [BackOfficeAsset, DataCenterAsset][n % 2]
+        )
+    )
+    object_id = Sequence(
+        lambda n: [BackOfficeAssetFactory, DataCenterAssetFullFactory][n % 2]().id
+    )
     transition = SubFactory(TransitionFactory)
 
     class Meta:
@@ -45,11 +58,17 @@ class TransitionJobFactory(DjangoModelFactory):
 
 
 class TransitionsHistoryFactory(DjangoModelFactory):
-    content_type =  Sequence(lambda n: ContentType.objects.get_for_model([BackOfficeAsset, DataCenterAsset][n % 2]))
+    content_type = Sequence(
+        lambda n: ContentType.objects.get_for_model(
+            [BackOfficeAsset, DataCenterAsset][n % 2]
+        )
+    )
     transition_name = FuzzyText(length=10)
     source = "new"
     target = "used"
-    object_id = Sequence(lambda n: [BackOfficeAssetFactory, DataCenterAssetFullFactory][n % 2]().id)
+    object_id = Sequence(
+        lambda n: [BackOfficeAssetFactory, DataCenterAssetFullFactory][n % 2]().id
+    )
     logged_user = SubFactory(UserFactory)
 
     class Meta:

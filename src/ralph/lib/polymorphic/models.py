@@ -12,6 +12,7 @@ Example:
         <Model3: model3: test>
     ]
 """
+
 from collections import defaultdict
 from itertools import groupby
 from typing import Dict, Iterable, List, Tuple
@@ -184,17 +185,16 @@ class PolymorphicQuerySet(models.QuerySet):
         """
 
         def get_database_quote_type() -> str:
-            db_engine = settings.DATABASES['default']['ENGINE']
-            if 'mysql' in db_engine:
-                return '`'
+            db_engine = settings.DATABASES["default"]["ENGINE"]
+            if "mysql" in db_engine:
+                return "`"
             else:
                 return '"'
+
         # mysql uses different quotes than postgres
         q = get_database_quote_type()
         through_table_name = through_table._meta.db_table  # type: str
-        fields = {
-            field for field in through_table._meta.fields
-        }  # type: set[models.Field]
+        fields = {field for field in through_table._meta.fields}  # type: set[models.Field]
         if target_column_name in {field.column for field in fields}:
             our_table = None  # type: str | None
             back_column = None  # type: str | None
@@ -209,15 +209,13 @@ class PolymorphicQuerySet(models.QuerySet):
                     back_column = field.column
                     our_table = field.related_model._meta.db_table
             if our_table and back_column and remote_table:
-                condition_local = (
-                    f'{q}{our_table}{q}.{q}id{q} = {q}{through_table_name}{q}.{q}{back_column}{q}'
-                )
+                condition_local = f"{q}{our_table}{q}.{q}id{q} = {q}{through_table_name}{q}.{q}{back_column}{q}"
                 condition_remote = (
-                    f'{q}{remote_table}{q}.{q}id{q}'
-                    f' = {q}{through_table_name}{q}.{q}{target_column_name}{q}'
+                    f"{q}{remote_table}{q}.{q}id{q}"
+                    f" = {q}{through_table_name}{q}.{q}{target_column_name}{q}"
                 )
                 query = query.extra(
-                    tables=[f'{q}{remote_table}{q}', f'{q}{through_table_name}{q}'],
+                    tables=[f"{q}{remote_table}{q}", f"{q}{through_table_name}{q}"],
                     where=[condition_local, condition_remote],
                 )
         return query
@@ -263,7 +261,7 @@ class PolymorphicQuerySet(models.QuerySet):
 
     def get(self, *args, **kwargs):
         obj = super().get(*args, **kwargs)
-        if hasattr(obj, 'content_type'):
+        if hasattr(obj, "content_type"):
             obj = obj.content_type.get_object_for_this_type(pk=obj.pk)
         return obj
 
@@ -309,7 +307,6 @@ class PolymorphicQuerySet(models.QuerySet):
 
 
 class PolymorphicBase(models.base.ModelBase):
-
     """
     Looking for classes in all classes that inherit from class polymorphic.
 
@@ -331,7 +328,7 @@ class PolymorphicBase(models.base.ModelBase):
             if new_class._meta.proxy:
                 continue
             try:
-                if new_class._meta.model_name == 'vip': # TODO remove after vip deletion
+                if new_class._meta.model_name == "vip": # TODO remove after vip deletion
                     continue
                 polymorphic_class._polymorphic_descendants.append(new_class)
             except AttributeError:
@@ -341,7 +338,6 @@ class PolymorphicBase(models.base.ModelBase):
 
 
 class Polymorphic(models.Model):
-
     """
     Polymorphic model.
 
@@ -352,14 +348,15 @@ class Polymorphic(models.Model):
                 pass
     """
 
-    content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.CASCADE)
+    content_type = models.ForeignKey(
+        ContentType, blank=True, null=True, on_delete=models.CASCADE
+    )
 
     polymorphic_objects = PolymorphicQuerySet.as_manager()
     objects = models.Manager()
 
     class Meta:
         abstract = True
-        manager_inheritance_from_future = True
 
     def save(self, *args, **kwargs):
         """

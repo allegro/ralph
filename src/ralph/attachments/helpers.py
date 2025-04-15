@@ -1,6 +1,6 @@
 import mimetypes
 import os
-from collections import Iterable
+from collections.abc import Iterable
 from uuid import uuid4
 
 

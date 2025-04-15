@@ -11,10 +11,11 @@ class NestedCustomFieldsRouterMixin(object):
     attached. To achieve that, nested resource for particular object is created,
     ex. /api/<somemodel>/<somemodel_pk>/customfields
     """
+
     # URL path used to build nested resource for customfields
-    nested_resource_prefix = r'customfields'
+    nested_resource_prefix = r"customfields"
     # name of nested resource for customfields, used by DRF (ex. to reverse URL)
-    nested_resource_basename = '{}-customfields'
+    nested_resource_basename = "{}-customfields"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -25,12 +26,10 @@ class NestedCustomFieldsRouterMixin(object):
         if basename is None:
             basename = self.get_default_basename(viewset)
         from .serializers import WithCustomFieldsSerializerMixin
-        if (
-            issubclass(
-                viewset.serializer_class, WithCustomFieldsSerializerMixin
-            ) and
-            getattr(viewset, '_nested_custom_fields', True)
-        ):
+
+        if issubclass(
+            viewset.serializer_class, WithCustomFieldsSerializerMixin
+        ) and getattr(viewset, "_nested_custom_fields", True):
             # additionally, registed nested resource for custom fields
             self._attach_nested_custom_fields(prefix, viewset, basename)
 
@@ -43,18 +42,19 @@ class NestedCustomFieldsRouterMixin(object):
         from ralph.api.viewsets import RalphAPIViewSet
 
         from .viewsets import ObjectCustomFieldsViewSet
+
         model = viewset.queryset.model
         custom_fields_related_viewset = type(
-            '{}CustomFieldsViewSet'.format(model._meta.object_name),
+            "{}CustomFieldsViewSet".format(model._meta.object_name),
             (ObjectCustomFieldsViewSet, RalphAPIViewSet),
-            {'related_model': model}
+            {"related_model": model},
         )
         # notice that, although it's custom fields (nested) resource,
         # for every model separated (nested) router is created!
         nested_router = NestedSimpleRouter(
             self,
             prefix,
-            lookup=custom_fields_related_viewset.related_model_router_lookup
+            lookup=custom_fields_related_viewset.related_model_router_lookup,
         )
         nested_router.register(
             self.nested_resource_prefix,
@@ -67,11 +67,9 @@ class NestedCustomFieldsRouterMixin(object):
         urls = super().get_urls()
         # additionally, return nested routers urls too
         for nr in self.nested_registry:
-            urls.append(url(r'^', include(nr.urls)))
+            urls.append(url(r"^", include(nr.urls)))
         return urls
 
 
-class NestedCustomFieldsRouter(
-    NestedCustomFieldsRouterMixin, routers.DefaultRouter
-):
+class NestedCustomFieldsRouter(NestedCustomFieldsRouterMixin, routers.DefaultRouter):
     pass

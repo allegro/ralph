@@ -17,22 +17,20 @@ ERRORS = {
     Codes.IMPORT_ERROR: lambda key: Error(
         "Somethings goes wrong during import entry point ({})".format(key),  # noqa
         hint="Check function and value of entry point.",
-        id="hooks.E001"
+        id="hooks.E001",
     ),
     Codes.EMPTY_ENTRY_POINT: lambda key: Error(
-        "Entry point \"{}\" is not defined in any installed package!".format(key), # noqa
+        'Entry point "{}" is not defined in any installed package!'.format(key),  # noqa
         hint="Add entry point to setup.py and add default value to them.",
-        id="hooks.E002"
+        id="hooks.E002",
     ),
     Codes.INVALID_ENV_VAR: lambda key, active_variant, variants: Error(
         "The environment variable {}={} is not valid (incorrect value).".format(  # noqa
             hook_name_to_env_name(key), active_variant
         ),
-        hint="Consider one of these values: {}".format(
-            ', '.join(variants)
-        ),
-        id="hooks.E002"
-    )
+        hint="Consider one of these values: {}".format(", ".join(variants)),
+        id="hooks.E002",
+    ),
 }
 
 
@@ -56,8 +54,6 @@ def check_configuration(**kwargs):
             break
 
         if not found:
-            errors.append(
-                ERRORS[Codes.INVALID_ENV_VAR](key, active_variant, variants)
-            )
+            errors.append(ERRORS[Codes.INVALID_ENV_VAR](key, active_variant, variants))
 
     return errors

@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib import messages
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from ralph.admin.helpers import get_content_type_for_model
 from ralph.attachments.models import Attachment, AttachmentItem

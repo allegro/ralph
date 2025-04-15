@@ -8,6 +8,7 @@ from django.core.management.base import BaseCommand
 
 class Command(BaseCommand):
     """Show configuration for hooks."""
+
     help = textwrap.dedent(__doc__).strip()
 
     def handle(self, *args, **kwargs):
@@ -15,11 +16,10 @@ class Command(BaseCommand):
         for key, active_variant in settings.HOOKS_CONFIGURATION.items():
             self.stdout.write("\n{}:".format(key))
             for ep in pkg_resources.iter_entry_points(key):
-                ending = ''
+                ending = ""
                 if active_variant == ep.name:
                     ending += self.style.NOTICE(" (active)")
-                ending += '\n'
+                ending += "\n"
                 self.stdout.write(
-                    "\t {} [{}]".format(ep.name, ep.dist.project_name),
-                    ending=ending
+                    "\t {} [{}]".format(ep.name, ep.dist.project_name), ending=ending
                 )

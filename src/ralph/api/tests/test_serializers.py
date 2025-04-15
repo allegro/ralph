@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from dj.choices import Choices
+from ralph.lib.dj_choices import Choices
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework.test import APIClient, APIRequestFactory

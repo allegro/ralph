@@ -6,8 +6,7 @@ from ralph.lib.visibility_scope.models import ServiceBasedVisibilityScope
 
 def visibility_scopes_for_user(user):
     return ServiceBasedVisibilityScope.objects.filter(
-        Q(id__in=user.service_visibility_scopes.all())
-        | Q(group__in=user.groups.all())
+        Q(id__in=user.service_visibility_scopes.all()) | Q(group__in=user.groups.all())
     )
 
 
@@ -19,7 +18,9 @@ def visibility_scope_filter(user):
     if not scopes:
         return Q()
 
-    return Q(service_env__service__in=Service.objects.filter(visibility_scopes__in=scopes))
+    return Q(
+        service_env__service__in=Service.objects.filter(visibility_scopes__in=scopes)
+    )
 
 
 def visibility_scope_asset_support_filter(user):
@@ -32,5 +33,7 @@ def visibility_scope_asset_support_filter(user):
         return Q()
 
     return Q(
-        baseobject__service_env__service__in=Service.objects.filter(visibility_scopes__in=scopes)
+        baseobject__service_env__service__in=Service.objects.filter(
+            visibility_scopes__in=scopes
+        )
     )

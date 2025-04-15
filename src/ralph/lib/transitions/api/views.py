@@ -20,7 +20,7 @@ from ralph.lib.transitions.api.serializers import (
     TransitionJobSerializer,
     TransitionModelSerializer,
     TransitionSerializer,
-    TransitionsHistorySerializer
+    TransitionsHistorySerializer,
 )
 from ralph.lib.transitions.exceptions import TransitionNotAllowedError
 from ralph.lib.transitions.models import (
@@ -31,34 +31,32 @@ from ralph.lib.transitions.models import (
     Transition,
     TransitionJob,
     TransitionModel,
-    TransitionsHistory
+    TransitionsHistory,
 )
 from ralph.lib.transitions.views import collect_actions, NonAtomicView
 
 FIELD_MAP = {
-    forms.CharField: (serializers.CharField, [
-        'max_length', 'initial', 'required'
-    ]),
-    forms.BooleanField: (serializers.BooleanField, ['initial', 'required']),
-    forms.URLField: (serializers.URLField, ['initial', 'required']),
-    forms.IntegerField: (serializers.IntegerField, ['initial', 'required']),
-    forms.DecimalField: (serializers.DecimalField, ['initial', 'required']),
-    forms.DateField: (serializers.DateField, ['initial', 'required']),
-    forms.DateTimeField: (serializers.DateTimeField, ['initial', 'required']),
-    forms.TimeField: (serializers.TimeField, ['initial', 'required']),
-    forms.ModelMultipleChoiceField: (ModelMultipleChoiceField, [
-        'initial', 'required', 'choices'
-    ]),
-    forms.ModelChoiceField: (serializers.PrimaryKeyRelatedField, [
-        'initial', 'required', 'queryset'
-    ]),
-    forms.ChoiceField: (serializers.ChoiceField, [
-        'initial', 'required', 'choices'
-    ]),
-    ChoiceFieldWithOtherOption: (ChoiceFieldWithOtherOptionField, [
-        'initial', 'required', 'choices', 'auto_other_choice',
-        'other_option_label'
-    ])
+    forms.CharField: (serializers.CharField, ["max_length", "initial", "required"]),
+    forms.BooleanField: (serializers.BooleanField, ["initial", "required"]),
+    forms.URLField: (serializers.URLField, ["initial", "required"]),
+    forms.IntegerField: (serializers.IntegerField, ["initial", "required"]),
+    forms.DecimalField: (serializers.DecimalField, ["initial", "required"]),
+    forms.DateField: (serializers.DateField, ["initial", "required"]),
+    forms.DateTimeField: (serializers.DateTimeField, ["initial", "required"]),
+    forms.TimeField: (serializers.TimeField, ["initial", "required"]),
+    forms.ModelMultipleChoiceField: (
+        ModelMultipleChoiceField,
+        ["initial", "required", "choices"],
+    ),
+    forms.ModelChoiceField: (
+        serializers.PrimaryKeyRelatedField,
+        ["initial", "required", "queryset"],
+    ),
+    forms.ChoiceField: (serializers.ChoiceField, ["initial", "required", "choices"]),
+    ChoiceFieldWithOtherOption: (
+        ChoiceFieldWithOtherOptionField,
+        ["initial", "required", "choices", "auto_other_choice", "other_option_label"],
+    ),
 }
 
 
@@ -71,8 +69,12 @@ class TransitionsHistoryViewSet(RalphReadOnlyAPIViewSet):
     queryset = TransitionsHistory.objects.all()
     serializer_class = TransitionsHistorySerializer
     filter_fields = [
-        'created', 'modified', 'transition_name',
-        'source', 'target', 'object_id'
+        "created",
+        "modified",
+        "transition_name",
+        "source",
+        "target",
+        "object_id",
     ]
 
 
@@ -89,8 +91,8 @@ class TransitionActionViewSet(RalphReadOnlyAPIViewSet):
 class TransitionViewSet(RalphReadOnlyAPIViewSet):
     queryset = Transition.objects.all()
     serializer_class = TransitionSerializer
-    prefetch_related = ['actions']
-    select_related = ['model', 'model__content_type']
+    prefetch_related = ["actions"]
+    select_related = ["model", "model__content_type"]
 
 
 class AvailableTransitionViewSet(TransitionViewSet):
@@ -104,17 +106,16 @@ class AvailableTransitionViewSet(TransitionViewSet):
     def get_queryset(self):
         queryset = super().get_queryset()
         queryset = queryset.filter(
-            model__content_type__model=self.kwargs['model'],
-            model__content_type__app_label=self.kwargs['app_label']
+            model__content_type__model=self.kwargs["model"],
+            model__content_type__app_label=self.kwargs["app_label"],
         )
         return queryset
 
 
 class TransitionViewMixin(NonAtomicView, APIView):
-
     def initial(self, request, *args, **kwargs):
         self.obj = self.transition.model.content_type.get_object_for_this_type(
-            pk=kwargs['obj_pk']
+            pk=kwargs["obj_pk"]
         )
         self.objects = [self.obj]
         self.actions, self.return_attachment = collect_actions(
@@ -126,40 +127,34 @@ class TransitionViewMixin(NonAtomicView, APIView):
         fields = {}
         fields_name_map = {}
         for action in self.actions:
-            action_fields = getattr(action, 'form_fields', {})
+            action_fields = getattr(action, "form_fields", {})
             for name, options in action_fields.items():
                 # TODO: unify this with
                 # TransitionViewMixin.form_fields_from_actions
-                condition = options.get('condition', lambda x, y: True)
+                condition = options.get("condition", lambda x, y: True)
                 if not condition(self.obj, self.actions):
                     continue
                 field_class, field_attr = FIELD_MAP.get(
-                    options['field'].__class__, None
+                    options["field"].__class__, None
                 )
                 attrs = {
-                    name: getattr(
-                        options['field'], name, None
-                    ) for name in field_attr
+                    name: getattr(options["field"], name, None) for name in field_attr
                 }
-                choices = options.get('choices')
+                choices = options.get("choices")
                 if choices:
                     if callable(choices):
                         list_of_choices = choices(self.actions, self.objects)
                     else:
                         list_of_choices = choices.copy()
-                    attrs['choices'] = list_of_choices
-                fields_name_map[name] = '{}__{}'.format(action.__name__, name)
+                    attrs["choices"] = list_of_choices
+                fields_name_map[name] = "{}__{}".format(action.__name__, name)
                 fields[name] = field_class(**attrs)
         return fields, fields_name_map
 
     def get_serializer_class(self):
-        class_name = 'TransitionSerializer{}'.format(
-            self.obj.__class__.__name__
-        )
+        class_name = "TransitionSerializer{}".format(self.obj.__class__.__name__)
         class_attrs, _ = self.get_fields()
-        serializer_class = type(
-            class_name, (serializers.Serializer,), class_attrs
-        )
+        serializer_class = type(class_name, (serializers.Serializer,), class_attrs)
 
         return serializer_class
 
@@ -179,16 +174,12 @@ class TransitionViewMixin(NonAtomicView, APIView):
 
         Raise ValidationError (DRF) if any error occurs.
         """
-        errors = _transition_data_validation(
-            self.objects, self.transition, data
-        )
+        errors = _transition_data_validation(self.objects, self.transition, data)
         if errors:
             api_errors = {}
             for action_name, action_errors in errors.items():
                 for field_name, field_errors in action_errors.items():
-                    api_errors[field_name] = [
-                        exc.message for exc in field_errors
-                    ]
+                    api_errors[field_name] = [exc.message for exc in field_errors]
             raise DRFValidationError(api_errors)
 
     def _check_instances(self):
@@ -199,11 +190,13 @@ class TransitionViewMixin(NonAtomicView, APIView):
                 requester=self.request.user,
             )
         except TransitionNotAllowedError as e:
-            raise DRFValidationError({
-                api_settings.NON_FIELD_ERRORS_KEY: list(itertools.chain(
-                    *e.errors.values()
-                ))
-            })
+            raise DRFValidationError(
+                {
+                    api_settings.NON_FIELD_ERRORS_KEY: list(
+                        itertools.chain(*e.errors.values())
+                    )
+                }
+            )
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer_class()(data=request.data)
@@ -217,13 +210,12 @@ class TransitionViewMixin(NonAtomicView, APIView):
             transition_obj_or_name=self.transition,
             field=self.transition.model.field_name,
             data=data,
-            requester=request.user
+            requester=request.user,
         )
         status_code = status.HTTP_201_CREATED
         if self.transition.is_async:
-            result['job_ids'] = [
-                reverse('transitionjob-detail', args=(i,))
-                for i in transition_result
+            result["job_ids"] = [
+                reverse("transitionjob-detail", args=(i,)) for i in transition_result
             ]
             status_code = status.HTTP_202_ACCEPTED
         return Response(result, status=status_code)
@@ -241,27 +233,24 @@ class TransitionView(TransitionViewMixin):
     def initial(self, request, *args, **kwargs):
         try:
             filters = {
-                'model__content_type__model': kwargs['model'],
-                'model__content_type__app_label': kwargs['app_label'],
+                "model__content_type__model": kwargs["model"],
+                "model__content_type__app_label": kwargs["app_label"],
             }
-            if kwargs.get('transition_pk'):
-                filters['pk'] = kwargs['transition_pk']
-            elif kwargs.get('transition_name'):
-                filters['name'] = kwargs['transition_name']
+            if kwargs.get("transition_pk"):
+                filters["pk"] = kwargs["transition_pk"]
+            elif kwargs.get("transition_name"):
+                filters["name"] = kwargs["transition_name"]
 
             self.transition = Transition.objects.get(**filters)
         except ObjectDoesNotExist:
-            raise NotFound('Transition not found!')
+            raise NotFound("Transition not found!")
         super().initial(request, *args, **kwargs)
 
 
 class TransitionByIdView(TransitionViewMixin):
-
     def initial(self, request, *args, **kwargs):
         try:
-            self.transition = Transition.objects.get(
-                pk=kwargs['transition_pk']
-            )
+            self.transition = Transition.objects.get(pk=kwargs["transition_pk"])
         except ObjectDoesNotExist:
-            raise NotFound('Transition not found!')
+            raise NotFound("Transition not found!")
         super().initial(request, *args, **kwargs)

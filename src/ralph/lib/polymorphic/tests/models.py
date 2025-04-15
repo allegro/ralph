@@ -11,7 +11,9 @@ class SomethingRelated(models.Model):
 
 class PolymorphicModelBaseTest(Polymorphic, metaclass=PolymorphicBase):
     name = models.CharField(max_length=50, blank=True, null=True)
-    sth_related = models.ForeignKey(SomethingRelated, null=True, blank=True, on_delete=models.CASCADE)
+    sth_related = models.ForeignKey(
+        SomethingRelated, null=True, blank=True, on_delete=models.CASCADE
+    )
 
     def __str__(self):
         return "PolymorphicModelBaseTest: {} ({})".format(self.name, self.pk)
@@ -26,7 +28,11 @@ class PolymorphicModelTest(
 
 class PolymorphicModelTest2(PolymorphicModelBaseTest):
     another_related = models.ForeignKey(
-        SomethingRelated, null=True, blank=True, related_name="+", on_delete=models.CASCADE
+        SomethingRelated,
+        null=True,
+        blank=True,
+        related_name="+",
+        on_delete=models.CASCADE,
     )
 
     def __str__(self):

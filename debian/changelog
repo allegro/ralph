@@ -1,3 +1,40 @@
+ralph (20250414.1) focal; urgency=medium
+
+  * Pre django-3.0 bumps
+  * Pre django-3.0
+  * Fix inkpy-jinja
+  * Update dependencies for django 3.0 and fix errors
+  * Migrate ugettext to gettext
+  * Simplify github ci
+  * Simplify github ci 2
+  * Fix coverage run
+  * Pin correct version of django-taggit. Fix get transitions and get tags
+  * Staticfiles -> static
+  * Bump postgres for gh ci. Fix bad calls
+  * Vendor in dj_choices. Fix ruff tasks
+  * Inlines has_add_permission now accept extra argument
+  * Fix obj creation in test
+  * Fix num queries and factories
+  * Bump postgres locally. Remove warning. Try-except in initial data
+  * Skip initial data tests
+  * Bump to django 3.1 as 3.0 doesn't work with redis
+  * Django 3.0
+  * Adjust package versions
+  * Compile requirements
+  * Fix redis config
+  * Bump ldap, fix settings
+  * Fix
+  * Fix redis cache settings
+  * Fix redis session. Remove old django-redis-sessions
+  * Fix redis session. Remove old django-redis-sessions
+  * Build inkpy-jijnja for other envs too
+  * Publish inkpy too
+  * Publish to inkpy instead of ralph-inkpy
+  * Build inkpy from 0.1.4. Add inkpy image to publish
+  * Remove dupa from code
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Mon, 14 Apr 2025 08:47:21 +0000
+
 ralph (20250407.2) focal; urgency=medium
 
   * Fix ubuntu version in packagecloud

@@ -1,7 +1,7 @@
 import os
 import tempfile
 
-from dj.choices import Choices
+from ralph.lib.dj_choices import Choices
 from django import forms
 from django.db import models
 

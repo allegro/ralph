@@ -1,7 +1,7 @@
 import base64
 import json
 
-from dj.choices.fields import ChoiceField
+from ralph.lib.dj_choices.fields import ChoiceField
 from django.db.models.fields import BooleanField
 
 from ralph.admin.helpers import get_field_by_relation_path

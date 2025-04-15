@@ -1,0 +1,10 @@
+FROM allegro/inkpy:0.1.4
+LABEL maintainer="Allegro.pl Sp. z o.o. opensource@allegro.pl"
+LABEL authors="Allegro.pl Sp. z o.o. and Contributors opensource@allegro.pl"
+LABEL description="Inkpy jinja updated to work with higher django versions"
+
+RUN apt update -y && sudo apt install -y curl
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+RUN /root/.local/bin/uv add --script /usr/local/bin/rqworker unotools jinja2 six rq
+COPY docker/provision/supervisor.conf /etc/supervisor/conf.d/pdf_worker.conf
+CMD supervisord -n

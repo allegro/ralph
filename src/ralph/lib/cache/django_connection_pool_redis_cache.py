@@ -1,11 +1,10 @@
 from django.conf import settings
-from redis_cache import RedisCache
+from django_redis.cache import RedisCache
 
 from ralph.lib.redis import get_redis_connection
 
 
 class DjangoConnectionPoolCache(RedisCache):
-
     def __init__(self, server, params):
         """
         Connect to Redis using connection pool
@@ -28,9 +27,7 @@ class DjangoConnectionPoolCache(RedisCache):
         if self._client:
             return self._client
 
-        self._client = get_redis_connection(
-            settings.REDIS_CONNECTION, is_master=False
-        )
+        self._client = get_redis_connection(settings.REDIS_CONNECTION, is_master=False)
         return self._client
 
     def get_master_client(self):

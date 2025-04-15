@@ -4,7 +4,7 @@ import re
 from django.contrib import messages
 from django.contrib.admin.options import IncorrectLookupParameters
 from django.db.models import Q
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from ralph.admin.filters import (
     ChoicesListFilter,

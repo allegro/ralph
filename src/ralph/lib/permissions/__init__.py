@@ -1,1 +1,1 @@
-default_app_config = 'ralph.lib.permissions.apps.PermissionAppConfig'
+default_app_config = "ralph.lib.permissions.apps.PermissionAppConfig"

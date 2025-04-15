@@ -9,7 +9,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.db.models import Prefetch, Q
 from django.urls import reverse
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from ralph.admin.decorators import register
 from ralph.admin.filters import (
@@ -69,8 +69,6 @@ from ralph.networks.views import NetworkWithTerminatorsView
 from ralph.operations.views import OperationViewReadOnlyForExisiting
 from ralph.security.views import SecurityInfo
 from ralph.supports.models import BaseObjectsSupport
-
-dupa = 1
 
 
 def generate_list_filter_with_common_fields(prefix=None, postfix=None):

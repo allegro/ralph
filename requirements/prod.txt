@@ -4,7 +4,11 @@ appdirs==1.4.4
     # via openstacksdk
 argparse==1.4.0
     # via python-novaclient
-attrs==25.1.0
+asgiref==3.8.1
+    # via django
+async-timeout==5.0.1
+    # via redis
+attrs==25.3.0
     # via
     #   jsonschema
     #   referencing
@@ -30,7 +34,7 @@ cliff==4.7.0
     #   python-ironicclient
 cmd2==2.5.11
     # via cliff
-cryptography==44.0.0
+cryptography==44.0.2
     # via
     #   django-cryptography
     #   openstacksdk
@@ -40,7 +44,7 @@ debtcollector==1.3.0
     #   oslo-config
     #   oslo-utils
     #   python-keystoneclient
-decorator==5.1.1
+decorator==5.2.1
     # via
     #   dogpile-cache
     #   openstacksdk
@@ -50,54 +54,52 @@ defusedxml==0.7.1
     #   odfpy
 diff-match-patch==20241021
     # via django-import-export
-dj-choices==0.11.0
-    # via ralph (pyproject.toml)
-django==2.2.28
+django==3.0.14
     # via
     #   ralph (pyproject.toml)
-    #   dj-choices
     #   django-appconf
     #   django-auth-ldap
+    #   django-extensions
     #   django-filter
     #   django-import-export
     #   django-js-asset
     #   django-money
     #   django-mptt
+    #   django-redis
     #   django-reversion
     #   django-rq
+    #   django-taggit
     #   djangorestframework
     #   drf-nested-routers
 django-appconf==1.0.6
     # via django-cryptography
-django-auth-ldap==2.1.0
+django-auth-ldap==2.4.0
     # via ralph (pyproject.toml)
-django-cryptography==0.3
+django-cryptography==1.0
     # via ralph (pyproject.toml)
-django-extensions==2.2.9
+django-extensions==3.1.5
     # via ralph (pyproject.toml)
-django-filter==2.0.0
+django-filter==2.4.0
     # via ralph (pyproject.toml)
-django-import-export==1.2.0
+django-import-export==2.0.1
     # via ralph (pyproject.toml)
 django-js-asset==2.0.0
     # via django-mptt
-django-money==0.12.3
+django-money==2.0.3
     # via ralph (pyproject.toml)
 django-mptt==0.11.0
     # via ralph (pyproject.toml)
 django-prometheus==2.2.0
     # via ralph (pyproject.toml)
-django-redis-cache==2.0.0
-    # via ralph (pyproject.toml)
-django-redis-sessions==0.5.6
+django-redis==5.0.0
     # via ralph (pyproject.toml)
 django-reversion==3.0.5
     # via ralph (pyproject.toml)
-django-rq==2.0
+django-rq==2.8.0
     # via ralph (pyproject.toml)
-django-sitetree==1.13.0
+django-sitetree==1.17.3
     # via ralph (pyproject.toml)
-django-taggit==0.22.2
+django-taggit==1.3.0
     # via
     #   ralph (pyproject.toml)
     #   django-taggit-serializer
@@ -119,19 +121,15 @@ drf-nested-routers==0.92.5
     # via ralph (pyproject.toml)
 et-xmlfile==2.0.0
     # via openpyxl
-factory-boy==2.11.1
-    # via ralph (pyproject.toml)
 faker==0.9.0
-    # via
-    #   ralph (pyproject.toml)
-    #   factory-boy
+    # via ralph (pyproject.toml)
 funcsigs==0.4
     # via ralph (pyproject.toml)
 gnureadline==8.2.13
     # via cmd2
 gunicorn==23.0.0
     # via ralph (pyproject.toml:prod)
-hiredis==1.0.0
+hiredis==3.1.0
     # via ralph (pyproject.toml)
 idna==2.7
     # via requests
@@ -160,7 +158,7 @@ jsonschema==4.23.0
     # via python-ironicclient
 jsonschema-specifications==2023.12.1
     # via jsonschema
-keystoneauth1==5.8.0
+keystoneauth1==5.8.1
     # via
     #   ralph (pyproject.toml)
     #   openstacksdk
@@ -170,6 +168,8 @@ keystoneauth1==5.8.0
     #   python-novaclient
 markdown==3.2.1
     # via ralph (pyproject.toml)
+markuppy==1.18
+    # via tablib
 monotonic==0.6
     # via ralph (pyproject.toml)
 msgpack==1.1.0
@@ -192,7 +192,7 @@ oauthlib==3.2.2
     # via requests-oauthlib
 odfpy==1.4.1
     # via tablib
-openpyxl==2.4.0
+openpyxl==2.6.4
     # via
     #   ralph (pyproject.toml)
     #   tablib
@@ -277,7 +277,7 @@ pyasn1==0.6.1
     # via
     #   pyasn1-modules
     #   python-ldap
-pyasn1-modules==0.4.1
+pyasn1-modules==0.4.2
     # via python-ldap
 pycparser==2.22
     # via cffi
@@ -287,7 +287,7 @@ pyparsing==3.1.4
     # via oslo-utils
 pyperclip==1.9.0
     # via cmd2
-python-dateutil==2.4.2
+python-dateutil==2.9.0
     # via
     #   ralph (pyproject.toml)
     #   faker
@@ -317,11 +317,10 @@ pyyaml==6.0.2
     #   tablib
 raven==6.10.0
     # via ralph (pyproject.toml)
-redis==3.2.1
+redis==4.6.0
     # via
     #   ralph (pyproject.toml)
-    #   django-redis-cache
-    #   django-redis-sessions
+    #   django-redis
     #   django-rq
     #   rq
 referencing==0.35.1
@@ -349,7 +348,7 @@ rpds-py==0.20.1
     # via
     #   jsonschema
     #   referencing
-rq==1.0
+rq==1.16.2
     # via
     #   ralph (pyproject.toml)
     #   django-rq
@@ -367,8 +366,6 @@ six==1.16.0
     # via
     #   ralph (pyproject.toml)
     #   debtcollector
-    #   dj-choices
-    #   django-extensions
     #   django-taggit-serializer
     #   faker
     #   pyhermes
@@ -390,7 +387,7 @@ stevedore==5.3.0
     #   oslo-config
     #   python-ironicclient
     #   python-keystoneclient
-tablib==0.11.5
+tablib==0.14.0
     # via
     #   ralph (pyproject.toml)
     #   django-import-export
@@ -398,10 +395,10 @@ text-unidecode==1.2
     # via faker
 typing==3.6.6
     # via ralph (pyproject.toml)
-typing-extensions==4.12.2
-    # via dogpile-cache
-unicodecsv==0.14.1
-    # via tablib
+typing-extensions==4.13.1
+    # via
+    #   asgiref
+    #   dogpile-cache
 unidecode==0.4.18
     # via ralph (pyproject.toml)
 urllib3==1.24.3

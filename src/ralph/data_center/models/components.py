@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db import models
-from django.utils.encoding import python_2_unicode_compatible
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from ralph.assets.models.assets import Asset
 from ralph.assets.models.components import Component
@@ -9,7 +8,6 @@ from ralph.lib.mixins.fields import NullableCharField
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
 
 
-@python_2_unicode_compatible
 class DiskShare(Component):
     share_id = models.PositiveIntegerField(
         verbose_name=_("share identifier"),
@@ -51,7 +49,6 @@ class DiskShare(Component):
         return "%s (%s)" % (self.label, self.wwn)
 
 
-@python_2_unicode_compatible
 class DiskShareMount(AdminAbsoluteUrlMixin, models.Model):
     share = models.ForeignKey(
         DiskShare, verbose_name=_("share"), on_delete=models.CASCADE

@@ -1,5 +1,5 @@
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from ralph.admin.m2m import RalphTabularM2MInline
 from ralph.admin.mixins import RalphTabularInline
@@ -30,7 +30,7 @@ class NetworkTerminatorReadOnlyInline(RalphTabularM2MInline):
     def get_readonly_fields(self, request, obj=None):
         return self.get_fields(request, obj)
 
-    def has_add_permission(self, request):
+    def has_add_permission(self, request, obj=None):
         return False
 
 

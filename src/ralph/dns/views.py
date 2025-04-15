@@ -5,7 +5,7 @@ from enum import Enum
 from django.conf import settings
 from django.contrib import messages
 from django.http import HttpResponseRedirect
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from ralph.admin.views.extra import RalphDetailView
 from ralph.dns.dnsaas import DNSaaS

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import dj.choices.fields
-from dj.choices import Choices
+from ralph.lib.dj_choices import Choices
+from ralph.lib.dj_choices.fields import ChoiceField
 from django.db import migrations
 
 
@@ -25,7 +25,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="scmstatuscheck",
             name="check_result",
-            field=dj.choices.fields.ChoiceField(
+            field=ChoiceField(
                 verbose_name="SCM check result",
                 choices=SCMCheckResult,
             ),

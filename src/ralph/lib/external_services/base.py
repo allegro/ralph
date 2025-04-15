@@ -23,9 +23,9 @@ class ExternalService(object):
         """Initializing queue and check existence of service."""
         service = self.services.get(service_name.upper())
         if not service:
-            raise ValueError('The {} service doesn\'t exist'.format(service))
-        self.method = service['method']
-        self.queue = django_rq.get_queue(service['queue_name'])
+            raise ValueError("The {} service doesn't exist".format(service))
+        self.method = service["method"]
+        self.queue = django_rq.get_queue(service["queue_name"])
 
     def run(self, **kwargs):
         """Run function with params on external service.
@@ -60,4 +60,5 @@ class InternalService(ExternalService):
     """
     Service with DB (and Ralph-code) access
     """
+
     services = settings.RALPH_INTERNAL_SERVICES

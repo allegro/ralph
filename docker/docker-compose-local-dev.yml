@@ -39,8 +39,10 @@ services:
     restart: unless-stopped
 
   inkpy:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile-inkpy
     platform: linux/amd64
-    image: allegro/inkpy:latest
     environment:
         REDIS_HOST: redis
         REDIS_PASSWORD: ""

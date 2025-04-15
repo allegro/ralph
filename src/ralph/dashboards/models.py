@@ -1,6 +1,6 @@
 from functools import partial
 
-from dj.choices import Choices
+from ralph.lib.dj_choices import Choices
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection, models
 from django.db.models import Case, Count, IntegerField, Max, Q, Sum, Value, When

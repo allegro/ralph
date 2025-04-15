@@ -4,7 +4,7 @@ from django.conf import settings
 from django.forms import ValidationError
 from django.forms.formsets import DELETION_FIELD_NAME
 from django.forms.models import BaseInlineFormSet
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from ralph.assets.models.components import Ethernet
 from ralph.lib.field_validation.form_fields import CharFormFieldWithAutoStrip

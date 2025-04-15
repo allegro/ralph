@@ -8,7 +8,7 @@ from ralph.lib.polymorphic.tests.models import (
     PolymorphicModelTest,
     PolymorphicModelTest2,
     SomeM2MModel,
-    SomethingRelated
+    SomethingRelated,
 )
 
 
@@ -73,11 +73,11 @@ class PolymorphicTestCase(TestCase):
             # select PolymorphicModelBaseTest
             # select PolymorphicModelTest
             # select PolymorphicModelTest2
-            for (
-                item
-            ) in PolymorphicModelBaseTest.polymorphic_objects.polymorphic_select_related(  # noqa
-                PolymorphicModelTest=["sth_related"],
-                PolymorphicModelTest2=["sth_related", "another_related"],
+            for item in (
+                PolymorphicModelBaseTest.polymorphic_objects.polymorphic_select_related(  # noqa
+                    PolymorphicModelTest=["sth_related"],
+                    PolymorphicModelTest2=["sth_related", "another_related"],
+                )
             ):
                 # just get related attribute to force fetching it from DB
                 item.sth_related

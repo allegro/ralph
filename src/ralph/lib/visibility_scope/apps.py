@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class VisibilityScopeConfig(AppConfig):
-    name = 'visibility_scope'
+    name = "ralph.lib.visibility_scope"

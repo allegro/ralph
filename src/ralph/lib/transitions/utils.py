@@ -39,7 +39,5 @@ def _compare_instances_types(instances):
     Conditions:
         - transition can run only objects with the same type.
     """
-    if not all(
-        map(lambda x: isinstance(instances[0], x.__class__), instances)
-    ):
+    if not all(map(lambda x: isinstance(instances[0], x.__class__), instances)):
         raise TypeError()

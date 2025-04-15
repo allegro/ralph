@@ -4,7 +4,7 @@ import re
 from collections import namedtuple, OrderedDict
 from itertools import chain
 
-from dj.choices import Choices, Country
+from ralph.lib.dj_choices import Choices, Country
 from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -14,7 +14,7 @@ from django.db.models import Q
 from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from ralph.accounts.models import Region
 from ralph.admin.autocomplete import AutocompleteTooltipMixin
@@ -750,7 +750,9 @@ class DataCenterAsset(
     def _validate_hostname(self, *args, **kwargs):
         if self.status == DataCenterAssetStatus.used.id:
             if not self.hostname or self.hostname == "":
-                raise ValidationError({"hostname": _("Hostname is required for status 'in use'")})
+                raise ValidationError(
+                    {"hostname": _("Hostname is required for status 'in use'")}
+                )
 
     def clean(self):
         errors = {}

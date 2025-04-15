@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from dj.choices import Choices
+from ralph.lib.dj_choices import Choices
 
 
 class AssetPurpose(Choices):

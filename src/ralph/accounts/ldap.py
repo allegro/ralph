@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from dj.choices import Country
+from ralph.lib.dj_choices import Country
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.dispatch import receiver

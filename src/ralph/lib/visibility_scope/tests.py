@@ -4,14 +4,11 @@ from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.test import TransactionTestCase
 from django.urls import reverse
-from factory import DjangoModelFactory
+from factory.django import DjangoModelFactory
 from rest_framework.test import APITestCase
 
 from ralph.accounts.tests.factories import UserFactory
-from ralph.assets.tests.factories import (
-    ServiceEnvironmentFactory,
-    ServiceFactory
-)
+from ralph.assets.tests.factories import ServiceEnvironmentFactory, ServiceFactory
 from ralph.data_center.models import DataCenterAsset
 from ralph.data_center.tests.factories import DataCenterAssetFactory
 from ralph.lib.visibility_scope.models import ServiceBasedVisibilityScope
@@ -56,22 +53,16 @@ class TestServiceBasedVisibilityScopeVisibility(APITestCase):
         )
 
         self.user_outside_visibility_scope = get_user_model().objects.create(
-            username="user1",
-            is_staff=True,
-            is_active=True
+            username="user1", is_staff=True, is_active=True
         )
         self.user_in_visibility_scope = get_user_model().objects.create(
-            username="user2",
-            is_staff=True,
-            is_active=True
+            username="user2", is_staff=True, is_active=True
         )
 
-        content_types = [ContentType.objects.get_for_model(m) for m in (
-            DataCenterAsset,
-            VirtualServer,
-            Support,
-            BaseObjectsSupport
-        )]
+        content_types = [
+            ContentType.objects.get_for_model(m)
+            for m in (DataCenterAsset, VirtualServer, Support, BaseObjectsSupport)
+        ]
         permissions = Permission.objects.filter(content_type__in=content_types)
         for user in (self.user_in_visibility_scope, self.user_outside_visibility_scope):
             user.user_permissions.add(*permissions)
@@ -90,9 +81,7 @@ class TestDataCenterAssetVisibilityInVisibilityScope(
         self.hw_outside_visibility_scope = DataCenterAssetFactory(
             service_env=self.service_env_outside_visibility_scope
         )
-        self.hw_without_service_env = DataCenterAssetFactory(
-            service_env=None
-        )
+        self.hw_without_service_env = DataCenterAssetFactory(service_env=None)
 
         permissions = Permission.objects.filter(
             content_type=ContentType.objects.get_for_model(DataCenterAsset)
@@ -104,10 +93,10 @@ class TestDataCenterAssetVisibilityInVisibilityScope(
         self.client.force_authenticate(self.user_in_visibility_scope)
         url = reverse("datacenterasset-list")
         response = self.client.get(url)
-        self.assertEqual(response.json()['count'], 1)
+        self.assertEqual(response.json()["count"], 1)
 
     def test_user_outside_visibility_scope_can_see_3_hws(self):
         self.client.force_authenticate(self.user_outside_visibility_scope)
         url = reverse("datacenterasset-list")
         response = self.client.get(url)
-        self.assertEqual(response.json()['count'], 3)
+        self.assertEqual(response.json()["count"], 3)

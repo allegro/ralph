@@ -1,6 +1,6 @@
 from django import forms
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from ralph.admin.m2m import RalphTabularM2MInline
 from ralph.admin.views.extra import RalphDetailViewAdmin
@@ -32,7 +32,7 @@ class OperationInlineReadOnlyForExisting(OperationInline):
     def get_readonly_fields(self, request, obj=None):
         return self.get_fields(request, obj)
 
-    def has_add_permission(self, request):
+    def has_add_permission(self, request, obj=None):
         return False
 
     @mark_safe
@@ -51,6 +51,9 @@ class OperationInlineAddOnly(OperationInline):
 
     def has_change_permission(self, request, obj=None):
         return False
+
+    def has_add_permission(self, request, obj=None):
+        super().has_add_permission(request, obj)
 
 
 class OperationView(RalphDetailViewAdmin):

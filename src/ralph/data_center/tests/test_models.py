@@ -510,9 +510,10 @@ class DataCenterAssetTest(RalphTestCase):
     def test_cant_set_status_in_use_when_hostname_missing(self):
         dca = DataCenterAssetFactory()  # type: DataCenterAsset
         with self.assertRaises(ValidationError):
-            dca.hostname = ''
+            dca.hostname = ""
             dca.status = DataCenterAssetStatus.used.id
             dca.clean()
+
 
 @ddt
 class RackTest(RalphTestCase):

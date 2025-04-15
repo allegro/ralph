@@ -2,7 +2,7 @@
 from datetime import datetime
 from unittest.mock import patch
 
-from dj.choices import Country
+from ralph.lib.dj_choices import Country
 from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.contrib.messages.storage.fallback import FallbackStorage

@@ -7,22 +7,18 @@ from statsd import defaults, StatsClient
 logger = logging.getLogger(__name__)
 statsd = None
 
-HOST = getattr(settings, 'STATSD_HOST', defaults.HOST)
-PORT = getattr(settings, 'STATSD_PORT', defaults.PORT)
-PREFIX = getattr(settings, 'STATSD_PREFIX', defaults.PREFIX)
-MAXUDPSIZE = getattr(settings, 'STATSD_MAXUDPSIZE', defaults.MAXUDPSIZE)
-IPV6 = getattr(settings, 'STATSD_IPV6', defaults.IPV6)
+HOST = getattr(settings, "STATSD_HOST", defaults.HOST)
+PORT = getattr(settings, "STATSD_PORT", defaults.PORT)
+PREFIX = getattr(settings, "STATSD_PREFIX", defaults.PREFIX)
+MAXUDPSIZE = getattr(settings, "STATSD_MAXUDPSIZE", defaults.MAXUDPSIZE)
+IPV6 = getattr(settings, "STATSD_IPV6", defaults.IPV6)
 
 
 def build_statsd_client(
     host=HOST, port=PORT, prefix=PREFIX, maxudpsize=MAXUDPSIZE, ipv6=IPV6
 ):
     return StatsClient(
-        host=host,
-        port=port,
-        prefix=prefix,
-        maxudpsize=maxudpsize,
-        ipv6=ipv6
+        host=host, port=port, prefix=prefix, maxudpsize=maxudpsize, ipv6=ipv6
     )
 
 
@@ -49,8 +45,7 @@ if statsd is None:
     class StatsdMockClient(object):
         def __init__(self, *args, **kwargs):
             logger.warning(
-                'Statsd not installed or configured - metrics will NOT be '
-                'collected'
+                "Statsd not installed or configured - metrics will NOT be collected"
             )
 
         def timer(self, *args, **kwargs):
