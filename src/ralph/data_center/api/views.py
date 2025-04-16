@@ -59,7 +59,6 @@ class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         "budget_info",
         "content_type",
         "configuration_path__module",
-        "securityscan",
         "baseobject_ptr",
         "asset_ptr",
     ]

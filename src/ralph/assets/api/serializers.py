@@ -39,7 +39,6 @@ from ralph.assets.models.components import (
 from ralph.lib.custom_fields.api import WithCustomFieldsSerializerMixin
 from ralph.licences.api_simple import SimpleBaseObjectLicenceSerializer
 from ralph.networks.api_simple import IPAddressSimpleSerializer
-from ralph.security.api import SecurityScanSerializer
 
 
 class TypeFromContentTypeSerializerMixin(RalphAPISerializer):
@@ -468,9 +467,3 @@ class ComponentSerializerMixin(NetworkComponentSerializerMixin):
     disk = DiskSimpleSerializer(many=True, source="disk_set")
     memory = MemorySimpleSerializer(many=True, source="memory_set")
     processors = ProcessorSimpleSerializer(many=True, source="processor_set")
-
-
-class SecurityScanField(serializers.Field):
-    def to_representation(self, value):
-        if value and value.pk:
-            return SecurityScanSerializer().to_representation(value)

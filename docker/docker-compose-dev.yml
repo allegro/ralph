@@ -35,6 +35,7 @@ services:
     build:
       context: ../
       dockerfile: docker/Dockerfile-inkpy
+    image: allegro/inkpy:20250414.1
     depends_on:
      - redis
     platform: linux/amd64

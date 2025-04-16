@@ -3,7 +3,6 @@ from rest_framework import fields, serializers
 from ralph.assets.api.serializers import (
     BaseObjectSerializer,
     ComponentSerializerMixin,
-    SecurityScanField,
 )
 from ralph.assets.models import BaseObject
 from ralph.data_center.api.serializers import DataCenterAssetSimpleSerializer
@@ -12,7 +11,6 @@ from ralph.data_center.models import DCHost
 
 class DCHostSerializer(ComponentSerializerMixin, BaseObjectSerializer):
     hostname = fields.CharField()
-    securityscan = SecurityScanField()
     hypervisor = DataCenterAssetSimpleSerializer(required=False)
 
     class Meta:
@@ -24,7 +22,6 @@ class DCHostSerializer(ComponentSerializerMixin, BaseObjectSerializer):
             "ipaddresses",
             "custom_fields",
             "tags",
-            "securityscan",
             "object_type",
             "__str__",
             "service_env",

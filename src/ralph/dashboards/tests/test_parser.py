@@ -20,8 +20,7 @@ from ralph.data_center.tests.factories import (
     DataCenterAssetFullFactory,
     RackFactory,
 )
-from ralph.security.models import Vulnerability
-from ralph.security.tests.factories import SecurityScanFactory, VulnerabilityFactory
+from ralph.licences.tests.factories import LicenceFactory, DataCenterAssetLicenceFactory
 from ralph.tests.models import Bar
 
 ARGS, KWARGS = (0, 1)
@@ -231,32 +230,28 @@ class LabelGroupingTest(TestCase):
         self.assertEqual(qs.get()["series"], len(expected))
         self.assertIn("year", qs.get())
 
-    def _genenrate_dca_with_scan(self, count, date_str):
+    def _genenrate_dca_with_licence(self, count, date_str):
         gen = []
         for _ in range(count):
-            dca = DataCenterAssetFactory()
-            sc = SecurityScanFactory(
-                last_scan_date=date_str,
-            )
-            dca.securityscan = sc
-            sc.save()
+            lc = LicenceFactory(valid_thru=date_str)
+            dca = DataCenterAssetLicenceFactory(licence=lc)
             gen.append(dca)
         return gen
 
     def test_label_works_when_year_grouping_on_foreign_key(self):
-        self._genenrate_dca_with_scan(2, "2015-01-01")
-        expected = self._genenrate_dca_with_scan(1, "2016-01-01")
-        self._genenrate_dca_with_scan(3, "2017-01-01")
+        self._genenrate_dca_with_licence(2, "2015-01-01")
+        expected = self._genenrate_dca_with_licence(1, "2016-01-01")
+        self._genenrate_dca_with_licence(3, "2017-01-01")
 
         graph = GraphFactory(
             aggregate_type=AggregateType.aggregate_count.id,
             params={
                 "filters": {
-                    "securityscan__last_scan_date__gte": "2016-01-01",
-                    "securityscan__last_scan_date__lt": "2017-01-01",
+                    "licences__licence__valid_thru__gte": "2016-01-01",
+                    "licences__licence__valid_thru__lt": "2017-01-01",
                 },
                 "series": "id",
-                "labels": "securityscan__last_scan_date|year",
+                "labels": "licences__licence__valid_thru|year",
             },
         )
 
@@ -266,19 +261,19 @@ class LabelGroupingTest(TestCase):
         self.assertIn("year", qs.get())
 
     def test_label_works_when_month_grouping_on_foreign_key(self):
-        self._genenrate_dca_with_scan(2, "2015-01-01")
-        expected = self._genenrate_dca_with_scan(1, "2016-01-01")
-        self._genenrate_dca_with_scan(3, "2017-01-01")
+        self._genenrate_dca_with_licence(2, "2015-01-01")
+        expected = self._genenrate_dca_with_licence(1, "2016-01-01")
+        self._genenrate_dca_with_licence(3, "2017-01-01")
 
         graph = GraphFactory(
             aggregate_type=AggregateType.aggregate_count.id,
             params={
                 "filters": {
-                    "securityscan__last_scan_date__gte": "2016-01-01",
-                    "securityscan__last_scan_date__lt": "2017-01-01",
+                    "licences__licence__valid_thru__gte": "2016-01-01",
+                    "licences__licence__valid_thru__lt": "2017-01-01",
                 },
                 "series": "id",
-                "labels": "securityscan__last_scan_date|month",
+                "labels": "licences__licence__valid_thru|month",
             },
         )
 
@@ -289,21 +284,17 @@ class LabelGroupingTest(TestCase):
 
     def test_ratio_aggregation(self):
         service_env = ServiceEnvironmentFactory(service__name="sample-service")
-        vulnerability = VulnerabilityFactory(patch_deadline=datetime.date(2015, 1, 1))
-        for is_patched in [True, False]:
+        for is_deprecated in [True, False]:
             for _ in range(3):
-                dca = DataCenterAssetFactory(service_env=service_env)
-                if is_patched:
-                    ss = SecurityScanFactory(vulnerabilities=[])
-                else:
-                    ss = SecurityScanFactory(vulnerabilities=[vulnerability])
-                dca.securityscan = ss
-                ss.save()
-                dca.save()
+                DataCenterAssetFactory(
+                    service_env=service_env,
+                    force_depreciation=is_deprecated
+                )
+
         graph = GraphFactory(
             aggregate_type=AggregateType.aggregate_ratio.id,
             params={
-                "series": ["securityscan__is_patched", "id"],
+                "series": ["force_depreciation", "id"],
                 "labels": "service_env__service__name",
                 "filters": {
                     "series__gt": 0,
@@ -317,43 +308,23 @@ class LabelGroupingTest(TestCase):
         )
 
     def test_duplicates_works_when_used_in_series_value(self):
-        SecurityScanFactory(
-            base_object=DataCenterAssetFactory().baseobject_ptr,
-            vulnerabilities=[
-                VulnerabilityFactory(
-                    patch_deadline=datetime.datetime.strptime("2015-01-01", "%Y-%m-%d")
-                ),
-            ],
-        )
+        DataCenterAssetLicenceFactory(licence=LicenceFactory(valid_thru="2015-01-01"))
 
-        SecurityScanFactory(
-            base_object=DataCenterAssetFactory().baseobject_ptr,
-            vulnerabilities=[
-                VulnerabilityFactory(
-                    patch_deadline=datetime.datetime.strptime("2016-01-01", "%Y-%m-%d")
-                ),
-                VulnerabilityFactory(
-                    patch_deadline=datetime.datetime.strptime("2016-02-02", "%Y-%m-%d")
-                ),
-                VulnerabilityFactory(
-                    patch_deadline=datetime.datetime.strptime("2016-03-03", "%Y-%m-%d")
-                ),
-            ],
-        )
+        asset = DataCenterAssetFactory()
+        for month in [1, 2, 3]:
+            licence = LicenceFactory(valid_thru=f"2016-0{month}-01")
+            DataCenterAssetLicenceFactory(licence=licence, base_object=asset)
 
         graph = GraphFactory(
             aggregate_type=AggregateType.aggregate_count.id,
             params={
                 "filters": {
-                    "patch_deadline__gte": "2010-01-01",
-                    "securityscan__base_object__isnull": False,
+                    "licences__licence__valid_thru__gte": "2010-01-01",
                 },
-                "series": "securityscan|distinct",
-                "labels": "patch_deadline|year",
+                "series": "id|distinct",
+                "labels": "licences__licence__valid_thru|year",
             },
         )
-        graph.model = ContentType.objects.get_for_model(Vulnerability)
-        graph.save()
 
         qs = graph.build_queryset()
 

@@ -12,7 +12,6 @@ from ralph.assets.tests.factories import (
     BudgetInfoFactory,
 )
 from ralph.back_office.models import BackOfficeAsset, OfficeInfrastructure, Warehouse
-from ralph.security.tests.factories import SecurityScanFactory
 
 date_now = datetime.now().date()
 
@@ -56,7 +55,6 @@ class BackOfficeAssetFactory(DjangoModelFactory):
     invoice_date = date_now - timedelta(days=15)
     invoice_no = factory.Sequence(lambda n: "Invoice number " + str(n))
     price = FuzzyDecimal(10, 300)
-    securityscan = factory.RelatedFactory(SecurityScanFactory, "base_object")
     property_of = factory.SubFactory(AssetHolderFactory)
 
     class Meta:

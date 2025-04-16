@@ -37,7 +37,6 @@ from ralph.data_center.models.virtual import (
     ClusterType,
     Database,
 )
-from ralph.security.tests.factories import SecurityScanFactory
 
 date_now = datetime.now().date()
 
@@ -199,11 +198,7 @@ class DataCenterAssetFullFactory(DataCenterAssetFactory):
     proc2 = factory.RelatedFactory(ProcessorFactory, "base_object")
     disk1 = factory.RelatedFactory(DiskFactory, "base_object")
     disk2 = factory.RelatedFactory(DiskFactory, "base_object")
-    securityscan = factory.RelatedFactory(
-        SecurityScanFactory, factory_related_name="base_object"
-    )
 
-    securityscan = factory.RelatedFactory(SecurityScanFactory, "base_object")
 
     @factory.post_generation
     def post_tags(self, create, extracted, **kwargs):

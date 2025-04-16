@@ -222,7 +222,7 @@ class CustomFieldsAPITests(APITestCase):
         self.assertEqual(cfv.custom_field, self.custom_field_choices)
         self.assertEqual(cfv.value, "qwerty")
 
-    def test_add_new_customfield_value_with_unmatching_managing_group_should_fail(self):  # noqa" E501
+    def test_add_new_customfield_value_with_unmatching_managing_group_should_fail(self):  # noqa: E501
         self.custom_field_str.managing_group = GroupFactory()
         self.custom_field_str.save()
 
@@ -239,7 +239,7 @@ class CustomFieldsAPITests(APITestCase):
 
     def test_add_new_customfield_value_with_matching_managing_group_should_succeed(
         self,
-    ):  # noqa" E501
+    ):  # noqa: E501
         group = GroupFactory()
         self.user.groups.add(group)
         self.custom_field_str.managing_group = group
