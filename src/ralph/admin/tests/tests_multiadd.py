@@ -107,7 +107,9 @@ class MultiAddTest(ClientMixin, TestCase):
             post_data,
             follow=True,
         )
-        self.assertFormError(response, "form", "sn", "There are duplicates in field.")
+        self.assertFormError(
+            response.context["form"], "sn", "There are duplicates in field."
+        )
 
     def test_multi_add_barcode_and_sn_empty(self):
         post_data = {
@@ -122,7 +124,7 @@ class MultiAddTest(ClientMixin, TestCase):
             follow=True,
         )
         self.assertFormError(
-            response, "form", "sn", "Fill at least on of sn,barcode in each row"
+            response.context["form"], "sn", "Fill at least on of sn,barcode in each row"
         )
 
     def test_multi_add_is_sn_exists(self):
@@ -138,8 +140,7 @@ class MultiAddTest(ClientMixin, TestCase):
             follow=True,
         )
         self.assertFormError(
-            response,
-            "form",
+            response.context["form"],
             "sn",
             ('Following items already exist: <a href="{}">{}</a>').format(
                 reverse(
@@ -169,4 +170,6 @@ class MultiAddTest(ClientMixin, TestCase):
             post_data,
             follow=True,
         )
-        self.assertFormError(response, "form", "position", "Enter a valid number.")
+        self.assertFormError(
+            response.context["form"], "position", "Enter a valid number."
+        )

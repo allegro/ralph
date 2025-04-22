@@ -21,14 +21,15 @@ class WithManagementIPMixin(object):
     """
 
     def _get_management_ip(self):
-        eth = (
-            self.ethernet_set.select_related("ipaddress")
-            .filter(ipaddress__is_management=True)
-            .first()
-        )
-        if eth:
+        try:
+            eth = (
+                self.ethernet_set.select_related("ipaddress")
+                .filter(ipaddress__is_management=True)
+                .first()
+            )
             return eth.ipaddress
-        return None
+        except (AttributeError, ValueError):
+            return None
 
     def _get_or_create_management_ip(self, address=None):
         ip = self._get_management_ip()
