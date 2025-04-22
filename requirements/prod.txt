@@ -54,7 +54,7 @@ defusedxml==0.7.1
     #   odfpy
 diff-match-patch==20241021
     # via django-import-export
-django==4.0.10
+django==4.2.20
     # via
     #   ralph (pyproject.toml)
     #   django-appconf
@@ -80,7 +80,7 @@ django-extensions==3.1.5
     # via ralph (pyproject.toml)
 django-filter==23.5
     # via ralph (pyproject.toml)
-django-import-export==2.9.0
+django-import-export==3.3.9
     # via ralph (pyproject.toml)
 django-js-asset==2.2.0
     # via django-mptt
@@ -157,6 +157,8 @@ keystoneauth1==5.8.1
     #   python-novaclient
 markdown==3.2.1
     # via ralph (pyproject.toml)
+markuppy==1.18
+    # via tablib
 monotonic==0.6
     # via ralph (pyproject.toml)
 msgpack==1.1.0
@@ -349,10 +351,8 @@ six==1.16.0
     #   pyhermes
     #   python-dateutil
     #   python-novaclient
-sqlparse==0.2.3
-    # via
-    #   ralph (pyproject.toml)
-    #   django
+sqlparse==0.5.3
+    # via django
 statsd==3.2.1
     # via ralph (pyproject.toml)
 stevedore==5.3.0
@@ -365,7 +365,7 @@ stevedore==5.3.0
     #   oslo-config
     #   python-ironicclient
     #   python-keystoneclient
-tablib==3.6.1
+tablib==3.5.0
     # via django-import-export
 text-unidecode==1.2
     # via faker

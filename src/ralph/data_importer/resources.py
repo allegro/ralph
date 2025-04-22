@@ -288,6 +288,7 @@ class DataCenterAssetResource(ResourceWithPrice, RalphModelResource):
         column_name="management_ip",
         attribute="management_ip",
         widget=IPManagementWidget(model=networks.IPAddress),
+        m2m_add=True,
     )
     # no need for str field - management_ip will be exported as str
     management_ip._skip_str_field = True
@@ -334,10 +335,16 @@ class DataCenterAssetResource(ResourceWithPrice, RalphModelResource):
             return ""
 
     def dehydrate_management_ip(self, dc_asset):
-        return str(self._get_management_ip(dc_asset))
+        try:
+            return str(self._get_management_ip(dc_asset))
+        except ValueError:
+            return None
 
     def dehydrate_parent_management_ip(self, dc_asset):
-        return str(self._get_management_ip(dc_asset.parent))
+        try:
+            return str(self._get_management_ip(dc_asset.parent))
+        except ValueError:
+            return None
 
 
 class ConnectionResource(RalphModelResource):

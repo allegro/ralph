@@ -48,10 +48,10 @@ class ThroughField(fields.Field):
         self.through_to_field_name = through_to_field_name
         super().__init__(attribute, column_name, widget, readonly)
 
-    def save(self, obj, data, is_m2m=False):
+    def save(self, obj, data, is_m2m=False, **kwargs):
         if not self.readonly:
             value = data.get(self.column_name)
-            current = set(self.widget.clean(value))
+            current = set(self.widget.clean(value, **kwargs))
             # filter old assignments to obj by through_model
             old_objs = set(
                 [

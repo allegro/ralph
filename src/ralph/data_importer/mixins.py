@@ -71,7 +71,7 @@ class ImportForeignKeyMeta(type):
         return new_class
 
 
-class ImportForeignKeyMixin(object):
+class ImportForeignKeyMixin:
     """ImportForeignKeyMixin class for django import-export resources."""
 
     def get_or_init_instance(self, instance_loader, row):
@@ -84,9 +84,7 @@ class ImportForeignKeyMixin(object):
             instance_loader, row
         )
 
-    def after_save_instance(
-        self, instance, using_transactions: bool, dry_run: bool, *args, **kwargs
-    ):
+    def after_save_instance(self, instance, using_transactions, dry_run):
         if not dry_run and self.old_object_pk:
             content_type = ContentType.objects.get_for_model(self._meta.model)
             ImportedObjects.objects.update_or_create(
