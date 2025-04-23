@@ -138,7 +138,7 @@ django-taggit==1.5.1
     # via ralph (pyproject.toml)
 django-threadlocals==0.8
     # via ralph (pyproject.toml)
-djangorestframework==3.15.0
+djangorestframework==3.15.2
     # via
     #   ralph (pyproject.toml)
     #   drf-nested-routers
@@ -172,7 +172,7 @@ gprof2dot==2025.4.14
     # via django-silk
 hiredis==3.1.0
     # via ralph (pyproject.toml)
-idna==2.7
+idna==3.7
     # via requests
 imagesize==1.4.1
     # via sphinx
@@ -397,7 +397,7 @@ referencing==0.35.1
     # via
     #   jsonschema
     #   jsonschema-specifications
-requests==2.20.0
+requests==2.32.2
     # via
     #   ralph (pyproject.toml)
     #   coveralls
@@ -426,7 +426,7 @@ rq==1.16.2
     #   django-rq
 ruff==0.11.5
     # via ralph (pyproject.toml:dev)
-setuptools==65.7.0
+setuptools==70.0.0
     # via
     #   ralph (pyproject.toml)
     #   django-money
@@ -461,7 +461,7 @@ sphinxcontrib-qthelp==1.0.3
     # via sphinx
 sphinxcontrib-serializinghtml==1.1.5
     # via sphinx
-sqlparse==0.2.3
+sqlparse==0.5.0
     # via
     #   ralph (pyproject.toml)
     #   django
@@ -511,7 +511,7 @@ tzdata==2025.2
     #   oslo-utils
 unidecode==0.4.18
     # via ralph (pyproject.toml)
-urllib3==1.24.3
+urllib3==1.26.19
     # via requests
 urwid==2.6.16
     # via
@@ -524,7 +524,7 @@ wcwidth==0.2.13
     #   cmd2
     #   prompt-toolkit
     #   urwid
-werkzeug==0.16.1
+werkzeug==3.0.6
     # via ralph (pyproject.toml:dev)
 wrapt==1.10.6
     # via

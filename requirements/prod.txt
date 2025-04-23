@@ -102,7 +102,7 @@ django-taggit==1.5.1
     # via ralph (pyproject.toml)
 django-threadlocals==0.8
     # via ralph (pyproject.toml)
-djangorestframework==3.15.0
+djangorestframework==3.15.2
     # via
     #   ralph (pyproject.toml)
     #   drf-nested-routers
@@ -126,7 +126,7 @@ gunicorn==23.0.0
     # via ralph (pyproject.toml:prod)
 hiredis==3.1.0
     # via ralph (pyproject.toml)
-idna==2.7
+idna==3.7
     # via requests
 iso8601==0.1.11
     # via
@@ -309,7 +309,7 @@ referencing==0.35.1
     # via
     #   jsonschema
     #   jsonschema-specifications
-requests==2.20.0
+requests==2.32.2
     # via
     #   ralph (pyproject.toml)
     #   keystoneauth1
@@ -334,7 +334,7 @@ rq==1.16.2
     # via
     #   ralph (pyproject.toml)
     #   django-rq
-setuptools==65.7.0
+setuptools==70.0.0
     # via
     #   ralph (pyproject.toml)
     #   django-money
@@ -352,7 +352,7 @@ six==1.16.0
     #   pyhermes
     #   python-dateutil
     #   python-novaclient
-sqlparse==0.2.3
+sqlparse==0.5.0
     # via
     #   ralph (pyproject.toml)
     #   django
@@ -384,7 +384,7 @@ tzdata==2025.2
     #   oslo-utils
 unidecode==0.4.18
     # via ralph (pyproject.toml)
-urllib3==1.24.3
+urllib3==1.26.19
     # via requests
 wcwidth==0.2.13
     # via cmd2
