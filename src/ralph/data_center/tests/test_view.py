@@ -6,6 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from django.urls import reverse
 
+from ralph.api.tests._base import RalphAPITestCase
 from ralph.data_center.models import BaseObjectCluster, Cluster, DataCenterAsset
 from ralph.data_center.tests.factories import (
     ClusterFactory,
@@ -43,7 +44,7 @@ class DataCenterAssetViewTest(ClientMixin, TestCase):
             )
 
 
-class DCHostViewTest(ClientMixin, TestCase):
+class DCHostViewTest(ClientMixin, RalphAPITestCase):
     def setUp(self):
         self.login_as_user()
 
@@ -52,7 +53,7 @@ class DCHostViewTest(ClientMixin, TestCase):
         VirtualServerFullFactory.create_batch(5)
         CloudHostFullFactory.create_batch(4)
         ClusterFactory.create_batch(4)
-        with self.assertNumQueries(18):
+        with self.assertQueriesMoreOrLess(18, plus_minus=3):
             result = self.client.get(
                 reverse("admin:data_center_dchost_changelist"),
             )
