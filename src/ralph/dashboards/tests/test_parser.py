@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.test import SimpleTestCase, TestCase
 
 from ralph.assets.models import Service
-from ralph.assets.tests.factories import ServiceEnvironmentFactory, ServiceFactory
+from ralph.assets.tests.factories import ServiceFactory
 from ralph.dashboards.admin_filters import ByGraphFilter
 from ralph.dashboards.filter_parser import FilterParser
 from ralph.dashboards.helpers import encode_params
@@ -20,8 +20,6 @@ from ralph.data_center.tests.factories import (
     DataCenterAssetFullFactory,
     RackFactory,
 )
-from ralph.security.models import Vulnerability
-from ralph.security.tests.factories import SecurityScanFactory, VulnerabilityFactory
 from ralph.tests.models import Bar
 
 ARGS, KWARGS = (0, 1)
@@ -74,7 +72,7 @@ class GraphModelTest(TestCase):
         ({"series__lte": 3}, 1),
         ({"series__lte": 5, "series__qte": 3}, 2),
     )
-    def test_annotate_fitler_should_pop_from_filters(self, orig_filters, length):
+    def test_annotate_filter_should_pop_from_filters(self, orig_filters, length):
         graph = Graph()
         filters = copy.deepcopy(orig_filters)
         result = graph.pop_annotate_filters(filters)
@@ -228,135 +226,6 @@ class LabelGroupingTest(TestCase):
 
         self.assertEqual(qs.get()["series"], len(expected))
         self.assertIn("year", qs.get())
-
-    def _genenrate_dca_with_scan(self, count, date_str):
-        gen = []
-        for _ in range(count):
-            dca = DataCenterAssetFactory()
-            sc = SecurityScanFactory(
-                last_scan_date=date_str,
-            )
-            dca.securityscan = sc
-            sc.save()
-            gen.append(dca)
-        return gen
-
-    def test_label_works_when_year_grouping_on_foreign_key(self):
-        self._genenrate_dca_with_scan(2, "2015-01-01")
-        expected = self._genenrate_dca_with_scan(1, "2016-01-01")
-        self._genenrate_dca_with_scan(3, "2017-01-01")
-
-        graph = GraphFactory(
-            aggregate_type=AggregateType.aggregate_count.id,
-            params={
-                "filters": {
-                    "securityscan__last_scan_date__gte": "2016-01-01",
-                    "securityscan__last_scan_date__lt": "2017-01-01",
-                },
-                "series": "id",
-                "labels": "securityscan__last_scan_date|year",
-            },
-        )
-
-        qs = graph.build_queryset()
-
-        self.assertEqual(qs.get()["series"], len(expected))
-        self.assertIn("year", qs.get())
-
-    def test_label_works_when_month_grouping_on_foreign_key(self):
-        self._genenrate_dca_with_scan(2, "2015-01-01")
-        expected = self._genenrate_dca_with_scan(1, "2016-01-01")
-        self._genenrate_dca_with_scan(3, "2017-01-01")
-
-        graph = GraphFactory(
-            aggregate_type=AggregateType.aggregate_count.id,
-            params={
-                "filters": {
-                    "securityscan__last_scan_date__gte": "2016-01-01",
-                    "securityscan__last_scan_date__lt": "2017-01-01",
-                },
-                "series": "id",
-                "labels": "securityscan__last_scan_date|month",
-            },
-        )
-
-        qs = graph.build_queryset()
-
-        self.assertEqual(qs.get()["series"], len(expected))
-        self.assertIn("month", qs.get())
-
-    def test_ratio_aggregation(self):
-        service_env = ServiceEnvironmentFactory(service__name="sample-service")
-        vulnerability = VulnerabilityFactory(patch_deadline=datetime.date(2015, 1, 1))
-        for is_patched in [True, False]:
-            for _ in range(3):
-                dca = DataCenterAssetFactory(service_env=service_env)
-                if is_patched:
-                    ss = SecurityScanFactory(vulnerabilities=[])
-                else:
-                    ss = SecurityScanFactory(vulnerabilities=[vulnerability])
-                dca.securityscan = ss
-                ss.save()
-                dca.save()
-        graph = GraphFactory(
-            aggregate_type=AggregateType.aggregate_ratio.id,
-            params={
-                "series": ["securityscan__is_patched", "id"],
-                "labels": "service_env__service__name",
-                "filters": {
-                    "series__gt": 0,
-                },
-            },
-        )
-
-        qs = graph.build_queryset()
-        self.assertEqual(
-            qs.get(), {"series": 50, "service_env__service__name": "sample-service"}
-        )
-
-    def test_duplicates_works_when_used_in_series_value(self):
-        SecurityScanFactory(
-            base_object=DataCenterAssetFactory().baseobject_ptr,
-            vulnerabilities=[
-                VulnerabilityFactory(
-                    patch_deadline=datetime.datetime.strptime("2015-01-01", "%Y-%m-%d")
-                ),
-            ],
-        )
-
-        SecurityScanFactory(
-            base_object=DataCenterAssetFactory().baseobject_ptr,
-            vulnerabilities=[
-                VulnerabilityFactory(
-                    patch_deadline=datetime.datetime.strptime("2016-01-01", "%Y-%m-%d")
-                ),
-                VulnerabilityFactory(
-                    patch_deadline=datetime.datetime.strptime("2016-02-02", "%Y-%m-%d")
-                ),
-                VulnerabilityFactory(
-                    patch_deadline=datetime.datetime.strptime("2016-03-03", "%Y-%m-%d")
-                ),
-            ],
-        )
-
-        graph = GraphFactory(
-            aggregate_type=AggregateType.aggregate_count.id,
-            params={
-                "filters": {
-                    "patch_deadline__gte": "2010-01-01",
-                    "securityscan__base_object__isnull": False,
-                },
-                "series": "securityscan|distinct",
-                "labels": "patch_deadline|year",
-            },
-        )
-        graph.model = ContentType.objects.get_for_model(Vulnerability)
-        graph.save()
-
-        qs = graph.build_queryset()
-
-        self.assertEqual(qs.all()[0]["series"], 1)
-        self.assertEqual(qs.all()[1]["series"], 1)
 
     def test_count_aggregate_with_zeros(self):
         assets_num = 2

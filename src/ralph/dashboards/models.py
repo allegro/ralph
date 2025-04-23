@@ -1,10 +1,19 @@
 from functools import partial
 
+
 from ralph.lib.dj_choices import Choices
 from django.contrib.contenttypes.models import ContentType
 from django.db import connection, models
 from django.db.models import Case, Count, IntegerField, Max, Q, Sum, Value, When
-from django.db.models.functions import Coalesce
+from django.db.models.functions import (
+    Coalesce,
+    TruncYear,
+    TruncDay,
+    TruncSecond,
+    TruncMinute,
+    TruncHour,
+    TruncMonth,
+)
 from django_extensions.db.fields.json import JSONField
 
 from ralph.dashboards.filter_parser import FilterParser
@@ -138,6 +147,14 @@ class GroupingLabel:
     sep = "|"
     date_fields = ["year", "month", "day", "hour", "minute", "second"]
     date_format = ("%Y-", "%m", "-%d", " %H:", "%i", ":%s")
+    field_to_function = {  # type: dict[str, TruncBase]
+        "year": TruncYear,
+        "month": TruncMonth,
+        "day": TruncDay,
+        "hour": TruncHour,
+        "minute": TruncMinute,
+        "second": TruncSecond,
+    }
 
     def __init__(self, connection, label_group):
         self.connection = connection
@@ -150,16 +167,15 @@ class GroupingLabel:
     def has_group(self):
         return self.orig_label != self.label
 
-    def _group_by_part_of_date(self, date_part):
-        field_name = self.orig_label.split("__")[-1]
-        return self.connection.ops.date_trunc_sql(date_part, field_name)
+    def _trunc_date_function(self):
+        func = self.field_to_function[self.label]
+        db_field_name = self.orig_label.split("__")[-1]
+        return func(db_field_name)
 
     def apply_grouping(self, queryset):
         if self.has_group:
             if self.label in self.date_fields:
-                queryset = queryset.extra(
-                    {self.label: self._group_by_part_of_date(self.label)}
-                )
+                return queryset.annotate(**{self.label: self._trunc_date_function()})
             else:
                 queryset = queryset.extra(
                     {self.label: getattr(self, "group_" + self.label)()}
