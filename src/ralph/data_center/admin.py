@@ -770,13 +770,6 @@ class DCHostAdmin(RalphAdmin):
         return obj.hostname
 
     get_hostname.short_description = _("Hostname")
-    # TODO: simple if hostname would be in one model
-    # get_hostname.admin_order_field = 'asset__hostname'
-
-    def __init__(self, model, *args, **kwargs):
-        super().__init__(model, *args, **kwargs)
-        # fixed issue with proxy model
-        self.opts = BaseObject._meta
 
     def _initialize_search_form(self, extra_context, fields_from_model=True):
         return super()._initialize_search_form(extra_context)
