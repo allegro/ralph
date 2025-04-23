@@ -578,7 +578,9 @@ class LiquidatedStatusFilter(SimpleListFilter):
 
     def queryset(self, request, queryset):
         if not self.value():
-            liquidated_status = dict((v, k) for (k, v) in self.model._meta.get_field("status").choices)['liquidated']
+            liquidated_status = dict(
+                (v, k) for (k, v) in self.model._meta.get_field("status").choices
+            )["liquidated"]
             queryset = queryset.exclude(status=liquidated_status)
 
         return queryset

@@ -56,8 +56,8 @@ dependencies = [
   "django-sitetree==1.18.0",
   "django-taggit~=6.1.0",
   "django-threadlocals==0.8",
-  "djangorestframework~=3.16.0",
   "djangorestframework_xml==2.0.0",
+  "djangorestframework~=3.16.0",
   "django~=5.2.0",
   "drf-nested-routers==0.92.5",
   "funcsigs==0.4",
@@ -96,7 +96,7 @@ dependencies = [
   "statsd==3.2.1",
   "stevedore",
   "typing==3.6.6",
-  "wrapt==1.10.6",
+  "wrapt==1.10.6"
 ]
 dynamic = [
   "authors",

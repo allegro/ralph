@@ -56,7 +56,7 @@ coveralls==4.0.1
     # via ralph (pyproject.toml:test)
 cryptography==44.0.2
     # via
-    #   django-cryptography
+    #   django-cryptography-django5
     #   openstacksdk
 ddt==1.7.2
     # via ralph (pyproject.toml:test)
@@ -73,17 +73,16 @@ decorator==5.2.1
     #   ipython
     #   openstacksdk
 defusedxml==0.7.1
-    # via
-    #   djangorestframework-xml
-    #   odfpy
+    # via djangorestframework-xml
 diff-match-patch==20241021
     # via django-import-export
-django==4.2.20
+django==5.2
     # via
     #   ralph (pyproject.toml)
     #   django-appconf
     #   django-auth-ldap
     #   django-cors-headers
+    #   django-cryptography-django5
     #   django-debug-toolbar
     #   django-extensions
     #   django-filter
@@ -99,12 +98,12 @@ django==4.2.20
     #   djangorestframework
     #   drf-nested-routers
 django-appconf==1.0.6
-    # via django-cryptography
+    # via django-cryptography-django5
 django-auth-ldap==2.4.0
     # via ralph (pyproject.toml)
 django-cors-headers==4.4.0
     # via ralph (pyproject.toml:dev)
-django-cryptography==1.0
+django-cryptography-django5==2.2
     # via ralph (pyproject.toml)
 django-debug-toolbar==4.3.0
     # via ralph (pyproject.toml:dev)
@@ -112,13 +111,13 @@ django-extensions==3.1.5
     # via ralph (pyproject.toml)
 django-filter==23.5
     # via ralph (pyproject.toml)
-django-import-export==3.3.9
+django-import-export==4.3.7
     # via ralph (pyproject.toml)
 django-js-asset==2.2.0
     # via django-mptt
-django-money==3.4.1
+django-money==3.5.4
     # via ralph (pyproject.toml)
-django-mptt==0.14.0
+django-mptt==0.17.0
     # via ralph (pyproject.toml)
 django-plainpasswordhasher==0.3
     # via ralph (pyproject.toml:test)
@@ -126,7 +125,7 @@ django-prometheus==2.2.0
     # via ralph (pyproject.toml)
 django-redis==5.0.0
     # via ralph (pyproject.toml)
-django-reversion==4.0.2
+django-reversion==5.1.0
     # via ralph (pyproject.toml)
 django-rq==2.8.0
     # via ralph (pyproject.toml)
@@ -134,11 +133,11 @@ django-silk==5.2.0
     # via ralph (pyproject.toml:dev)
 django-sitetree==1.18.0
     # via ralph (pyproject.toml)
-django-taggit==3.1.0
+django-taggit==6.1.0
     # via ralph (pyproject.toml)
 django-threadlocals==0.8
     # via ralph (pyproject.toml)
-djangorestframework==3.15.0
+djangorestframework==3.16.0
     # via
     #   ralph (pyproject.toml)
     #   drf-nested-routers
@@ -217,8 +216,6 @@ keystoneauth1==5.8.1
     #   python-novaclient
 markdown==3.2.1
     # via ralph (pyproject.toml)
-markuppy==1.18
-    # via tablib
 markupsafe==2.1.5
     # via jinja2
 matplotlib-inline==0.1.7
@@ -245,12 +242,8 @@ netifaces==0.11.0
     #   oslo-utils
 oauthlib==3.2.2
     # via requests-oauthlib
-odfpy==1.4.1
-    # via tablib
 openpyxl==2.6.4
-    # via
-    #   ralph (pyproject.toml)
-    #   tablib
+    # via ralph (pyproject.toml)
 openstacksdk==1.5.0
     # via
     #   ralph (pyproject.toml)
@@ -383,7 +376,6 @@ pyyaml==6.0.2
     #   oslo-config
     #   oslo-utils
     #   python-ironicclient
-    #   tablib
 raven==6.10.0
     # via ralph (pyproject.toml)
 redis==4.6.0
@@ -479,7 +471,7 @@ stevedore==5.3.0
     #   oslo-config
     #   python-ironicclient
     #   python-keystoneclient
-tablib==3.5.0
+tablib==3.8.0
     # via django-import-export
 text-unidecode==1.2
     # via faker
@@ -529,7 +521,3 @@ wrapt==1.10.6
     # via
     #   ralph (pyproject.toml)
     #   debtcollector
-xlrd==2.0.1
-    # via tablib
-xlwt==1.3.0
-    # via tablib
