@@ -154,7 +154,7 @@ class CustomFieldValue(TimeStampMixin, models.Model):
                     exclude.remove(k)
                 except ValueError:
                     pass
-        return super()._get_unique_checks(exclude=None, include_meta_constraints=False)
+        return super()._get_unique_checks(exclude=None, include_meta_constraints=include_meta_constraints)
 
     def unique_error_message(self, model_class, unique_check):
         """
