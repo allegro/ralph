@@ -6,7 +6,7 @@ from django.utils.safestring import mark_safe
 register = Library()
 
 DOT = "."
-DOTS = DOT * 3
+DOTS = "…"
 
 
 @register.simple_tag
@@ -16,7 +16,7 @@ def admin_paginator_number(cl, i):
 
     Wraps every entry in <li> tag comparing to regular Django pagination.
     """
-    if i == DOT:
+    if i == DOT or i == DOTS:
         return mark_safe("<li>{}</li>".format(DOTS))
     elif i == cl.page_num:
         return format_html('<li class="current"><a href="#">{}</a></li> ', i + 1)

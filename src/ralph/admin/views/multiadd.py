@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 from django import forms
-from django.conf.urls import url
 from django.contrib import messages
 from django.db import IntegrityError, models, transaction
 from django.forms import ValidationError
 from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
-from django.urls import reverse
+from django.urls import reverse, re_path
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
@@ -196,7 +195,7 @@ class MulitiAddAdminMixin(object):
     def get_urls(self):
         urls = super().get_urls()
         _urls = [
-            url(
+            re_path(
                 r"^(?P<object_pk>.+)/multiadd/$",
                 self.admin_site.admin_view(self.view.as_view()),
                 {"model": self.model},

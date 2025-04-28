@@ -1,9 +1,9 @@
-from django.conf.urls import url
+from django.urls import re_path
 
 from ralph.dashboards.views import DashboardView
 
 urlpatterns = [
-    url(
+    re_path(
         r"^dashboard_view/(?P<dashboard_id>\d+)/$",
         DashboardView.as_view(),
         name="dashboard_view",

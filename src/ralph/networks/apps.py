@@ -6,6 +6,7 @@ from ralph.apps import RalphAppConfig
 
 class Networks(RalphAppConfig):
     name = "ralph.networks"
+    default = True
 
     def ready(self):
         if (

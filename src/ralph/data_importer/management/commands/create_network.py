@@ -93,7 +93,7 @@ class Command(BaseCommand):
         )
         rack = None
         if create_rack:
-            rack = Rack.objects.create(
+            rack, _ = Rack.objects.get_or_create(
                 server_room=server_room, name="Rack {}".format(network)
             )
         IPAddress.objects.get_or_create(address=str(dns1_address))

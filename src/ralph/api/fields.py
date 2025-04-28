@@ -68,6 +68,7 @@ class ModelMultipleChoiceField(MultipleChoiceField):
 
     def __init__(self, *args, **kwargs):
         self.model = kwargs["choices"].queryset.model
+        kwargs["choices"] = [(str(c[0]), c[1]) for c in kwargs["choices"]]
         super().__init__(*args, **kwargs)
 
     def to_internal_value(self, data):

@@ -122,9 +122,7 @@ class GraphModelTest(TestCase):
         encoded_params = encode_params(
             {"pk": graph.pk, "filters": {"orientation": None}}
         )
-        graph_filter = ByGraphFilter(
-            None, {"graph-query": encoded_params}, Rack, None
-        )
+        graph_filter = ByGraphFilter(None, {"graph-query": encoded_params}, Rack, None)
         qs = graph_filter.queryset(None, Rack.objects.all())
 
         self.assertEqual(len(qs), len(Rack.objects.all()) - len(rack_orientations))

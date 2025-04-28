@@ -1,11 +1,11 @@
-from django.conf.urls import url
+from django.urls import re_path
 
 from ralph.deployment.views import config, deployment_base, done_ping, files, ipxe
 
 urlpatterns = [
-    url(r"^boot.ipxe$", ipxe, name="deployment_ipxe"),
-    url(r"^(?P<deployment_id>[-\w]+)/boot.ipxe$", ipxe, name="deployment_ipxe"),
-    url(
+    re_path(r"^boot.ipxe$", ipxe, name="deployment_ipxe"),
+    re_path(r"^(?P<deployment_id>[-\w]+)/boot.ipxe$", ipxe, name="deployment_ipxe"),
+    re_path(
         r"^(?P<deployment_id>[-\w]+)/"
         r"("
         r"?P<config_type>"
@@ -18,11 +18,13 @@ urlpatterns = [
         config,
         name="deployment_config",
     ),
-    url(
+    re_path(
         r"^(?P<deployment_id>[-\w]+)/(?P<file_type>kernel|initrd|netboot)$",
         files,
         name="deployment_files",
     ),
-    url(r"^(?P<deployment_id>[-\w]+)/mark_as_done$", done_ping, name="deployment_done"),
-    url(r"^(?P<deployment_id>[-\w]+)/$", deployment_base, name="deployment_base"),
+    re_path(
+        r"^(?P<deployment_id>[-\w]+)/mark_as_done$", done_ping, name="deployment_done"
+    ),
+    re_path(r"^(?P<deployment_id>[-\w]+)/$", deployment_base, name="deployment_base"),
 ]

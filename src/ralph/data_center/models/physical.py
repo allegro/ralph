@@ -852,7 +852,6 @@ class DataCenterAsset(
                 # RunTransitionView.get_success_url()
                 instances[i] = back_office_asset
 
-
     @classmethod
     @transition_action(
         verbose_name=_("Assign additional IP and hostname pair"),

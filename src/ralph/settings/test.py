@@ -31,10 +31,10 @@ elif TEST_DB_ENGINE == "mysql":
 INSTALLED_APPS += (
     "ralph.lib.mixins",
     "ralph.tests",
-    "ralph.lib.custom_fields.tests",
-    "ralph.lib.permissions.tests",
-    "ralph.lib.polymorphic.tests",
-    "ralph.lib.mixins.tests",
+    "ralph.lib.custom_fields.tests.apps.CustomFieldsTestsConfig",
+    "ralph.lib.permissions.tests.apps.PermissionsTestsConfig",
+    "ralph.lib.polymorphic.tests.apps.PolymorphicTestsConfig",
+    "ralph.lib.mixins.tests.apps.MixinsTestsConfig",
 )
 
 USE_CACHE = False

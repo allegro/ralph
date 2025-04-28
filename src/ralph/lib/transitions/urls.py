@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.urls import re_path
 
 from ralph.lib.transitions.views import (
     AsyncBulkTransitionsAwaiterView,
@@ -6,12 +6,12 @@ from ralph.lib.transitions.views import (
 )
 
 urlpatterns = [
-    url(
+    re_path(
         r"^async-transitions-awaiter/?$",
         AsyncBulkTransitionsAwaiterView.as_view(),
         name="async_bulk_transitions_awaiter",
     ),
-    url(
+    re_path(
         r"^kill-transition-job/(?P<job_id>[\w\-]+)/$",
         KillTransitionJobView.as_view(),
         name="kill_transition_job",

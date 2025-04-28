@@ -116,7 +116,6 @@ INSTALLED_APPS = (
     "ralph.ssl_certificates",
     "rest_framework",
     "rest_framework.authtoken",
-    "taggit_serializer",
     "djmoney",
 )
 
@@ -160,6 +159,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "ralph.wsgi.application"
+
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 DEFAULT_DATABASE_OPTIONS = {
     "sql_mode": "TRADITIONAL",

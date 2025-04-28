@@ -2,8 +2,8 @@
 from collections import defaultdict
 
 from django.conf import settings
-from django.conf.urls import url
 from django.contrib.admin.sites import AdminSite
+from django.urls import re_path
 
 
 class RalphAdminSiteMixin(object):
@@ -35,7 +35,7 @@ class RalphAdminSiteMixin(object):
             for view in self._get_views(model_admin):
                 urlpatterns.insert(
                     0,
-                    url(
+                    re_path(
                         view.get_url_pattern(model),
                         view.as_view(),
                         {
@@ -86,6 +86,8 @@ class RalphAdminSite(RalphAdminSiteMixin, AdminSite):
         context = super(RalphAdminSite, self).each_context(request)
         context["google_tag_manager_tag_id"] = settings.GOOGLE_TAG_MANAGER_TAG_ID
         return context
+
+    final_catch_all_view = False
 
 
 ralph_site = RalphAdminSite()

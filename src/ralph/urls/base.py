@@ -1,6 +1,6 @@
 from django.conf import settings
-from django.conf.urls import include, url
-from django.urls import path
+from django.conf.urls import include
+from django.urls import path, re_path
 from django_prometheus import exports
 from rest_framework.authtoken import views
 from sitetree.sitetreeapp import SiteTree  # noqa
@@ -19,7 +19,7 @@ SiteTree.current_app_is_admin = lambda self: False
 # (as empty list if there is any custom url)
 api_urls = list(
     map(
-        lambda u: url(r"^", include(u)),
+        lambda u: re_path(r"^", include(u)),
         [
             "ralph.access_cards.api",
             "ralph.accounts.api",
@@ -46,29 +46,29 @@ api_urls = list(
 # because we're using single router instance and urls are cached inside this
 # object, router.urls may be called after all urls are processed (and all
 # api views are registered in router)
-api_urls += [url(r"^", include(router.urls))]
+api_urls += [re_path(r"^", include(router.urls))]
 
 urlpatterns = [
-    url(r"^", admin.urls),
-    url(r"^api/", include(api_urls)),
-    url(r"^api-token-auth/", views.obtain_auth_token),
-    url(r"^", include("ralph.dc_view.urls.ui")),
-    url(r"^", include("ralph.attachments.urls")),
-    url(r"^", include("ralph.dashboards.urls")),
-    url(r"^", include("ralph.accounts.urls")),
-    url(r"^", include("ralph.reports.urls")),
-    url(r"^", include("ralph.admin.autocomplete_urls")),
-    url(r"^dhcp/", include("ralph.dhcp.urls")),
-    url(r"^deployment/", include("ralph.deployment.urls")),
-    url(r"^virtual/", include("ralph.virtual.urls")),
-    url(r"^", include("ralph.lib.transitions.urls")),
-    url(r"^i18n/", include("django.conf.urls.i18n")),
-    url(
+    re_path(r"^api/", include(api_urls)),
+    re_path(r"^", admin.urls),
+    re_path(r"^api-token-auth/", views.obtain_auth_token),
+    re_path(r"^", include("ralph.dc_view.urls.ui")),
+    re_path(r"^", include("ralph.attachments.urls")),
+    re_path(r"^", include("ralph.dashboards.urls")),
+    re_path(r"^", include("ralph.accounts.urls")),
+    re_path(r"^", include("ralph.reports.urls")),
+    re_path(r"^", include("ralph.admin.autocomplete_urls")),
+    re_path(r"^dhcp/", include("ralph.dhcp.urls")),
+    re_path(r"^deployment/", include("ralph.deployment.urls")),
+    re_path(r"^virtual/", include("ralph.virtual.urls")),
+    re_path(r"^", include("ralph.lib.transitions.urls")),
+    re_path(r"^i18n/", include("django.conf.urls.i18n")),
+    re_path(
         r"^status/ping?$",
         status_ping,
         name="status-ping",
     ),
-    url(
+    re_path(
         r"^status/health?$",
         status_health,
         name="status-health",
@@ -76,7 +76,7 @@ urlpatterns = [
 ]
 
 if getattr(settings, "ENABLE_HERMES_INTEGRATION", False):
-    urlpatterns += (url(r"^hermes/", include("pyhermes.apps.django.urls")),)
+    urlpatterns += (re_path(r"^hermes/", include("pyhermes.apps.django.urls")),)
 
 if getattr(settings, "PROMETHEUS_METRICS_ENABLED", False):
     urlpatterns += [

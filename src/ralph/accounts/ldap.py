@@ -5,7 +5,7 @@ from ralph.lib.dj_choices import Country
 from django.conf import settings
 from django.contrib.auth.models import Group
 from django.dispatch import receiver
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django_auth_ldap.backend import _LDAPUser, LDAPSettings, populate_user
 
 logger = logging.getLogger(__name__)
@@ -84,7 +84,7 @@ def manager_country_attribute_populate(sender, user, ldap_user, **kwargs):
         profile_map = {}
     if "manager" in profile_map:
         if profile_map["manager"] in ldap_user.attrs:
-            manager_ref = force_text(ldap_user.attrs[profile_map["manager"]][0])
+            manager_ref = force_str(ldap_user.attrs[profile_map["manager"]][0])
             # CN=John Smith,OU=TOR,OU=Corp-Users,DC=mydomain,DC=internal
             cn = manager_ref.split(",")[0][3:]
             user.manager = cn
@@ -93,7 +93,7 @@ def manager_country_attribute_populate(sender, user, ldap_user, **kwargs):
     user.country = None
     if "country" in profile_map:
         if profile_map["country"] in ldap_user.attrs:
-            country = force_text(ldap_user.attrs[profile_map["country"]][0])
+            country = force_str(ldap_user.attrs[profile_map["country"]][0])
             # assign None if `country` doesn't exist in Country
             try:
                 user.country = Country.id_from_name(country.lower())

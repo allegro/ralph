@@ -101,14 +101,10 @@ class GraphQuerysetForFilterTestCase(TestCase):
             invoice_no="67890",
         )
         DataCenterAssetFullFactory.create_batch(
-            1,
-            service_env__service__name="ServiceB",
-            invoice_no="12345"
+            1, service_env__service__name="ServiceB", invoice_no="12345"
         )
         DataCenterAssetFullFactory.create_batch(
-            3,
-            service_env__service__name="ServiceC",
-            invoice_no="12345"
+            3, service_env__service__name="ServiceC", invoice_no="12345"
         )
         ServiceEnvironmentFactory.create(service__name="ServiceD")
 
@@ -133,10 +129,6 @@ class GraphQuerysetForFilterTestCase(TestCase):
         )
         self.assertEqual(filtered_qs.count(), 2)
         self.assertEqual(
-            list(
-                filtered_qs.values_list(
-                    "service_env__service__name", "invoice_no"
-                )
-            ),
+            list(filtered_qs.values_list("service_env__service__name", "invoice_no")),
             [("ServiceA", "12345")] * 2,
         )

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from django.conf.urls import include, url
+from django.conf.urls import include
+from django.urls import re_path
 
 from ralph.api import RalphAPISerializer, RalphAPIViewSet
 from ralph.api.fields import StrField
@@ -81,7 +82,7 @@ router.register(r"manufacturers", ManufacturerViewSet)
 router.register(r"cars", CarViewSet)
 router.register(r"bars", BarViewSet)
 urlpatterns = [
-    url(
+    re_path(
         r"test-ralph-api/", include((router.urls, app_name), namespace="test-ralph-api")
     ),
 ]

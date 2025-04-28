@@ -13,7 +13,7 @@ from rest_framework.exceptions import ValidationError as RestFrameworkValidation
 from rest_framework.settings import api_settings
 from rest_framework.utils import model_meta
 from reversion import revisions as reversion
-from taggit_serializer.serializers import TaggitSerializer, TagListSerializerField
+from taggit.serializers import TaggitSerializer, TagListSerializerField
 
 from ralph.api.fields import AbsoluteUrlField, ReversedChoiceField
 from ralph.api.relations import RalphHyperlinkedRelatedField, RalphRelatedField

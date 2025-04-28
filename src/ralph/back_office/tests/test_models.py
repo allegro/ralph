@@ -667,7 +667,6 @@ class BackOfficeAssetFormTest(TransitionTestCase, ClientMixin):
         resp = self.client.get(url, follow=True)
 
         self.assertEqual(resp.status_code, 200)
-
         self.assertIn("model", resp.context["adminform"].form.fields)
         self.assertNotIn("hostname", resp.context["adminform"].form.fields)
         self.assertNotIn("service_env", resp.context["adminform"].form.fields)

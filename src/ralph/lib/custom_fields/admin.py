@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from django.conf.urls import url
 from django.contrib.admin.utils import unquote
 from django.contrib.contenttypes.models import ContentType
+from django.urls import re_path
 
 from ralph.admin.decorators import register
 from ralph.admin.mixins import RalphAdmin, RalphGenericTabularInline
@@ -43,7 +43,7 @@ class CustomFieldAdmin(RalphAdmin):
         """
         urls = super().get_urls()
         my_urls = [
-            url(
+            re_path(
                 r"^(?P<custom_field_id>.+)/formfield/$",
                 CustomFieldFormfieldView.as_view(),
                 name="customfield_formfield",

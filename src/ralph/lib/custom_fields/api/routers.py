@@ -1,4 +1,5 @@
-from django.conf.urls import include, url
+from django.conf.urls import include
+from django.urls import re_path
 from rest_framework import routers
 from rest_framework_nested.routers import NestedSimpleRouter
 
@@ -67,7 +68,7 @@ class NestedCustomFieldsRouterMixin(object):
         urls = super().get_urls()
         # additionally, return nested routers urls too
         for nr in self.nested_registry:
-            urls.append(url(r"^", include(nr.urls)))
+            urls.append(re_path(r"^", include(nr.urls)))
         return urls
 
 

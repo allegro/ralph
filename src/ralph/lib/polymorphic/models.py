@@ -232,7 +232,7 @@ class PolymorphicQuerySet(models.QuerySet):
                 while cache_[pk]:
                     yield cache_[pk].pop()
 
-    def iterator(self):
+    def iterator(self, chunk_size=None):
         yield from self.__iter__()
 
     def annotate(self, *args, **kwargs):
@@ -328,7 +328,9 @@ class PolymorphicBase(models.base.ModelBase):
             if new_class._meta.proxy:
                 continue
             try:
-                if new_class._meta.model_name == "vip": # TODO remove after vip deletion
+                if (
+                    new_class._meta.model_name == "vip"
+                ):  # TODO remove after vip deletion
                     continue
                 polymorphic_class._polymorphic_descendants.append(new_class)
             except AttributeError:

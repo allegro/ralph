@@ -267,7 +267,7 @@ def my_services(user):
                     Prefetch(
                         "baseobject_set",
                         queryset=BaseObject.objects.exclude(
-                            content_type__model="vip" # TODO remove after vip deletion
+                            content_type__model="vip"  # TODO remove after vip deletion
                         ).order_by("content_type_id"),
                     )
                 ),

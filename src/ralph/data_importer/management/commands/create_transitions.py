@@ -77,6 +77,10 @@ class Command(BaseCommand):
             async_service_name=async_service_name,
         )
         for action in actions:
-            transition.actions.add(
-                Action.objects.get(name=action, content_type=content_type)
-            )
+            try:
+                action = Action.objects.get(content_type=content_type, name=action)
+                transition.actions.add(action)
+            except Action.DoesNotExist:
+                action = Action.objects.create(name=action)
+                action.content_type.set([content_type])
+                transition.actions.add(action)

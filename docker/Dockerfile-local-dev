@@ -1,4 +1,4 @@
-FROM ubuntu:focal
+FROM ubuntu:jammy
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -28,7 +28,7 @@ RUN apt-get clean && \
     apt-get update && \
     apt-get -y install \
     apt-transport-https gnupg2 locales curl \
-    python3.8 python3.8-dev python3-pip python3-setuptools git libldap2-dev libsasl2-dev \
+    python3.10-dev python3-pip python3-setuptools git libldap2-dev libsasl2-dev \
     libffi-dev \
     libmysqlclient21 libmysqlclient-dev && \
     rm -rf /var/lib/apt/lists/*

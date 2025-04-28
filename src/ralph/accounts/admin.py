@@ -14,6 +14,7 @@ from django.utils.functional import cached_property
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from reversion import revisions as reversion
+from rest_framework.authtoken.admin import TokenAdmin
 
 from ralph.accounts.models import RalphUser, Region, Team
 from ralph.admin.decorators import register
@@ -277,6 +278,9 @@ class UserTransitionHistoryView(RalphDetailView):
         ).distinct()
         context["transition_history_in_fieldset"] = False
         return context
+
+
+TokenAdmin.autocomplete_fields = []
 
 
 @register(RalphUser)

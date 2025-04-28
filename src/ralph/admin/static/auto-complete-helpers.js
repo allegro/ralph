@@ -1,11 +1,11 @@
 function getCallerNode(win) {
-    var name = windowname_to_id(win.name);
+    var name = win.name;
     var elem = document.querySelector('#' + name);
     return elem;
 }
 
 function dismissRelatedLookupPopup(win, chosenId) {
-    var name = windowname_to_id(win.name);
+    var name = win.name;
     var elem = document.getElementById(name);
     if (elem.className.indexOf('vManyToManyRawIdAdminField') != -1 && elem.value) {
         elem.value += ',' + chosenId;
@@ -26,7 +26,7 @@ function dismissChangeRelatedObjectPopup(win, objId, newRepr, newId) {
 function dismissAddRelatedObjectPopup(win, newId, newRepr) {
     // newId and newRepr are expected to have previously been escaped by
     // django.utils.html.escape.
-    var name = windowname_to_id(win.name);
+    var name = win.name;
     var elem = document.getElementById(name);
     var o;
     var elemName = elem.nodeName.toUpperCase();

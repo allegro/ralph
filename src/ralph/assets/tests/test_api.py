@@ -43,7 +43,10 @@ from ralph.data_center.tests.factories import (
 )
 from ralph.domains.models import Domain
 from ralph.domains.tests.factories import DomainFactory
-from ralph.lib.custom_fields.models import CustomField
+from ralph.lib.custom_fields.models import (
+    CustomField,
+    CustomFieldTypes,
+)
 from ralph.licences.models import Licence
 from ralph.licences.tests.factories import LicenceFactory
 from ralph.networks.tests.factories import IPAddressFactory
@@ -951,6 +954,20 @@ class DCHostAPITests(RalphAPITestCase):
         self.cloud_host.refresh_from_db()
         self.assertEqual(self.cloud_host.hostname, "new-hostname")
         self.assertEqual(self.cloud_host.hypervisor.id, new_hypervisor.id)
+
+    def test_nested_customfields_view(self):
+        cf = CustomField.objects.create(
+            name="test", type=CustomFieldTypes.STRING, default_value="xyz"
+        )
+        url = reverse("dchost-customfields-list", args=(self.virtual.id,))
+        response = self.client.post(
+            url, data={"custom_field": cf.id, "value": "test_value"}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.virtual.refresh_from_db()
+        self.assertEqual(
+            self.virtual.custom_fields.get(custom_field=cf.id).value, "test_value"
+        )
 
 
 class ConfigurationModuleAPITests(RalphAPITestCase):

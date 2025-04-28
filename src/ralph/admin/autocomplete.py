@@ -3,9 +3,10 @@ import operator
 import re
 from functools import reduce
 
+from django.urls import re_path
+
 from ralph.lib.dj_choices import Choices
 from django.apps import apps
-from django.conf.urls import url
 from django.core.exceptions import FieldDoesNotExist
 from django.db.models import Manager, Q
 from django.http import Http404, HttpResponseBadRequest, JsonResponse
@@ -151,7 +152,7 @@ class AjaxAutocompleteMixin(object):
 
         params = outer_model._meta.app_label, outer_model._meta.model_name
         my_urls = [
-            url(
+            re_path(
                 r"^autocomplete/details/$",
                 Detail.as_view(),
                 name="{}_{}_autocomplete_details".format(*params),

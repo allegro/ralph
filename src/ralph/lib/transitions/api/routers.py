@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.conf.urls import url
+from django.urls import re_path
 
 from ralph.api import router
 from ralph.lib.transitions.api.views import (
@@ -27,22 +27,22 @@ router.register(
 
 urlpatterns = [
     # Deprecated
-    url(
+    re_path(
         r"^transition/(?P<transition_pk>[0-9]+)/(?P<obj_pk>\w+)$",
         TransitionByIdView.as_view(),
         name="transition-view",
     ),
-    url(
+    re_path(
         r"^transitions/(?P<transition_pk>[0-9]+)/(?P<obj_pk>\w+)$",
         TransitionByIdView.as_view(),
         name="transitions-view",
     ),
-    url(
+    re_path(
         r"^(?P<app_label>\w+)/(?P<model>\w+)/(?P<obj_pk>[0-9]+)/transitions/(?P<transition_pk>[0-9]+)/$",  # noqa
         TransitionView.as_view(),
         name="transitions-by-id-view",
     ),
-    url(
+    re_path(
         r"^(?P<app_label>\w+)/(?P<model>\w+)/(?P<obj_pk>[0-9]+)/transitions/(?P<transition_name>[\w ]+)/$",  # noqa
         TransitionView.as_view(),
         name="transitions-by-name-view",

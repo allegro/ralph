@@ -9,11 +9,11 @@ build-package: cleanup
 	cp ../*.deb /volume/build
 
 build-snapshot-package: cleanup
-	./scripts/generate_deb_changelog.sh
+	EMAIL=$(shell git config user.email) ./scripts/generate_deb_changelog.sh
 	./scripts/build_deb_package.sh
 	mkdir -p /volume/build
 	cp ../*.deb /volume/build
 
 release-new-version:
-	VERSION=$(shell ./get_version.sh generate) ./scripts/generate_deb_changelog.sh
+	EMAIL=$(shell git config user.email) VERSION=$(shell ./get_version.sh generate) ./scripts/generate_deb_changelog.sh
 	cp debian/changelog /volume/debian/changelog

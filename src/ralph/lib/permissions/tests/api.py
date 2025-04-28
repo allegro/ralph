@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from django.conf.urls import include, url
+from django.conf.urls import include
+from django.urls import re_path
 from rest_framework import permissions, routers, serializers, viewsets
 
 from ralph.lib.permissions.api import (
@@ -80,5 +81,5 @@ router.register(r"long-articles", LongArticleViewSet)
 router.register(r"library", LibraryViewSet)
 router.register(r"foo", FooViewSet)
 urlpatterns = [
-    url(r"^test-api/", include((router.urls, app_name), namespace="test-api")),
+    re_path(r"^test-api/", include((router.urls, app_name), namespace="test-api")),
 ]

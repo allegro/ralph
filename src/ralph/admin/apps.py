@@ -7,6 +7,7 @@ class RalphAdminConfig(RalphAppConfig):
     name = "ralph.admin"
     label = "ralph_admin"
     verbose_name = "Ralph Admin"
+    default = True
 
     def ready(self):
         from ralph.admin.filters import register_custom_filters

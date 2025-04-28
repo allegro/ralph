@@ -1,9 +1,9 @@
-from django.conf.urls import url
+from django.urls import re_path
 
 from ralph.dhcp.views import DHCPEntriesView, DHCPNetworksView, DHCPSyncView
 
 urlpatterns = [
-    url(r"^sync/?$", DHCPSyncView.as_view(), name="dhcp_config_sync"),
-    url(r"^entries/?$", DHCPEntriesView.as_view(), name="dhcp_config_entries"),
-    url(r"^networks/?$", DHCPNetworksView.as_view(), name="dhcp_config_networks"),
+    re_path(r"^sync/?$", DHCPSyncView.as_view(), name="dhcp_config_sync"),
+    re_path(r"^entries/?$", DHCPEntriesView.as_view(), name="dhcp_config_entries"),
+    re_path(r"^networks/?$", DHCPNetworksView.as_view(), name="dhcp_config_networks"),
 ]

@@ -2,7 +2,7 @@ import logging
 from collections import OrderedDict
 
 from django.urls import NoReverseMatch
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from rest_framework.metadata import SimpleMetadata
 from rest_framework.relations import ManyRelatedField, RelatedField
 from rest_framework.renderers import BrowsableAPIRenderer
@@ -64,7 +64,7 @@ class RalphApiMetadata(SimpleMetadata):
         for attr in attrs:
             value = getattr(field, attr, None)
             if value is not None and value != "":
-                field_info[attr] = force_text(value, strings_only=True)
+                field_info[attr] = force_str(value, strings_only=True)
 
         if getattr(field, "child", None):
             field_info["child"] = self.get_field_info(field.child)
@@ -95,7 +95,7 @@ class RalphApiMetadata(SimpleMetadata):
             field_info["choices"] = [
                 {
                     "value": choice_value,
-                    "display_name": force_text(choice_name, strings_only=True),
+                    "display_name": force_str(choice_name, strings_only=True),
                 }
                 for choice_value, choice_name in field.choices.items()
             ]

@@ -4,7 +4,6 @@ from django.contrib.admin import AdminSite
 from django.contrib.auth import get_user_model
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.core import mail
-from django.core.exceptions import ValidationError
 from django.db import connection, transaction
 from django.test import override_settings, RequestFactory, TransactionTestCase
 from django.urls import reverse
@@ -54,7 +53,7 @@ class DataCenterAssetAdminTest(TransactionTestCase):
             use_as_configuration_variable=True,
         )
 
-    def _update_dca(self, dca_data=None, inline_data=None):
+    def _update_dca_get_response(self, dca_data=None, inline_data=None):
         data = {
             "id": self.dca.id,
             "sn": self.dca.sn,
@@ -72,7 +71,10 @@ class DataCenterAssetAdminTest(TransactionTestCase):
         data.update(dca_data or {})
         if inline_data:
             data.update(self._prepare_inline_data(inline_data))
-        response = self.client.post(self.dca.get_absolute_url(), data)
+        return self.client.post(self.dca.get_absolute_url(), data)
+
+    def _update_dca(self, dca_data=None, inline_data=None):
+        response = self._update_dca_get_response(dca_data, inline_data)
         self.assertEqual(
             response.status_code,
             302,
@@ -199,8 +201,11 @@ class DataCenterAssetAdminTest(TransactionTestCase):
         self.assertEqual(connection.run_on_commit, [])
 
     def test_hostname_is_mandatory(self):
-        with self.assertRaises(ValidationError):
-            self._update_dca({"hostname": ""})
+        response = self._update_dca_get_response(
+            {"hostname": "", "status": DataCenterAssetStatus.used.id}
+        )
+        self.assertIn("hostname", response.context["form"].errors)
+        self.assertTrue(DataCenterAsset.objects.get(id=self.dca.id).hostname)
 
 
 class DataCenterAssetAdminAssignManagementHostnameTest(TransactionTestCase):

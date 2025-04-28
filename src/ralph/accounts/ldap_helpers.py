@@ -2,7 +2,7 @@
 import logging
 
 from django.conf import settings
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django_auth_ldap.config import ActiveDirectoryGroupType
 
 logger = logging.getLogger(__name__)
@@ -33,7 +33,7 @@ class MappedGroupOfNamesType(ActiveDirectoryGroupType):
 
     def _get_group(self, group_dn, ldap_user, group_search):
         base_dn = group_search.base_dn
-        group_search.base_dn = force_text(group_dn)
+        group_search.base_dn = force_str(group_dn)
         group = group_search.execute(ldap_user.connection)[0]
         group_search.base_dn = base_dn
         return group
@@ -58,7 +58,7 @@ class MappedGroupOfNamesType(ActiveDirectoryGroupType):
 
         # handle flat groups first (to which user belongs directly)
         try:
-            flat_groups_dns = set(map(force_text, ldap_user.attrs["memberOf"]))
+            flat_groups_dns = set(map(force_str, ldap_user.attrs["memberOf"]))
         except KeyError:
             flat_groups_dns = set()
         logger.info("Flat groups DNs for {}: {}".format(username, flat_groups_dns))

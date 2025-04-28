@@ -1,9 +1,8 @@
-from django.conf.urls import url
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.http import HttpResponse
 from django.test import TestCase
-from django.urls import reverse
+from django.urls import reverse, re_path
 from django.views.generic import View
 
 from ralph.lib.permissions.views import PermissionViewMetaClass
@@ -17,7 +16,7 @@ class SimplePermissionView(View, metaclass=PermissionViewMetaClass):
 
 
 urls = [
-    url(
+    re_path(
         r"^test-view-permissions/",
         SimplePermissionView.as_view(),
         name="test-view-permissions",

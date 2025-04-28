@@ -9,8 +9,10 @@ from ralph.signals import post_commit
 class NotificationConfig(RalphAppConfig):
     name = "ralph.notifications"
     verbose_name = "Notifiaction"
+    default = True
 
     def ready(self):
+        super().ready()
         if not settings.ENABLE_EMAIL_NOTIFICATION:
             return
         models = [

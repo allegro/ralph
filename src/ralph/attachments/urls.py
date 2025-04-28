@@ -1,9 +1,9 @@
-from django.conf.urls import url
+from django.urls import re_path
 
 from ralph.attachments.views import ServeAttachment
 
 urlpatterns = [
-    url(
+    re_path(
         r"^attachment/(?P<id>\d+)-(?P<filename>.+)",
         ServeAttachment.as_view(),
         name="serve_attachment",

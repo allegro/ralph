@@ -9,6 +9,7 @@ from urllib import parse
 
 from django import forms
 from django.apps import apps
+from django.forms.models import ModelChoiceIteratorValue
 from django.templatetags.static import static
 from django.contrib.admin.views.main import TO_FIELD_VAR
 from django.core.exceptions import FieldDoesNotExist
@@ -17,7 +18,7 @@ from django.template import loader
 from django.template.context import RenderContext
 from django.template.defaultfilters import slugify, title
 from django.urls import reverse
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
@@ -94,6 +95,8 @@ class PermissionsSelectWidget(forms.Widget):
         ).format(id_name=slug, label=_("All"))
 
     def render_option(self, selected_choices, option_value, option_label):
+        if isinstance(option_value, ModelChoiceIteratorValue):
+            option_value = option_value.value
         input_id = "id_option_{}".format(option_value)
         attrs = {"id": input_id, "type": "checkbox", "value": option_value}
         if option_value in selected_choices:
@@ -113,15 +116,21 @@ class PermissionsSelectWidget(forms.Widget):
         for group_key, group_choices in grouped:
             items = list(group_choices)
             local_values = [item[0] for item in items]
-            local_selected = set(local_values) & set(selected_choices or [])
+            # int(str(v)) makes sure it works both with ModelChoiceIteratorValue and regular int
+            local_selected = set([int(str(v)) for v in local_values]) & set(
+                selected_choices or []
+            )
             slug = slugify(group_key)
             label = title(group_key)
+            logger.warning(
+                "%s: %d of %d", group_key, len(local_selected), len(local_values)
+            )
             rendered_options += mark_safe(
                 """
                 <li class="accordion-navigation">
                     <a href="#{slug}">
                         {title}<i class="right">
-                            <span class="counter">{selected}</span> of {total}
+                            {selected} of {total}
                         </i>
                     </a>
                     <div id="{slug}" class="content">
@@ -262,7 +271,7 @@ class AutocompleteWidget(forms.TextInput):
         if self.multi:
             value = value or []
             attrs["multi"] = "true"
-            value = self.multivalue_separator.join(force_text(v) for v in value)
+            value = self.multivalue_separator.join(force_str(v) for v in value)
         else:
             value = value or ""
 

@@ -1,4 +1,5 @@
-from django.conf.urls import include, url
+from django.conf.urls import include
+from django.urls import re_path
 from rest_framework import routers, serializers, viewsets
 
 from ..api import (
@@ -30,4 +31,4 @@ class CustomFieldsAPITestsRouter(NestedCustomFieldsRouterMixin, routers.DefaultR
 router = CustomFieldsAPITestsRouter()
 router.register(r"somemodel", SomeModelViewset)
 
-urlpatterns = [url(r"^", include(router.urls))]
+urlpatterns = [re_path(r"^", include(router.urls))]

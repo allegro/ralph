@@ -29,7 +29,7 @@ jobs:
       - name: Publish deb
         env:
           PACKAGECLOUD_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
-        run: package_cloud push allegro/ralph/ubuntu/focal build/*.deb
+        run: package_cloud push allegro/ralph/ubuntu/jammy build/*.deb
       - name: Publish docker
         env:
           WAIT_FOR_PACKAGECLOUD_DELAY: 10

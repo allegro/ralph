@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 from itertools import repeat
 
-from django.conf.urls import url
 from django.contrib.admin import TabularInline
 from django.contrib.contenttypes.models import ContentType
 from django.http import HttpResponseRedirect
-from django.urls import reverse
+from django.urls import reverse, re_path
 from functools import partial
 from django.utils.http import urlencode
 
@@ -95,13 +94,13 @@ class TransitionAdminMixin(object):
     def get_urls(self):
         urls = super().get_urls()
         transitions_urls = [
-            url(
+            re_path(
                 r"^(?P<object_pk>.+)/transition/(?P<transition_pk>\d+)$",
                 self.admin_site.admin_view(self.transition_view.as_view()),
                 {"model": self.model},
                 name=self.get_transition_url_name(False),
             ),
-            url(
+            re_path(
                 r"^transition/(?P<transition_pk>\d+)$",
                 self.admin_site.admin_view(self.bulk_transition_view.as_view()),
                 {"model": self.model},

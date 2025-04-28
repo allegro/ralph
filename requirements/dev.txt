@@ -9,7 +9,9 @@ appnope==0.1.4
 argparse==1.4.0
     # via python-novaclient
 asgiref==3.8.1
-    # via django
+    # via
+    #   django
+    #   django-cors-headers
 asttokens==3.0.0
     # via stack-data
 async-timeout==5.0.1
@@ -78,7 +80,7 @@ defusedxml==0.7.1
     #   odfpy
 diff-match-patch==20241021
     # via django-import-export
-django==3.0.14
+django==3.2.25
     # via
     #   ralph (pyproject.toml)
     #   django-appconf
@@ -90,7 +92,6 @@ django==3.0.14
     #   django-import-export
     #   django-js-asset
     #   django-money
-    #   django-mptt
     #   django-plainpasswordhasher
     #   django-redis
     #   django-reversion
@@ -103,23 +104,23 @@ django-appconf==1.0.6
     # via django-cryptography
 django-auth-ldap==2.4.0
     # via ralph (pyproject.toml)
-django-cors-headers==3.11.0
+django-cors-headers==4.4.0
     # via ralph (pyproject.toml:dev)
 django-cryptography==1.0
     # via ralph (pyproject.toml)
-django-debug-toolbar==3.2.4
+django-debug-toolbar==4.3.0
     # via ralph (pyproject.toml:dev)
 django-extensions==3.1.5
     # via ralph (pyproject.toml)
 django-filter==2.4.0
     # via ralph (pyproject.toml)
-django-import-export==2.0.1
+django-import-export==2.5.0
     # via ralph (pyproject.toml)
-django-js-asset==2.0.0
+django-js-asset==2.2.0
     # via django-mptt
 django-money==2.0.3
     # via ralph (pyproject.toml)
-django-mptt==0.11.0
+django-mptt==0.14.0
     # via ralph (pyproject.toml)
 django-plainpasswordhasher==0.3
     # via ralph (pyproject.toml:test)
@@ -127,23 +128,19 @@ django-prometheus==2.2.0
     # via ralph (pyproject.toml)
 django-redis==5.0.0
     # via ralph (pyproject.toml)
-django-reversion==3.0.5
+django-reversion==4.0.2
     # via ralph (pyproject.toml)
 django-rq==2.8.0
     # via ralph (pyproject.toml)
-django-silk==4.4.1
+django-silk==5.2.0
     # via ralph (pyproject.toml:dev)
 django-sitetree==1.17.3
     # via ralph (pyproject.toml)
-django-taggit==1.3.0
-    # via
-    #   ralph (pyproject.toml)
-    #   django-taggit-serializer
-django-taggit-serializer==0.1.7
+django-taggit==1.5.1
     # via ralph (pyproject.toml)
 django-threadlocals==0.8
     # via ralph (pyproject.toml)
-djangorestframework==3.13.1
+djangorestframework==3.15.0
     # via
     #   ralph (pyproject.toml)
     #   drf-nested-routers
@@ -175,7 +172,7 @@ ghp-import==2.1.0
     # via mkdocs
 gnureadline==8.2.13
     # via cmd2
-gprof2dot==2024.6.6
+gprof2dot==2025.4.14
     # via django-silk
 gunicorn==23.0.0
     # via ralph (pyproject.toml:prod)
@@ -185,15 +182,6 @@ idna==2.7
     # via requests
 imagesize==1.4.1
     # via sphinx
-importlib-metadata==8.5.0
-    # via
-    #   cliff
-    #   mkdocs
-    #   sphinx
-importlib-resources==6.4.5
-    # via
-    #   jsonschema
-    #   jsonschema-specifications
 ipdb==0.13.13
     # via ralph (pyproject.toml:dev)
 ipython==8.12.3
@@ -215,7 +203,6 @@ jedi==0.19.2
     #   pudb
 jinja2==3.1.6
     # via
-    #   django-silk
     #   mkdocs
     #   mkdocs-material
     #   sphinx
@@ -243,8 +230,6 @@ markdown==3.2.1
     #   mkdocs
     #   mkdocs-material
     #   pymdown-extensions
-markuppy==1.18
-    # via tablib
 markupsafe==2.1.5
     # via
     #   jinja2
@@ -275,7 +260,7 @@ msgpack==1.1.0
     # via oslo-serialization
 msgpack-python==0.4.7
     # via ralph (pyproject.toml)
-mysqlclient==1.3.13
+mysqlclient==2.0.3
     # via ralph (pyproject.toml)
 netaddr==0.10.1
     # via
@@ -323,7 +308,7 @@ oslo-serialization==5.5.0
     #   ralph (pyproject.toml)
     #   python-keystoneclient
     #   python-novaclient
-oslo-utils==7.3.0
+oslo-utils==7.3.1
     # via
     #   ralph (pyproject.toml)
     #   osc-lib
@@ -364,8 +349,6 @@ pickleshare==0.7.5
     # via ipython
 pillow==10.4.0
     # via ralph (pyproject.toml)
-pkgutil-resolve-name==1.3.10
-    # via jsonschema
 platformdirs==4.3.6
     # via
     #   mkdocs
@@ -379,7 +362,7 @@ prettytable==0.7.2
     #   python-novaclient
 prometheus-client==0.21.1
     # via django-prometheus
-prompt-toolkit==3.0.50
+prompt-toolkit==3.0.51
     # via ipython
 psycopg2-binary==2.9.10
     # via ralph (pyproject.toml)
@@ -409,7 +392,7 @@ pygments==2.19.1
     #   mkdocs-material
     #   pudb
     #   sphinx
-pyhermes==0.3.0
+pyhermes==0.6.0
     # via ralph (pyproject.toml)
 pymdown-extensions==10.4
     # via mkdocs-material
@@ -420,7 +403,6 @@ pyperclip==1.9.0
 python-dateutil==2.9.0
     # via
     #   ralph (pyproject.toml)
-    #   django-silk
     #   faker
     #   ghp-import
 python-ironicclient==5.8.0
@@ -436,10 +418,6 @@ pytz==2025.1
     #   ralph (pyproject.toml)
     #   babel
     #   django
-    #   django-silk
-    #   djangorestframework
-    #   oslo-serialization
-    #   oslo-utils
 pyyaml==6.0.2
     # via
     #   cliff
@@ -469,7 +447,6 @@ requests==2.20.0
     # via
     #   ralph (pyproject.toml)
     #   coveralls
-    #   django-silk
     #   keystoneauth1
     #   osc-lib
     #   oslo-config
@@ -493,7 +470,7 @@ rq==1.16.2
     # via
     #   ralph (pyproject.toml)
     #   django-rq
-ruff==0.11.4
+ruff==0.11.5
     # via ralph (pyproject.toml:dev)
 setuptools==65.7.0
     # via
@@ -510,7 +487,6 @@ six==1.16.0
     # via
     #   ralph (pyproject.toml)
     #   debtcollector
-    #   django-taggit-serializer
     #   faker
     #   pyhermes
     #   python-dateutil
@@ -551,10 +527,8 @@ stevedore==5.3.0
     #   oslo-config
     #   python-ironicclient
     #   python-keystoneclient
-tablib==0.14.0
-    # via
-    #   ralph (pyproject.toml)
-    #   django-import-export
+tablib==3.6.1
+    # via django-import-export
 text-unidecode==1.2
     # via faker
 toml-sort==0.23.1
@@ -572,12 +546,15 @@ traitlets==5.14.3
     #   matplotlib-inline
 typing==3.6.6
     # via ralph (pyproject.toml)
-typing-extensions==4.13.1
+typing-extensions==4.13.2
     # via
     #   asgiref
     #   dogpile-cache
-    #   ipython
     #   urwid
+tzdata==2025.2
+    # via
+    #   oslo-serialization
+    #   oslo-utils
 unidecode==0.4.18
     # via ralph (pyproject.toml)
 urllib3==1.24.3
@@ -605,7 +582,3 @@ xlrd==2.0.1
     # via tablib
 xlwt==1.3.0
     # via tablib
-zipp==3.20.2
-    # via
-    #   importlib-metadata
-    #   importlib-resources

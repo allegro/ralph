@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -46,7 +48,28 @@ class ObjectCustomFieldsViewSet(viewsets.ModelViewSet):
             or user.groups.filter(pk=custom_field.managing_group.pk).exists()
         )
 
+    def _dynamically_refresh_related_model(self):
+        if not self.related_model:
+            return
+        # Because of poor database design we have to resort to tricks like that to make it work with polymorphic models
+        #
+        try:
+            if self.related_model.__name__ == "BaseObject":
+                obj = self.related_model._default_manager.get(
+                    pk=self.kwargs[self.related_model_url_field]
+                )
+                self.related_model = obj._meta.model
+        except Exception as e:  # noqa
+            logging.getLogger().exception(
+                "Related model is BaseObject but couldn't find concrete model"
+            )
+
+        assert self.related_model.__name__ != "BaseObject", (
+            "related_model should not BaseObject since it would not work as expected"
+        )
+
     def filter_queryset(self, queryset):
+        self._dynamically_refresh_related_model()
         queryset = super().filter_queryset(queryset)
         return queryset.filter(**self._get_related_model_info())
 
@@ -65,6 +88,7 @@ class ObjectCustomFieldsViewSet(viewsets.ModelViewSet):
         Enforce user to be in a required group for restricted custom fields.
 
         """
+        self._dynamically_refresh_related_model()
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -79,6 +103,7 @@ class ObjectCustomFieldsViewSet(viewsets.ModelViewSet):
         Enforce user to be in a required group for restricted custom fields.
 
         """
+        self._dynamically_refresh_related_model()
         custom_field = self.get_object().custom_field
         if self._user_can_manage_customfield(request.user, custom_field):
             return super().update(request, *args, **kwargs)
@@ -90,6 +115,7 @@ class ObjectCustomFieldsViewSet(viewsets.ModelViewSet):
         Enforce user to be in a required group for restricted custom fields.
 
         """
+        self._dynamically_refresh_related_model()
         custom_field = self.get_object().custom_field
 
         if self._user_can_manage_customfield(request.user, custom_field):
