@@ -122,7 +122,7 @@ class DataCenterAssetSimpleSerializer(RalphAPISerializer):
     def get_hostname(self, obj):
         match obj:
             case DataCenterAsset():
-                return obj.hostnamer
+                return obj.hostname
             case _:
                 try:
                     return self.context.get("parent_obj").parent_hostname
