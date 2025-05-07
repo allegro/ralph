@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db import transaction
-from django.db.models import Prefetch
+from django.db.models import Prefetch, OuterRef, Subquery
 from django.utils.translation import gettext_lazy as _
 from rest_framework import relations, serializers, status
 from rest_framework.response import Response
@@ -20,7 +20,7 @@ from ralph.assets.api.views import (
 )
 from ralph.assets.models import Ethernet
 from ralph.data_center.api.serializers import DataCenterAssetSimpleSerializer
-from ralph.data_center.models import DCHost
+from ralph.data_center.models import DCHost, DataCenterAsset
 from ralph.lib.api.exceptions import Conflict
 from ralph.lib.api.utils import renderer_classes_without_form
 from ralph.lib.visibility_scope.filters import visibility_scope_filter
@@ -152,14 +152,33 @@ class VirtualServerSimpleSerializer(BaseObjectSerializer):
         exclude = None
 
 
+class VirtualServerHypervisorSerializer(RalphAPISerializer):
+    hostname = serializers.SerializerMethodField()
+
+    class Meta:
+        model = DataCenterAsset
+        fields = ["id", "hostname", "url"]
+        _skip_tags_field = True
+
+    def get_hostname(self, obj):
+        parent = self.context.get("parent_obj")
+        if parent and hasattr(parent, "parent_hostname"):
+            return parent.parent_hostname
+        return None
+
+
 class VirtualServerSerializer(ComponentSerializerMixin, BaseObjectSerializer):
     type = VirtualServerTypeSerializer()
-    # TODO: cast BaseObject to DataCenterAsset for hypervisor field
-    hypervisor = DataCenterAssetSimpleSerializer(source="polymorphic_parent")
+    hypervisor = serializers.SerializerMethodField()
 
     class Meta(BaseObjectSerializer.Meta):
         model = VirtualServer
         exclude = ("content_type", "cluster")
+
+    def get_hypervisor(self, obj):
+        context = self.context.copy()
+        context["parent_obj"] = obj
+        return VirtualServerHypervisorSerializer(obj.parent, context=context).data
 
 
 class VirtualServerSaveSerializer(RalphAPISaveSerializer):
@@ -288,7 +307,6 @@ class VirtualServerViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     serializer_class = VirtualServerSerializer
     save_serializer_class = VirtualServerSaveSerializer
     select_related = VirtualServerAdmin.list_select_related + [
-        "parent",
         "service_env__service",
         "service_env__environment",
         "configuration_path",
@@ -316,6 +334,14 @@ class VirtualServerViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
             ).items()
         )
     )
+
+    def get_queryset(self):
+        dca_sub = DataCenterAsset.objects.filter(id=OuterRef("parent_id"))
+        return (
+            super()
+            .get_queryset()
+            .annotate(parent_hostname=Subquery(dca_sub.values("hostname")[:1]))
+        )
 
 
 router.register(r"cloud-flavors", CloudFlavorViewSet)
