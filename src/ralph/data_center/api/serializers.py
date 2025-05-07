@@ -117,6 +117,18 @@ class RackSerializer(RalphAPISerializer):
 
 
 class DataCenterAssetSimpleSerializer(RalphAPISerializer):
+    hostname = serializers.SerializerMethodField()
+
+    def get_hostname(self, obj):
+        match obj:
+            case DataCenterAsset():
+                return obj.hostnamer
+            case _:
+                try:
+                    return self.context.get("parent_obj").parent_hostname
+                except AttributeError:
+                    return None
+
     class Meta:
         model = DataCenterAsset
         fields = ["id", "hostname", "url"]
