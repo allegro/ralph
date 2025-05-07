@@ -155,8 +155,7 @@ class VirtualServerSimpleSerializer(BaseObjectSerializer):
 class VirtualServerSerializer(ComponentSerializerMixin, BaseObjectSerializer):
     type = VirtualServerTypeSerializer()
     # TODO: cast BaseObject to DataCenterAsset for hypervisor field
-    hypervisor = DataCenterAssetSimpleSerializer(source="parent")
-    # TODO: clusters
+    hypervisor = DataCenterAssetSimpleSerializer(source="polymorphic_parent")
 
     class Meta(BaseObjectSerializer.Meta):
         model = VirtualServer
