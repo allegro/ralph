@@ -52,7 +52,7 @@ coverage==7.8.0
     #   coveralls
 coveralls==4.0.1
     # via ralph (pyproject.toml:test)
-cryptography==44.0.2
+cryptography==44.0.3
     # via
     #   django-cryptography
     #   openstacksdk
@@ -76,7 +76,7 @@ defusedxml==0.7.1
     #   odfpy
 diff-match-patch==20241021
     # via django-import-export
-django==4.0.10
+django==4.2.20
     # via
     #   ralph (pyproject.toml)
     #   django-appconf
@@ -101,19 +101,19 @@ django-appconf==1.1.0
     # via django-cryptography
 django-auth-ldap==2.4.0
     # via ralph (pyproject.toml)
-django-cors-headers==4.5.0
+django-cors-headers==4.7.0
     # via ralph (pyproject.toml:dev)
 django-cryptography==1.1
     # via ralph (pyproject.toml)
-django-debug-toolbar==4.3.0
+django-debug-toolbar==5.2.0
     # via ralph (pyproject.toml:dev)
 django-extensions==3.1.5
     # via ralph (pyproject.toml)
 django-filter==23.5
     # via ralph (pyproject.toml)
-django-import-export==2.9.0
+django-import-export==3.3.9
     # via ralph (pyproject.toml)
-django-js-asset==2.2.0
+django-js-asset==3.1.2
     # via django-mptt
 django-money==3.4.1
     # via ralph (pyproject.toml)
@@ -129,7 +129,7 @@ django-reversion==4.0.2
     # via ralph (pyproject.toml)
 django-rq==2.8.0
     # via ralph (pyproject.toml)
-django-silk==5.2.0
+django-silk==5.3.2
     # via ralph (pyproject.toml:dev)
 django-sitetree==1.18.0
     # via ralph (pyproject.toml)
@@ -230,6 +230,8 @@ markdown==3.2.1
     #   mkdocs
     #   mkdocs-material
     #   pymdown-extensions
+markuppy==1.18
+    # via tablib
 markupsafe==3.0.2
     # via
     #   jinja2
@@ -367,7 +369,7 @@ psycopg2-binary==2.9.10
     # via ralph (pyproject.toml)
 ptyprocess==0.7.0
     # via pexpect
-pudb==2024.1.3
+pudb==2025.1
     # via ralph (pyproject.toml:dev)
 pure-eval==0.2.3
     # via stack-data
@@ -466,7 +468,7 @@ rq==1.16.2
     # via
     #   ralph (pyproject.toml)
     #   django-rq
-ruff==0.11.7
+ruff==0.11.8
     # via ralph (pyproject.toml:dev)
 setuptools==65.7.0
     # via
@@ -503,9 +505,8 @@ sphinxcontrib-qthelp==2.0.0
     # via sphinx
 sphinxcontrib-serializinghtml==2.0.0
     # via sphinx
-sqlparse==0.2.3
+sqlparse==0.5.3
     # via
-    #   ralph (pyproject.toml)
     #   django
     #   django-debug-toolbar
     #   django-silk
@@ -523,7 +524,7 @@ stevedore==5.4.1
     #   oslo-config
     #   python-ironicclient
     #   python-keystoneclient
-tablib==3.8.0
+tablib==3.5.0
     # via django-import-export
 text-unidecode==1.2
     # via faker
@@ -549,7 +550,6 @@ typing-extensions==4.13.2
     #   ipython
     #   py-moneyed
     #   referencing
-    #   urwid
 tzdata==2025.2
     # via
     #   oslo-serialization
@@ -558,7 +558,7 @@ unidecode==0.4.18
     # via ralph (pyproject.toml)
 urllib3==1.24.3
     # via requests
-urwid==2.6.16
+urwid==3.0.0
     # via
     #   pudb
     #   urwid-readline
