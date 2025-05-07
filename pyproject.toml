@@ -97,7 +97,7 @@ dependencies = [
   "statsd==3.2.1",
   "stevedore",
   "typing==3.6.6",
-  "wrapt==1.10.6",
+  "wrapt==1.10.6"
 ]
 dynamic = [
   "authors",
