@@ -1,3 +1,84 @@
+ralph (20250505.1) jammy; urgency=medium
+
+  * Initial django 4.0 compatibility
+  * Add missing requirements
+  * Add missing migrations
+  * Fix tests for changelist and fix tags behaviour
+  * Fix session middleware initialization in tests. Fix pyhermes usage
+  * Fix data importer. Skip hermes tests if hermes disabled
+  * reformat
+  * Fix missing ACTION_CHECKBOX_NAME. Generate requirements
+  * Fix dogpile cache version
+  * Use different static storage
+  * Fix page numbering from 2
+  * Fix sorting back office assets by user
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Mon, 05 May 2025 10:19:42 +0000
+
+ralph (20250429.1) jammy; urgency=medium
+
+  * Remove security scans (#3902)
+
+ -- Olga Matyla <olga.matyla@allegro.com>  Tue, 29 Apr 2025 08:15:41 +0000
+
+ralph (20250424.2) jammy; urgency=medium
+
+  * Fix collectings actions in frontend
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Thu, 24 Apr 2025 10:55:04 +0000
+
+ralph (20250424.1) jammy; urgency=medium
+
+  * Fix pyhermes version not working with django 3.2
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Thu, 24 Apr 2025 07:56:37 +0000
+
+ralph (20250423.1) jammy; urgency=medium
+
+  * Yolo upgrade to 3.2
+  * Prepare django3.1
+  * Minor fixes
+  * Fix test apps
+  * Add migration
+  * Merge django3.0
+  * Add missing migrations
+  * Fixes for django 3.1
+  * Downgrade django-import-export
+  * Downgrade update reqs
+  * Set to highest working django-import-export version
+  * Set to highest working django-import-export version
+  * Fix
+  * Fixes for django 3.1
+  * Fixes for django 3.1
+  * Fixes for django 3.1
+  * Reverse BigAutoField
+  * Bump django reversion and django taggit
+  * Move api up in urlpatterns wtf
+  * Bump mysql to 8.0 as 5.6 is no longer supported. Disable sane default 'final_catch_all_view' that broke the whole api
+  * Try granting privileges for mysql CI
+  * Bump drf and python
+  * Remove pdb, fix ModelChoiceIteratorValue problem in 1 place
+  * Fix ready for ralph.notifications
+  * Fix format
+  * Fix unhashable xxx. Fix update dca with empty hostname test
+  * Bump dockers to jammy and python3.10
+  * Don't use weird dh-virtualenv
+  * Add email to docker build
+  * Exclude site-packages for build
+  * Recompile requirements
+  * Fix autocomplete popups
+  * Merge ng
+  * Fix customfields nested router for DCHosts
+  * Fix pagination display
+  * Fix pagination display
+  * Restore old permissions for sitetree
+  * Remove extra comments
+  * Remove extra migrations
+  * Add log statement
+  * Add log statement
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Wed, 23 Apr 2025 12:47:45 +0000
+
 ralph (20250416.1) focal; urgency=medium
 
   * Remove VIPs and SCM scans (#3895)

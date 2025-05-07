@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.test import SimpleTestCase, TestCase
 
 from ralph.assets.models import Service
-from ralph.assets.tests.factories import ServiceFactory
+from ralph.assets.tests.factories import ServiceFactory, ServiceEnvironmentFactory
 from ralph.dashboards.admin_filters import ByGraphFilter
 from ralph.dashboards.filter_parser import FilterParser
 from ralph.dashboards.helpers import encode_params
@@ -20,6 +20,7 @@ from ralph.data_center.tests.factories import (
     DataCenterAssetFullFactory,
     RackFactory,
 )
+from ralph.licences.tests.factories import LicenceFactory, DataCenterAssetLicenceFactory
 from ralph.tests.models import Bar
 
 ARGS, KWARGS = (0, 1)
@@ -226,6 +227,106 @@ class LabelGroupingTest(TestCase):
 
         self.assertEqual(qs.get()["series"], len(expected))
         self.assertIn("year", qs.get())
+
+    def _genenrate_dca_with_licence(self, count, date_str):
+        gen = []
+        for _ in range(count):
+            lc = LicenceFactory(valid_thru=date_str)
+            dca = DataCenterAssetLicenceFactory(licence=lc)
+            gen.append(dca)
+        return gen
+
+    def test_label_works_when_year_grouping_on_foreign_key(self):
+        self._genenrate_dca_with_licence(2, "2015-01-01")
+        expected = self._genenrate_dca_with_licence(1, "2016-01-01")
+        self._genenrate_dca_with_licence(3, "2017-01-01")
+
+        graph = GraphFactory(
+            aggregate_type=AggregateType.aggregate_count.id,
+            params={
+                "filters": {
+                    "licences__licence__valid_thru__gte": "2016-01-01",
+                    "licences__licence__valid_thru__lt": "2017-01-01",
+                },
+                "series": "id",
+                "labels": "licences__licence__valid_thru|year",
+            },
+        )
+
+        qs = graph.build_queryset()
+
+        self.assertEqual(qs.get()["series"], len(expected))
+        self.assertIn("year", qs.get())
+
+    def test_label_works_when_month_grouping_on_foreign_key(self):
+        self._genenrate_dca_with_licence(2, "2015-01-01")
+        expected = self._genenrate_dca_with_licence(1, "2016-01-01")
+        self._genenrate_dca_with_licence(3, "2017-01-01")
+
+        graph = GraphFactory(
+            aggregate_type=AggregateType.aggregate_count.id,
+            params={
+                "filters": {
+                    "licences__licence__valid_thru__gte": "2016-01-01",
+                    "licences__licence__valid_thru__lt": "2017-01-01",
+                },
+                "series": "id",
+                "labels": "licences__licence__valid_thru|month",
+            },
+        )
+
+        qs = graph.build_queryset()
+
+        self.assertEqual(qs.get()["series"], len(expected))
+        self.assertIn("month", qs.get())
+
+    def test_ratio_aggregation(self):
+        service_env = ServiceEnvironmentFactory(service__name="sample-service")
+        for is_deprecated in [True, False]:
+            for _ in range(3):
+                DataCenterAssetFactory(
+                    service_env=service_env, force_depreciation=is_deprecated
+                )
+
+        graph = GraphFactory(
+            aggregate_type=AggregateType.aggregate_ratio.id,
+            params={
+                "series": ["force_depreciation", "id"],
+                "labels": "service_env__service__name",
+                "filters": {
+                    "series__gt": 0,
+                },
+            },
+        )
+
+        qs = graph.build_queryset()
+        self.assertEqual(
+            qs.get(), {"series": 50, "service_env__service__name": "sample-service"}
+        )
+
+    def test_duplicates_works_when_used_in_series_value(self):
+        DataCenterAssetLicenceFactory(licence=LicenceFactory(valid_thru="2015-01-01"))
+
+        asset = DataCenterAssetFactory()
+        for month in [1, 2, 3]:
+            licence = LicenceFactory(valid_thru=f"2016-0{month}-01")
+            DataCenterAssetLicenceFactory(licence=licence, base_object=asset)
+
+        graph = GraphFactory(
+            aggregate_type=AggregateType.aggregate_count.id,
+            params={
+                "filters": {
+                    "licences__licence__valid_thru__gte": "2010-01-01",
+                },
+                "series": "id|distinct",
+                "labels": "licences__licence__valid_thru|year",
+            },
+        )
+
+        qs = graph.build_queryset()
+
+        self.assertEqual(qs.all()[0]["series"], 1)
+        self.assertEqual(qs.all()[1]["series"], 1)
 
     def test_count_aggregate_with_zeros(self):
         assets_num = 2

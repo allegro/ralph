@@ -24,7 +24,6 @@ from ralph.lib.visibility_scope.filters import visibility_scope_filter
 from ralph.licences.models import BaseObjectLicence
 from ralph.networks.forms import SimpleNetworkForm
 from ralph.networks.views import NetworkView
-from ralph.security.views import SecurityInfo
 from ralph.virtual.forms import CloudProviderForm
 from ralph.virtual.models import (
     CloudFlavor,
@@ -41,14 +40,6 @@ if settings.ENABLE_DNSAAS_INTEGRATION:
 
     class VirtualServerDNSView(DNSView):
         namespace = None
-
-
-class VirtaulServerSecurityInfoView(SecurityInfo):
-    url_name = "security_virtualserver_security_info"
-
-
-class CloudHostSecurityInfoView(SecurityInfo):
-    url_name = "security_cloudhost_security_info"
 
 
 @register(VirtualServerType)

@@ -56,8 +56,10 @@
                     return false;
                 }
             });
-
-            $("tr input.action-select").actions();
+            let action_elements = $("tr input.action-select");
+            if (action_elements != null && action_elements.length > 0) {
+              Actions(action_elements);
+            }
             var initPopupButtons = function() {
                 $('.add-related').click(function(e) {
                     e.preventDefault();

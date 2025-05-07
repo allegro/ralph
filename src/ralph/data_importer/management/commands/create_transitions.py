@@ -36,7 +36,6 @@ class Command(BaseCommand):
                 "clean_dhcp",
                 "clean_hostname",
                 "clean_ipaddresses",
-                "cleanup_security_scans",
                 "create_dhcp_entries",
                 "create_dns_entries",
                 "deploy",

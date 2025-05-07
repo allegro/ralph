@@ -111,8 +111,6 @@ base_object_descendant_prefetch_related = [
             *BaseObjectLicenceViewSet.select_related
         ),
     ),
-    "securityscan__tags",
-    "securityscan__vulnerabilities__tags",
     "custom_fields",
     "service_env__service__business_owners",
     "service_env__service__technical_owners",
@@ -279,8 +277,6 @@ class DCHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         "tags",
         "custom_fields",
         "ethernet_set__ipaddress",
-        "securityscan__vulnerabilities__tags",
-        "securityscan__tags",
     ]
     extended_filter_fields = {
         "name": [

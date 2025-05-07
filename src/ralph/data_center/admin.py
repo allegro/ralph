@@ -67,7 +67,6 @@ from ralph.licences.models import BaseObjectLicence
 from ralph.networks.forms import SimpleNetworkWithManagementIPForm
 from ralph.networks.views import NetworkWithTerminatorsView
 from ralph.operations.views import OperationViewReadOnlyForExisiting
-from ralph.security.views import SecurityInfo
 from ralph.supports.models import BaseObjectsSupport
 
 
@@ -307,10 +306,6 @@ class DataCenterAssetOperation(OperationViewReadOnlyForExisiting):
     name = "dc_asset_operations"
     url_name = "data_center_asset_operations"
     inlines = OperationViewReadOnlyForExisiting.admin_class.inlines
-
-
-class DataCenterAssetSecurityInfo(SecurityInfo):
-    url_name = "datacenter_asset_security_info"
 
 
 class DataCenterAssetChangeList(RalphChangeList):

@@ -807,7 +807,7 @@ class DCHostAPITests(RalphAPITestCase):
         VirtualServerFullFactory.create_batch(20, parent=dc_assets[0])
         CloudHostFullFactory.create_batch(20, hypervisor=dc_assets[0])
         url = reverse("dchost-list") + "?limit=100"
-        with self.assertQueriesMoreOrLess(30, plus_minus=1):
+        with self.assertQueriesMoreOrLess(19, plus_minus=1):
             response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 63)

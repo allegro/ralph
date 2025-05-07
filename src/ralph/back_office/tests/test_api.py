@@ -31,7 +31,7 @@ class BackOfficeAssetAPITests(RalphAPITestCase):
     def test_get_back_office_assets_list(self):
         BackOfficeAssetFactory.create_batch(100)
         url = reverse("backofficeasset-list") + "?limit=100"
-        with self.assertNumQueries(14):
+        with self.assertNumQueries(10):
             response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], BackOfficeAsset.objects.count())

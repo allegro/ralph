@@ -35,7 +35,6 @@ from ralph.assets.models.configuration import ConfigurationClass, ConfigurationM
 from ralph.data_importer import resources
 from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
 from ralph.lib.table.table import Table, TableWithUrl
-from ralph.security.views import ScanStatusInTableMixin
 
 
 @register(ConfigurationClass)
@@ -132,7 +131,7 @@ class ServiceEnvironmentInline(RalphTabularInline):
     formset = PolymorphicInlineFormset
 
 
-class BaseObjectsList(ScanStatusInTableMixin, Table):
+class BaseObjectsList(Table):
     def url(self, item):
         return '<a href="{}">{}</a>'.format(item.get_absolute_url(), _("Go to object"))
 
@@ -153,7 +152,7 @@ class ServiceBaseObjects(RalphDetailView):
     def get_service_base_objects_queryset(self):
         return (
             BaseObject.polymorphic_objects.filter(service_env__service=self.object)
-            .select_related("service_env__environment", "content_type", "securityscan")
+            .select_related("service_env__environment", "content_type")
             .exclude(content_type__model="vip")  # TODO remove after vip deletion
         )
 
@@ -166,7 +165,6 @@ class ServiceBaseObjects(RalphDetailView):
                 ("content_type", _("type")),
                 ("service_env__environment", _("environment")),
                 "_str",
-                "scan_status",
                 "url",
             ],
         )

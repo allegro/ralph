@@ -11,6 +11,7 @@ from django.templatetags.static import static
 from django.contrib.admin.views.main import ORDER_VAR
 from django.contrib.auth import get_permission_codename
 from django.contrib.contenttypes.admin import GenericTabularInline
+from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.core import checks
 from django.core.exceptions import FieldDoesNotExist
 from django.db import models
@@ -558,7 +559,7 @@ class BulkEditChangeListMixin(object):
         """
         Custom bulk edit action.
         """
-        selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+        selected = request.POST.getlist(ACTION_CHECKBOX_NAME)
         url = reverse("admin:{}".format(request.resolver_match.url_name))
         id_list = [(BULK_EDIT_VAR_IDS, i) for i in selected]
         return HttpResponseRedirect(

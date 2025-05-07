@@ -389,7 +389,7 @@ class BackOfficeAssetAdmin(
         )
 
     get_user.short_description = _("User")
-    get_user.admin_order_field = "get_user"
+    get_user.admin_order_field = "user"
 
 
 @register(Warehouse)

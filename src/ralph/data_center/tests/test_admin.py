@@ -190,7 +190,6 @@ class DataCenterAssetAdminTest(TransactionTestCase):
                     "ui_url": "",
                 },
                 "tags": [],
-                "securityscan": None,
                 "_previous_state": {"hostname": "ralph1.allegro.pl"},
                 "ui_url": "",
             },

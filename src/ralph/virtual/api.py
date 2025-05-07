@@ -243,7 +243,6 @@ class CloudHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         "service_env__environment",
         "content_type",
         "configuration_path__module",
-        "securityscan",
     ]
     prefetch_related = base_object_descendant_prefetch_related + [
         "tags",
@@ -296,7 +295,6 @@ class VirtualServerViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         "configuration_path",
         "content_type",
         "parent__cluster__type",
-        "securityscan",
     ]
     prefetch_related = base_object_descendant_prefetch_related + [
         "tags",
