@@ -169,7 +169,6 @@ class GroupingLabel:
 
     def _trunc_date_function(self):
         func = self.field_to_function[self.label]
-        # db_field_name = self.orig_label.split("__")[-1]
         return func(self.orig_label)
 
     def apply_grouping(self, queryset):
