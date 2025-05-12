@@ -1,3 +1,22 @@
+ralph (20250512.1) jammy; urgency=medium
+
+  * Fix data importer - management ip
+  * Initial fixes for django 4.2
+  * Fix grouping by truncated date in graphs - use sql functions. Remove graph tests for security scans
+  * Fix dchost changelist
+  * Fix num queries
+  * Fix bad _get_unique_checks call
+  * Fix bad _get_unique_checks call
+  * Merge ng
+  * Fix parent hostname in virtual server api
+  * Fix parent hostname in virtual server api again
+  * Revert fixes
+  * Fix again
+  * Fix typo
+  * Fix cloud host when no parent
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Mon, 12 May 2025 07:24:47 +0000
+
 ralph (20250505.1) jammy; urgency=medium
 
   * Initial django 4.0 compatibility
