@@ -34,7 +34,7 @@ cliff==4.9.1
     #   python-ironicclient
 cmd2==2.5.11
     # via cliff
-cryptography==44.0.2
+cryptography==44.0.3
     # via
     #   django-cryptography
     #   openstacksdk
@@ -54,7 +54,7 @@ defusedxml==0.7.1
     #   odfpy
 diff-match-patch==20241021
     # via django-import-export
-django==4.0.10
+django==4.2.20
     # via
     #   ralph (pyproject.toml)
     #   django-appconf
@@ -81,9 +81,9 @@ django-extensions==3.1.5
     # via ralph (pyproject.toml)
 django-filter==23.5
     # via ralph (pyproject.toml)
-django-import-export==2.9.0
+django-import-export==3.3.9
     # via ralph (pyproject.toml)
-django-js-asset==2.2.0
+django-js-asset==3.1.2
     # via django-mptt
 django-money==3.4.1
     # via ralph (pyproject.toml)
@@ -159,6 +159,8 @@ keystoneauth1==5.8.1
     #   python-novaclient
 markdown==3.2.1
     # via ralph (pyproject.toml)
+markuppy==1.18
+    # via tablib
 monotonic==0.6
     # via ralph (pyproject.toml)
 msgpack==1.1.0
@@ -352,10 +354,8 @@ six==1.16.0
     #   pyhermes
     #   python-dateutil
     #   python-novaclient
-sqlparse==0.2.3
-    # via
-    #   ralph (pyproject.toml)
-    #   django
+sqlparse==0.5.3
+    # via django
 statsd==3.2.1
     # via ralph (pyproject.toml)
 stevedore==5.4.1
@@ -368,7 +368,7 @@ stevedore==5.4.1
     #   oslo-config
     #   python-ironicclient
     #   python-keystoneclient
-tablib==3.8.0
+tablib==3.5.0
     # via django-import-export
 text-unidecode==1.2
     # via faker

@@ -414,10 +414,13 @@ class CloudHostAdmin(
 
     @mark_safe
     def get_cloudproject(self, obj):
-        return '<a href="{}">{}</a>'.format(
-            reverse("admin:virtual_cloudproject_change", args=(obj.parent.id,)),
-            obj.parent.cloudproject.name,
-        )
+        try:
+            return '<a href="{}">{}</a>'.format(
+                reverse("admin:virtual_cloudproject_change", args=(obj.parent.id,)),
+                obj.parent.cloudproject.name,
+            )
+        except AttributeError:
+            return "&ndash;"
 
     get_cloudproject.short_description = _("Cloud Project")
     get_cloudproject.admin_order_field = "parent"

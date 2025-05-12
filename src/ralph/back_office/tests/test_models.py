@@ -488,7 +488,7 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             requester=self.request.user,
         )
 
-        self.assertNotEquals(self.bo_asset.hostname, hostname)
+        self.assertNotEqual(self.bo_asset.hostname, hostname)
 
     def test_assign_hostname_skips_hostname_when_its_already_set(self):
         # hostname must include country-code to be skipped during assigning

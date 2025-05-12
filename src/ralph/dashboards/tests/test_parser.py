@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.test import SimpleTestCase, TestCase
 
 from ralph.assets.models import Service
-from ralph.assets.tests.factories import ServiceEnvironmentFactory, ServiceFactory
+from ralph.assets.tests.factories import ServiceFactory, ServiceEnvironmentFactory
 from ralph.dashboards.admin_filters import ByGraphFilter
 from ralph.dashboards.filter_parser import FilterParser
 from ralph.dashboards.helpers import encode_params
@@ -73,7 +73,7 @@ class GraphModelTest(TestCase):
         ({"series__lte": 3}, 1),
         ({"series__lte": 5, "series__qte": 3}, 2),
     )
-    def test_annotate_fitler_should_pop_from_filters(self, orig_filters, length):
+    def test_annotate_filter_should_pop_from_filters(self, orig_filters, length):
         graph = Graph()
         filters = copy.deepcopy(orig_filters)
         result = graph.pop_annotate_filters(filters)

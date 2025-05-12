@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+from django.apps import apps
 from django.db import transaction
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Subquery, OuterRef
 from django.utils.translation import gettext_lazy as _
 from rest_framework import relations, serializers, status
 from rest_framework.response import Response
@@ -154,9 +155,12 @@ class VirtualServerSimpleSerializer(BaseObjectSerializer):
 
 class VirtualServerSerializer(ComponentSerializerMixin, BaseObjectSerializer):
     type = VirtualServerTypeSerializer()
-    # TODO: cast BaseObject to DataCenterAsset for hypervisor field
-    hypervisor = DataCenterAssetSimpleSerializer(source="parent")
-    # TODO: clusters
+    hypervisor = serializers.SerializerMethodField()
+
+    def get_hypervisor(self, obj):
+        context = self.context.copy()
+        context["parent_obj"] = obj
+        return DataCenterAssetSimpleSerializer(obj.parent, context=context).data
 
     class Meta(BaseObjectSerializer.Meta):
         model = VirtualServer
@@ -317,6 +321,15 @@ class VirtualServerViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
             ).items()
         )
     )
+
+    def get_queryset(self):
+        DataCenterAsset = apps.get_model("data_center", "DataCenterAsset")
+        dca_sub = DataCenterAsset.objects.filter(id=OuterRef("parent_id"))
+        return (
+            super()
+            .get_queryset()
+            .annotate(parent_hostname=Subquery(dca_sub.values("hostname")[:1]))
+        )
 
 
 router.register(r"cloud-flavors", CloudFlavorViewSet)

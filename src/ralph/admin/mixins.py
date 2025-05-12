@@ -214,11 +214,6 @@ class RalphAdminChecks(admin.checks.ModelAdminChecks):
 
 
 class DashboardChangelistMixin(object):
-    # TODO(Django-1.11) remove and check if
-    # test_patch_deadline_filters_hosts passes
-    def lookup_allowed(self, *args, **kwargs):
-        return True
-
     def _is_graph_preview_view(self, request):
         return request.GET.get("graph-query", "")
 
@@ -392,7 +387,7 @@ class RalphAdminImportExportMixin(ImportExportModelAdmin):
         # mark request as "exporter" request
         request._is_export = True
         queryset = super().get_export_queryset(request)
-        resource = self.get_export_resource_class()
+        resource = self.get_export_resource_classes()[0]
         fk_fields = []
         for name, field in resource.fields.items():
             if (
@@ -412,15 +407,19 @@ class RalphAdminImportExportMixin(ImportExportModelAdmin):
             queryset = queryset.prefetch_related(*resource_prefetch_related)
         return list(queryset)
 
-    def get_export_resource_class(self):
+    def get_export_resource_classes(self):
         """
         If `export_class` is defined in Admin, use it.
         """
-        resource_class = self.get_resource_class()
-        export_class = getattr(resource_class, "export_class", None)
-        if export_class:
-            return export_class
-        return resource_class
+        resource_classes = self.get_resource_classes()
+        export_classes = [
+            getattr(resource_class, "export_class", None)
+            for resource_class in resource_classes
+            if getattr(resource_class, "export_class", None)
+        ]
+        if export_classes:
+            return export_classes
+        return resource_classes
 
     def get_queryset(self, request):
         # if it is "exporter" request, try to use `_export_queryset_manager`

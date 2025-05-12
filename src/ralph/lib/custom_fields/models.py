@@ -147,14 +147,16 @@ class CustomFieldValue(TimeStampMixin, models.Model):
             self.custom_field if self.custom_field_id else None, self.object, self.value
         )
 
-    def _get_unique_checks(self, exclude=None):
+    def _get_unique_checks(self, exclude=None, include_meta_constraints=False):
         if exclude:
             for k in ["content_type", "object_id"]:
                 try:
                     exclude.remove(k)
                 except ValueError:
                     pass
-        return super()._get_unique_checks()
+        return super()._get_unique_checks(
+            exclude=None, include_meta_constraints=include_meta_constraints
+        )
 
     def unique_error_message(self, model_class, unique_check):
         """
