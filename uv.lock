@@ -1788,6 +1788,7 @@ dependencies = [
     { name = "six" },
     { name = "statsd" },
     { name = "stevedore" },
+    { name = "tblib" },
     { name = "typing" },
     { name = "unidecode" },
     { name = "wrapt" },
@@ -1886,6 +1887,7 @@ requires-dist = [
     { name = "six", specifier = "==1.16.0" },
     { name = "statsd", specifier = "==3.2.1" },
     { name = "stevedore" },
+    { name = "tblib", specifier = ">=3.1.0" },
     { name = "typing", specifier = "==3.6.6" },
     { name = "unidecode", specifier = "==0.4.18" },
     { name = "wrapt", specifier = "==1.10.6" },
@@ -2256,6 +2258,15 @@ xlsx = [
 ]
 yaml = [
     { name = "pyyaml" },
+]
+
+[[package]]
+name = "tblib"
+version = "3.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/54/95/4b3044ec4bf248186769629bbfb495a458deb6e4c1f9eff7f298ae1e336e/tblib-3.1.0.tar.gz", hash = "sha256:06404c2c9f07f66fee2d7d6ad43accc46f9c3361714d9b8426e7f47e595cd652", size = 30766, upload-time = "2025-03-31T12:58:27.473Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/27/44/aa5c8b10b2cce7a053018e0d132bd58e27527a0243c4985383d5b6fd93e9/tblib-3.1.0-py3-none-any.whl", hash = "sha256:670bb4582578134b3d81a84afa1b016128b429f3d48e6cbbaecc9d15675e984e", size = 12552, upload-time = "2025-03-31T12:58:26.142Z" },
 ]
 
 [[package]]
