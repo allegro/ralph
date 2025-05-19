@@ -26,17 +26,17 @@ cffi==1.17.1
     # via cryptography
 chardet==3.0.4
     # via requests
-click==8.1.8
+click==8.2.0
     # via
     #   mkdocs
     #   rq
-cliff==4.9.1
+cliff==4.10.0
     # via
     #   osc-lib
     #   python-ironicclient
 cmd2==2.5.11
     # via cliff
-cryptography==44.0.3
+cryptography==45.0.2
     # via
     #   django-cryptography
     #   openstacksdk
@@ -56,7 +56,7 @@ defusedxml==0.7.1
     #   odfpy
 diff-match-patch==20241021
     # via django-import-export
-django==4.2.20
+django==4.2.21
     # via
     #   ralph (pyproject.toml)
     #   django-appconf
@@ -128,7 +128,7 @@ ghp-import==2.1.0
     # via mkdocs
 gnureadline==8.2.13
     # via cmd2
-hiredis==3.1.0
+hiredis==3.1.1
     # via ralph (pyproject.toml)
 idna==2.7
     # via requests
@@ -227,7 +227,7 @@ os-service-types==1.7.0
     #   openstacksdk
 osc-lib==3.2.0
     # via python-ironicclient
-oslo-config==9.7.1
+oslo-config==9.8.0
     # via
     #   ralph (pyproject.toml)
     #   python-keystoneclient
@@ -244,7 +244,7 @@ oslo-serialization==5.7.0
     #   ralph (pyproject.toml)
     #   python-keystoneclient
     #   python-novaclient
-oslo-utils==8.2.0
+oslo-utils==9.0.0
     # via
     #   ralph (pyproject.toml)
     #   osc-lib
@@ -276,7 +276,7 @@ pbr==6.1.1
     #   stevedore
 pillow==11.2.1
     # via ralph (pyproject.toml)
-platformdirs==4.3.7
+platformdirs==4.3.8
     # via
     #   mkdocs
     #   python-ironicclient
@@ -287,7 +287,7 @@ prettytable==0.7.2
     #   ralph (pyproject.toml)
     #   cliff
     #   python-novaclient
-prometheus-client==0.21.1
+prometheus-client==0.22.0
     # via django-prometheus
 psutil==7.0.0
     # via oslo-utils
@@ -318,7 +318,7 @@ python-dateutil==2.9.0
     #   ralph (pyproject.toml)
     #   faker
     #   ghp-import
-python-ironicclient==5.10.1
+python-ironicclient==5.11.0
     # via ralph (pyproject.toml)
 python-keystoneclient==5.6.0
     # via ralph (pyproject.toml)
@@ -341,7 +341,7 @@ pyyaml==6.0.2
     #   python-ironicclient
     #   pyyaml-env-tag
     #   tablib
-pyyaml-env-tag==0.1
+pyyaml-env-tag==1.1
     # via mkdocs
 raven==6.10.0
     # via ralph (pyproject.toml)
@@ -372,7 +372,7 @@ requestsexceptions==1.4.0
     # via openstacksdk
 rfc3986==2.0.0
     # via oslo-config
-rpds-py==0.24.0
+rpds-py==0.25.0
     # via
     #   jsonschema
     #   referencing
@@ -414,6 +414,8 @@ stevedore==5.4.1
     #   python-keystoneclient
 tablib==3.5.0
     # via django-import-export
+tblib==3.1.0
+    # via ralph (pyproject.toml)
 text-unidecode==1.2
     # via faker
 typing==3.6.6
