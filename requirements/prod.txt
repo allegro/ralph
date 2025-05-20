@@ -79,7 +79,7 @@ django-cryptography==1.1
     # via ralph (pyproject.toml)
 django-extensions==3.1.5
     # via ralph (pyproject.toml)
-django-filter==23.5
+django-filter==25.1
     # via ralph (pyproject.toml)
 django-import-export==3.3.9
     # via ralph (pyproject.toml)
@@ -197,7 +197,7 @@ os-service-types==1.7.0
     #   openstacksdk
 osc-lib==3.2.0
     # via python-ironicclient
-oslo-config==9.8.0
+oslo-config==9.7.1
     # via
     #   ralph (pyproject.toml)
     #   python-keystoneclient
@@ -214,7 +214,7 @@ oslo-serialization==5.7.0
     #   ralph (pyproject.toml)
     #   python-keystoneclient
     #   python-novaclient
-oslo-utils==9.0.0
+oslo-utils==8.2.0
     # via
     #   ralph (pyproject.toml)
     #   osc-lib
