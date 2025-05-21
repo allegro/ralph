@@ -1,3 +1,12 @@
+ralph (20250521.1) jammy; urgency=medium
+
+  * Run tests in parallel
+  * Bump reqs
+  * Add filter ne
+  * Add test for ne filter
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Wed, 21 May 2025 13:36:12 +0000
+
 ralph (20250512.1) jammy; urgency=medium
 
   * Fix data importer - management ip
