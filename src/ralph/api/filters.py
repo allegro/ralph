@@ -6,6 +6,7 @@ from functools import reduce
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import FieldDoesNotExist
 from django.db import models
+from django.db.models import Lookup, Field
 from django.forms import Widget
 from django_filters import Filter
 from django_filters.rest_framework import DjangoFilterBackend
@@ -135,6 +136,17 @@ class ExtendedFiltersBackend(BaseFilterBackend):
         return queryset
 
 
+@Field.register_lookup
+class NotEqual(Lookup):
+    lookup_name = "ne"
+
+    def as_sql(self, compiler, connection):
+        lhs, lhs_params = self.process_lhs(compiler, connection)
+        rhs, rhs_params = self.process_rhs(compiler, connection)
+        params = lhs_params + rhs_params
+        return "%s <> %s" % (lhs, rhs), params
+
+
 class LookupFilterBackend(BaseFilterBackend):
     """
     Filter by lookups (using Django's __ convention) in query params.
@@ -147,6 +159,7 @@ class LookupFilterBackend(BaseFilterBackend):
     field_type_lookups = {
         # TODO: in and range filters are not working (some iterable is required)
         models.IntegerField: {
+            "ne",
             "lte",
             "gte",
             "lt",
@@ -157,6 +170,7 @@ class LookupFilterBackend(BaseFilterBackend):
             "isnull",
         },
         models.CharField: {
+            "ne",
             "startswith",
             "istartswith",
             "endswith",
@@ -196,6 +210,7 @@ class LookupFilterBackend(BaseFilterBackend):
             "gt",
         },
         models.DecimalField: {
+            "ne",
             "lte",
             "gte",
             "lt",
@@ -205,7 +220,7 @@ class LookupFilterBackend(BaseFilterBackend):
             "range",
             "isnull",
         },
-        models.AutoField: {"startswith", "exact"},
+        models.AutoField: {"startswith", "exact", "ne"},
     }
 
     def _validate_single_query_lookup(self, model, model_field_name, lookup, value):
