@@ -17,6 +17,7 @@ from ralph.data_center.models import (
     Rack,
     RackAccessory,
     RackOrientation,
+    DataCenterAssetStatus,
 )
 from ralph.data_center.tests.factories import (
     AccessoryFactory,
@@ -366,6 +367,19 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 1)
+
+    def test_filter_out_liquidated_dca_with_ne(self):
+        # third dca
+        DataCenterAssetFullFactory(status=DataCenterAssetStatus.liquidated)
+        self.assertEqual(DataCenterAsset.objects.count(), 3)
+
+        url = (
+            reverse("datacenterasset-list")
+            + f"?status__ne={DataCenterAssetStatus.liquidated.id}"
+        )
+        response = self.client.get(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["count"], 2)
 
 
 class RackAPITests(RalphAPITestCase):
