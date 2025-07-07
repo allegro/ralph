@@ -94,12 +94,12 @@ dependencies = [
   "setuptools<66.0",
   "simplejson==3.8.2",
   "six==1.16.0",
-  "social-auth-app-django>=5.4.3",
+  "social-auth-app-django==2.0.0",
   "statsd==3.2.1",
   "stevedore",
   "tblib>=3.1.0",
   "typing==3.6.6",
-  "wrapt==1.10.6"
+  "wrapt==1.10.6",
 ]
 dynamic = [
   "authors",

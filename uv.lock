@@ -1648,7 +1648,7 @@ wheels = [
 
 [[package]]
 name = "python-ironicclient"
-version = "5.11.0"
+version = "5.12.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cliff" },
@@ -1664,9 +1664,9 @@ dependencies = [
     { name = "requests" },
     { name = "stevedore" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a1/2f/870939aa711fd337717de29ccba61e2c4462054473adbdf7ee28ad6afa2c/python_ironicclient-5.11.0.tar.gz", hash = "sha256:9fe75be4c9718b6d759a3c14f0b593baf091583917ea43a47f564cd7a2f7305b", size = 223512, upload-time = "2025-05-15T09:47:30.738Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/83/4b/c62a64a6a1b6b10edf1996e2e497ca8ae0ea7a1c1e9af97a974e168c3d56/python_ironicclient-5.12.0.tar.gz", hash = "sha256:f3fdefb096ff04d9174000e20a9443871f07d12d94eb6b1d3efb64bbdc99af5d", size = 225775, upload-time = "2025-07-07T11:01:02.233Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ca/97/1413c54c0d0039ffbc6688e5736aa2de3237fb74b92f2c6363ad468e51ee/python_ironicclient-5.11.0-py3-none-any.whl", hash = "sha256:31bde551e38a4a22fce8b5a5baeebc5cafd5160560459152bf3fe4e45beb686c", size = 241408, upload-time = "2025-05-15T09:47:29.374Z" },
+    { url = "https://files.pythonhosted.org/packages/2e/82/261d2f962e78e20c5644484110f97e31f463190b313a62f07e7e8f9e675f/python_ironicclient-5.12.0-py3-none-any.whl", hash = "sha256:bab9bc094ab215f1252454b208f3fec78c7f8f4c569093cefa7b1398cab3dd20", size = 246817, upload-time = "2025-07-07T11:01:00.794Z" },
 ]
 
 [[package]]
@@ -1935,7 +1935,7 @@ requires-dist = [
     { name = "setuptools", specifier = "<66.0" },
     { name = "simplejson", specifier = "==3.8.2" },
     { name = "six", specifier = "==1.16.0" },
-    { name = "social-auth-app-django", specifier = ">=5.4.3" },
+    { name = "social-auth-app-django", specifier = "==2.0.0" },
     { name = "statsd", specifier = "==3.2.1" },
     { name = "stevedore" },
     { name = "tblib", specifier = ">=3.1.0" },
@@ -2211,15 +2211,15 @@ wheels = [
 
 [[package]]
 name = "social-auth-app-django"
-version = "5.4.3"
+version = "2.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "django" },
+    { name = "six" },
     { name = "social-auth-core" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2a/07/bb2465e4116d4761b028bd07b99087009caa81c1511c886d74c4ccece3a2/social_auth_app_django-5.4.3.tar.gz", hash = "sha256:d1f4286d5ca1e512c9b2f686e7ecb2a0128148f1a33d853b69dc07b58508362e", size = 24860, upload-time = "2025-02-13T13:07:34.557Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/59/7e/813d0b25e34fa152427418e73adf28eeebe627fbdbde6a76f5753ee8f19d/social-auth-app-django-2.0.0.tar.gz", hash = "sha256:15a33f7cd663a2624fdd5deafa7992044b777225da57ae1f81d790196d8d43d1", size = 22828, upload-time = "2017-10-28T13:40:34.931Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e0/cd/43a25dabdf7689109b01ac866848c984594769ec3cbc5ce4c261b4895237/social_auth_app_django-5.4.3-py3-none-any.whl", hash = "sha256:db70b972faeb10ee1ec83d0dc7dbd0558d5f5830417bba317b712b10ff58d031", size = 26241, upload-time = "2025-02-13T13:07:32.787Z" },
+    { url = "https://files.pythonhosted.org/packages/7c/33/fa5675f60bf4eb30a5561376e3d7927ac12604873311a976f61a07fb77d1/social_auth_app_django-2.0.0-py3-none-any.whl", hash = "sha256:1c16b994ccaf1574835ec1e2d53916d885952b795d52df094fa434cd2f3227c8", size = 23565, upload-time = "2017-10-28T13:40:39.941Z" },
 ]
 
 [[package]]
