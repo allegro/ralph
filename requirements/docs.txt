@@ -24,7 +24,7 @@ certifi==2025.4.26
     # via requests
 cffi==1.17.1
     # via cryptography
-chardet==3.0.4
+charset-normalizer==3.4.2
     # via requests
 click==8.2.0
     # via
@@ -365,7 +365,7 @@ referencing==0.36.2
     # via
     #   jsonschema
     #   jsonschema-specifications
-requests==2.20.0
+requests==2.32.4
     # via
     #   ralph (pyproject.toml)
     #   keystoneauth1
