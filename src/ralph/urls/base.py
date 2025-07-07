@@ -49,7 +49,6 @@ api_urls = list(
 api_urls += [re_path(r"^", include(router.urls))]
 
 urlpatterns = [
-
     re_path(r"^api/", include(api_urls)),
     re_path(r"^", admin.urls),
     re_path(r"^api-token-auth/", views.obtain_auth_token),
@@ -87,4 +86,3 @@ if getattr(settings, "PROMETHEUS_METRICS_ENABLED", False):
             name="status-prometheus",
         )
     ]
-
