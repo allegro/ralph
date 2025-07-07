@@ -1935,8 +1935,8 @@ requires-dist = [
     { name = "setuptools", specifier = "<66.0" },
     { name = "simplejson", specifier = "==3.8.2" },
     { name = "six", specifier = "==1.16.0" },
-    { name = "social-auth-app-django", specifier = "==2.0.0" },
-    { name = "statsd", specifier = "==3.2.1" },
+    { name = "social-auth-app-django", specifier = ">=5.4.3" },
+    { name = "statsd", specifier = "<4.0.0" },
     { name = "stevedore" },
     { name = "tblib", specifier = ">=3.1.0" },
     { name = "typing", specifier = "==3.6.6" },
@@ -2211,15 +2211,15 @@ wheels = [
 
 [[package]]
 name = "social-auth-app-django"
-version = "2.0.0"
+version = "5.4.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "six" },
+    { name = "django" },
     { name = "social-auth-core" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/59/7e/813d0b25e34fa152427418e73adf28eeebe627fbdbde6a76f5753ee8f19d/social-auth-app-django-2.0.0.tar.gz", hash = "sha256:15a33f7cd663a2624fdd5deafa7992044b777225da57ae1f81d790196d8d43d1", size = 22828, upload-time = "2017-10-28T13:40:34.931Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2a/07/bb2465e4116d4761b028bd07b99087009caa81c1511c886d74c4ccece3a2/social_auth_app_django-5.4.3.tar.gz", hash = "sha256:d1f4286d5ca1e512c9b2f686e7ecb2a0128148f1a33d853b69dc07b58508362e", size = 24860, upload-time = "2025-02-13T13:07:34.557Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/7c/33/fa5675f60bf4eb30a5561376e3d7927ac12604873311a976f61a07fb77d1/social_auth_app_django-2.0.0-py3-none-any.whl", hash = "sha256:1c16b994ccaf1574835ec1e2d53916d885952b795d52df094fa434cd2f3227c8", size = 23565, upload-time = "2017-10-28T13:40:39.941Z" },
+    { url = "https://files.pythonhosted.org/packages/e0/cd/43a25dabdf7689109b01ac866848c984594769ec3cbc5ce4c261b4895237/social_auth_app_django-5.4.3-py3-none-any.whl", hash = "sha256:db70b972faeb10ee1ec83d0dc7dbd0558d5f5830417bba317b712b10ff58d031", size = 26241, upload-time = "2025-02-13T13:07:32.787Z" },
 ]
 
 [[package]]
@@ -2347,11 +2347,11 @@ wheels = [
 
 [[package]]
 name = "statsd"
-version = "3.2.1"
+version = "3.3.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/89/1e/365c87f21df573198a6e889e243fddb66755087987000a07177e80bfffea/statsd-3.2.1.tar.gz", hash = "sha256:3fa92bf0192af926f7a0d9be031fe3fd0fbaa1992d42cf2f07e68f76ac18288e", size = 166047, upload-time = "2015-10-22T22:16:47.857Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/2d/f2/48ffc8d0051849e4417e809dc9420e76084c8a62749b3442915402127caa/statsd-3.3.0.tar.gz", hash = "sha256:e3e6db4c246f7c59003e51c9720a51a7f39a396541cb9b147ff4b14d15b5dd1f", size = 259045, upload-time = "2018-08-22T14:19:46.874Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/0b/86/fa9a7687703da319f6178ac88642aa59a8e86938b43f340d9ecad2d5cd46/statsd-3.2.1-py2.py3-none-any.whl", hash = "sha256:7aff40c6cdda703193fac6231410c6c0ad5939ce053a168016501e982c755c84", size = 11428, upload-time = "2015-10-22T22:16:51.749Z" },
+    { url = "https://files.pythonhosted.org/packages/47/33/c824f799128dfcfce2142f18d9bc6c55c46a939f6e4250639134222d99eb/statsd-3.3.0-py2.py3-none-any.whl", hash = "sha256:c610fb80347fca0ef62666d241bce64184bd7cc1efe582f9690e045c25535eaa", size = 11990, upload-time = "2018-08-22T14:19:48.492Z" },
 ]
 
 [[package]]
