@@ -98,7 +98,8 @@ dependencies = [
   "stevedore",
   "tblib>=3.1.0",
   "typing==3.6.6",
-  "wrapt==1.10.6"
+  "wrapt==1.10.6",
+  "social-auth-app-django>=5.4.3",
 ]
 dynamic = [
   "authors",
