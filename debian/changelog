@@ -1,3 +1,14 @@
+ralph (20250708.1) jammy; urgency=medium
+
+  * Add social auth lib
+  * Add missing reqs
+  * Bump requests version
+  * Bump requests version
+  * Downgrade social auth django
+  * Update requirements
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Tue, 08 Jul 2025 09:37:11 +0000
+
 ralph (20250521.1) jammy; urgency=medium
 
   * Run tests in parallel
