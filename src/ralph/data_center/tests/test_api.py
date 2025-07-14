@@ -397,7 +397,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
 
         response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["support_end_date"], date_to)
+        self.assertEqual(response.data["support_end_date"], "2025-12-24")
 
 
 class RackAPITests(RalphAPITestCase):

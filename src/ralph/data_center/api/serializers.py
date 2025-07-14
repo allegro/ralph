@@ -138,7 +138,7 @@ class DataCenterAssetSimpleSerializer(RalphAPISerializer):
 class DataCenterAssetSerializer(ComponentSerializerMixin, AssetSerializer):
     rack = SimpleRackSerializer()
     related_hosts = serializers.SerializerMethodField()
-    support_end_date = serializers.DateField()
+    support_end_date = serializers.DateField(required=False, allow_null=True)
 
     def get_related_hosts(self, obj):
         from ralph.virtual.api import (
