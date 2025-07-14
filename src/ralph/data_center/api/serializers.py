@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-from datetime import date
 
-from django.db.models import Max
 from rest_framework import serializers
 
 from ralph.api import RalphAPISerializer
@@ -140,12 +138,7 @@ class DataCenterAssetSimpleSerializer(RalphAPISerializer):
 class DataCenterAssetSerializer(ComponentSerializerMixin, AssetSerializer):
     rack = SimpleRackSerializer()
     related_hosts = serializers.SerializerMethodField()
-    support_end_date = serializers.SerializerMethodField()
-
-    def get_support_end_date(self, obj) -> date | None:
-        return obj.supports.all().aggregate(end_date=Max("support__date_to"))[
-            "end_date"
-        ]
+    support_end_date = serializers.DateField()
 
     def get_related_hosts(self, obj):
         from ralph.virtual.api import (
