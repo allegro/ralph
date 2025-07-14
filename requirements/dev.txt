@@ -166,7 +166,7 @@ exceptiongroup==1.3.0
 executing==2.2.0
     # via stack-data
 factory-boy==3.2.1
-    # via ralph (pyproject.toml:test)
+    # via ralph (pyproject.toml)
 faker==0.9.0
     # via
     #   ralph (pyproject.toml)

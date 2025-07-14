@@ -559,7 +559,7 @@ class CloudProjectAdmin(CustomFieldValueAdminMixin, RalphAdmin):
         "remarks",
         "instances_count",
     ]
-    list_display = ["name", "service_env", "instances_count"]
+    list_display = ["name", "cloudprovider", "service_env", "instances_count"]
     list_select_related = [
         "cloudprovider",
         "service_env__environment",

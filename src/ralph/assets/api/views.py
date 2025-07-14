@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import django_filters
 from django.db.models import Prefetch
+from django_filters import Filter
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.permissions import SAFE_METHODS
 
@@ -41,15 +42,14 @@ class EnvironmentViewSet(RalphAPIViewSet):
     serializer_class = serializers.EnvironmentSerializer
 
 
-class ServiceFilterSet(django_filters.FilterSet):
-    active = BooleanFilter(field_name="active")
-
-    class Meta:
-        model = models.Service
-        fields = ["active"]
-
-
 class ServiceViewSet(RalphAPIViewSet):
+    class ServiceFilterSet(django_filters.FilterSet):
+        active = BooleanFilter(field_name="active")
+
+        class Meta:
+            model = models.Service
+            fields = ["active"]
+
     queryset = models.Service.objects.all()
     serializer_class = serializers.ServiceSerializer
     save_serializer_class = serializers.SaveServiceSerializer
@@ -59,6 +59,18 @@ class ServiceViewSet(RalphAPIViewSet):
 
 
 class ServiceEnvironmentViewSet(RalphAPIViewSet):
+    class ServiceEnvFilterSet(django_filters.FilterSet):
+        service__active = BooleanFilter(field_name="service__active")
+        service__uid = Filter(field_name="service__uid", lookup_expr="iexact")
+        service__id = Filter(field_name="service__id", lookup_expr="iexact")
+        service__name = Filter(field_name="service__name", lookup_expr="iexact")
+        environment__name = Filter(field_name="environment__name", lookup_expr="iexact")
+        environment__id = Filter(field_name="environment__id", lookup_expr="iexact")
+
+        class Meta:
+            model = models.Service
+            fields = ["active"]
+
     queryset = models.ServiceEnvironment.objects.all()
     serializer_class = serializers.ServiceEnvironmentSerializer
     select_related = ["service", "environment", "service__support_team"]
@@ -67,13 +79,7 @@ class ServiceEnvironmentViewSet(RalphAPIViewSet):
     prefetch_related = ["tags"] + [
         "service__{}".format(pr) for pr in ServiceViewSet.prefetch_related
     ]
-    filter_fields = [
-        "service__uid",
-        "service__name",
-        "service__id",
-        "environment__name",
-        "environment__id",
-    ]
+    additional_filter_class = ServiceEnvFilterSet
 
 
 class ManufacturerViewSet(RalphAPIViewSet):

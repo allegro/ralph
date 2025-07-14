@@ -1799,6 +1799,7 @@ dependencies = [
     { name = "djangorestframework-xml" },
     { name = "dogpile-cache" },
     { name = "drf-nested-routers" },
+    { name = "factory-boy" },
     { name = "faker" },
     { name = "funcsigs" },
     { name = "hiredis" },
@@ -1871,7 +1872,6 @@ test = [
     { name = "coveralls" },
     { name = "ddt" },
     { name = "django-plainpasswordhasher" },
-    { name = "factory-boy" },
     { name = "mock" },
     { name = "sphinx" },
 ]
@@ -1899,6 +1899,7 @@ requires-dist = [
     { name = "djangorestframework-xml", specifier = "==2.0.0" },
     { name = "dogpile-cache", specifier = "==1.3.4" },
     { name = "drf-nested-routers", specifier = "==0.92.5" },
+    { name = "factory-boy", specifier = "==3.2.1" },
     { name = "faker", specifier = "==0.9.0" },
     { name = "funcsigs", specifier = "==0.4" },
     { name = "hiredis", specifier = ">=3.1.0" },
@@ -1969,7 +1970,6 @@ test = [
     { name = "coveralls" },
     { name = "ddt" },
     { name = "django-plainpasswordhasher" },
-    { name = "factory-boy", specifier = "==3.2.1" },
     { name = "mock", specifier = "==4.0.2" },
     { name = "sphinx" },
 ]

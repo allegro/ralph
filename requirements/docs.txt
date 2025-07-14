@@ -127,8 +127,12 @@ drf-nested-routers==0.92.5
     # via ralph (pyproject.toml)
 et-xmlfile==2.0.0
     # via openpyxl
-faker==0.9.0
+factory-boy==3.2.1
     # via ralph (pyproject.toml)
+faker==0.9.0
+    # via
+    #   ralph (pyproject.toml)
+    #   factory-boy
 funcsigs==0.4
     # via ralph (pyproject.toml)
 ghp-import==2.1.0
