@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import datetime
+
 from django.urls import reverse
 from rest_framework import status
 
@@ -30,6 +32,7 @@ from ralph.data_center.tests.factories import (
     ServerRoomFactory,
 )
 from ralph.networks.tests.factories import IPAddressFactory
+from ralph.supports.tests.factories import SupportFactory, DataCenterAssetSupportFactory
 from ralph.virtual.tests.factories import CloudHostFactory, VirtualServerFactory
 
 
@@ -380,6 +383,21 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 2)
+
+    def test_support_end_date(self):
+        dca = DataCenterAssetFactory()
+        url = reverse("datacenterasset-detail", args=(dca.id,))
+        response = self.client.get(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIsNone(response.data["support_end_date"])
+
+        date_to = datetime.date(2025, 12, 24)
+        support = SupportFactory(date_to=date_to)
+        DataCenterAssetSupportFactory(support=support, baseobject=dca)
+
+        response = self.client.get(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["support_end_date"], date_to)
 
 
 class RackAPITests(RalphAPITestCase):
