@@ -1,3 +1,12 @@
+ralph (20250721.1) jammy; urgency=medium
+
+  * Add api improvements. Fix missing factory-boy
+  * Add support_end_date to data center asset API
+  * Rewrite support end date to reduce SQL queries number
+  * Fix support_end_date serializer
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Mon, 21 Jul 2025 10:15:57 +0000
+
 ralph (20250708.1) jammy; urgency=medium
 
   [ root ]
