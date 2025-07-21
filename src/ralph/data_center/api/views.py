@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.contrib.contenttypes.models import ContentType
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Max
 
 from ralph.api import RalphAPIViewSet
 from ralph.assets.api.filters import NetworkableObjectFilters
@@ -105,7 +105,9 @@ class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
             DataCenterAsset, ConfigurationClass, ConfigurationModule, ServiceEnvironment
         )
         qs = super().get_queryset()
-        return qs.filter(visibility_scope_filter(self.request.user))
+        return qs.filter(visibility_scope_filter(self.request.user)).annotate(
+            support_end_date=Max("supports__support__date_to")
+        )
 
 
 class AccessoryViewSet(RalphAPIViewSet):
