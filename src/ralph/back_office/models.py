@@ -48,6 +48,7 @@ class Warehouse(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model)
     _allow_in_dashboard = True
     stocktaking_enabled = models.BooleanField(default=False)
     stocktaking_tag_suffix = models.CharField(max_length=8, default="", blank=True)
+    external_depot_id = models.IntegerField(null=True, blank=True)
 
 
 class BackOfficeAssetStatus(Choices):
