@@ -406,6 +406,7 @@ class DataCenterAssetAdmin(
         "service_env",
         "configuration_path",
         "tags",
+        "production_year",
         "start_usage",
         "depreciation_end_date",
         "depreciation_rate",
