@@ -1,3 +1,9 @@
+ralph (20250806.2) jammy; urgency=medium
+
+  * Add production year to bulk edit
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Wed, 06 Aug 2025 08:19:08 +0000
+
 ralph (20250806.1) jammy; urgency=medium
 
   * Add external depot id
