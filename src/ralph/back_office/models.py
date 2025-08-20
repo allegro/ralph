@@ -79,6 +79,9 @@ class BackOfficeAssetStatus(Choices):
     refurbished = _("refurbished")
     reserved_to_order = _("reserved to order")
     replacement = _("replacement")
+    in_maintenance = _("in maintenance")
+    not_returned_el = _("not returned [EL]")
+    taken_for_disposal = _("taken for disposal")
 
 
 class OfficeInfrastructure(
