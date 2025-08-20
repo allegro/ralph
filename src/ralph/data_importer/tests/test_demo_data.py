@@ -10,5 +10,5 @@ class DemoDataTestCase(TestCase):
     def test_demo_data_command(self):
         management.call_command("demodata")
         self.assertEqual(DataCenterAsset.objects.count(), 422)
-        self.assertEqual(BackOfficeAsset.objects.count(), 280)
+        self.assertEqual(BackOfficeAsset.objects.count(), 292)
         self.assertTrue(get_user_model().objects.count() in range(32, 35))
