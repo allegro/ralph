@@ -1,3 +1,9 @@
+ralph (20250820.1) jammy; urgency=medium
+
+  * Add new statuses for back office (#3911)
+
+ -- Olga Matyla <olga.matyla@allegro.com>  Wed, 20 Aug 2025 09:15:39 +0000
+
 ralph (20250806.2) jammy; urgency=medium
 
   * Add production year to bulk edit
