@@ -29,6 +29,7 @@ class ConfigurationModule(
         max_length=255,
         help_text=_("module name (ex. directory name in puppet)"),
         validators=[dir_file_name_validator],
+        unique=True,
     )
     parent = TreeForeignKey(
         "self",
@@ -51,7 +52,6 @@ class ConfigurationModule(
 
     class Meta:
         verbose_name = _("configuration module")
-        unique_together = ("parent", "name")
         ordering = ("parent__name", "name")
 
     class MPTTMeta:
