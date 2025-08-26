@@ -1,3 +1,9 @@
+ralph (20250826.1) jammy; urgency=medium
+
+  * Change uniqueness constraints for configuration module
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Tue, 26 Aug 2025 09:36:24 +0000
+
 ralph (20250820.1) jammy; urgency=medium
 
   * Add new statuses for back office (#3911)
