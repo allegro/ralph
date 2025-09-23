@@ -82,6 +82,12 @@ class BackOfficeAssetStatus(Choices):
     in_maintenance = _("in maintenance")
     not_returned_el = _("not returned [EL]")
     taken_for_disposal = _("taken for disposal")
+    in_use_mgmt_excluded = _("in use (mgmt excluded)")
+    in_use_test_mgmt_excluded = _("in use test (mgmt excluded)")
+    in_use_team_mgmt_excluded = _("in use team (mgmt excluded)")
+    in_use_update_excluded = _("in use (update excluded)")
+    in_use_test_update_excluded = _("in use test (update excluded)")
+    in_use_team_update_excluded = _("in use team (update excluded)")
 
 
 class OfficeInfrastructure(
