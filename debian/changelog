@@ -1,3 +1,9 @@
+ralph (20250924.1) jammy; urgency=medium
+
+  * New back office statuses (#3915)
+
+ -- Olga Matyla <olga.matyla@allegro.com>  Wed, 24 Sep 2025 11:00:29 +0000
+
 ralph (20250826.1) jammy; urgency=medium
 
   * Change uniqueness constraints for configuration module
