@@ -1,6 +1,7 @@
 from django.contrib.contenttypes.models import ContentType
 
 from ralph.dns.dnsaas import DNSaaS
+from ralph.networks.models import IPAddress
 from ralph.virtual.models import CloudHost
 
 INVALID_MODELS = [CloudHost]
@@ -18,17 +19,16 @@ def _should_send_dnsaas_request(ip_instance):
     return eth and eth.base_object.content_type not in invalid_content_types
 
 
-def _get_connected_service_uid(ip_instance):
+def _get_connected_service_uid(ip_instance: IPAddress) -> str | None:
     """
     Return connected with base object (through Ethernet) service UID or None if
     IP address has not ethernet.
     """
 
-    eth = ip_instance.ethernet
-    if eth:
-        service = eth.base_object.service
-        if service:
-            return service.uid
+    if (eth := ip_instance.ethernet) and (service := eth.base_object.service):
+        return service.uid
+    else:
+        return None
 
 
 def update_dns_record(instance, created, *args, **kwargs):
@@ -47,7 +47,7 @@ def update_dns_record(instance, created, *args, **kwargs):
         DNSaaS().send_ipaddress_data(data_to_send)
 
 
-def delete_dns_record(instance, *args, **kwargs):
+def delete_dns_record(instance: IPAddress, *args, **kwargs):
     if not _should_send_dnsaas_request(instance):
         return
     DNSaaS().send_ipaddress_data(
