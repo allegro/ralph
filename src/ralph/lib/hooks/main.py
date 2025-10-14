@@ -1,6 +1,6 @@
 from typing import Any, Callable, Optional
+from importlib.metadata import entry_points
 
-import pkg_resources
 from django.conf import settings
 from functools import lru_cache
 
@@ -12,7 +12,8 @@ def hook_name_to_env_name(name, prefix="HOOKS"):
     >>> hook_name_to_env_name('foo.bar_baz', 'PREFIX')
     PREFIX_FOO_BAR_BAZ
     """
-    return "_".join([prefix, name.upper().replace(".", "_")])
+    env_name = "_".join([prefix, name.upper().replace(".", "_")])
+    return env_name
 
 
 @lru_cache(maxsize=None)
@@ -23,7 +24,7 @@ def get_hook(name: str, variant: Optional[str] = None) -> Callable[..., Any]:
     if variant is None:
         variant = settings.HOOKS_CONFIGURATION[name]
 
-    for entry_point in pkg_resources.iter_entry_points(name):
+    for entry_point in entry_points(group=name):
         if variant == entry_point.name:
             loaded_func = entry_point.load()
             break

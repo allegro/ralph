@@ -1,6 +1,7 @@
 import enum
+import importlib
 
-import pkg_resources
+from importlib.metadata import entry_points
 from django.conf import settings
 from django.core.checks import Error
 
@@ -29,7 +30,7 @@ ERRORS = {
             hook_name_to_env_name(key), active_variant
         ),
         hint="Consider one of these values: {}".format(", ".join(variants)),
-        id="hooks.E002",
+        id="hooks.E003",
     ),
 }
 
@@ -40,10 +41,10 @@ def check_configuration(**kwargs):
         variants = []
         found = False
         ep = None
-        for ep in pkg_resources.iter_entry_points(key):
-            variants.append(ep.name)
+        for ep in entry_points(group=key):
+            variants.append(ep)
             try:
-                ep.load()
+                importlib.import_module(ep.value.split(":")[0])
             except ImportError:
                 errors.append(ERRORS[Codes.IMPORT_ERROR](key))
             if active_variant == ep.name:

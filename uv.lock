@@ -382,16 +382,17 @@ wheels = [
 ]
 
 [[package]]
-name = "django-cryptography"
-version = "1.1"
+name = "django-cryptography-django5"
+version = "2.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cryptography" },
     { name = "django" },
     { name = "django-appconf" },
 ]
+sdist = { url = "https://files.pythonhosted.org/packages/68/e4/0e412ef4fa219db4e0a5f0042aba832030261eab0d7ceb3c5c91df3b74e2/django_cryptography_django5-2.2.tar.gz", hash = "sha256:b149685032cbbaf8b88c1b3ff6d8de7a107bb1b3cff9e84e9b32d0c61ca08346", size = 33400, upload-time = "2024-06-04T17:28:12.538Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e4/ba/d5e1264c60a86cebb4b63f1dae8220e15dd751e46d24229ee0803f19a66b/django_cryptography-1.1-py2.py3-none-any.whl", hash = "sha256:93702fcf0d75865d55362f20ecd95274c4eef60ccdce46cbdade0420acee07cb", size = 11107, upload-time = "2022-04-06T04:27:28.34Z" },
+    { url = "https://files.pythonhosted.org/packages/80/0c/874f03885f20d70ee116cbffb4ea7434fb4c3325baa4015c7bbeb3b7fa6d/django_cryptography_django5-2.2-py2.py3-none-any.whl", hash = "sha256:73b5d4597d2fd4accca0c971dad7aacfcef24cb7322512f4f94b020cd55b57ff", size = 28773, upload-time = "2024-06-04T17:28:11.366Z" },
 ]
 
 [[package]]
@@ -473,14 +474,14 @@ wheels = [
 
 [[package]]
 name = "django-mptt"
-version = "0.14.0"
+version = "0.18.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django-js-asset" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/73/e1/9e7de6bfb03d2243541613caefc5aa7068ee408257ba6952153ac323610f/django-mptt-0.14.0.tar.gz", hash = "sha256:2c92a2b1614c53086278795ccf50580cf1f9b8564f3ff03055dd62bab5987711", size = 103453, upload-time = "2022-09-27T18:18:29.539Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/eb/25/04bb8e4384f3484dabbd0e2a84946f1c972b95b07512509a17aaa361be0f/django_mptt-0.18.0.tar.gz", hash = "sha256:cf5661357ff22bc64e20d3341c26e538aa54583aea0763cfe6aaec0ab8e3a8ee", size = 71407, upload-time = "2025-08-26T09:27:01.05Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d3/05/386abcef8161ea9cf34bb1392659b0d690b07d5811d768dd4d9c40df8440/django_mptt-0.14.0-py3-none-any.whl", hash = "sha256:d9a87433ab0e4f35247c6f6d5a93ace6990860a4ba8796f815d185f773b9acfc", size = 115621, upload-time = "2022-09-27T18:18:27.671Z" },
+    { url = "https://files.pythonhosted.org/packages/51/9e/78aad58a90f2e4d0c898eeadd2f2b720bcae29b43676dd37c2b627c4c6c6/django_mptt-0.18.0-py3-none-any.whl", hash = "sha256:bfa3f01627e3966a1df901aeca74570a3e933e66809ebf58d9df673e63627afb", size = 120157, upload-time = "2025-08-26T09:27:02.168Z" },
 ]
 
 [[package]]
@@ -520,14 +521,14 @@ wheels = [
 
 [[package]]
 name = "django-reversion"
-version = "4.0.2"
+version = "6.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e8/5c/8f65df5aab38028cee5fde25bc739071108bb23d22fc7233ba858edbaac0/django-reversion-4.0.2.tar.gz", hash = "sha256:5d33ba944dbf19c7030c9e70e3731248ae34368cf2afede10e0d08fbf89e6f8c", size = 71705, upload-time = "2022-01-30T12:48:07.801Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/ad/df/5870e38067fd80b3d749de2d11a4cbd32be811d1f43eb8ab948f9f3152c4/django_reversion-6.0.0.tar.gz", hash = "sha256:cab0fd90640b2ceb37d7a897823ca72a21b960ad1d6a3b9cb4e351fabbd27d9c", size = 74528, upload-time = "2025-09-20T08:56:20.119Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b2/2c/72acbaf6009ac05568d4816be2546f8fb785d7d266fe4927c218c09f3eca/django_reversion-4.0.2-py3-none-any.whl", hash = "sha256:095ec684626a07b48a1a32640e30cae93eb2acd3c452a9111f77ac934c2efb91", size = 86921, upload-time = "2022-01-30T12:48:06.337Z" },
+    { url = "https://files.pythonhosted.org/packages/9c/0d/7e558eb30afcdb21eca15a6ef8aa048b6089efc4599e28611275a0643260/django_reversion-6.0.0-py3-none-any.whl", hash = "sha256:0755b4b3e615254b305d01012e426e09006455d375254e5adc29572fc9edf2ab", size = 85968, upload-time = "2025-09-20T08:56:18.761Z" },
 ]
 
 [[package]]
@@ -569,14 +570,14 @@ wheels = [
 
 [[package]]
 name = "django-taggit"
-version = "3.1.0"
+version = "6.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e7/3d/660e401d6e64401fc4b87373c95bbd7481429cce9a28a6f8137383188d89/django-taggit-3.1.0.tar.gz", hash = "sha256:c8f2e4eae387939089b3d75d1d8649e008880970c068ce9d0e82f87fd5e29508", size = 58238, upload-time = "2022-11-18T04:58:47.172Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/34/a6/f1beaf8f552fe90c153cc039316ebab942c23dfbc88588dde081fefca816/django_taggit-6.1.0.tar.gz", hash = "sha256:c4d1199e6df34125dd36db5eb0efe545b254dec3980ce5dd80e6bab3e78757c3", size = 38151, upload-time = "2024-09-29T08:07:39.477Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d5/73/ed9e158f7dd52a31ab83c6d8bf083478d859dd8a64f72ebcdd4b3c8ccbfa/django_taggit-3.1.0-py3-none-any.whl", hash = "sha256:543218ac346fbe02a65733e0341c91b57a3e0f7a41568966b26f1cea9edc4805", size = 60199, upload-time = "2022-11-18T04:58:32.067Z" },
+    { url = "https://files.pythonhosted.org/packages/6b/34/4185c345530b91d05cb82e05d07148f481a5eb5dc2ac44e092b3daa6f206/django_taggit-6.1.0-py3-none-any.whl", hash = "sha256:ab776264bbc76cb3d7e49e1bf9054962457831bd21c3a42db9138b41956e4cf0", size = 75749, upload-time = "2024-09-29T08:07:14.612Z" },
 ]
 
 [[package]]
@@ -1305,7 +1306,7 @@ wheels = [
 
 [[package]]
 name = "oslo-utils"
-version = "8.2.0"
+version = "9.1.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "debtcollector" },
@@ -1319,9 +1320,9 @@ dependencies = [
     { name = "pyyaml" },
     { name = "tzdata" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f1/98/0c74172604f4ea9db117933fa9794e82a66438481a1e5a538584479c92f8/oslo_utils-8.2.0.tar.gz", hash = "sha256:dcf78d14b968fb7b14263c77278b2b930a7861d3caa887d3a58b2890f6659835", size = 137934, upload-time = "2025-02-21T13:41:54.637Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d9/ec/9f12c8ded6eb7ba0774ea4a0e03bfe6cd35fea4cbc944a826c751bb49500/oslo_utils-9.1.0.tar.gz", hash = "sha256:01c3875e7cca005b59465c429f467113b5f4b04211cbd534c9ac2f152276d3b3", size = 138207, upload-time = "2025-08-25T12:49:20.128Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e1/fe/9726d3dff66775c2f517789bd6e56bf41a20e48243558a7e0c5b6a0108a9/oslo.utils-8.2.0-py3-none-any.whl", hash = "sha256:22335f317f7ff093d61b253a65c98937d207ade8b6fee5e36cdc279dc4b33c9b", size = 134272, upload-time = "2025-02-21T13:41:52.445Z" },
+    { url = "https://files.pythonhosted.org/packages/98/47/1303a7050bb1dc6c5cb76a178520a215a7e7181afad637adc26482d7f257/oslo_utils-9.1.0-py3-none-any.whl", hash = "sha256:8779a2db08b84abd2cb155f8314bc6a961aedafd64ee2ff9e234ecbb80251174", size = 134210, upload-time = "2025-08-25T12:49:18.644Z" },
 ]
 
 [[package]]
@@ -1785,7 +1786,7 @@ dependencies = [
     { name = "debtcollector" },
     { name = "django" },
     { name = "django-auth-ldap" },
-    { name = "django-cryptography" },
+    { name = "django-cryptography-django5" },
     { name = "django-extensions" },
     { name = "django-filter" },
     { name = "django-import-export" },
@@ -1844,6 +1845,7 @@ dependencies = [
     { name = "tblib" },
     { name = "typing" },
     { name = "unidecode" },
+    { name = "uv-build" },
     { name = "wrapt" },
 ]
 
@@ -1884,18 +1886,18 @@ requires-dist = [
     { name = "debtcollector", specifier = "==1.3.0" },
     { name = "django", specifier = "~=5.2.0" },
     { name = "django-auth-ldap", specifier = "~=2.0" },
-    { name = "django-cryptography" },
+    { name = "django-cryptography-django5", specifier = ">=2.2" },
     { name = "django-extensions", specifier = "==3.1.5" },
     { name = "django-filter", specifier = "==25.1" },
     { name = "django-import-export", specifier = "==3.3.9" },
     { name = "django-money", specifier = "==3.4.1" },
-    { name = "django-mptt", specifier = "==0.14" },
+    { name = "django-mptt", specifier = "~=0.18" },
     { name = "django-prometheus", specifier = "==2.2.0" },
     { name = "django-redis", specifier = "==5.0.0" },
-    { name = "django-reversion", specifier = "~=4.0.2" },
+    { name = "django-reversion", specifier = "~=6.0.0" },
     { name = "django-rq", specifier = "==2.8.0" },
     { name = "django-sitetree", specifier = "==1.18.0" },
-    { name = "django-taggit", specifier = "==3.1.0" },
+    { name = "django-taggit", specifier = "~=6.1.0" },
     { name = "django-threadlocals", specifier = "==0.8" },
     { name = "djangorestframework", specifier = "==3.15.0" },
     { name = "djangorestframework-xml", specifier = "==2.0.0" },
@@ -1916,8 +1918,8 @@ requires-dist = [
     { name = "openstacksdk", specifier = "==1.5.0" },
     { name = "oslo-config", specifier = "~=9.7.1" },
     { name = "oslo-i18n" },
-    { name = "oslo-serialization" },
-    { name = "oslo-utils", specifier = "~=8.2" },
+    { name = "oslo-serialization", specifier = "~=5.8.0" },
+    { name = "oslo-utils", specifier = "~=9.1.0" },
     { name = "pbr" },
     { name = "pillow" },
     { name = "positional", specifier = "==1.0.1" },
@@ -1943,6 +1945,7 @@ requires-dist = [
     { name = "tblib", specifier = ">=3.1.0" },
     { name = "typing", specifier = "==3.6.6" },
     { name = "unidecode", specifier = "==0.4.18" },
+    { name = "uv-build", specifier = ">=0.9.2" },
     { name = "wrapt", specifier = "==1.10.6" },
 ]
 
@@ -2511,6 +2514,32 @@ dependencies = [
     { name = "urwid" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/ad/70/be318554495555eba7d8ff6e489f6f74ddb225b24086ba4af62a82e723fd/urwid_readline-0.15.1.tar.gz", hash = "sha256:9301444b86d58f7d26388506b704f142cefd193888488b4070d3a0fdfcfc0f84", size = 9007, upload-time = "2024-09-22T17:51:55.144Z" }
+
+[[package]]
+name = "uv-build"
+version = "0.9.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/da/5d/872b09943fa3ad9eb25e808345780f4d0cc2cc9bef930730d44aec334b35/uv_build-0.9.2.tar.gz", hash = "sha256:18604201385eb23378b7a6112f874c8ba7ffdfce6a664e17365888477a38cf86", size = 332728, upload-time = "2025-10-10T19:01:44.112Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/89/87/a9b0a5d6aebca5ca7e4e27b518df012e43765b0f30fbdb29141503f16b55/uv_build-0.9.2-py3-none-linux_armv6l.whl", hash = "sha256:261ecf84ab717223809939c45858899457d9a1cf3bd9540ec64bbb163332c7a3", size = 1402195, upload-time = "2025-10-10T19:01:17.088Z" },
+    { url = "https://files.pythonhosted.org/packages/32/75/848700cb92f1e66abb5057df4886e3d1a8335a060e9a33d2599fdfcb1dd7/uv_build-0.9.2-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:624ba8e0ccc1177e85486ae93bccf883343e79997d947df634f5ce63c1508fb6", size = 1376225, upload-time = "2025-10-10T19:01:19.042Z" },
+    { url = "https://files.pythonhosted.org/packages/2b/88/91da27d0676863d3d12e44389fc99474e2dc18c95a6c000415f7466136eb/uv_build-0.9.2-py3-none-macosx_11_0_arm64.whl", hash = "sha256:9e0eabb967e14ef9327ca4b9927af6ba0f303d23ec3a3e4ad76c74747a55d249", size = 1252662, upload-time = "2025-10-10T19:01:23.322Z" },
+    { url = "https://files.pythonhosted.org/packages/36/88/9b6592c299e74cb21abfec6382c2a408df9c04c8fefcbc3e6f495e4c523b/uv_build-0.9.2-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.musllinux_1_1_aarch64.whl", hash = "sha256:4722be7f5f9840f724995af6c2b8609927cae39048587d0852465200a8f3a6d5", size = 1452045, upload-time = "2025-10-10T19:01:25.2Z" },
+    { url = "https://files.pythonhosted.org/packages/61/c5/fba27f8d06e17b089480d71e1e64469146ab3588bca055cc82dbf1ca6782/uv_build-0.9.2-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:6d6a305316f80e6940963b3101d5065f49519b450309535557135deab67a647f", size = 1357176, upload-time = "2025-10-10T19:01:26.667Z" },
+    { url = "https://files.pythonhosted.org/packages/e8/e0/869c52a93bee71e1487db47ccf435a3a25cecc383b60f37765961db1103b/uv_build-0.9.2-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:b882b2b44349f63d2ea2d26b83017ee7151f147daaf6269c666c3cc44f09dec6", size = 1517255, upload-time = "2025-10-10T19:01:27.988Z" },
+    { url = "https://files.pythonhosted.org/packages/31/c9/e1bdd406819b4000cc22875e4e86a44c1a20e9ac5a9279bffcb0afe9860c/uv_build-0.9.2-py3-none-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:25e0d91877cfbbb00d54f44f8dd405eaa46cb8cbc71e31ad0ed3ccf9d1ab08b5", size = 1680887, upload-time = "2025-10-10T19:01:29.127Z" },
+    { url = "https://files.pythonhosted.org/packages/d2/ff/b864dc9b069251427a223ed05c256acf9c08376b83d8ace9276fab194130/uv_build-0.9.2-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:31f2f8353f845b8c101b11c261472fb81d214e6ba024a1a84f3a55dd64f6fa96", size = 1578114, upload-time = "2025-10-10T19:01:30.352Z" },
+    { url = "https://files.pythonhosted.org/packages/ab/e0/c1f14cd44d4fa1021976e9cdb0eb7dc9eb53cc53b19e445e1df56435025e/uv_build-0.9.2-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:5d40dc10a4f2ac1c67589c1bd3aa604cb845834f787708d0768002b26afc3451", size = 1510088, upload-time = "2025-10-10T19:01:31.549Z" },
+    { url = "https://files.pythonhosted.org/packages/e7/bd/536898409fd52fa273a60a61844128507ab98aa056ff698519d669be8603/uv_build-0.9.2-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:bc4a4c6fe322e3a2763774630b443a9ee21ea68d9e74b155d1b10823285c7c24", size = 1491548, upload-time = "2025-10-10T19:01:32.985Z" },
+    { url = "https://files.pythonhosted.org/packages/58/47/9c75b26f36c1b47493d8e3f14f192e25515c153b667d267cbc96d6114a73/uv_build-0.9.2-py3-none-manylinux_2_28_aarch64.whl", hash = "sha256:85bee0c5dc081edd2b6637f99fb1d0310f0c6f3ddc895cea257caf2138858cf8", size = 1453505, upload-time = "2025-10-10T19:01:34.387Z" },
+    { url = "https://files.pythonhosted.org/packages/7e/0b/db744319dd509a04ff0f3e5f18183e24481db051147142d697712c6c7c06/uv_build-0.9.2-py3-none-manylinux_2_31_riscv64.whl", hash = "sha256:cec07dc7601e7568c5d56c89ab436b87f96904a642977d497fdac7c9e67eb9c2", size = 1464638, upload-time = "2025-10-10T19:01:35.563Z" },
+    { url = "https://files.pythonhosted.org/packages/ae/6a/62c6129e2b92b272a231191517f52e200ca619666069ce27f6a09e2498ba/uv_build-0.9.2-py3-none-musllinux_1_1_armv7l.whl", hash = "sha256:578eeea794b8494834fb08637820b9cd0dde662b7c3116316825f7bcfd43c85e", size = 1373360, upload-time = "2025-10-10T19:01:36.616Z" },
+    { url = "https://files.pythonhosted.org/packages/6f/57/343f3d1f250ae6f9913028301bea2b2e3be3a05ca4f240a7cc13b5fca367/uv_build-0.9.2-py3-none-musllinux_1_1_i686.whl", hash = "sha256:cb83b3a7a0eefc5a1b81fc4e84416749719806aee717213918208a5b506be664", size = 1470960, upload-time = "2025-10-10T19:01:37.653Z" },
+    { url = "https://files.pythonhosted.org/packages/fd/3b/579a5a8bf8aabb66660a57faa070cfcaa5617614574639731e0c2685b113/uv_build-0.9.2-py3-none-musllinux_1_1_x86_64.whl", hash = "sha256:1d95f9a6a3be43092e312257f58839b0687460312370975d5d9b7da509ccffb9", size = 1550802, upload-time = "2025-10-10T19:01:38.748Z" },
+    { url = "https://files.pythonhosted.org/packages/a5/4e/47256c0199ae96ff7546af99e0810de76a436904fa051908851baeb0f1db/uv_build-0.9.2-py3-none-win32.whl", hash = "sha256:9cac181b33e34f4428cda91e74cd630bf0a5718898de31e97ac949fcd5a3fd59", size = 1331977, upload-time = "2025-10-10T19:01:40.136Z" },
+    { url = "https://files.pythonhosted.org/packages/f2/5e/f62cc8936ff876ff2027e7b54b7c5f14dffd0dd854f41f9db0233d692b73/uv_build-0.9.2-py3-none-win_amd64.whl", hash = "sha256:e6363193912ac769523773d4d8d939e543ba9d87ac9da7c07cdd716984495cc4", size = 1414695, upload-time = "2025-10-10T19:01:42.026Z" },
+    { url = "https://files.pythonhosted.org/packages/f1/87/d9f7c18512f298771c35093275fa0c433f5ff5a7338bf205cf1fd1a29eb5/uv_build-0.9.2-py3-none-win_arm64.whl", hash = "sha256:e9b0a94e0fca7d759dbf1762a71d2e64bb894d23f271c5ae9878ea7699c66b80", size = 1321832, upload-time = "2025-10-10T19:01:43.096Z" },
+]
 
 [[package]]
 name = "watchdog"
