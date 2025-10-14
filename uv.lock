@@ -1260,9 +1260,10 @@ wheels = [
 
 [[package]]
 name = "oslo-config"
-version = "10.0.0"
+version = "9.7.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
+    { name = "debtcollector" },
     { name = "netaddr" },
     { name = "oslo-i18n" },
     { name = "pyyaml" },
@@ -1270,40 +1271,40 @@ dependencies = [
     { name = "rfc3986" },
     { name = "stevedore" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/03/67/221128a241ab4151ecc5b101de23651e7c08491f7b2edea31744207a23dc/oslo_config-10.0.0.tar.gz", hash = "sha256:333e675db8c6be7715b3decf78c398ca1138439225aa274632e89314837f6ea3", size = 164993, upload-time = "2025-07-10T09:32:00.93Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/3c/ac/aa17577d353a8c90b758a0edb1a94de7fffa24283c7f82cd2c485cb0a740/oslo_config-9.7.1.tar.gz", hash = "sha256:5558b34bcc2b52f2208e80fcad955a4f7b2c41bb245b6451d43a621ad1263bbd", size = 164787, upload-time = "2025-02-21T14:13:42.171Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b5/c6/9a58e64e63bb844b77cf98f7bbeb060cb6bf9697962fddbb2dd0dd8f8047/oslo_config-10.0.0-py3-none-any.whl", hash = "sha256:693a04a0408ed930a2167c9662da7d8378efca2376be424d9fbbdbc861a690bf", size = 131647, upload-time = "2025-07-10T09:31:59.494Z" },
+    { url = "https://files.pythonhosted.org/packages/8f/b4/0dfb3bdcc8a0e573e403cbedf68b0b75d21ae43e4b4ca08cbec378f6f3e6/oslo.config-9.7.1-py3-none-any.whl", hash = "sha256:21364136c3eeb97a453fd4df5e79d1b042592ad4d83429461247bcdb0beebb1e", size = 131799, upload-time = "2025-02-21T14:13:40.545Z" },
 ]
 
 [[package]]
 name = "oslo-i18n"
-version = "6.6.0"
+version = "6.5.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pbr" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c1/74/a2238cfdf6e97ee398b3fc5eda8b0e108be3913494dbef90961ebe38bf23/oslo_i18n-6.6.0.tar.gz", hash = "sha256:bb5e3becefa2e40488b259f9db12cc5ad894dd309b5b5aca56382ff190c18f5e", size = 48149, upload-time = "2025-08-25T12:50:25.243Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/cc/94/8ab2746a3251e805be8f7fd5243df44fe6289269ce9f7105bdbe418be90d/oslo_i18n-6.5.1.tar.gz", hash = "sha256:ea856a70c5af7c76efb6590994231289deabe23be8477159d37901cef33b109d", size = 48000, upload-time = "2025-02-21T11:12:49.348Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b1/2c/463d3142ab76cdbd932714ef909a43509ce7a1929a08ab90a6a2b5f2c9d9/oslo_i18n-6.6.0-py3-none-any.whl", hash = "sha256:8e5a02fd4dba2d64cf86b839750bfa2d2b365aca2cbb3a6a7ba0fae58defe2a8", size = 46680, upload-time = "2025-08-25T12:50:24.335Z" },
+    { url = "https://files.pythonhosted.org/packages/aa/c3/f87b9c681a4dbe344fc3aee93aa0750af9d29efc61e10aeeabb8d8172576/oslo.i18n-6.5.1-py3-none-any.whl", hash = "sha256:e62daf58bd0b70a736d6bbf719364f9974bb30fac517dc19817839667101c4e7", size = 46797, upload-time = "2025-02-21T11:12:48.179Z" },
 ]
 
 [[package]]
 name = "oslo-serialization"
-version = "5.8.0"
+version = "5.7.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "msgpack" },
     { name = "oslo-utils" },
     { name = "tzdata" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d4/ac/119c430df3a86dc6a664fa864f777b4fd5cc16c50caa1ba3dd3bf10f43ae/oslo_serialization-5.8.0.tar.gz", hash = "sha256:5871a62b23f98cacd5518482941ae6d2a983e2936ed52d543ad08685dc6d2343", size = 35227, upload-time = "2025-08-25T12:50:39.333Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a7/44/e7f2aaef66d7a02c74ce425f2bad8c4aaf11f39bb02fea98eeb7452a0910/oslo_serialization-5.7.0.tar.gz", hash = "sha256:bdc4d3dd97b80639b3505e46d9aa439fc95028814177f30b91743e81366c3be7", size = 35067, upload-time = "2025-02-21T14:12:33.679Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c7/4c/269503bc1355798e33e56e6c602ed672d1e40bd65485d771da9595779606/oslo_serialization-5.8.0-py3-none-any.whl", hash = "sha256:451e19b9c72e4e7167063eea29e24ad07742d393ff2b54bb8783b9601c155b2c", size = 25766, upload-time = "2025-08-25T12:50:38.253Z" },
+    { url = "https://files.pythonhosted.org/packages/7b/c8/164a8ee75088cb82677a919ce23bbd52c6607a57fe1e714002fef3de58e1/oslo.serialization-5.7.0-py3-none-any.whl", hash = "sha256:b04e1c2cfc4832c6222c580295fda31b7c42e207b456f61bf0f2c97b67cfde2b", size = 25767, upload-time = "2025-02-21T14:12:32.431Z" },
 ]
 
 [[package]]
 name = "oslo-utils"
-version = "9.1.0"
+version = "8.2.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "debtcollector" },
@@ -1317,9 +1318,9 @@ dependencies = [
     { name = "pyyaml" },
     { name = "tzdata" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d9/ec/9f12c8ded6eb7ba0774ea4a0e03bfe6cd35fea4cbc944a826c751bb49500/oslo_utils-9.1.0.tar.gz", hash = "sha256:01c3875e7cca005b59465c429f467113b5f4b04211cbd534c9ac2f152276d3b3", size = 138207, upload-time = "2025-08-25T12:49:20.128Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f1/98/0c74172604f4ea9db117933fa9794e82a66438481a1e5a538584479c92f8/oslo_utils-8.2.0.tar.gz", hash = "sha256:dcf78d14b968fb7b14263c77278b2b930a7861d3caa887d3a58b2890f6659835", size = 137934, upload-time = "2025-02-21T13:41:54.637Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/98/47/1303a7050bb1dc6c5cb76a178520a215a7e7181afad637adc26482d7f257/oslo_utils-9.1.0-py3-none-any.whl", hash = "sha256:8779a2db08b84abd2cb155f8314bc6a961aedafd64ee2ff9e234ecbb80251174", size = 134210, upload-time = "2025-08-25T12:49:18.644Z" },
+    { url = "https://files.pythonhosted.org/packages/e1/fe/9726d3dff66775c2f517789bd6e56bf41a20e48243558a7e0c5b6a0108a9/oslo.utils-8.2.0-py3-none-any.whl", hash = "sha256:22335f317f7ff093d61b253a65c98937d207ade8b6fee5e36cdc279dc4b33c9b", size = 134272, upload-time = "2025-02-21T13:41:52.445Z" },
 ]
 
 [[package]]
@@ -1914,10 +1915,10 @@ requires-dist = [
     { name = "netifaces" },
     { name = "openpyxl" },
     { name = "openstacksdk", specifier = "==1.5.0" },
-    { name = "oslo-config" },
-    { name = "oslo-i18n" },
-    { name = "oslo-serialization" },
-    { name = "oslo-utils" },
+    { name = "oslo-config", specifier = "==9.7.1" },
+    { name = "oslo-i18n", specifier = "==6.5.1" },
+    { name = "oslo-serialization", specifier = "==5.7.0" },
+    { name = "oslo-utils", specifier = "==8.2.0" },
     { name = "pbr" },
     { name = "pillow" },
     { name = "positional", specifier = "==1.0.1" },
