@@ -71,10 +71,10 @@ dependencies = [
   "netifaces",
   "openpyxl==2.6.4",
   "openstacksdk==1.5.0",
-  "oslo.config~=9.7.1",
   "oslo-i18n",
   "oslo-serialization~=5.8.0",
   "oslo-utils~=9.1.0",
+  "oslo.config~=9.7.1",
   "pbr",
   "positional==1.0.1",
   "prettytable==0.7.2",
@@ -98,28 +98,27 @@ dependencies = [
   "stevedore",
   "tblib>=3.1.0",
   "typing==3.6.6",
-  "wrapt==1.10.6",
   "uv-build>=0.9.2",
+  "wrapt==1.10.6"
 ]
 name = "ralph"
 requires-python = ">=3.10.0,<3.11"
 version = "3"
 
-[project.scripts]
-ralph = "ralph.__main__:prod"
-dev_ralph = "ralph.__main__:dev"
-test_ralph = "ralph.__main__:test"
-validate_ralph = "ralph.cross_validator.__main__:main"
+[project.entry-points."account.views.get_asset_list_class"]
+default = "ralph.accounts.views:get_asset_list_class"
 
 [project.entry-points."back_office.transition_action.email_context"]
 default = "ralph.back_office.helpers:get_email_context_for_transition"
 
-[project.entry-points."account.views.get_asset_list_class"]
-default = "ralph.accounts.views:get_asset_list_class"
-
 [project.entry-points."ralph.cloud_sync_processors"]
 noop = "ralph.virtual.processors.noop:endpoint"
 
+[project.scripts]
+dev_ralph = "ralph.__main__:dev"
+ralph = "ralph.__main__:prod"
+test_ralph = "ralph.__main__:test"
+validate_ralph = "ralph.cross_validator.__main__:main"
 
 [tool.ruff]
 exclude = [

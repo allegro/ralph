@@ -19,6 +19,4 @@ class Command(BaseCommand):
                 if active_variant == ep.name:
                     ending += self.style.NOTICE(" (active)")
                 ending += "\n"
-                self.stdout.write(
-                    "\t {} [{}]".format(ep.name, ep.dist), ending=ending
-                )
+                self.stdout.write("\t {} [{}]".format(ep.name, ep.dist), ending=ending)
