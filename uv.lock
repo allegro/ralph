@@ -850,11 +850,11 @@ wheels = [
 
 [[package]]
 name = "iso8601"
-version = "2.1.0"
+version = "0.1.11"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/b9/f3/ef59cee614d5e0accf6fd0cbba025b93b272e626ca89fb70a3e9187c5d15/iso8601-2.1.0.tar.gz", hash = "sha256:6b1d3829ee8921c4301998c909f7829fa9ed3cbdac0d3b16af2d743aed1ba8df", size = 6522, upload-time = "2023-10-03T00:25:39.317Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c0/75/c9209ee4d1b5975eb8c2cba4428bde6b61bd55664a98290dd015cdb18e98/iso8601-0.1.11.tar.gz", hash = "sha256:e8fb52f78880ae063336c94eb5b87b181e6a0cc33a6c008511bac9a6e980ef30", size = 8725, upload-time = "2015-11-03T16:11:44.881Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6c/0c/f37b6a241f0759b7653ffa7213889d89ad49a2b76eb2ddf3b57b2738c347/iso8601-2.1.0-py3-none-any.whl", hash = "sha256:aac4145c4dcb66ad8b648a02830f5e2ff6c24af20f4f482689be402db2429242", size = 7545, upload-time = "2023-10-03T00:25:32.304Z" },
+    { url = "https://files.pythonhosted.org/packages/0f/66/c8226c2d105e83c2203a2e47a7eef1b23c4bb3d7ea8d2feadce116ff8f7d/iso8601-0.1.11-py2.py3-none-any.whl", hash = "sha256:c68dbd1b6ecc0c13c1d94116aec79d5d5c3bc7444f99159b968f12d83cbc7fa6", size = 11835, upload-time = "2015-11-03T16:11:09.57Z" },
 ]
 
 [[package]]
@@ -940,7 +940,7 @@ wheels = [
 
 [[package]]
 name = "keystoneauth1"
-version = "5.12.0"
+version = "5.8.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "iso8601" },
@@ -948,11 +948,10 @@ dependencies = [
     { name = "pbr" },
     { name = "requests" },
     { name = "stevedore" },
-    { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e5/16/b96df223ca7ea4bfa78034b205e0eaf4875bfecb2f119f375fc5232d2061/keystoneauth1-5.12.0.tar.gz", hash = "sha256:dd113c2f3dcb418d9f761c73b8cd43a96ddfa8a612b51c576822381f39ca4ae8", size = 288504, upload-time = "2025-08-21T09:34:10.767Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c9/81/dda36e8a3dc0cf4baf2eee35843ef263ab5f16db7864bc1bbf6adba78ce3/keystoneauth1-5.8.1.tar.gz", hash = "sha256:0e971790315958c9be111cec1cc43275d051eca0b9cff4ce08e5f58331af465b", size = 278995, upload-time = "2025-03-26T12:02:03.826Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/16/8a/803a45dc660770ac7e2d74fc1260a15ade29d2234120854747491b4a7a02/keystoneauth1-5.12.0-py3-none-any.whl", hash = "sha256:2e514b03615e2d9162f0c07c823a61a636e6d4df38ff4a34b7511a04e8a4166a", size = 343402, upload-time = "2025-08-21T09:34:09.38Z" },
+    { url = "https://files.pythonhosted.org/packages/24/93/380b74bac8445ded0358a414d3b50a3f3e5596ec535b50c58508d24bbf33/keystoneauth1-5.8.1-py3-none-any.whl", hash = "sha256:5bfe83b035633f6a2f7d0dbb33ccb41fd9c68b8418f7895fe8bedbf613753d99", size = 325838, upload-time = "2025-03-26T12:02:02.117Z" },
 ]
 
 [[package]]
@@ -1242,7 +1241,7 @@ wheels = [
 
 [[package]]
 name = "osc-lib"
-version = "4.2.0"
+version = "4.0.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cliff" },
@@ -1254,9 +1253,9 @@ dependencies = [
     { name = "requests" },
     { name = "stevedore" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7c/63/ea0eda39e1b2c0ca3e9d87798568f881ea7aa90e4f94affb78676215f72d/osc_lib-4.2.0.tar.gz", hash = "sha256:99718f06a990c1ad6fb9034bbed9655390a2ea83cef71a53781e7e9abd9f20ce", size = 101802, upload-time = "2025-08-21T09:35:30.372Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a4/b1/ea4cb7eb0ab0702e08606f6072efafa8b6a35ecea520570bee9e44b54b31/osc_lib-4.0.2.tar.gz", hash = "sha256:403f9d4cc1b13d934a3483b43afaf50886447a224fec74ada2b6c7087ad3d77d", size = 101879, upload-time = "2025-05-22T11:18:36.392Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3b/9a/5943674892bda78e4671a553e68406d6e7f2ff278d253d6c991b1fe040cf/osc_lib-4.2.0-py3-none-any.whl", hash = "sha256:951d25c0975765242816c9e8f86a8e223dfae78a23ed8eb5a8e1c9c8dd688d58", size = 92898, upload-time = "2025-08-21T09:35:29.053Z" },
+    { url = "https://files.pythonhosted.org/packages/7d/6f/75e4c5f5211f83ce4054bf6142f9a84ab6db2f6d64ab1ef8159c1b5a020a/osc_lib-4.0.2-py3-none-any.whl", hash = "sha256:41d1466489d3f8799684ca4794c25356d508e57375de010398080ccec4708e18", size = 93059, upload-time = "2025-05-22T11:18:33.951Z" },
 ]
 
 [[package]]
@@ -1905,7 +1904,7 @@ requires-dist = [
     { name = "faker", specifier = "==0.9.0" },
     { name = "funcsigs", specifier = "==0.4" },
     { name = "hiredis", specifier = ">=3.1.0" },
-    { name = "iso8601" },
+    { name = "iso8601", specifier = "==0.1.11" },
     { name = "keystoneauth1" },
     { name = "markdown", specifier = "==3.2.1" },
     { name = "monotonic", specifier = "==0.6" },

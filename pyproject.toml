@@ -63,7 +63,7 @@ dependencies = [
   "factory-boy==3.2.1",
   "funcsigs==0.4",
   "hiredis>=3.1.0",
-  "iso8601",
+  "iso8601==0.1.11",
   "keystoneauth1",
   "monotonic==0.6",
   "msgpack-python==0.4.7",
