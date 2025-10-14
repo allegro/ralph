@@ -50,7 +50,7 @@ coveralls==4.0.1
     # via ralph (pyproject.toml:test)
 cryptography==45.0.5
     # via
-    #   django-cryptography
+    #   django-cryptography-django5
     #   openstacksdk
     #   social-auth-core
 ddt==1.7.2
@@ -81,7 +81,7 @@ django==4.2.23
     #   django-appconf
     #   django-auth-ldap
     #   django-cors-headers
-    #   django-cryptography
+    #   django-cryptography-django5
     #   django-debug-toolbar
     #   django-extensions
     #   django-filter
@@ -98,12 +98,12 @@ django==4.2.23
     #   drf-nested-routers
     #   social-auth-app-django
 django-appconf==1.1.0
-    # via django-cryptography
+    # via django-cryptography-django5
 django-auth-ldap==2.4.0
     # via ralph (pyproject.toml)
 django-cors-headers==4.7.0
     # via ralph (pyproject.toml:dev)
-django-cryptography==1.1
+django-cryptography-django5==2.2
     # via ralph (pyproject.toml)
 django-debug-toolbar==5.2.0
     # via ralph (pyproject.toml:dev)
