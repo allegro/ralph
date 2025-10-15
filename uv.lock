@@ -632,16 +632,16 @@ wheels = [
 
 [[package]]
 name = "dogpile-cache"
-version = "1.5.0"
+version = "1.3.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "decorator" },
     { name = "stevedore" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e7/c8/301ff89746e76745b937606df4753c032787c59ecb37dd4d4250bddc8929/dogpile_cache-1.5.0.tar.gz", hash = "sha256:849c5573c9a38f155cd4173103c702b637ede0361c12e864876877d0cd125eec", size = 947962, upload-time = "2025-10-11T17:35:36.898Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/cb/b7/2fa37f52b4f38bc8eb6d4923163dd822ca6f9e2f817378478a5de73b239e/dogpile_cache-1.3.4.tar.gz", hash = "sha256:4f0295575f5fdd3f7e13c84ba8e36656971d1869a2081b4737ec99ede378a8c0", size = 933234, upload-time = "2025-01-28T14:24:55.502Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/dc/80/12235e5b75bb2c586733280854f131b86051e0bbdfb55349ff70d0f72cf9/dogpile_cache-1.5.0-py3-none-any.whl", hash = "sha256:dc7b47d37844db15e8fdc0243c1b58857a2ddc52a5118237a97127bac200e18d", size = 64447, upload-time = "2025-10-11T17:35:38.573Z" },
+    { url = "https://files.pythonhosted.org/packages/3c/82/d118accb66f9048acbc4ff91592755c24d52f54cce40d6b0b2a0ce351cf5/dogpile.cache-1.3.4-py3-none-any.whl", hash = "sha256:a393412f93d24a8942fdf9248dc80678127d54c5e60a7be404027aa193cafe12", size = 62859, upload-time = "2025-01-28T14:24:57.109Z" },
 ]
 
 [[package]]
@@ -1769,6 +1769,7 @@ dependencies = [
     { name = "django-threadlocals" },
     { name = "djangorestframework" },
     { name = "djangorestframework-xml" },
+    { name = "dogpile-cache" },
     { name = "drf-nested-routers" },
     { name = "factory-boy" },
     { name = "faker" },
@@ -1868,6 +1869,7 @@ requires-dist = [
     { name = "django-threadlocals", specifier = "==0.8" },
     { name = "djangorestframework", specifier = "==3.15.0" },
     { name = "djangorestframework-xml", specifier = "==2.0.0" },
+    { name = "dogpile-cache", specifier = "==1.3.4" },
     { name = "drf-nested-routers", specifier = "==0.92.5" },
     { name = "factory-boy", specifier = "==3.2.1" },
     { name = "faker", specifier = "==0.9.0" },
