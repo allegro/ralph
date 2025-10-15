@@ -89,7 +89,7 @@ django-extensions==3.1.5
     # via ralph (pyproject.toml)
 django-filter==25.1
     # via ralph (pyproject.toml)
-django-import-export==4.3.10
+django-import-export==4.0.2
     # via ralph (pyproject.toml)
 django-js-asset==3.1.2
     # via django-mptt
@@ -442,7 +442,7 @@ stevedore==5.4.1
     #   oslo-config
     #   python-ironicclient
     #   python-keystoneclient
-tablib==3.8.0
+tablib==3.5.0
     # via django-import-export
 tblib==3.1.0
     # via ralph (pyproject.toml)

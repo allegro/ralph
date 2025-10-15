@@ -4,7 +4,7 @@ from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyText
 
 from ralph.accounts.tests.factories import UserFactory
-from ralph.back_office.models import BackOfficeAsset
+from ralph.back_office.models import BackOfficeAsset, BackOfficeAssetStatus
 from ralph.back_office.tests.factories import BackOfficeAssetFactory
 from ralph.data_center.models import DataCenterAsset
 from ralph.data_center.tests.factories import DataCenterAssetFullFactory
@@ -32,8 +32,8 @@ class TransitionModelFactory(DjangoModelFactory):
 class TransitionFactory(DjangoModelFactory):
     name = FuzzyText(length=10)
     model = SubFactory(TransitionModelFactory)
-    source = ["new", "used"]
-    target = "used"
+    source = [BackOfficeAssetStatus.new.id, BackOfficeAssetStatus.used.id]
+    target = BackOfficeAssetStatus.used.id
 
     class Meta:
         model = Transition

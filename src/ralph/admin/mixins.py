@@ -407,11 +407,11 @@ class RalphAdminImportExportMixin(ImportExportModelAdmin):
             queryset = queryset.prefetch_related(*resource_prefetch_related)
         return list(queryset)
 
-    def get_export_resource_classes(self):
+    def get_export_resource_classes(self, request):
         """
         If `export_class` is defined in Admin, use it.
         """
-        resource_classes = self.get_resource_classes()
+        resource_classes = self.get_resource_classes(request)
         export_classes = [
             getattr(resource_class, "export_class", None)
             for resource_class in resource_classes

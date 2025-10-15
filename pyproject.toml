@@ -45,7 +45,7 @@ dependencies = [
   "django-cryptography-django5",
   "django-extensions==3.1.5",
   "django-filter==25.1",
-  "django-import-export==4.3.10",
+  "django-import-export==4.0.2",
   "django-money==3.4.1",
   "django-mptt==0.14",
   "django-prometheus==2.2.0",

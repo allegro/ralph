@@ -372,7 +372,7 @@ class DataCenterAssetAdmin(
     if settings.ENABLE_DNSAAS_INTEGRATION:
         change_views += [DNSView]
     show_transition_history = True
-    resource_class = resources.DataCenterAssetResource
+    resource_classes = [resources.DataCenterAssetResource]
     list_display = [
         "hostname",
         "status",

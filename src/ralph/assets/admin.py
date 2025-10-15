@@ -114,7 +114,7 @@ class ServiceEnvironmentAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     search_fields = ["service__name", "environment__name"]
     list_select_related = ["service", "environment"]
     raw_id_fields = ["service", "environment"]
-    resource_class = resources.ServiceEnvironmentResource
+    resource_classes = [resources.ServiceEnvironmentResource]
     fields = ("service", "environment", "remarks", "tags")
 
 
@@ -215,7 +215,7 @@ class ServiceAdmin(RalphAdmin):
         "business_owners",
         "technical_owners",
     ]
-    resource_class = resources.ServiceResource
+    resource_classes = [resources.ServiceResource]
     change_views = [ServiceBaseObjects]
 
 
