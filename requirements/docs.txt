@@ -119,7 +119,6 @@ djangorestframework-xml==2.0.0
     # via ralph (pyproject.toml)
 dogpile-cache==1.3.4
     # via
-    #   ralph (pyproject.toml)
     #   openstacksdk
     #   python-ironicclient
 drf-nested-routers==0.92.5

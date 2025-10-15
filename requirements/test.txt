@@ -148,7 +148,6 @@ docutils==0.21.2
     # via sphinx
 dogpile-cache==1.3.4
     # via
-    #   ralph (pyproject.toml)
     #   openstacksdk
     #   python-ironicclient
 drf-nested-routers==0.92.5
