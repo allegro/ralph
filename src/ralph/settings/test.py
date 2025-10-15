@@ -39,7 +39,6 @@ INSTALLED_APPS += (
 
 USE_CACHE = False
 PASSWORD_HASHERS = ("django_plainpasswordhasher.PlainPasswordHasher",)
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
 ROOT_URLCONF = "ralph.urls.test"
 # specify all url modules to reload during specific tests
