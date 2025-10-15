@@ -72,21 +72,19 @@ class PermissionsByFieldTestCase(TestCase):
 
     def test_superuser_allowed_fields(self):
         """Test allowed fields in permissions model."""
-        allowed_fields = set(
-            [
-                "name",
-                "type",
-                "manufacturer",
-                "category",
-                "power_consumption",
-                "height_of_device",
-                "cores_count",
-                "visualization_layout_front",
-                "visualization_layout_back",
-                "has_parent",
-                "id",
-            ]
-        )
+        allowed_fields = {
+            "name",
+            "type",
+            "manufacturer",
+            "category",
+            "power_consumption",
+            "height_of_device",
+            "cores_count",
+            "visualization_layout_front",
+            "visualization_layout_back",
+            "has_parent",
+            "id",
+        }
         fields_list = self.asset_model.allowed_fields(self.super_user, action="change")
         self.assertEqual(allowed_fields, fields_list)
 

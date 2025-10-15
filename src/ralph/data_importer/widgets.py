@@ -45,7 +45,7 @@ class UserWidget(widgets.ForeignKeyWidget):
                 logger.warning("User not found: %s create a new.", value)
         return result
 
-    def render(self, value, obj=None):
+    def render(self, value, obj=None, **kwargs):
         if value:
             return value.username
         return ""
@@ -60,7 +60,7 @@ class UserManyToManyWidget(widgets.ManyToManyWidget):
         usernames = value.split(self.separator)
         return get_user_model().objects.filter(username__in=usernames)
 
-    def render(self, value, obj=None):
+    def render(self, value, obj=None, **kwargs):
         return self.separator.join([obj.username for obj in value.all()])
 
 
@@ -88,19 +88,19 @@ class ManyToManyThroughWidget(widgets.ManyToManyWidget):
             return self.related_model.objects.none()
         return self.related_model.objects.filter(pk__in=value.split(self.separator))
 
-    def render(self, value, obj=None):
+    def render(self, value, obj=None, **kwargs):
         return self.separator.join(
             [str(getattr(obj, self.through_field).pk) for obj in value.all()]
         )
 
 
 class ExportForeignKeyStrWidget(widgets.Widget):
-    def render(self, value, obj=None):
+    def render(self, value, obj=None, **kwargs):
         return str(value)
 
 
 class ExportManyToManyStrWidget(widgets.ManyToManyWidget):
-    def render(self, value, obj=None):
+    def render(self, value, obj=None, **kwargs):
         return self.separator.join([str(obj) for obj in value.all()])
 
 
@@ -110,7 +110,7 @@ class ExportManyToManyStrTroughWidget(ManyToManyThroughWidget):
     object instead of pk.
     """
 
-    def render(self, value, obj=None):
+    def render(self, value, obj=None, **kwargs):
         return self.separator.join(
             [str(getattr(obj, self.through_field)) for obj in value.all()]
         )
@@ -206,7 +206,7 @@ class AssetServiceEnvWidget(widgets.ForeignKeyWidget):
             value = None
         return value
 
-    def render(self, value, obj=None):
+    def render(self, value, obj=None, **kwargs):
         if value is None:
             return ""
         return "{}|{}".format(value.service.name, value.environment.name)
@@ -228,7 +228,7 @@ class AssetServiceUidWidget(widgets.ForeignKeyWidget):
             value = None
         return value
 
-    def render(self, value, obj=None):
+    def render(self, value, obj=None, **kwargs):
         if value is None:
             return ""
         return value.service.uid
@@ -250,22 +250,22 @@ class IPManagementWidget(widgets.ManyToManyWidget):
     def clean(self, value, *args, **kwargs):
         return value
 
-    def render(self, value, obj=None):
+    def render(self, value, obj=None, **kwargs):
         return value or ""
 
 
 class BaseObjectServiceNamesM2MWidget(widgets.ManyToManyWidget):
-    def render(self, value, obj=None):
+    def render(self, value, obj=None, **kwargs):
         return self.separator.join(
             [bo.service.name if bo.service else "-" for bo in value.all()]
         )
 
 
 class PriceAmountWidget(widgets.Widget):
-    def render(self, value, obj=None):
+    def render(self, value, obj=None, **kwargs):
         return "{0:.2f}".format(value.amount)
 
 
 class PriceCurrencyWidget(widgets.Widget):
-    def render(self, value, obj=None):
+    def render(self, value, obj=None, **kwargs):
         return str(value.currency)

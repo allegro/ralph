@@ -10,9 +10,10 @@ from ralph.data_center.models import DataCenterAsset, Orientation, RackOrientati
 
 class ChoiceWidget(Widget):
     def __init__(self, choice: Type[Choices]) -> None:
+        super().__init__(coerce_to_string=True)
         self.choice = choice
 
-    def render(self, value, obj=None):
+    def render(self, value, obj=None, **kwargs):
         if value:
             return self.choice.from_id(value).name
         else:
@@ -75,7 +76,12 @@ class DataCenterAssetTextResource(ModelResource):
 
     class Meta:
         model = DataCenterAsset
-        fields = DATA_CENTER_ASSET_FIELDS
+        fields = DATA_CENTER_ASSET_FIELDS + (
+            "service_uid",
+            "service",
+            "environment",
+            "configuration_path",
+        )
         export_order = DATA_CENTER_ASSET_FIELDS
 
     def _get_ip(self, dc_asset, is_management=True):
