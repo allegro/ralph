@@ -70,6 +70,7 @@ decorator==5.2.1
 defusedxml==0.7.1
     # via
     #   djangorestframework-xml
+    #   odfpy
     #   python3-openid
     #   social-auth-core
 diff-match-patch==20241021
@@ -249,6 +250,8 @@ oauthlib==3.3.1
     # via
     #   requests-oauthlib
     #   social-auth-core
+odfpy==1.4.1
+    # via ralph (pyproject.toml)
 openpyxl==2.6.4
     # via ralph (pyproject.toml)
 openstacksdk==1.5.0

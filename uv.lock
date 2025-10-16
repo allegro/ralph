@@ -1166,6 +1166,15 @@ wheels = [
 ]
 
 [[package]]
+name = "odfpy"
+version = "1.4.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "defusedxml" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/97/73/8ade73f6749177003f7ce3304f524774adda96e6aaab30ea79fd8fda7934/odfpy-1.4.1.tar.gz", hash = "sha256:db766a6e59c5103212f3cc92ec8dd50a0f3a02790233ed0b52148b70d3c438ec", size = 717045, upload-time = "2020-01-18T16:55:48.852Z" }
+
+[[package]]
 name = "openpyxl"
 version = "3.1.5"
 source = { registry = "https://pypi.org/simple" }
@@ -1776,6 +1785,7 @@ dependencies = [
     { name = "mysqlclient" },
     { name = "netaddr" },
     { name = "netifaces" },
+    { name = "odfpy" },
     { name = "openpyxl" },
     { name = "openstacksdk" },
     { name = "oslo-config" },
@@ -1876,6 +1886,7 @@ requires-dist = [
     { name = "mysqlclient", specifier = "~=2.0.1" },
     { name = "netaddr", specifier = "==0.10.1" },
     { name = "netifaces" },
+    { name = "odfpy", specifier = ">=1.4.1" },
     { name = "openpyxl" },
     { name = "openstacksdk", specifier = "==1.5.0" },
     { name = "oslo-config", specifier = "==9.7.1" },

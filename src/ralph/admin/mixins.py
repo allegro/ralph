@@ -387,7 +387,7 @@ class RalphAdminImportExportMixin(ImportExportModelAdmin):
         # mark request as "exporter" request
         request._is_export = True
         queryset = super().get_export_queryset(request)
-        resource = self.get_export_resource_classes()[0]
+        resource = self.get_export_resource_classes(request)[0]
         fk_fields = []
         for name, field in resource.fields.items():
             if (
