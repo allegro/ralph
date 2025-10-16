@@ -198,7 +198,7 @@ class BackOfficeAssetAdmin(
         "office_infrastructure",
         "service_env",
     ]
-    resource_class = resources.BackOfficeAssetResource
+    resource_classes = [resources.BackOfficeAssetResource]
     bulk_edit_list = [
         "licences",
         "status",

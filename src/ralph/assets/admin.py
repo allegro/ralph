@@ -261,7 +261,7 @@ class ProfitCenterAdmin(RalphAdmin):
 
 @register(AssetModel)
 class AssetModelAdmin(CustomFieldValueAdminMixin, RalphAdmin):
-    resource_class = resources.AssetModelResource
+    resource_classes = [resources.AssetModelResource]
     list_select_related = ["manufacturer", "category"]
     list_display = ["name", "type", "manufacturer", "category", "assets_count"]
     raw_id_fields = ["manufacturer"]
@@ -295,7 +295,7 @@ class AssetModelAdmin(CustomFieldValueAdminMixin, RalphAdmin):
 class CategoryAdmin(RalphMPTTAdmin):
     search_fields = ["name"]
     list_display = ["name", "code"]
-    resource_class = resources.CategoryResource
+    resource_classes = [resources.CategoryResource]
 
     def get_actions(self, request):
         return []

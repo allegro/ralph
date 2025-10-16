@@ -114,7 +114,7 @@ class SupportAdmin(
         "service_env__service",
         "service_env__environment",
     ]
-    resource_class = resources.SupportResource
+    resource_classes = [resources.SupportResource]
     raw_id_fields = ["budget_info", "region", "support_type", "service_env"]
     fieldsets = (
         (
@@ -160,14 +160,14 @@ class SupportAdmin(
 
 @register(SupportType)
 class SupportTypeAdmin(RalphAdmin):
-    resource_class = resources.SupportTypeResource
+    resource_classes = [resources.SupportTypeResource]
     search_fields = ["name"]
 
 
 @register(BaseObjectsSupport)
 class BaseObjectsSupportAdmin(RalphAdmin):
     redirect_to_detail_view_if_one_search_result = False
-    resource_class = resources.BaseObjectsSupportRichResource
+    resource_classes = [resources.BaseObjectsSupportRichResource]
     search_fields = [
         "support__name",
         "support__serial_no",

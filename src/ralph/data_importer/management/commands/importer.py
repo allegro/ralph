@@ -136,7 +136,9 @@ class Command(BaseCommand):
                 for obj in dataset.dict
                 if int(obj.get("deleted", 0)) == 1
             ]
-            result = model_resource.import_data(dataset, dry_run=False)
+            result = model_resource.import_data(
+                dataset, dry_run=False, raise_errors=True
+            )
             if result.has_errors():
                 for idx, row in enumerate(result.rows):
                     for error in row.errors:

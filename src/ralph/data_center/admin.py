@@ -631,7 +631,7 @@ class DataCenterAssetAdmin(
 class ServerRoomAdmin(RalphAdmin):
     list_select_related = ["data_center"]
     search_fields = ["name", "data_center__name"]
-    resource_class = resources.ServerRoomResource
+    resource_classes = [resources.ServerRoomResource]
     list_display = ["name", "data_center"]
 
 
@@ -652,7 +652,7 @@ class RackAdmin(RalphAdmin):
     list_select_related = ["server_room", "server_room__data_center"]
     search_fields = ["name"]
     inlines = [RackAccessoryInline]
-    resource_class = resources.RackResource
+    resource_classes = [resources.RackResource]
 
     def server_room_name(self, obj):
         return obj.server_room.name if obj.server_room else ""
@@ -682,7 +682,7 @@ class RackAccessoryAdmin(RalphAdmin):
     search_fields = ["accessory__name", "rack__name"]
     raw_id_fields = ["rack"]
     list_display = ["__str__", "position"]
-    resource_class = resources.RackAccessoryResource
+    resource_classes = [resources.RackAccessoryResource]
 
 
 @register(Database)
@@ -692,7 +692,7 @@ class DatabaseAdmin(RalphAdmin):
 
 @register(Connection)
 class ConnectionAdmin(RalphAdmin):
-    resource_class = resources.ConnectionResource
+    resource_classes = [resources.ConnectionResource]
 
 
 @register(DiskShare)
@@ -751,7 +751,7 @@ class DCHostAdmin(RalphAdmin):
         "service_env__service",
     ]
 
-    resource_class = resources.DCHostResource
+    resource_classes = [resources.DCHostResource]
 
     def has_add_permission(self, request):
         return False

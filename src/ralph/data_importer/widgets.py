@@ -61,6 +61,8 @@ class UserManyToManyWidget(widgets.ManyToManyWidget):
         return get_user_model().objects.filter(username__in=usernames)
 
     def render(self, value, obj=None, **kwargs):
+        if value is None:
+            return ""
         return self.separator.join([obj.username for obj in value.all()])
 
 
@@ -89,6 +91,8 @@ class ManyToManyThroughWidget(widgets.ManyToManyWidget):
         return self.related_model.objects.filter(pk__in=value.split(self.separator))
 
     def render(self, value, obj=None, **kwargs):
+        if value is None:
+            return ""
         return self.separator.join(
             [str(getattr(obj, self.through_field).pk) for obj in value.all()]
         )
@@ -101,6 +105,8 @@ class ExportForeignKeyStrWidget(widgets.Widget):
 
 class ExportManyToManyStrWidget(widgets.ManyToManyWidget):
     def render(self, value, obj=None, **kwargs):
+        if value is None:
+            return ""
         return self.separator.join([str(obj) for obj in value.all()])
 
 
@@ -111,6 +117,8 @@ class ExportManyToManyStrTroughWidget(ManyToManyThroughWidget):
     """
 
     def render(self, value, obj=None, **kwargs):
+        if value is None:
+            return ""
         return self.separator.join(
             [str(getattr(obj, self.through_field)) for obj in value.all()]
         )
@@ -256,6 +264,8 @@ class IPManagementWidget(widgets.ManyToManyWidget):
 
 class BaseObjectServiceNamesM2MWidget(widgets.ManyToManyWidget):
     def render(self, value, obj=None, **kwargs):
+        if value is None:
+            return ""
         return self.separator.join(
             [bo.service.name if bo.service else "-" for bo in value.all()]
         )
@@ -263,9 +273,13 @@ class BaseObjectServiceNamesM2MWidget(widgets.ManyToManyWidget):
 
 class PriceAmountWidget(widgets.Widget):
     def render(self, value, obj=None, **kwargs):
+        if value is None:
+            return ""
         return "{0:.2f}".format(value.amount)
 
 
 class PriceCurrencyWidget(widgets.Widget):
     def render(self, value, obj=None, **kwargs):
+        if value is None:
+            return ""
         return str(value.currency)

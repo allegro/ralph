@@ -147,7 +147,7 @@ class OperationAdmin(
     ]
     list_select_related = ("reporter", "type", "status")
     raw_id_fields = ["assignee", "reporter", "base_objects"]
-    resource_class = resources.OperationResource
+    resource_classes = [resources.OperationResource]
     form = OperationAdminForm
 
     fieldsets = (
