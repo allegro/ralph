@@ -410,8 +410,8 @@ class LicenceResource(ResourceWithPrice, RalphModelResource):
         through_to_field_name="base_object",
     )
     service_uid = fields.Field(
-        column_name="service_uid",
-        attribute="service_env",
+        column_name="service_env__service",
+        attribute="uid",
         widget=AssetServiceUidWidget(assets.ServiceEnvironment),
     )
 

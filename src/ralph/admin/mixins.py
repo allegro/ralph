@@ -395,7 +395,7 @@ class RalphAdminImportExportMixin(ImportExportModelAdmin):
                 and not getattr(field, "_exclude_in_select_related", False)
                 and not isinstance(getattr(queryset.model, name, None), property)
             ):
-                fk_fields.append(field.attribute)
+                fk_fields.append(field.column_name)
         if fk_fields:
             queryset = queryset.select_related(*fk_fields)
         resource_select_related = getattr(resource._meta, "select_related", [])
