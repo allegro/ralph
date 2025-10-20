@@ -205,7 +205,7 @@ LANGUAGE_CODE = "en-us"
 LOCALE_PATHS = (os.path.join(BASE_DIR, "locale"),)
 TIME_ZONE = "Europe/Warsaw"
 USE_I18N = bool_from_env("USE_I18N", True)
-USE_L10N = bool_from_env("USE_L10N", True)
+USE_L10N = bool_from_env("USE_L10N", True)  # Django complains, but removing it breaks things
 USE_TZ = False
 
 STATIC_URL = "/static/"
