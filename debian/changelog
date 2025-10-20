@@ -1,3 +1,9 @@
+ralph (20251020.1) jammy; urgency=medium
+
+  * Pre django5.0 prep
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Mon, 20 Oct 2025 12:04:41 +0000
+
 ralph (20250924.1) jammy; urgency=medium
 
   * New back office statuses (#3915)
