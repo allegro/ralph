@@ -3,10 +3,11 @@ import json
 import logging
 from datetime import datetime, timedelta
 from functools import wraps
-from typing import List, Optional, Tuple, Union
 from urllib.parse import parse_qs, urlencode, urljoin, urlsplit
 
 import requests
+
+from ralph.assets.models import Service
 from ralph.lib.dj_choices import Choices
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
@@ -16,7 +17,7 @@ from requests_oauthlib import OAuth2Session
 
 logger = logging.getLogger(__name__)
 
-QueryParams = List[Tuple[str, str]]
+QueryParams = list[tuple[str, str]]
 
 
 class RecordType(Choices):
@@ -109,7 +110,7 @@ class DNSaaS:
         result_url = _url._replace(query=query).geturl()
         return result_url
 
-    def get_api_result(self, url: str) -> List[dict]:
+    def get_api_result(self, url: str) -> list[dict]:
         """
         Returns 'results' from DNSAAS API.
 
@@ -129,13 +130,15 @@ class DNSaaS:
             api_results.extend(_api_results)
         return api_results
 
-    def _get_api_result(self, url: str) -> Tuple[List[dict], bool]:
+    def _get_api_result(self, url: str) -> tuple[list[dict], bool]:
         status_code, json_data = self._get(url)
         api_results = json_data.get("content", [])
-        last_page = bool(json_data.get("last", False))
+        last_page = bool(
+            json_data.get("last", True)
+        )  # if error, we don't want more pages
         return api_results, last_page
 
-    def get_dns_records(self, ipaddresses: List[str]) -> List[dict]:
+    def get_dns_records(self, ipaddresses: list[str]) -> list[dict]:
         """Gets DNS Records for `ipaddresses` by API call"""
         dns_records = []
         if not ipaddresses:
@@ -165,7 +168,7 @@ class DNSaaS:
                 )
         return sorted(dns_records, key=lambda x: x["type"])
 
-    def update_dns_record(self, record: dict) -> Optional[dict]:
+    def update_dns_record(self, record: dict) -> dict | None:
         """
         Update DNS Record in DNSAAS
 
@@ -187,7 +190,7 @@ class DNSaaS:
             return response_data
 
     @staticmethod
-    def _response2result(response: requests.Response) -> Union[dict, list, None]:
+    def _response2result(response: requests.Response) -> dict | list | None:
         if response.status_code == 500:
             logger.error("Internal Server Error from DNSAAS: %s", response.content)
             return {"non_field_errors": ["Internal Server Error from DNSAAS"]}
@@ -197,7 +200,7 @@ class DNSaaS:
             except ValueError:
                 pass
 
-    def create_dns_record(self, record: dict, service=None) -> Optional[dict]:
+    def create_dns_record(self, record: dict, service: Service = None) -> dict | None:
         """
         Create new DNS record.
 
@@ -260,7 +263,7 @@ class DNSaaS:
             raise
 
     @renew_token_when_unauthorized
-    def _post(self, url: str, data: dict) -> [int, Optional[dict]]:
+    def _post(self, url: str, data: dict) -> tuple[int, dict | None]:
         """
         Send post data to URL.
 
@@ -275,19 +278,19 @@ class DNSaaS:
         return response.status_code, self._response2result(response)
 
     @renew_token_when_unauthorized
-    def _delete(self, url: str) -> [int, Optional[dict]]:
+    def _delete(self, url: str) -> tuple[int, dict | None]:
         response = self._send_request_to_dnsaas("DELETE", url)
 
         return response.status_code, self._response2result(response)
 
     @renew_token_when_unauthorized
-    def _get(self, url: str) -> [int, Optional[dict]]:
+    def _get(self, url: str) -> tuple[int, dict | None]:
         response = self._send_request_to_dnsaas("GET", url)
 
         return response.status_code, self._response2result(response)
 
     @renew_token_when_unauthorized
-    def _patch(self, url: str, data: dict) -> [int, Optional[dict]]:
+    def _patch(self, url: str, data: dict) -> tuple[int, dict | None]:
         response = self._send_request_to_dnsaas("PATCH", url, json_data=data)
         return response.status_code, self._response2result(response)
 
