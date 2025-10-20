@@ -132,6 +132,8 @@ class DNSaaS:
 
     def _get_api_result(self, url: str) -> tuple[list[dict], bool]:
         status_code, json_data = self._get(url)
+        if status_code != 200:
+            raise RuntimeError("DNSAAS API error: {}".format(json_data))
         api_results = json_data.get("content", [])
         last_page = bool(
             json_data.get("last", True)
@@ -151,7 +153,11 @@ class DNSaaS:
             ]
             + ipaddresses,
         )
-        api_results = self.get_api_result(url)
+        try:
+            api_results = self.get_api_result(url)
+        except Exception:
+            logger.exception("Getting DNS records from DNSAAS failed.")
+            return []
         ptrs = set([i["content"] for i in api_results if i["type"] == "PTR"])
 
         for item in api_results:
