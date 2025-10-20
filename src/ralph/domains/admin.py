@@ -26,7 +26,7 @@ class DomainContractInline(RalphTabularInline):
 @register(Domain)
 class DomainAdmin(AttachmentsMixin, RalphAdmin):
     form = DomainForm
-    resource_class = DomainResource
+    resource_classes = [DomainResource]
     list_select_related = [
         "technical_owner",
         "business_owner",
@@ -112,7 +112,7 @@ class DomainAdmin(AttachmentsMixin, RalphAdmin):
 @register(DomainContract)
 class DomainContractAdmin(AttachmentsMixin, RalphAdmin):
     form = DomainContractForm
-    resource_class = DomainContractResource
+    resource_classes = [DomainContractResource]
     list_select_related = ["domain", "domain__service_env"]
     list_filter = ["domain__name", "domain__service_env__service__name"]
     list_display = ["domain", "expiration_date", "price"]

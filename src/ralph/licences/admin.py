@@ -156,7 +156,7 @@ class LicenceAdmin(
         "region",
         "start_usage",
     ]
-    resource_class = resources.LicenceResource
+    resource_classes = [resources.LicenceResource]
     _invoice_report_name = "invoice-licence"
     _invoice_report_select_related = ["software", "manufacturer"]
     _invoice_report_empty_value = None

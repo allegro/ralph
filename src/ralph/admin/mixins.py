@@ -387,7 +387,7 @@ class RalphAdminImportExportMixin(ImportExportModelAdmin):
         # mark request as "exporter" request
         request._is_export = True
         queryset = super().get_export_queryset(request)
-        resource = self.get_export_resource_classes()[0]
+        resource = self.get_export_resource_classes(request)[0]
         fk_fields = []
         for name, field in resource.fields.items():
             if (
@@ -395,7 +395,7 @@ class RalphAdminImportExportMixin(ImportExportModelAdmin):
                 and not getattr(field, "_exclude_in_select_related", False)
                 and not isinstance(getattr(queryset.model, name, None), property)
             ):
-                fk_fields.append(field.attribute)
+                fk_fields.append(field.column_name)
         if fk_fields:
             queryset = queryset.select_related(*fk_fields)
         resource_select_related = getattr(resource._meta, "select_related", [])
@@ -407,11 +407,11 @@ class RalphAdminImportExportMixin(ImportExportModelAdmin):
             queryset = queryset.prefetch_related(*resource_prefetch_related)
         return list(queryset)
 
-    def get_export_resource_classes(self):
+    def get_export_resource_classes(self, request):
         """
         If `export_class` is defined in Admin, use it.
         """
-        resource_classes = self.get_resource_classes()
+        resource_classes = self.get_resource_classes(request)
         export_classes = [
             getattr(resource_class, "export_class", None)
             for resource_class in resource_classes

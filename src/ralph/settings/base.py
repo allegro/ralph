@@ -205,14 +205,16 @@ LANGUAGE_CODE = "en-us"
 LOCALE_PATHS = (os.path.join(BASE_DIR, "locale"),)
 TIME_ZONE = "Europe/Warsaw"
 USE_I18N = bool_from_env("USE_I18N", True)
-USE_L10N = bool_from_env("USE_L10N", True)
+USE_L10N = bool_from_env(  # Django complains, but removing it breaks things
+    "USE_L10N", True
+)
 USE_TZ = False
 
 STATIC_URL = "/static/"
-STATICFILES_DIRS = (
+STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
     os.path.join(BASE_DIR, "admin", "static"),
-)
+]
 STATIC_ROOT = os.environ.get("STATIC_ROOT", os.path.join(BASE_DIR, "var", "static"))
 
 MEDIA_URL = "/media/"

@@ -36,7 +36,7 @@ cmd2==2.7.0
     # via cliff
 cryptography==45.0.5
     # via
-    #   django-cryptography
+    #   django-cryptography-django5
     #   openstacksdk
     #   social-auth-core
 debtcollector==1.3.0
@@ -62,7 +62,7 @@ django==4.2.23
     #   ralph (pyproject.toml)
     #   django-appconf
     #   django-auth-ldap
-    #   django-cryptography
+    #   django-cryptography-django5
     #   django-extensions
     #   django-filter
     #   django-import-export
@@ -76,16 +76,16 @@ django==4.2.23
     #   drf-nested-routers
     #   social-auth-app-django
 django-appconf==1.1.0
-    # via django-cryptography
+    # via django-cryptography-django5
 django-auth-ldap==2.4.0
     # via ralph (pyproject.toml)
-django-cryptography==1.1
+django-cryptography-django5==2.2
     # via ralph (pyproject.toml)
 django-extensions==3.1.5
     # via ralph (pyproject.toml)
 django-filter==25.1
     # via ralph (pyproject.toml)
-django-import-export==3.3.9
+django-import-export==4.0.2
     # via ralph (pyproject.toml)
 django-js-asset==3.1.2
     # via django-mptt
@@ -169,8 +169,6 @@ markdown==3.2.1
     # via ralph (pyproject.toml)
 markdown-it-py==3.0.0
     # via rich
-markuppy==1.18
-    # via tablib
 mdurl==0.1.2
     # via markdown-it-py
 monotonic==0.6
@@ -195,11 +193,9 @@ oauthlib==3.3.1
     #   requests-oauthlib
     #   social-auth-core
 odfpy==1.4.1
-    # via tablib
+    # via ralph (pyproject.toml)
 openpyxl==2.6.4
-    # via
-    #   ralph (pyproject.toml)
-    #   tablib
+    # via ralph (pyproject.toml)
 openstacksdk==1.5.0
     # via
     #   ralph (pyproject.toml)
@@ -271,7 +267,7 @@ prometheus-client==0.22.1
     # via django-prometheus
 psutil==7.0.0
     # via oslo-utils
-psycopg2-binary==2.9.10
+psycopg==3.2.10
     # via ralph (pyproject.toml)
 py-moneyed==3.0
     # via django-money
@@ -318,7 +314,6 @@ pyyaml==6.0.2
     #   oslo-config
     #   oslo-utils
     #   python-ironicclient
-    #   tablib
 raven==6.10.0
     # via ralph (pyproject.toml)
 redis==4.6.0
@@ -411,6 +406,7 @@ typing-extensions==4.14.1
     # via
     #   asgiref
     #   dogpile-cache
+    #   psycopg
     #   py-moneyed
     #   referencing
     #   rich
@@ -428,7 +424,3 @@ wrapt==1.10.6
     # via
     #   ralph (pyproject.toml)
     #   debtcollector
-xlrd==2.0.2
-    # via tablib
-xlwt==1.3.0
-    # via tablib

@@ -13,8 +13,6 @@ from ralph.settings import (
 
 DEBUG = bool_from_env("RALPH_DEBUG", False)
 
-STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"  # noqa
-
 REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] = (
     "rest_framework.authentication.TokenAuthentication",
     # session authentication enabled for API requests from UI (ex. in

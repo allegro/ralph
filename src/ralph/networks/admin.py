@@ -153,7 +153,7 @@ class NetworkAdmin(RalphMPTTAdmin):
         "service_env",
         "dns_servers_group",
     ]
-    resource_class = resources.NetworkResource
+    resource_classes = [resources.NetworkResource]
     readonly_fields = [
         "show_subnetworks",
         "show_addresses",
@@ -320,7 +320,7 @@ class IPAddressAdmin(ParentChangeMixin, RalphAdmin):
     ]
     readonly_fields = ["get_network_path", "is_public"]
     raw_id_fields = ["ethernet"]
-    resource_class = resources.IPAddressResource
+    resource_classes = [resources.IPAddressResource]
 
     fieldsets = (
         (
