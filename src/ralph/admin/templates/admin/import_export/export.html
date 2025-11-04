@@ -8,6 +8,12 @@
 {% endblock %}
 
 {% block content %}
+<style>
+  .labels_aligned label {
+    display: inline-block;
+  }
+</style>
+
 <h1>{% trans "Export" %}</h1>
 
 <div data-alert class="alert-box info radius">
@@ -18,19 +24,23 @@
 <form action="" method="POST">
   {% csrf_token %}
 
-    <fieldset class="module aligned">
+    <fieldset class="module aligned labels_aligned">
       {% for field in form %}
-        <div class="form-row">
-          {{ field.errors }}
+        {% if field.widget_type != 'checkbox' %}
+          <br />
+        {% endif %}
+        {{ field.errors }}
 
-          {{ field.label_tag }}
+        {{ field.label_tag }}
 
-          {{ field }}
+        {{ field }}
 
-          {% if field.field.help_text %}
-          <p class="help">{{ field.field.help_text|safe }}</p>
-          {% endif %}
-        </div>
+        {% if field.field.help_text %}
+        <p class="help">{{ field.field.help_text|safe }}</p>
+        {% endif %}
+        {% if field.widget_type != 'checkbox' %}
+          <br />
+        {% endif %}
       {% endfor %}
     </fieldset>
 
