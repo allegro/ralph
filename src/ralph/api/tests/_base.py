@@ -108,7 +108,7 @@ class RalphAPITestCase(APITestCase):
         """
         # testserver is default name of server using by Django test client
         # see django/test/client.py for details
-        return "http://testserver{}".format(url)
+        return "https://testserver{}".format(url)
 
     def assertQueriesMoreOrLess(
         self,

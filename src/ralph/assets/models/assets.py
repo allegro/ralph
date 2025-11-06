@@ -405,14 +405,14 @@ class Asset(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
         max_digits=5,
     )
     force_depreciation = models.BooleanField(
-        help_text=("Check if you no longer want to bill for this asset"),
+        help_text=_("Check if you no longer want to bill for this asset"),
         default=False,
     )
     depreciation_end_date = models.DateField(blank=True, null=True)
     buyout_date = models.DateField(blank=True, null=True, db_index=True)
     task_url = models.URLField(
         blank=True,
-        help_text=("External workflow system URL"),
+        help_text=_("External workflow system URL"),
         max_length=2048,
         null=True,
     )
@@ -432,7 +432,7 @@ class Asset(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
     start_usage = models.DateField(
         blank=True,
         null=True,
-        help_text=("Fill it if date of first usage is different then date of creation"),
+        help_text=_("Fill it if date of first usage is different then date of creation"),
     )
 
     def __str__(self):
@@ -472,7 +472,7 @@ class Asset(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
         if self.force_depreciation or not self.invoice_date:
             return True
         if self.depreciation_end_date:
-            deprecation_date = self.deprecation_end_date
+            deprecation_date = self.depreciation_end_date
         else:
             deprecation_date = self.invoice_date + relativedelta(
                 months=self.get_depreciation_months(),
