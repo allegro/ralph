@@ -1,3 +1,10 @@
+ralph (20251106.1) jammy; urgency=medium
+
+  [ Olga Matyla ]
+  * Fix export view (#3917)
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Thu, 06 Nov 2025 09:14:45 +0000
+
 ralph (20251020.1) jammy; urgency=medium
 
   * Pre django5.0 prep
