@@ -42,36 +42,36 @@ class TestGetDnsRecords(TestCase):
         self.assertEqual(found_dns[0]["name"], data["name"])
         self.assertEqual(found_dns[0]["type"], RecordType.a)
 
-    @override_settings(DNSAAS_URL="https://dnsaas.com/")
+    @override_settings(DNSAAS_URL="http://dnsaas.com/")
     def test_build_url(self):
         self.assertEqual(
-            self.dnsaas.build_url("domains"), "https://dnsaas.com/api/domains/"
+            self.dnsaas.build_url("domains"), "http://dnsaas.com/api/domains/"
         )
 
-    @override_settings(DNSAAS_URL="https://dnsaas.com/")
+    @override_settings(DNSAAS_URL="http://dnsaas.com/")
     def test_build_url_with_version(self):
         self.assertEqual(
-            self.dnsaas.build_url("domains"), "https://dnsaas.com/api/domains/"
+            self.dnsaas.build_url("domains"), "http://dnsaas.com/api/domains/"
         )
 
-    @override_settings(DNSAAS_URL="https://dnsaas.com/")
+    @override_settings(DNSAAS_URL="http://dnsaas.com/")
     def test_build_url_with_id(self):
         self.assertEqual(
-            self.dnsaas.build_url("domains", id=1), "https://dnsaas.com/api/domains/1/"
+            self.dnsaas.build_url("domains", id=1), "http://dnsaas.com/api/domains/1/"
         )
 
-    @override_settings(DNSAAS_URL="https://dnsaas.com/")
+    @override_settings(DNSAAS_URL="http://dnsaas.com/")
     def test_build_url_with_get_params(self):
         self.assertEqual(
             self.dnsaas.build_url("domains", get_params=[("name", "ralph")]),
-            "https://dnsaas.com/api/domains/?name=ralph",
+            "http://dnsaas.com/api/domains/?name=ralph",
         )
 
-    @override_settings(DNSAAS_URL="https://dnsaas.com/")
+    @override_settings(DNSAAS_URL="http://dnsaas.com/")
     def test_build_url_with_id_and_get_params(self):
         self.assertEqual(
             self.dnsaas.build_url("domains", id=1, get_params=[("name", "ralph")]),
-            "https://dnsaas.com/api/domains/1/?name=ralph",
+            "http://dnsaas.com/api/domains/1/?name=ralph",
         )
 
 
@@ -532,7 +532,6 @@ class TestPublishAutoTXTToDNSaaS(TransactionTestCase):
     @override_settings(DNSAAS_AUTO_TXT_RECORD_TOPIC_NAME="dnsaas_auto_txt_record")
     @patch("ralph.dns.publishers.publish")
     def test_publishing_auto_txt_data_when_dc_asset_updated(self, publish_mock):
-        self.maxDiff = None
         # fetch clean instance
         dc_asset = DataCenterAsset.objects.get(pk=self.dc_asset)
         with transaction.atomic():
