@@ -16,7 +16,6 @@ from ralph.virtual.tests.factories import VirtualServerFactory
 
 
 class TestGetDnsRecords(TestCase):
-
     @patch.object(DNSaaS, "_get_oauth_token")
     def setUp(self, mocked):
         mocked.return_value = "token"

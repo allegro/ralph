@@ -432,7 +432,9 @@ class Asset(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
     start_usage = models.DateField(
         blank=True,
         null=True,
-        help_text=_("Fill it if date of first usage is different then date of creation"),
+        help_text=_(
+            "Fill it if date of first usage is different then date of creation"
+        ),
     )
 
     def __str__(self):

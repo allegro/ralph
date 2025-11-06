@@ -143,9 +143,9 @@ class DNSaaS:
         url = self.build_url(
             "records",
             get_params=[
-                           ("size", "100"),
-                       ]
-                       + ipaddresses,
+                ("size", "100"),
+            ]
+            + ipaddresses,
         )
         api_results = self.get_api_result(url)
         ptrs = set([i["content"] for i in api_results if i["type"] == "PTR"])

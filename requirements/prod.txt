@@ -57,7 +57,7 @@ defusedxml==0.7.1
     #   social-auth-core
 diff-match-patch==20241021
     # via django-import-export
-django==4.2.23
+django==5.0.14
     # via
     #   ralph (pyproject.toml)
     #   django-appconf
@@ -91,7 +91,7 @@ django-js-asset==3.1.2
     # via django-mptt
 django-money==3.4.1
     # via ralph (pyproject.toml)
-django-mptt==0.14.0
+django-mptt==0.18.0
     # via ralph (pyproject.toml)
 django-prometheus==2.2.0
     # via ralph (pyproject.toml)
