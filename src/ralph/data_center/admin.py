@@ -434,6 +434,7 @@ class DataCenterAssetAdmin(
         "order_no",
         "model__name",
         ("model__category", RelatedAutocompleteFieldListFilter),
+        "production_year",
         "depreciation_end_date",
         "force_depreciation",
         "remarks",
