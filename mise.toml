@@ -4,6 +4,10 @@ DJANGO_SETTINGS_MODULE = "ralph.settings.local"
 DB_ENGINE = "psql"
 TEST_DB_ENGINE = "psql"
 DATABASE_PORT = 54320
+DATABASE_PASSWORD = "ralph_ng"
+DATABASE_USER = "ralph_ng"
+DATABASE_NAME = "ralph_ng"
+DATABASE_HOST = "127.0.0.1"
 MISE_PROJECT_ROOT = "."
 MISE_PROJECT_NAME = "ralph"
 
@@ -44,9 +48,11 @@ hide = true
 run = """
   for i in {1..30}; do
     if [ "$DB_ENGINE" = "psql" ]; then
-      PGPASSWORD=ralph_ng psql -h 127.0.0.1 -p $DATABASE_PORT -U ralph_ng -c "SELECT 1" >/dev/null 2>&1 && exit 0
+      echo "Checking PostgreSQL connection..."
+      PGPASSWORD=$DATABASE_PASSWORD PGDATABASE=$DATABASE_NAME PGHOST=$DATABASE_HOST PGPORT=$DATABASE_PORT PGUSER=$DATABASE_USER psql -c "SELECT 1" >/dev/null 2>&1 && exit 0
     else
-      mysqladmin ping -h 127.0.0.1 -P $DATABASE_PORT -u ralph_ng --password=ralph_ng >/dev/null 2>&1 && exit 0
+      echo "Checking MySQL connection..."
+      mysqladmin ping -h $DATABASE_HOST -P $DATABASE_PORT -u $DATABASE_USER --password=$DATABASE_PASSWORD >/dev/null 2>&1 && exit 0
     fi
     sleep 1
   done
