@@ -546,7 +546,9 @@ class DataCenterAsset(
         verbose_name=_("source"),
     )
     delivery_date = models.DateField(null=True, blank=True)
-    production_year = models.PositiveSmallIntegerField(null=True, blank=True, db_index=True)
+    production_year = models.PositiveSmallIntegerField(
+        null=True, blank=True, db_index=True
+    )
     production_use_date = models.DateField(null=True, blank=True, db_index=True)
 
     autocomplete_tooltip_fields = [

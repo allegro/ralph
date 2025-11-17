@@ -348,7 +348,6 @@ class Asset(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
                 code="no_spaces_allowed",
             )
         ],
-        db_index=True,
     )
     barcode = NullableCharField(
         blank=True,
@@ -365,7 +364,6 @@ class Asset(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
                 code="no_spaces_allowed",
             )
         ],
-        db_index=True,
     )
     niw = NullableCharField(
         blank=True,
