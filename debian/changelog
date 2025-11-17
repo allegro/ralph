@@ -1,3 +1,9 @@
+ralph (20251117.1) jammy; urgency=medium
+
+  * Add filter - production year to Data Center Asset
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Mon, 17 Nov 2025 13:30:16 +0000
+
 ralph (20251106.1) jammy; urgency=medium
 
   [ Olga Matyla ]
