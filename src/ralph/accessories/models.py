@@ -109,6 +109,7 @@ class Accessory(
         null=False,
         blank=False,
         help_text=_("Accessory status"),
+        db_index=True,
     )
     number_bought = models.IntegerField(verbose_name=_("number of purchased items"))
     warehouse = models.ForeignKey(Warehouse, on_delete=models.PROTECT)

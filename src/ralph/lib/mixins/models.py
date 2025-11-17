@@ -27,7 +27,7 @@ class NamedMixin(models.Model):
     class NonUnique(models.Model):
         """Describes an abstract model with a non-unique ``name`` field."""
 
-        name = models.CharField(verbose_name=_("name"), max_length=75)
+        name = models.CharField(verbose_name=_("name"), max_length=75, db_index=True)
 
         class Meta:
             abstract = True

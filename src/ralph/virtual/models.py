@@ -204,7 +204,7 @@ class CloudHost(
     cloudprovider._autocomplete = False
 
     host_id = models.CharField(verbose_name=_("host ID"), unique=True, max_length=100)
-    hostname = models.CharField(verbose_name=_("hostname"), max_length=255)
+    hostname = models.CharField(verbose_name=_("hostname"), max_length=255, db_index=True)
     hypervisor = models.ForeignKey(
         DataCenterAsset, blank=True, null=True, on_delete=models.CASCADE
     )
@@ -350,6 +350,7 @@ class VirtualServer(
     status = TransitionField(
         default=VirtualServerStatus.new.id,
         choices=VirtualServerStatus(),
+        db_index=True,
     )
     type = models.ForeignKey(
         VirtualServerType, related_name="virtual_servers", on_delete=models.CASCADE
@@ -361,6 +362,7 @@ class VirtualServer(
         null=True,
         verbose_name=_("hostname"),
         unique=True,
+        db_index=True,
     )
     sn = NullableCharField(
         max_length=200,
@@ -369,6 +371,7 @@ class VirtualServer(
         default=None,
         null=True,
         unique=True,
+        db_index=True,
     )
     # TODO: remove this field
     cluster = models.ForeignKey(
