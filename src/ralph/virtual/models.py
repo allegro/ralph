@@ -51,7 +51,7 @@ class CloudProvider(AdminAbsoluteUrlMixin, NamedMixin):
 
 
 class CloudFlavor(AdminAbsoluteUrlMixin, BaseObject):
-    name = models.CharField(_("name"), max_length=255)
+    name = models.CharField(_("name"), max_length=255, db_index=True)
     cloudprovider = models.ForeignKey(CloudProvider, on_delete=models.CASCADE)
     cloudprovider._autocomplete = False
 
