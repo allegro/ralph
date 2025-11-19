@@ -149,14 +149,15 @@ hide = true
 
 [tasks.db-backup-psql]
 run = """
-PGPASSWORD=ralph_ng pg_dump \
-  -h 127.0.0.1 \
+PGPASSWORD=$DATABASE_PASSWORD pg_dump \
+  -h $DATABASE_HOST \
   -p $DATABASE_PORT \
-  -U ralph_ng \
-  -F c \
+  -U $DATABASE_USER \
+  -n "public" \
   -b \
   -v \
   -f backup.sql \
+  $DATABASE_NAME \
 """
 description = "Backup the psql database"
 hide = true
@@ -167,3 +168,26 @@ depends = [
 ]
 description = "Backup the database"
 
+[tasks.db-restore-psql]
+run = """
+PGPASSWORD=$DATABASE_PASSWORD \
+    psql \
+    -h $DATABASE_HOST \
+    -p $DATABASE_PORT \
+    -U $DATABASE_USER \
+    -d $DATABASE_NAME \
+    < backup.sql \
+"""
+description = "Restore psql database"
+hide = true
+
+[tasks.db-restore-mysql]
+run = "echo not implemented yet && exit 1"
+description = "Restore mysql database"
+hide = true
+
+[tasks.db-restore]
+depends = [
+    "{% if env.DB_ENGINE == 'psql' %}db-restore-psql{% endif %}",
+]
+description = "Restore the database"
