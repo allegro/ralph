@@ -486,6 +486,7 @@ class DataCenterAsset(
     status = TransitionField(
         default=DataCenterAssetStatus.new.id,
         choices=DataCenterAssetStatus(),
+        db_index=True,
     )
     position = models.IntegerField(null=True, blank=True)
     orientation = models.PositiveIntegerField(
@@ -545,8 +546,10 @@ class DataCenterAsset(
         verbose_name=_("source"),
     )
     delivery_date = models.DateField(null=True, blank=True)
-    production_year = models.PositiveSmallIntegerField(null=True, blank=True)
-    production_use_date = models.DateField(null=True, blank=True)
+    production_year = models.PositiveSmallIntegerField(
+        null=True, blank=True, db_index=True
+    )
+    production_use_date = models.DateField(null=True, blank=True, db_index=True)
 
     autocomplete_tooltip_fields = [
         "rack",

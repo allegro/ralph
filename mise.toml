@@ -4,6 +4,10 @@ DJANGO_SETTINGS_MODULE = "ralph.settings.local"
 DB_ENGINE = "psql"
 TEST_DB_ENGINE = "psql"
 DATABASE_PORT = 54320
+DATABASE_PASSWORD = "ralph_ng"
+DATABASE_USER = "ralph_ng"
+DATABASE_NAME = "ralph_ng"
+DATABASE_HOST = "127.0.0.1"
 MISE_PROJECT_ROOT = "."
 MISE_PROJECT_NAME = "ralph"
 
@@ -44,9 +48,11 @@ hide = true
 run = """
   for i in {1..30}; do
     if [ "$DB_ENGINE" = "psql" ]; then
-      PGPASSWORD=ralph_ng psql -h 127.0.0.1 -p $DATABASE_PORT -U ralph_ng -c "SELECT 1" >/dev/null 2>&1 && exit 0
+      echo "Checking PostgreSQL connection..."
+      PGPASSWORD=$DATABASE_PASSWORD PGDATABASE=$DATABASE_NAME PGHOST=$DATABASE_HOST PGPORT=$DATABASE_PORT PGUSER=$DATABASE_USER psql -c "SELECT 1" >/dev/null 2>&1 && exit 0
     else
-      mysqladmin ping -h 127.0.0.1 -P $DATABASE_PORT -u ralph_ng --password=ralph_ng >/dev/null 2>&1 && exit 0
+      echo "Checking MySQL connection..."
+      mysqladmin ping -h $DATABASE_HOST -P $DATABASE_PORT -u $DATABASE_USER --password=$DATABASE_PASSWORD >/dev/null 2>&1 && exit 0
     fi
     sleep 1
   done
@@ -143,14 +149,15 @@ hide = true
 
 [tasks.db-backup-psql]
 run = """
-PGPASSWORD=ralph_ng pg_dump \
-  -h 127.0.0.1 \
+PGPASSWORD=$DATABASE_PASSWORD pg_dump \
+  -h $DATABASE_HOST \
   -p $DATABASE_PORT \
-  -U ralph_ng \
-  -F c \
+  -U $DATABASE_USER \
+  -n "public" \
   -b \
   -v \
   -f backup.sql \
+  $DATABASE_NAME \
 """
 description = "Backup the psql database"
 hide = true
@@ -161,3 +168,26 @@ depends = [
 ]
 description = "Backup the database"
 
+[tasks.db-restore-psql]
+run = """
+PGPASSWORD=$DATABASE_PASSWORD \
+    psql \
+    -h $DATABASE_HOST \
+    -p $DATABASE_PORT \
+    -U $DATABASE_USER \
+    -d $DATABASE_NAME \
+    < backup.sql \
+"""
+description = "Restore psql database"
+hide = true
+
+[tasks.db-restore-mysql]
+run = "echo not implemented yet && exit 1"
+description = "Restore mysql database"
+hide = true
+
+[tasks.db-restore]
+depends = [
+    "{% if env.DB_ENGINE == 'psql' %}db-restore-psql{% endif %}",
+]
+description = "Restore the database"

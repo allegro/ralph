@@ -1459,6 +1459,42 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/4a/90/422ffbbeeb9418c795dae2a768db860401446af0c6768bc061ce22325f58/psycopg-3.2.10-py3-none-any.whl", hash = "sha256:ab5caf09a9ec42e314a21f5216dbcceac528e0e05142e42eea83a3b28b320ac3", size = 206586, upload-time = "2025-09-08T09:07:50.121Z" },
 ]
 
+[package.optional-dependencies]
+binary = [
+    { name = "psycopg-binary", marker = "implementation_name != 'pypy'" },
+]
+pool = [
+    { name = "psycopg-pool" },
+]
+
+[[package]]
+name = "psycopg-binary"
+version = "3.2.10"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6d/0c/24c3717da5fbbf32c7a01efc4fd2013c29d89bba53c1760c5eb144029341/psycopg_binary-3.2.10-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:037dc92fc7d3f2adae7680e17216934c15b919d6528b908ac2eb52aecc0addcf", size = 3995298, upload-time = "2025-09-08T09:07:55.239Z" },
+    { url = "https://files.pythonhosted.org/packages/d6/77/b75012e582f7d75213f2fe13c93ad52634c852bf9d7117a2a1d79be389a1/psycopg_binary-3.2.10-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:84f7e8c5e5031db342ae697c2e8fb48cd708ba56990573b33e53ce626445371d", size = 4066585, upload-time = "2025-09-08T09:08:00.813Z" },
+    { url = "https://files.pythonhosted.org/packages/cd/0c/bf1d016d2a957b522c3f2fa09aef04e18f652cdfce40c48459c116737933/psycopg_binary-3.2.10-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.whl", hash = "sha256:a5a81104d88780018005fe17c37fa55b4afbb6dd3c205963cc56c025d5f1cc32", size = 4625245, upload-time = "2025-09-08T09:08:05.295Z" },
+    { url = "https://files.pythonhosted.org/packages/a3/89/42bd027fcd1da82d4828d203dfee4c0aba9412c4685d4b47ef098061f0df/psycopg_binary-3.2.10-cp310-cp310-manylinux2014_ppc64le.manylinux_2_17_ppc64le.whl", hash = "sha256:0c23e88e048bbc33f32f5a35981707c9418723d469552dd5ac4e956366e58492", size = 4721755, upload-time = "2025-09-08T09:08:11.246Z" },
+    { url = "https://files.pythonhosted.org/packages/86/3e/6359d3d57a13a3a556635f76fb26f45d3377a6d4be23d45824525c2a67a6/psycopg_binary-3.2.10-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.whl", hash = "sha256:9c9f2728488ac5848acdbf14bb4fde50f8ba783cbf3c19e9abd506741389fa7f", size = 4406209, upload-time = "2025-09-08T09:08:18.172Z" },
+    { url = "https://files.pythonhosted.org/packages/86/bf/0b25d8d5b2b67ea558e133c2ab7f22c0b4602956dd23b0d34485e44e8311/psycopg_binary-3.2.10-cp310-cp310-musllinux_1_2_aarch64.whl", hash = "sha256:ab1c6d761c4ee581016823dcc02f29b16ad69177fcbba88a9074c924fc31813e", size = 3881122, upload-time = "2025-09-08T09:08:25.116Z" },
+    { url = "https://files.pythonhosted.org/packages/ac/6e/ee6bf664b16a759d22c4fc3c3d89eb15ff98d0feb3f487de5f4acde3014e/psycopg_binary-3.2.10-cp310-cp310-musllinux_1_2_ppc64le.whl", hash = "sha256:a024b3ee539a475cbc59df877c8ecdd6f8552a1b522b69196935bc26dc6152fb", size = 3562815, upload-time = "2025-09-08T09:08:31.046Z" },
+    { url = "https://files.pythonhosted.org/packages/79/33/1cc4266b5d1c04f873a7fee8b92fa25ad690d2fcdfb5aecdfc2ea42c81a7/psycopg_binary-3.2.10-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:50130c0d1a2a01ec3d41631df86b6c1646c76718be000600a399dc1aad80b813", size = 3604842, upload-time = "2025-09-08T09:08:36.771Z" },
+    { url = "https://files.pythonhosted.org/packages/4a/f8/7db03368fc36daa5f3ae609696b5a91976878b62bf95310ba1e6c93d81df/psycopg_binary-3.2.10-cp310-cp310-win_amd64.whl", hash = "sha256:7fa1626225a162924d2da0ff4ef77869f7a8501d320355d2732be5bf2dda6138", size = 2886848, upload-time = "2025-09-08T09:08:42.906Z" },
+]
+
+[[package]]
+name = "psycopg-pool"
+version = "3.2.7"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9d/8f/3ec52b17087c2ed5fa32b64fd4814dde964c9aa4bd49d0d30fc24725ca6d/psycopg_pool-3.2.7.tar.gz", hash = "sha256:a77d531bfca238e49e5fb5832d65b98e69f2c62bfda3d2d4d833696bdc9ca54b", size = 29765, upload-time = "2025-10-26T00:46:10.379Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e7/59/74e752f605c6f0e351d4cf1c54fb9a1616dc800db4572b95bbfbb1a6225f/psycopg_pool-3.2.7-py3-none-any.whl", hash = "sha256:4b47bb59d887ef5da522eb63746b9f70e2faf967d34aac4f56ffc65e9606728f", size = 38232, upload-time = "2025-10-26T00:46:00.496Z" },
+]
+
 [[package]]
 name = "ptyprocess"
 version = "0.7.0"
@@ -1771,7 +1807,6 @@ dependencies = [
     { name = "django-threadlocals" },
     { name = "djangorestframework" },
     { name = "djangorestframework-xml" },
-    { name = "dogpile-cache" },
     { name = "drf-nested-routers" },
     { name = "factory-boy" },
     { name = "faker" },
@@ -1796,7 +1831,7 @@ dependencies = [
     { name = "pillow" },
     { name = "positional" },
     { name = "prettytable" },
-    { name = "psycopg" },
+    { name = "psycopg", extra = ["binary", "pool"] },
     { name = "pyhermes" },
     { name = "python-dateutil" },
     { name = "python-ironicclient" },
@@ -1872,7 +1907,6 @@ requires-dist = [
     { name = "django-threadlocals", specifier = "==0.8" },
     { name = "djangorestframework", specifier = "==3.15.0" },
     { name = "djangorestframework-xml", specifier = "==2.0.0" },
-    { name = "dogpile-cache", specifier = "==1.3.4" },
     { name = "drf-nested-routers", specifier = "==0.92.5" },
     { name = "factory-boy", specifier = "==3.2.1" },
     { name = "faker", specifier = "==0.9.0" },
@@ -1897,7 +1931,7 @@ requires-dist = [
     { name = "pillow" },
     { name = "positional", specifier = "==1.0.1" },
     { name = "prettytable", specifier = "==0.7.2" },
-    { name = "psycopg", specifier = ">=3.2.10" },
+    { name = "psycopg", extras = ["binary", "pool"], specifier = ">=3.2.10" },
     { name = "pyhermes", specifier = "~=0.6.0" },
     { name = "python-dateutil", specifier = "==2.9.0" },
     { name = "python-ironicclient" },

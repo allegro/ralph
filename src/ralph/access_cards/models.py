@@ -105,6 +105,7 @@ class AccessCard(
         null=False,
         blank=False,
         help_text=_("Access card status"),
+        db_index=True,
     )
     access_zones = TreeManyToManyField(
         AccessZone, blank=True, related_name="access_cards"
