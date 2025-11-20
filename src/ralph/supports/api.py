@@ -60,6 +60,7 @@ class BackOfficeAssetForSupportSerializer(RalphAPISerializer):
 
     class Meta:
         model = BackOfficeAsset
+        exclude_from_registry = True
         fields = [
             "id",
             "barcode",
@@ -87,6 +88,7 @@ class DataCenterAssetForSupportSerializer(RalphAPISerializer):
 
     class Meta:
         model = DataCenterAsset
+        exclude_from_registry = True
         fields = [
             "id",
             "barcode",
