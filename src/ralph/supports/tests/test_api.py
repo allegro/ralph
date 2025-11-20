@@ -8,7 +8,11 @@ from ralph.accounts.models import Region
 from ralph.api.tests._base import RalphAPITestCase
 from ralph.assets.tests.factories import ServiceEnvironmentFactory
 from ralph.supports.models import Support, SupportStatus
-from ralph.supports.tests.factories import SupportFactory
+from ralph.supports.tests.factories import (
+    BackOfficeAssetSupportFactory,
+    DataCenterAssetSupportFactory,
+    SupportFactory,
+)
 
 
 class SupportAPITests(RalphAPITestCase):
@@ -74,3 +78,64 @@ class SupportAPITests(RalphAPITestCase):
         self.assertEqual(self.support.name, "support2")
         self.assertEqual(self.support.contract_id, "12345")
         self.assertEqual(self.support.date_to, date(2015, 12, 31))
+
+    def test_support_with_include_assets(self):
+        support1 = SupportFactory(name="support_with_assets_1")
+        support2 = SupportFactory(name="support_with_assets_2")
+        support3 = SupportFactory(name="support_with_assets_3")
+
+        BackOfficeAssetSupportFactory.create_batch(3, support=support1)
+        BackOfficeAssetSupportFactory.create_batch(2, support=support2)
+
+        DataCenterAssetSupportFactory.create_batch(2, support=support1)
+        DataCenterAssetSupportFactory.create_batch(3, support=support3)
+
+        # Mix of both base_object types for one support
+        BackOfficeAssetSupportFactory.create_batch(2, support=support3)
+
+        support4 = SupportFactory(name="support_with_assets_4")
+        BackOfficeAssetSupportFactory.create_batch(3, support=support4)
+        DataCenterAssetSupportFactory.create_batch(3, support=support4)
+        SupportFactory.create_batch(10)
+
+        url = reverse("support-list")
+
+        with self.assertQueriesMoreOrLess(7, plus_minus=2):
+            response = self.client.get(
+                url, {"include_assets": "true"}, format="json"
+            )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["count"], 15)  # 4 with assets + 10 without + 1 from setUp
+
+        for result in response.data["results"]:
+            if result["name"] == "support_with_assets_1":
+                self.assertEqual(len(result["backoffice_assets"]), 3)
+                self.assertEqual(len(result["datacenter_assets"]), 2)
+                self.assertIn("model", result["backoffice_assets"][0])
+                self.assertIn("manufacturer", result["backoffice_assets"][0])
+                self.assertIn("service_env", result["backoffice_assets"][0])
+            elif result["name"] == "support_with_assets_2":
+                self.assertEqual(len(result["backoffice_assets"]), 2)
+                self.assertEqual(len(result["datacenter_assets"]), 0)
+            elif result["name"] == "support_with_assets_3":
+                self.assertEqual(len(result["backoffice_assets"]), 2)
+                self.assertEqual(len(result["datacenter_assets"]), 3)
+
+    def test_support_without_include_assets_parameter(self):
+        support = SupportFactory(name="support_minimal")
+        BackOfficeAssetSupportFactory.create_batch(2, support=support)
+        DataCenterAssetSupportFactory.create_batch(2, support=support)
+
+        url = reverse("support-detail", args=(support.id,))
+        with self.assertQueriesMoreOrLess(6, plus_minus=2):
+            response = self.client.get(url, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["name"], "support_minimal")
+
+        self.assertIn("base_objects", response.data)
+        self.assertEqual(len(response.data["base_objects"]), 4)
+
+        self.assertNotIn("backoffice_assets", response.data)
+        self.assertNotIn("datacenter_assets", response.data)

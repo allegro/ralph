@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 import django_filters
+from django.contrib.contenttypes.models import ContentType
 from django.db.models import Prefetch
 from rest_framework import serializers
+
+from django.urls import reverse
 
 from ralph.api import RalphAPISerializer, RalphAPIViewSet, router
 from ralph.assets.api.serializers import (
@@ -10,6 +13,8 @@ from ralph.assets.api.serializers import (
     TypeFromContentTypeSerializerMixin,
 )
 from ralph.assets.models import BaseObject
+from ralph.back_office.models import BackOfficeAsset
+from ralph.data_center.models import DataCenterAsset
 from ralph.lib.permissions.api import PermissionsForObjectFilter
 from ralph.lib.visibility_scope.filters import visibility_scope_asset_support_filter
 from ralph.supports.models import BaseObjectsSupport, Support, SupportType
@@ -44,17 +49,115 @@ class SupportSimpleSerializer(RalphAPISerializer):
         _skip_tags_field = True
 
 
+class BackOfficeAssetForSupportSerializer(RalphAPISerializer):
+    id = serializers.IntegerField(source="pk")
+    model = serializers.CharField(source="model.name", read_only=True)
+    manufacturer = serializers.CharField(source="model.manufacturer.name", read_only=True)
+    category = serializers.CharField(source="model.category.name", read_only=True)
+    service_env = ServiceEnvironmentSimpleSerializer(read_only=True)
+    property_of = serializers.CharField(source="property_of.name", read_only=True)
+    status = serializers.CharField(source="get_status_display", read_only=True)
+
+    class Meta:
+        model = BackOfficeAsset
+        fields = [
+            "id",
+            "barcode",
+            "sn",
+            "hostname",
+            "model",
+            "manufacturer",
+            "category",
+            "status",
+            "service_env",
+            "property_of",
+            "order_no",
+        ]
+        _skip_tags_field = True
+
+
+class DataCenterAssetForSupportSerializer(RalphAPISerializer):
+    id = serializers.IntegerField(source="pk")
+    model = serializers.CharField(source="model.name", read_only=True)
+    manufacturer = serializers.CharField(source="model.manufacturer.name", read_only=True)
+    category = serializers.CharField(source="model.category.name", read_only=True)
+    service_env = ServiceEnvironmentSimpleSerializer(read_only=True)
+    property_of = serializers.CharField(source="property_of.name", read_only=True)
+    status = serializers.CharField(source="get_status_display", read_only=True)
+
+    class Meta:
+        model = DataCenterAsset
+        fields = [
+            "id",
+            "barcode",
+            "sn",
+            "hostname",
+            "model",
+            "manufacturer",
+            "category",
+            "status",
+            "service_env",
+            "property_of",
+            "order_no",
+        ]
+        _skip_tags_field = True
+
+
 class SupportSerializer(TypeFromContentTypeSerializerMixin, RalphAPISerializer):
     __str__ = StrField(show_type=True)
-    base_objects = serializers.HyperlinkedRelatedField(
-        many=True, view_name="baseobject-detail", read_only=True
-    )
+    base_objects = serializers.SerializerMethodField()
     service_env = ServiceEnvironmentSimpleSerializer()
+    backoffice_assets = serializers.SerializerMethodField()
+    datacenter_assets = serializers.SerializerMethodField()
+
+    def get_base_objects(self, obj):
+        request = self.context.get('request')
+        base_objects = [bos.baseobject for bos in obj.baseobjectssupport_set.all()]
+        return [
+            request.build_absolute_uri(
+                reverse('baseobject-detail', kwargs={'pk': bo.pk})
+            )
+            for bo in base_objects
+        ]
 
     class Meta:
         model = Support
         depth = 1
         exclude = ("content_type", "configuration_path")
+
+    def get_fields(self):
+        fields = super().get_fields()
+        request = self.context.get('request')
+        if request and not request.query_params.get('include_assets'):
+            fields.pop('backoffice_assets', None)
+            fields.pop('datacenter_assets', None)
+        return fields
+
+    def get_backoffice_assets(self, obj):
+        request = self.context.get('request')
+        if not request or not request.query_params.get('include_assets'):
+            return []
+
+        backoffice_ct_id = ContentType.objects.get_for_model(BackOfficeAsset).id
+
+        backoffice_assets = [
+            bos.baseobject for bos in obj.baseobjectssupport_set.all()
+            if bos.baseobject.content_type_id == backoffice_ct_id
+        ]
+        return BackOfficeAssetForSupportSerializer(backoffice_assets, many=True).data
+
+    def get_datacenter_assets(self, obj):
+        request = self.context.get('request')
+        if not request or not request.query_params.get('include_assets'):
+            return []
+
+        datacenter_ct_id = ContentType.objects.get_for_model(DataCenterAsset).id
+
+        datacenter_assets = [
+            bos.baseobject for bos in obj.baseobjectssupport_set.all()
+            if bos.baseobject.content_type_id == datacenter_ct_id
+        ]
+        return DataCenterAssetForSupportSerializer(datacenter_assets, many=True).data
 
 
 class BaseObjectsFilter(django_filters.FilterSet):
@@ -91,6 +194,7 @@ class SupportViewSet(RalphAPIViewSet):
     )
     filterset_class = BaseObjectsFilter
     select_related = [
+        "content_type",
         "region",
         "budget_info",
         "support_type",
@@ -101,8 +205,47 @@ class SupportViewSet(RalphAPIViewSet):
     ]
     prefetch_related = [
         "tags",
-        Prefetch("base_objects", queryset=BaseObject.objects.all()),
     ]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        if self.request.query_params.get("include_assets"):
+            queryset = queryset.prefetch_related(
+                Prefetch(
+                    "baseobjectssupport_set__baseobject",
+                    queryset=BaseObject.polymorphic_objects.select_related(
+                        "content_type"
+                    ).polymorphic_select_related(
+                        BackOfficeAsset=[
+                            "model",
+                            "model__manufacturer",
+                            "model__category",
+                            "service_env",
+                            "service_env__service",
+                            "service_env__environment",
+                            "property_of",
+                        ],
+                        DataCenterAsset=[
+                            "model",
+                            "model__manufacturer",
+                            "model__category",
+                            "service_env",
+                            "service_env__service",
+                            "service_env__environment",
+                            "property_of",
+                        ],
+                    ),
+                )
+            )
+        else:
+            queryset = queryset.prefetch_related(
+                Prefetch(
+                    "baseobjectssupport_set__baseobject",
+                    queryset=BaseObject.polymorphic_objects.all(),
+                )
+            )
+        return queryset
 
 
 class BaseObjectsSupportSerializer(RalphAPISerializer):
