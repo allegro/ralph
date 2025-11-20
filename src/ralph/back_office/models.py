@@ -199,6 +199,7 @@ class BackOfficeAsset(Regionalizable, Asset):
     status = TransitionField(
         default=BackOfficeAssetStatus.new.id,
         choices=BackOfficeAssetStatus(),
+        db_index=True,
     )
     imei = NullableCharField(
         max_length=18, null=True, blank=True, unique=True, verbose_name=_("IMEI")

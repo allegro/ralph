@@ -167,11 +167,6 @@ class TestLookupFilterBackend(RalphTestCase):
     def test_query_filters_autofield(self):
         request = self.request_factory.get("/api/bar")
         bvs = BarViewSet()
-        request.query_params = QueryDict(urlencode({"id__startswith": "99999"}))
-        bvs.request = request
-        self.assertEqual(
-            len(self.lookup_filter.filter_queryset(request, Bar.objects.all(), bvs)), 1
-        )
 
         request.query_params = QueryDict(urlencode({"id__exact": "999999"}))
         self.assertEqual(

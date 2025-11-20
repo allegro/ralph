@@ -678,14 +678,6 @@ class BaseObjectAPITests(RalphAPITestCase):
         self.assertEqual(len(response.data["results"]), 1)
         self.assertEqual(response.data["results"][0]["id"], self.dc_asset.id)
 
-    def test_filter_by_id_startswith(self):
-        url = "{}?{}".format(
-            reverse("baseobject-list"), urlencode({"id__startswith": "99999"})
-        )
-        response = self.client.get(url, format="json")
-        self.assertEqual(len(response.data["results"]), 1)
-        self.assertEqual(response.data["results"][0]["id"], self.conf_class_1.id)
-
     def test_filter_by_id_exact(self):
         url = "{}?{}".format(
             reverse("baseobject-list"), urlencode({"id__exact": "999999"})

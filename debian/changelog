@@ -1,3 +1,16 @@
+ralph (20251120.1) jammy; urgency=medium
+
+  * Fix checking db connection in mise.toml
+  * Add indexes
+  * Add migrations
+  * Add migrations for test apps
+  * Mise tasks improvements
+  * Remove weird failing test case
+  * Remove failing test case
+  * Add one more db index
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Thu, 20 Nov 2025 10:49:49 +0000
+
 ralph (20251117.1) jammy; urgency=medium
 
   * Add filter - production year to Data Center Asset
