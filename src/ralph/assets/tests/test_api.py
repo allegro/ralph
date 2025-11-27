@@ -754,7 +754,7 @@ class BaseObjectAPITests(RalphAPITestCase):
         self.assertEqual(len(response.data["results"]), 1)
 
     def test_filter_by_valid_thru(self):
-        service_env = ServiceEnvironmentFactory(service__uid="sc-123")
+        service_env = ServiceEnvironmentFactory(service__uid="sc-321")
         asset = DataCenterAssetFactory(service_env=service_env)
         licence_future = LicenceFactory(
             service_env=service_env, valid_thru="2026-01-01"
@@ -769,7 +769,7 @@ class BaseObjectAPITests(RalphAPITestCase):
 
         url = "{}?{}".format(
             reverse("baseobject-list"),
-            urlencode({"service": "sc-123", "valid_thru": "2025-01-01"}),
+            urlencode({"service": "sc-321", "valid_thru": "2025-01-01"}),
         )
         response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
