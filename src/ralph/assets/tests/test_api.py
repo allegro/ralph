@@ -753,6 +753,32 @@ class BaseObjectAPITests(RalphAPITestCase):
         response = self.client.get(url, format="json")
         self.assertEqual(len(response.data["results"]), 1)
 
+    def test_filter_by_valid_thru(self):
+        service_env = ServiceEnvironmentFactory(service__uid="sc-123")
+        asset = DataCenterAssetFactory(service_env=service_env)
+        licence_future = LicenceFactory(
+            service_env=service_env, valid_thru="2026-01-01"
+        )
+        LicenceFactory(service_env=service_env, valid_thru="2024-01-01")
+        support_future = SupportFactory(service_env=service_env, date_to="2026-01-01")
+        SupportFactory(service_env=service_env, date_to="2024-01-01")
+        ssl_future = SSLCertificatesFactory(
+            service_env=service_env, date_to="2026-01-01"
+        )
+        SSLCertificatesFactory(service_env=service_env, date_to="2024-01-01")
+
+        url = "{}?{}".format(
+            reverse("baseobject-list"),
+            urlencode({"service": "sc-123", "valid_thru": "2025-01-01"}),
+        )
+        response = self.client.get(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["count"], 4)
+        ids = [item["id"] for item in response.data["results"]]
+        self.assertCountEqual(
+            ids, [asset.id, licence_future.id, support_future.id, ssl_future.id]
+        )
+
 
 class DCHostAPITests(RalphAPITestCase):
     def setUp(self):
