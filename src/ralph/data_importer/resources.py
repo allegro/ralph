@@ -414,6 +414,16 @@ class LicenceResource(ResourceWithPrice, RalphModelResource):
         attribute="uid",
         widget=AssetServiceUidWidget(assets.ServiceEnvironment),
     )
+    service_env = fields.Field(
+        column_name="service_env",
+        attribute="service_env",
+        widget=AssetServiceEnvWidget(assets.ServiceEnvironment),
+    )
+    property_of = fields.Field(
+        column_name="property_of",
+        attribute="property_of",
+        widget=ImportedForeignKeyWidget(assets.AssetHolder),
+    )
 
     class Meta:
         model = Licence
