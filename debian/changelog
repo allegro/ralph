@@ -1,3 +1,13 @@
+ralph (20251208.1) jammy; urgency=medium
+
+  [ Aleksander Więckowski ]
+  * Add expandable backoffice_assets and datacenter_assets fields to Supports API (#3921)
+
+  [ Olga Matyla ]
+  * Fix str fields in licenses export (#3922)
+
+ -- Olga Matyla <olga.matyla@allegro.com>  Mon, 08 Dec 2025 09:42:46 +0000
+
 ralph (20251120.1) jammy; urgency=medium
 
   * Fix checking db connection in mise.toml
