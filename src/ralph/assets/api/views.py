@@ -74,8 +74,6 @@ class ServiceEnvironmentViewSet(RalphAPIViewSet):
     queryset = models.ServiceEnvironment.objects.all()
     serializer_class = serializers.ServiceEnvironmentSerializer
     select_related = ["service", "environment", "service__support_team"]
-    # allow to only add environments through service resource
-    http_method_names = ["get", "delete"]
     prefetch_related = ["tags"] + [
         "service__{}".format(pr) for pr in ServiceViewSet.prefetch_related
     ]

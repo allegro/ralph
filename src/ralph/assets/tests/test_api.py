@@ -315,14 +315,14 @@ class ServicesEnvironmentsAPITests(RalphAPITestCase):
         self.assertEqual(response.data["service"]["id"], service_env.service.id)
         self.assertEqual(response.data["environment"]["id"], service_env.environment.id)
 
-    def test_create_service_should_return_method_not_allowed(self):
+    def test_create_service_environment(self):
         url = reverse("serviceenvironment-list")
         data = {
             "service": self.services[0].id,
             "environment": self.envs[0].id,
         }
         response = self.client.post(url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_patch_service_should_return_method_not_allowed(self):
         service_env = ServiceEnvironment.objects.all()[0]
