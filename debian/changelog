@@ -1,3 +1,10 @@
+ralph (20251209.1) jammy; urgency=medium
+
+  * Allow adding service environment to existing service
+  * Fix tests
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Tue, 09 Dec 2025 13:00:55 +0000
+
 ralph (20251208.1) jammy; urgency=medium
 
   [ Aleksander Więckowski ]
