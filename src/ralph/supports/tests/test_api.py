@@ -101,12 +101,12 @@ class SupportAPITests(RalphAPITestCase):
         url = reverse("support-list")
 
         with self.assertQueriesMoreOrLess(7, plus_minus=2):
-            response = self.client.get(
-                url, {"include_assets": "true"}, format="json"
-            )
+            response = self.client.get(url, {"include_assets": "true"}, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["count"], 15)  # 4 with assets + 10 without + 1 from setUp
+        self.assertEqual(
+            response.data["count"], 15
+        )  # 4 with assets + 10 without + 1 from setUp
 
         for result in response.data["results"]:
             if result["name"] == "support_with_assets_1":

@@ -52,7 +52,9 @@ class SupportSimpleSerializer(RalphAPISerializer):
 class BackOfficeAssetForSupportSerializer(RalphAPISerializer):
     id = serializers.IntegerField(source="pk")
     model = serializers.CharField(source="model.name", read_only=True)
-    manufacturer = serializers.CharField(source="model.manufacturer.name", read_only=True)
+    manufacturer = serializers.CharField(
+        source="model.manufacturer.name", read_only=True
+    )
     category = serializers.CharField(source="model.category.name", read_only=True)
     service_env = ServiceEnvironmentSimpleSerializer(read_only=True)
     property_of = serializers.CharField(source="property_of.name", read_only=True)
@@ -80,7 +82,9 @@ class BackOfficeAssetForSupportSerializer(RalphAPISerializer):
 class DataCenterAssetForSupportSerializer(RalphAPISerializer):
     id = serializers.IntegerField(source="pk")
     model = serializers.CharField(source="model.name", read_only=True)
-    manufacturer = serializers.CharField(source="model.manufacturer.name", read_only=True)
+    manufacturer = serializers.CharField(
+        source="model.manufacturer.name", read_only=True
+    )
     category = serializers.CharField(source="model.category.name", read_only=True)
     service_env = ServiceEnvironmentSimpleSerializer(read_only=True)
     property_of = serializers.CharField(source="property_of.name", read_only=True)
@@ -113,11 +117,11 @@ class SupportSerializer(TypeFromContentTypeSerializerMixin, RalphAPISerializer):
     datacenter_assets = serializers.SerializerMethodField()
 
     def get_base_objects(self, obj):
-        request = self.context.get('request')
+        request = self.context.get("request")
         base_objects = [bos.baseobject for bos in obj.baseobjectssupport_set.all()]
         return [
             request.build_absolute_uri(
-                reverse('baseobject-detail', kwargs={'pk': bo.pk})
+                reverse("baseobject-detail", kwargs={"pk": bo.pk})
             )
             for bo in base_objects
         ]
@@ -129,34 +133,36 @@ class SupportSerializer(TypeFromContentTypeSerializerMixin, RalphAPISerializer):
 
     def get_fields(self):
         fields = super().get_fields()
-        request = self.context.get('request')
-        if request and not request.query_params.get('include_assets'):
-            fields.pop('backoffice_assets', None)
-            fields.pop('datacenter_assets', None)
+        request = self.context.get("request")
+        if request and not request.query_params.get("include_assets"):
+            fields.pop("backoffice_assets", None)
+            fields.pop("datacenter_assets", None)
         return fields
 
     def get_backoffice_assets(self, obj):
-        request = self.context.get('request')
-        if not request or not request.query_params.get('include_assets'):
+        request = self.context.get("request")
+        if not request or not request.query_params.get("include_assets"):
             return []
 
         backoffice_ct_id = ContentType.objects.get_for_model(BackOfficeAsset).id
 
         backoffice_assets = [
-            bos.baseobject for bos in obj.baseobjectssupport_set.all()
+            bos.baseobject
+            for bos in obj.baseobjectssupport_set.all()
             if bos.baseobject.content_type_id == backoffice_ct_id
         ]
         return BackOfficeAssetForSupportSerializer(backoffice_assets, many=True).data
 
     def get_datacenter_assets(self, obj):
-        request = self.context.get('request')
-        if not request or not request.query_params.get('include_assets'):
+        request = self.context.get("request")
+        if not request or not request.query_params.get("include_assets"):
             return []
 
         datacenter_ct_id = ContentType.objects.get_for_model(DataCenterAsset).id
 
         datacenter_assets = [
-            bos.baseobject for bos in obj.baseobjectssupport_set.all()
+            bos.baseobject
+            for bos in obj.baseobjectssupport_set.all()
             if bos.baseobject.content_type_id == datacenter_ct_id
         ]
         return DataCenterAssetForSupportSerializer(datacenter_assets, many=True).data
