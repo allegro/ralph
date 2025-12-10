@@ -35,9 +35,9 @@ RUN apt-get clean && \
 
 # set UTF-8 locale
 RUN locale-gen en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
 
 RUN mkdir -p $RALPH_LOCAL_DIR
 COPY . $RALPH_LOCAL_DIR
