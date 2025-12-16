@@ -1,3 +1,10 @@
+ralph (20251216.1) jammy; urgency=medium
+
+  * Build improvements
+  * Fix running inkpy with uv
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Tue, 16 Dec 2025 09:18:50 +0000
+
 ralph (20251209.1) jammy; urgency=medium
 
   * Allow adding service environment to existing service
