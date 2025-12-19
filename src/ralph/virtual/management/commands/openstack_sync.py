@@ -220,6 +220,9 @@ class RalphClient:
         new_server = CloudHost(
             hostname=openstack_server["hostname"],
             cloudflavor=flavor,
+            disk = flavor.disk,
+            cores = flavor.cores,
+            memory = flavor.memory,
             parent=project,
             host_id=server_id,
             hypervisor=self._get_hypervisor(openstack_server["hypervisor"], server_id),
@@ -266,6 +269,9 @@ class RalphClient:
         if obj.cloudflavor != flavor:
             logger.info("Updating flavor ({}) for {}".format(flavor, server_id))
             obj.cloudflavor = flavor
+            obj.disk = flavor.disk
+            obj.cores = flavor.cores
+            obj.memory = flavor.memory
             self._save_object(obj, "Modify cloudflavor")
             modified = True
 

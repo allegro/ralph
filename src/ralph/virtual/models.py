@@ -50,16 +50,11 @@ class CloudProvider(AdminAbsoluteUrlMixin, NamedMixin):
     )
 
 
-class CloudFlavor(AdminAbsoluteUrlMixin, BaseObject):
-    name = models.CharField(_("name"), max_length=255, db_index=True)
-    cloudprovider = models.ForeignKey(CloudProvider, on_delete=models.CASCADE)
-    cloudprovider._autocomplete = False
-
-    flavor_id = models.CharField(unique=True, max_length=100)
-
-    def __str__(self):
-        return self.name
-
+class WithCpuMemDisk(BaseObject):
+    """
+    This was initially a part of CloudFlavor.
+    Now it's also possible to assign components directly to CloudHost.
+    """
     def _set_component(self, model_args):
         """create/modify component cpu, mem or disk"""
         try:
@@ -142,6 +137,20 @@ class CloudFlavor(AdminAbsoluteUrlMixin, BaseObject):
         if self.disk != new_disk:
             self._set_component(disk)
 
+    class Meta:
+        abstract = True
+
+
+class CloudFlavor(AdminAbsoluteUrlMixin, WithCpuMemDisk):
+    name = models.CharField(_("name"), max_length=255, db_index=True)
+    cloudprovider = models.ForeignKey(CloudProvider, on_delete=models.CASCADE)
+    cloudprovider._autocomplete = False
+
+    flavor_id = models.CharField(unique=True, max_length=100)
+
+    def __str__(self):
+        return self.name
+
 
 class CloudProject(PreviousStateMixin, AdminAbsoluteUrlMixin, BaseObject):
     cloudprovider = models.ForeignKey(CloudProvider, on_delete=models.CASCADE)
@@ -177,7 +186,7 @@ def update_service_env_on_cloudproject_save(sender, instance, **kwargs):
 
 
 class CloudHost(
-    PreviousStateMixin, AdminAbsoluteUrlMixin, NetworkableBaseObject, BaseObject
+    PreviousStateMixin, AdminAbsoluteUrlMixin, NetworkableBaseObject, WithCpuMemDisk
 ):
     _allow_in_dashboard = True
     previous_dc_host_update_fields = ["hostname"]

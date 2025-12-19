@@ -84,11 +84,20 @@ class SaveCloudFlavorSerializer(RalphAPISaveSerializer):
 class SaveCloudHostSerializer(RalphAPISaveSerializer):
     _validate_using_model_clean = False
     ip_addresses = serializers.ListField()
+    cores = serializers.IntegerField()
+    memory = serializers.IntegerField()
+    disk = serializers.IntegerField()
 
     def create(self, validated_data):
         ip_addresses = validated_data.pop("ip_addresses")
+        cores = validated_data.pop("cores")
+        memory = validated_data.pop("memory")
+        disk = validated_data.pop("disk")
         instance = super().create(validated_data)
         instance.ip_addresses = ip_addresses
+        instance.cores = cores
+        instance.memory = memory
+        instance.disk = disk
         return instance
 
     class Meta:
@@ -112,6 +121,10 @@ class CloudHostSerializer(NetworkComponentSerializerMixin, BaseObjectSerializer)
     parent = CloudProjectSimpleSerializer(source="cloudproject")
     cloudflavor = CloudFlavorSimpleSerializer()
     service_env = ServiceEnvironmentSimpleSerializer()
+    cores = serializers.IntegerField()
+    memory = serializers.IntegerField()
+    disk = serializers.IntegerField()
+
 
     class Meta(BaseObjectSerializer.Meta):
         model = CloudHost
