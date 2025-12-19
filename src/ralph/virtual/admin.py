@@ -395,7 +395,13 @@ class CloudHostAdmin(
 
     @mark_safe
     def cloudflavor_name(self, obj):
-        tooltip = "\n".join([f"Cores: {obj.cloudflavor.cores}", f"RAM size: {obj.cloudflavor.memory}MiB",  f"Disk size: {obj.cloudflavor.disk/1024}GiB"])
+        tooltip = "\n".join(
+            [
+                f"Cores: {obj.cloudflavor.cores}",
+                f"RAM size: {obj.cloudflavor.memory}MiB",
+                f"Disk size: {obj.cloudflavor.disk / 1024}GiB",
+            ]
+        )
         return '<a title="{}" href="{}">{}</a>'.format(
             tooltip,
             reverse("admin:virtual_cloudflavor_change", args=(obj.cloudflavor.id,)),

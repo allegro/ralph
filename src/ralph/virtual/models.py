@@ -55,6 +55,7 @@ class WithCpuMemDisk(BaseObject):
     This was initially a part of CloudFlavor.
     Now it's also possible to assign components directly to CloudHost.
     """
+
     def _set_component(self, model_args):
         """create/modify component cpu, mem or disk"""
         try:

@@ -125,7 +125,6 @@ class CloudHostSerializer(NetworkComponentSerializerMixin, BaseObjectSerializer)
     memory = serializers.IntegerField()
     disk = serializers.IntegerField()
 
-
     class Meta(BaseObjectSerializer.Meta):
         model = CloudHost
         depth = 1

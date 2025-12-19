@@ -220,9 +220,9 @@ class RalphClient:
         new_server = CloudHost(
             hostname=openstack_server["hostname"],
             cloudflavor=flavor,
-            disk = flavor.disk,
-            cores = flavor.cores,
-            memory = flavor.memory,
+            disk=flavor.disk,
+            cores=flavor.cores,
+            memory=flavor.memory,
             parent=project,
             host_id=server_id,
             hypervisor=self._get_hypervisor(openstack_server["hypervisor"], server_id),
