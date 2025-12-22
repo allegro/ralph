@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import abc
 import logging
 from collections import OrderedDict
 
@@ -50,11 +51,15 @@ class CloudProvider(AdminAbsoluteUrlMixin, NamedMixin):
     )
 
 
-class VirtualComponentDescriptor:
-    """Base descriptor for virtual component fields (cores, memory, disk)."""
-
-    component_type: ComponentType = None
-    field_path: str = None
+class VirtualComponentDescriptor(metaclass=abc.ABCMeta):
+    """
+    Base descriptor for virtual component fields (cores, memory, disk).
+    e.g. CloudHost -[through VirtualComponent]-> ComponentModel
+    Then it gets weird because in ComponentModel if it's CPU cores we read column 'cores'
+    but if it's memory or disk we read column 'size'
+    That's why we have field_path
+    Also, disk is stored in MiB in ComponentModel, but we show it in GiB
+    """
 
     def __init__(self):
         self.name = None
@@ -101,6 +106,17 @@ class VirtualComponentDescriptor:
             return self
         return self._get_component(instance)
 
+    @property
+    @abc.abstractmethod
+    def field_path(self) -> str:
+        raise NotImplementedError("Subclasses must implement field_path")
+
+    @property
+    @abc.abstractmethod
+    def component_type(self) -> ComponentType:
+        raise NotImplementedError("Subclasses must implement component_type")
+
+    @abc.abstractmethod
     def __set__(self, instance, value):
         raise NotImplementedError("Subclasses must implement __set__")
 

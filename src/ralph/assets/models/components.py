@@ -22,9 +22,6 @@ MAC_ERROR_MSG = "'%(value)s' is not a valid MAC address."
 mac_validator = RegexValidator(regex=MAC_RE, message=MAC_ERROR_MSG)
 
 
-# TODO(xor-xor): As discussed with @mkurek, this class should be removed,
-# but since it is used in some cloud-related functionality, it will be
-# removed later.
 class ComponentModel(
     AdminAbsoluteUrlMixin, AutocompleteTooltipMixin, NamedMixin, models.Model
 ):
