@@ -50,14 +50,36 @@ class CloudProvider(AdminAbsoluteUrlMixin, NamedMixin):
     )
 
 
-class WithCpuMemDisk(BaseObject):
-    """
-    This was initially a part of CloudFlavor.
-    Now it's also possible to assign components directly to CloudHost.
-    """
+class VirtualComponentDescriptor:
+    """Base descriptor for virtual component fields (cores, memory, disk)."""
 
-    def _set_component(self, model_args):
-        """create/modify component cpu, mem or disk"""
+    component_type: ComponentType = None
+    field_path: str = None
+
+    def __init__(self):
+        self.name = None
+
+    def __set_name__(self, owner, name):
+        self.name = name
+
+    def _get_component(self, instance):
+        """Get component value from the instance."""
+        try:
+            components = instance._prefetched_objects_cache["virtualcomponent_set"]
+        except (KeyError, AttributeError):
+            return (
+                instance.virtualcomponent_set.filter(model__type=self.component_type)
+                .values_list(self.field_path, flat=True)
+                .first()
+            )
+        else:
+            for component in components:
+                if component.model.type == self.component_type:
+                    return get_value_by_relation_path(component, self.field_path)
+            return None
+
+    def _set_component(self, instance, model_args):
+        """Create/modify component."""
         try:
             model = ComponentModel.objects.get(name=model_args["name"])
         except ObjectDoesNotExist:
@@ -66,86 +88,79 @@ class WithCpuMemDisk(BaseObject):
                 setattr(model, key, value)
             model.save()
         try:
-            VirtualComponent.objects.get(base_object=self, model=model)
+            VirtualComponent.objects.get(base_object=instance, model=model)
         except ObjectDoesNotExist:
-            for component in self.virtualcomponent_set.filter(
+            for component in instance.virtualcomponent_set.filter(
                 model__type=model_args["type"]
             ):
                 component.delete()
+            VirtualComponent(base_object=instance, model=model).save()
 
-            VirtualComponent(base_object=self, model=model).save()
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        return self._get_component(instance)
 
-    def _get_component(self, model_type, field_path):
-        # use cached components if already prefetched (using prefetch_related)
-        # otherwise, perform regular SQL query
-        try:
-            components = self._prefetched_objects_cache["virtualcomponent_set"]
-        except (KeyError, AttributeError):
-            return (
-                self.virtualcomponent_set.filter(model__type=model_type)
-                .values_list(field_path, flat=True)
-                .first()
-            )
-        else:
-            for component in components:
-                if component.model.type == model_type:
-                    return get_value_by_relation_path(component, field_path)
-            return None
-
-    @property
-    def cores(self):
-        """Number of cores"""
-        return self._get_component(ComponentType.processor, "model__cores")
-
-    @cores.setter
-    def cores(self, new_cores):
-        cpu = {
-            "name": "{} cores vCPU".format(new_cores),
-            "cores": new_cores,
-            "family": "vcpu",
-            "type": ComponentType.processor,
-        }
-        if self.cores != new_cores:
-            self._set_component(cpu)
-
-    @property
-    def memory(self):
-        """RAM memory size in MiB"""
-        return self._get_component(ComponentType.memory, "model__size")
-
-    @memory.setter
-    def memory(self, new_memory):
-        ram = {
-            "name": "{} MiB vMEM".format(new_memory),
-            "size": new_memory,
-            "type": ComponentType.memory,
-        }
-        if self.memory != new_memory:
-            self._set_component(ram)
-
-    @property
-    def disk(self):
-        """Disk size in MiB"""
-        return self._get_component(ComponentType.disk, "model__size")
-
-    @disk.setter
-    def disk(self, new_disk):
-        disk = {
-            "name": "{} GiB vHDD".format(
-                int(new_disk / 1024) if new_disk is not None else None
-            ),
-            "size": new_disk,
-            "type": ComponentType.disk,
-        }
-        if self.disk != new_disk:
-            self._set_component(disk)
-
-    class Meta:
-        abstract = True
+    def __set__(self, instance, value):
+        raise NotImplementedError("Subclasses must implement __set__")
 
 
-class CloudFlavor(AdminAbsoluteUrlMixin, WithCpuMemDisk):
+class CoresVirtualComponent(VirtualComponentDescriptor):
+    """Descriptor for CPU cores virtual component."""
+
+    component_type = ComponentType.processor
+    field_path = "model__cores"
+
+    def __set__(self, instance, new_cores):
+        if self.__get__(instance, type(instance)) != new_cores:
+            cpu = {
+                "name": "{} cores vCPU".format(new_cores),
+                "cores": new_cores,
+                "family": "vcpu",
+                "type": ComponentType.processor,
+            }
+            self._set_component(instance, cpu)
+
+
+class MemoryVirtualComponent(VirtualComponentDescriptor):
+    """Descriptor for RAM memory virtual component (size in MiB)."""
+
+    component_type = ComponentType.memory
+    field_path = "model__size"
+
+    def __set__(self, instance, new_memory):
+        if self.__get__(instance, type(instance)) != new_memory:
+            ram = {
+                "name": "{} MiB vMEM".format(new_memory),
+                "size": new_memory,
+                "type": ComponentType.memory,
+            }
+            self._set_component(instance, ram)
+
+
+class DiskVirtualComponent(VirtualComponentDescriptor):
+    """Descriptor for disk virtual component (size in MiB)."""
+
+    component_type = ComponentType.disk
+    field_path = "model__size"
+
+    def __set__(self, instance, new_disk):
+        if self.__get__(instance, type(instance)) != new_disk:
+            disk = {
+                "name": "{} GiB vHDD".format(
+                    int(new_disk / 1024) if new_disk is not None else None
+                ),
+                "size": new_disk,
+                "type": ComponentType.disk,
+            }
+            self._set_component(instance, disk)
+
+
+class CloudFlavor(AdminAbsoluteUrlMixin, BaseObject):
     name = models.CharField(_("name"), max_length=255, db_index=True)
+    cores = CoresVirtualComponent()
+    memory = MemoryVirtualComponent()
+    disk = DiskVirtualComponent()
     cloudprovider = models.ForeignKey(CloudProvider, on_delete=models.CASCADE)
     cloudprovider._autocomplete = False
 
@@ -189,7 +204,7 @@ def update_service_env_on_cloudproject_save(sender, instance, **kwargs):
 
 
 class CloudHost(
-    PreviousStateMixin, AdminAbsoluteUrlMixin, NetworkableBaseObject, WithCpuMemDisk
+    PreviousStateMixin, AdminAbsoluteUrlMixin, NetworkableBaseObject, BaseObject
 ):
     _allow_in_dashboard = True
     previous_dc_host_update_fields = ["hostname"]
@@ -223,6 +238,9 @@ class CloudHost(
         DataCenterAsset, blank=True, null=True, on_delete=models.CASCADE
     )
     image_name = models.CharField(max_length=255, null=True, blank=True)
+    cores = CoresVirtualComponent()
+    memory = MemoryVirtualComponent()
+    disk = DiskVirtualComponent()
 
     class Meta:
         verbose_name = _("Cloud host")
