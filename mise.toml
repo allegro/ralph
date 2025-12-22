@@ -108,7 +108,7 @@ run = "ruff format"
 description = "Format the code"
 
 [tasks.clean]
-run = ["find . -name '*.py[cod]' -delete", "rm .coverage || :"]
+run = ["find . -name '*.py[cod]' -delete", "rm -f .coverage"]
 hide = true
 
 [tasks.check-missing-migrations]

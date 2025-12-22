@@ -404,13 +404,15 @@ class PolymorphicDescendantsFilterBackend(LookupFilterBackend):
             if not filterset_fields:
                 # if not filterset_fields from API viewset get fields
                 # from django model admin
-                filterset_fields = ralph_site._registry[model].search_fields
+                if site := ralph_site._registry.get(model, None):
+                    filterset_fields = site.search_fields
 
-            model_ids, model_is_lookup_used = self._process_model(
-                model, request, filterset_fields, {}
-            )
-            ids |= model_ids
-            is_lookup_used |= model_is_lookup_used
+            if filterset_fields:
+                model_ids, model_is_lookup_used = self._process_model(
+                    model, request, filterset_fields, {}
+                )
+                ids |= model_ids
+                is_lookup_used |= model_is_lookup_used
         return ids, is_lookup_used
 
     def filter_queryset(self, request, queryset, view):

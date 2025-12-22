@@ -131,7 +131,7 @@ class WithCpuMemDisk(BaseObject):
     @disk.setter
     def disk(self, new_disk):
         disk = {
-            "name": "{} GiB vHDD".format(int(new_disk / 1024)),
+            "name": "{} GiB vHDD".format(int(new_disk / 1024) if new_disk is not None else None),
             "size": new_disk,
             "type": ComponentType.disk,
         }

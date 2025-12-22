@@ -220,9 +220,6 @@ class RalphClient:
         new_server = CloudHost(
             hostname=openstack_server["hostname"],
             cloudflavor=flavor,
-            disk=flavor.disk,
-            cores=flavor.cores,
-            memory=flavor.memory,
             parent=project,
             host_id=server_id,
             hypervisor=self._get_hypervisor(openstack_server["hypervisor"], server_id),
@@ -240,6 +237,9 @@ class RalphClient:
         new_server.tags.add(openstack_server["tag"])
         with transaction.atomic(), revisions.create_revision():
             new_server.ip_addresses = openstack_server["ips"]
+            new_server.disk=flavor.disk
+            new_server.cores=flavor.cores
+            new_server.memory=flavor.memory
             revisions.set_comment("Assign ip addresses to a host")
 
     def _update_server(self, openstack_server, server_id, ralph_server):
