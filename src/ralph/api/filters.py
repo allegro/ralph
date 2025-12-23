@@ -404,7 +404,7 @@ class PolymorphicDescendantsFilterBackend(LookupFilterBackend):
             if not filterset_fields:
                 # if not filterset_fields from API viewset get fields
                 # from django model admin
-                filterset_fields = ralph_site._registry.get[model].search_fields
+                filterset_fields = ralph_site._registry[model].search_fields
 
             model_ids, model_is_lookup_used = self._process_model(
                 model, request, filterset_fields, {}
