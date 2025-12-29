@@ -1,3 +1,10 @@
+ralph (20251229.1) jammy; urgency=medium
+
+  * Add CPU, Memory and Disk directly to CloudHost
+  * Document virtual components
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Mon, 29 Dec 2025 13:18:30 +0000
+
 ralph (20251216.1) jammy; urgency=medium
 
   * Build improvements
