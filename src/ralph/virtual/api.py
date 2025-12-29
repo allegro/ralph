@@ -84,11 +84,20 @@ class SaveCloudFlavorSerializer(RalphAPISaveSerializer):
 class SaveCloudHostSerializer(RalphAPISaveSerializer):
     _validate_using_model_clean = False
     ip_addresses = serializers.ListField()
+    cores = serializers.IntegerField(required=False)
+    memory = serializers.IntegerField(required=False)
+    disk = serializers.IntegerField(required=False)
 
     def create(self, validated_data):
         ip_addresses = validated_data.pop("ip_addresses")
+        cores = validated_data.pop("cores", None)
+        memory = validated_data.pop("memory", None)
+        disk = validated_data.pop("disk", None)
         instance = super().create(validated_data)
         instance.ip_addresses = ip_addresses
+        instance.cores = cores
+        instance.memory = memory
+        instance.disk = disk
         return instance
 
     class Meta:
@@ -112,6 +121,9 @@ class CloudHostSerializer(NetworkComponentSerializerMixin, BaseObjectSerializer)
     parent = CloudProjectSimpleSerializer(source="cloudproject")
     cloudflavor = CloudFlavorSimpleSerializer()
     service_env = ServiceEnvironmentSimpleSerializer()
+    cores = serializers.IntegerField()
+    memory = serializers.IntegerField()
+    disk = serializers.IntegerField()
 
     class Meta(BaseObjectSerializer.Meta):
         model = CloudHost
@@ -251,6 +263,7 @@ class CloudHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     prefetch_related = base_object_descendant_prefetch_related + [
         "tags",
         "cloudflavor__virtualcomponent_set__model",
+        "virtualcomponent_set__model",
         "licences",
         Prefetch("ethernet_set", queryset=Ethernet.objects.select_related("ipaddress")),
     ]
