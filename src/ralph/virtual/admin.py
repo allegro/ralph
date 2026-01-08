@@ -287,7 +287,7 @@ class CloudHostAdmin(
     ]
     list_filter = generate_list_filter_with_common_fields(
         list_filter_prefix, list_filter_postfix
-    )  #  + ["parent__cloudproject__name"]
+    )
     list_select_related = [
         "cloudflavor",
         "cloudprovider",
