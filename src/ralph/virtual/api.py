@@ -274,6 +274,11 @@ class CloudHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         "service_env__service__id",
     ]
 
+    extended_filter_fields = {
+        "cloudproject__name": ["parent__cloudproject__name"],
+        "cloudproject__id": ["parent__cloudproject__id"],
+    }
+
     def get_queryset(self):
         return super().get_queryset().filter(visibility_scope_filter(self.request.user))
 

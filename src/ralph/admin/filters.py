@@ -601,7 +601,10 @@ def register_custom_filters():
     This function is called in AppConfig.ready() (ralph.admin.apps).
     """
     field_filter_mapper = [
-        (lambda f: bool(f.choices), ChoicesListFilter),
+        (
+            lambda f: bool(f.choices if hasattr(f, "choices") else False),
+            ChoicesListFilter,
+        ),
         (
             lambda f: isinstance(f, (models.DecimalField, models.IntegerField)),
             NumberListFilter,
@@ -631,6 +634,5 @@ def register_custom_filters():
         ),
         (lambda f: isinstance(f, TaggableManager), TagsListFilter),
     ]
-
     for func, filter_class in field_filter_mapper:
         FieldListFilter.register(func, filter_class, take_priority=True)
