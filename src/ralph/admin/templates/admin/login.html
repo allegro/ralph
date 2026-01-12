@@ -48,7 +48,12 @@
         </div>
         <form action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}
           <fieldset>
-            <legend>{% trans 'Please login' %}</legend>
+            <legend>
+              <span>{% trans 'Please login' %}</span>
+              {% if show_login_button and login_button_url %}
+                <a href="{{ login_button_url }}" class="oauth-login-link">{% trans 'Log in with oAuth' %} <i class="fa fa-external-link" aria-hidden="true"></i></a>
+              {% endif %}
+            </legend>
               {{ form.as_p }}
             <button class="login right">{% trans 'Log in' %}</button>
           </fieldset>
