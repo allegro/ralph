@@ -753,7 +753,7 @@ class BaseObjectAPITests(RalphAPITestCase):
         response = self.client.get(url, format="json")
         self.assertEqual(len(response.data["results"]), 1)
 
-    def test_filter_by_valid_thru(self):
+    def test_filter_by_deletion_check(self):
         service_env = ServiceEnvironmentFactory(service__uid="sc-321")
         asset = DataCenterAssetFactory(service_env=service_env)
         licence_future = LicenceFactory(
@@ -769,7 +769,7 @@ class BaseObjectAPITests(RalphAPITestCase):
 
         url = "{}?{}".format(
             reverse("baseobject-list"),
-            urlencode({"service": "sc-321", "valid_thru": "2025-01-01"}),
+            urlencode({"service": "sc-321", "deletion_check": "2025-01-01"}),
         )
         response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)

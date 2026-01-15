@@ -109,17 +109,19 @@ class AssetModelViewSet(RalphAPIViewSet):
 
 
 class BaseObjectFilterSet(NetworkableObjectFilters):
-    valid_thru = django_filters.DateFilter(method="filter_valid_thru")
+    deletion_check = django_filters.DateFilter(method="filter_deletion_check")
 
     class Meta(NetworkableObjectFilters.Meta):
         model = models.BaseObject
 
-    def filter_valid_thru(self, queryset, name, value):
+    def filter_deletion_check(self, queryset, name, value):
         licence_ct = ContentType.objects.get_for_model(Licence)
         support_ct = ContentType.objects.get_for_model(Support)
         ssl_ct = ContentType.objects.get_for_model(SSLCertificate)
+        data_center_asset_ct = ContentType.objects.get_for_model(DataCenterAsset)
+
         return queryset.filter(
-            ~Q(content_type__in=[licence_ct, support_ct, ssl_ct])
+            Q(content_type=data_center_asset_ct)
             | Q(content_type=licence_ct, licence__valid_thru__gte=value)
             | Q(content_type=support_ct, support__date_to__gte=value)
             | Q(content_type=ssl_ct, sslcertificate__date_to__gte=value)
