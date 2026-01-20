@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 """
-Base command class and utilities for extra view permissions management.
+Base command class and utilities for permissions management.
 
 Provides shared functionality like psql-style table output formatting.
 """

@@ -130,7 +130,3 @@ def assign_permission_to_group(codename: str, group_name: str) -> AssignmentResu
 
     group.permissions.add(perm)
     return AssignmentResult(True)
-
-
-# Aliases for backward compatibility
-get_permission_info_list = collect_permission_info

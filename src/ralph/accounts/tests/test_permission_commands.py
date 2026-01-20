@@ -1,8 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Tests for permission management commands.
-"""
-
 import json
 import tempfile
 from io import StringIO
@@ -31,8 +26,6 @@ from ralph.accounts.models import RalphUser
 
 
 class BaseFormattersTestCase(TestCase):
-    """Tests for _base.py formatting functions."""
-
     def test_strip_ansi_removes_escape_codes(self):
         text_with_ansi = "\x1b[31mred text\x1b[0m"
         result = strip_ansi(text_with_ansi)

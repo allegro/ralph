@@ -9,7 +9,7 @@ showing which are active, orphaned, and their group assignments.
 import json
 
 from ralph.accounts.management.commands._base import PermissionBaseCommand
-from ralph.lib.permissions.utils import get_permission_info_list
+from ralph.lib.permissions.utils import collect_permission_info
 
 
 class Command(PermissionBaseCommand):
@@ -38,7 +38,7 @@ class Command(PermissionBaseCommand):
         orphaned_only = options["orphaned_only"]
         output_format = options["format"]
 
-        data, active_count, orphaned_count = get_permission_info_list(
+        data, active_count, orphaned_count = collect_permission_info(
             include_groups=show_groups,
             orphaned_only=orphaned_only,
         )
