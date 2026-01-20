@@ -85,6 +85,8 @@ class RalphAdminSite(RalphAdminSiteMixin, AdminSite):
     def each_context(self, request):
         context = super(RalphAdminSite, self).each_context(request)
         context["google_tag_manager_tag_id"] = settings.GOOGLE_TAG_MANAGER_TAG_ID
+        context["show_login_button"] = settings.SHOW_LOGIN_BUTTON
+        context["login_button_url"] = settings.LOGIN_BUTTON_URL
         return context
 
     final_catch_all_view = False
