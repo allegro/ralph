@@ -3,9 +3,9 @@ Utility functions for extra view permissions management.
 """
 
 from dataclasses import dataclass
-from typing import Optional
 
-from django.contrib.auth.models import Group, Permission
+from django.contrib.auth.models import Permission
+from django.db.models import QuerySet
 
 from ralph.admin.sites import ralph_site
 
@@ -36,7 +36,7 @@ class AssignmentResult:
     """Result of a permission assignment operation."""
 
     success: bool
-    error: Optional[str] = None
+    error: str | None = None
 
 
 def get_registered_codenames() -> set[str]:
@@ -56,14 +56,14 @@ def get_admin_view_mapping() -> dict:
     }
 
 
-def query_permissions():
+def query_permissions() -> QuerySet[Permission]:
     """Returns all extra view permissions."""
     return Permission.objects.filter(
         codename__startswith=EXTRA_VIEW_PERMISSION_PREFIX
     ).select_related("content_type")
 
 
-def query_orphaned_permissions():
+def query_orphaned_permissions() -> QuerySet[Permission]:
     """Returns permissions not associated with any registered view."""
     return query_permissions().exclude(codename__in=get_registered_codenames())
 
@@ -104,28 +104,3 @@ def collect_permission_info(
         )
 
     return result, len(get_registered_codenames()), len(orphaned_codenames)
-
-
-def export_permission_mappings() -> dict[str, list[str]]:
-    """Exports current permission-group mappings as {codename: [group_names]}."""
-    return {
-        perm.codename: get_permission_groups(perm)
-        for perm in query_permissions().prefetch_related("group_set")
-        if perm.group_set.exists()
-    }
-
-
-def assign_permission_to_group(codename: str, group_name: str) -> AssignmentResult:
-    """Assigns a permission to a group."""
-    try:
-        perm = Permission.objects.get(codename=codename)
-    except Permission.DoesNotExist:
-        return AssignmentResult(False, f"Permission '{codename}' does not exist")
-
-    try:
-        group = Group.objects.get(name=group_name.strip())
-    except Group.DoesNotExist:
-        return AssignmentResult(False, f"Group '{group_name}' does not exist")
-
-    group.permissions.add(perm)
-    return AssignmentResult(True)
