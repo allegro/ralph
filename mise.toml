@@ -104,7 +104,7 @@ run = "ruff check"
 description = "Check code formatting and linting"
 
 [tasks.format]
-run = "ruff format"
+run = ["ruff format", "ruff check --fix"]
 description = "Format the code"
 
 [tasks.clean]

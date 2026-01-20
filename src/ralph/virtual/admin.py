@@ -278,7 +278,13 @@ class CloudHostAdmin(
         "get_tags",
     ]
     list_filter_prefix = [BaseObjectHostnameFilter]
-    list_filter_postfix = ["cloudprovider", "cloudflavor", TagsListFilter, "hypervisor"]
+    list_filter_postfix = [
+        "parent__cloudproject__name",
+        "cloudprovider",
+        "cloudflavor",
+        TagsListFilter,
+        "hypervisor",
+    ]
     list_filter = generate_list_filter_with_common_fields(
         list_filter_prefix, list_filter_postfix
     )
@@ -356,7 +362,14 @@ class CloudHostAdmin(
             super()
             .get_queryset(request)
             .filter(visibility_scope_filter(request.user))
-            .prefetch_related("tags", "ethernet_set__ipaddress")
+            .polymorphic_prefetch_related(
+                CloudHost=[
+                    "tags",
+                    "ethernet_set__ipaddress",
+                    "cloudflavor__virtualcomponent_set__model",
+                    "virtualcomponent_set__model",
+                ]
+            )
         )
 
     def has_delete_permission(self, request, obj=None):
