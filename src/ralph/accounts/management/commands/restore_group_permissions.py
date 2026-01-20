@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Management command to restore group permissions from a JSON file.
 """

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Management command to export group permissions to a JSON file.
 """

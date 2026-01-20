@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Management command to clean up orphaned extra view permissions.
 

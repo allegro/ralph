@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Management command to list and audit extra view permissions.
 
