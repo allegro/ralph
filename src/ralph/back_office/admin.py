@@ -213,6 +213,7 @@ class BackOfficeAssetAdmin(
         "warehouse",
         "sn",
         "region",
+        "location",
         "property_of",
         "remarks",
         "invoice_date",
