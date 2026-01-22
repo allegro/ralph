@@ -1,3 +1,16 @@
+ralph (20260122.1) jammy; urgency=medium
+
+  [ Paweł Szulc ]
+  * Filter by project name
+  * Remove useless comment
+
+  [ Olga Matyla ]
+  * Add placeholders in login form (#3928)
+  * Add additional filters for base-objects endpoint (#3923)
+  * Add location in bulk edit (#3929)
+
+ -- Olga Matyla <olga.matyla@allegro.com>  Thu, 22 Jan 2026 09:01:52 +0000
+
 ralph (20251229.1) jammy; urgency=medium
 
   * Add CPU, Memory and Disk directly to CloudHost
