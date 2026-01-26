@@ -1,3 +1,9 @@
+ralph (20260126.1) jammy; urgency=medium
+
+  * Add action decativate users
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Mon, 26 Jan 2026 13:22:08 +0000
+
 ralph (20260123.1) jammy; urgency=medium
 
   * Fix permissions disappearing automatically in some cases
