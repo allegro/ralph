@@ -35,7 +35,7 @@ alias = ["deps", "i"]
 [tasks.up]
 run = """
   {% if not vars.skip_containers %}
-    podman compose -f docker/docker-compose-dev.yml -p ralph up -d
+    podman compose -f docker/docker-compose-dev.yml -p ralph up --no-recreate -d
   {% else %}
     echo "Skipping containers because of skip_containers var"
   {% endif %}
