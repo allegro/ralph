@@ -4,13 +4,17 @@ from datetime import date
 
 from django.conf import settings
 from django.contrib.auth.hashers import check_password
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Permission, Group
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 
 from ralph.accounts.ldap import manager_country_attribute_populate
-from ralph.accounts.management.commands.ldap_sync import _truncate, ldap_module_exists
+from ralph.accounts.management.commands.ldap_sync import (
+    _truncate,
+    ldap_module_exists,
+    assign_user_to_group,
+)
 from ralph.accounts.models import RalphUser, Region
 from ralph.api.tests._base import RalphAPITestCase
 from ralph.assets.tests.factories import (
@@ -22,6 +26,7 @@ from ralph.licences.models import LicenceUser
 from ralph.licences.tests.factories import LicenceFactory
 from ralph.tests import factories
 from ralph.tests.mixins import ClientMixin
+from django.test.utils import override_settings
 
 NO_LDAP_MODULE = not ldap_module_exists
 
@@ -234,3 +239,42 @@ class RalphUserAdminTests(TestCase, ClientMixin):
         # Check if password is actually changed
         self.admin.refresh_from_db()
         check_password(new_password, self.admin.password)
+
+
+class RalphUserRegionTests(TestCase):
+    def test_user_region_str(self):
+        region = Region.objects.create(name="PL")
+        user = factories.UserFactory()
+        user.regions.add(region)
+        self.assertEqual(str(user.regions.first()), "PL")
+
+    def test_automatic_region_assignment(self):
+        region_pl = Region.objects.create(name="PL")
+        region_cz = Region.objects.create(name="CZ")
+        multi_region_group = Group.objects.create(name="Multi region group")
+        user = factories.UserFactory()
+
+        with override_settings(
+            DEFAULT_REGIONS_FOR_GROUP={"Multi region group": ["PL", "CZ"]}
+        ):
+            assign_user_to_group(user, multi_region_group)  # noqa
+
+        self.assertIn(region_cz, user.regions.all())
+        self.assertIn(region_pl, user.regions.all())
+
+    def test_automatic_region_assignment_when_user_already_in_group(self):
+        region_pl = Region.objects.create(name="PL")
+        region_cz = Region.objects.create(name="CZ")
+        multi_region_group = Group.objects.create(name="Multi region group")
+        user = factories.UserFactory()
+        assign_user_to_group(user, multi_region_group)  # noqa
+
+        self.assertEqual(user.regions.all().count(), 0)
+
+        with override_settings(
+            DEFAULT_REGIONS_FOR_GROUP={"Multi region group": ["PL", "CZ"]}
+        ):
+            assign_user_to_group(user, multi_region_group)  # noqa
+
+        self.assertIn(region_cz, user.regions.all())
+        self.assertIn(region_pl, user.regions.all())

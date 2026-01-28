@@ -701,3 +701,7 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 3000
 
 SHOW_LOGIN_BUTTON = bool_from_env("SHOW_LOGIN_BUTTON", False)
 LOGIN_BUTTON_URL = os.environ.get("LOGIN_BUTTON_URL", "")
+
+DEFAULT_REGIONS_FOR_GROUP = json.loads(
+    os.environ.get("DEFAULT_REGIONS_FOR_GROUP", "{}")
+)
