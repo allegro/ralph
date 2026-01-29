@@ -1,3 +1,10 @@
+ralph (20260129.1) jammy; urgency=medium
+
+  * Add auto region assignment based on group
+  * Unify handling JSON env
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Thu, 29 Jan 2026 14:50:27 +0000
+
 ralph (20260126.1) jammy; urgency=medium
 
   * Add action decativate users
