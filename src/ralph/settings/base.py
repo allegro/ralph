@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
+import logging
 import os
 from collections import ChainMap
 from datetime import datetime
@@ -56,6 +57,68 @@ START_TIMESTAMP = datetime.now()
 SECRET_KEY = os.environ.get("SECRET_KEY", "CHANGE_ME")
 LOG_FILEPATH = os.environ.get("LOG_FILEPATH", "/tmp/ralph.log")
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "datefmt": "%d.%m.%Y %H:%M:%S",
+            "format": (
+                "[%(asctime)08s,%(msecs)03d] %(levelname)-7s [%(processName)s"
+                " %(process)d] %(module)s - %(message)s"
+            ),
+        },
+        "simple": {
+            "datefmt": "%H:%M:%S",
+            "format": "[%(asctime)08s] %(levelname)-7s %(message)s",
+        },
+    },
+    "handlers": {
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+        "file": {
+            "level": "INFO",
+            "class": "logging.handlers.RotatingFileHandler",
+            "maxBytes": 1024 * 1024 * 100,  # 100 MB
+            "backupCount": 10,
+            "filename": os.environ.get("LOG_FILEPATH", LOG_FILEPATH),
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "django.request": {
+            "handlers": ["file"],
+            "level": os.environ.get("LOGGING_DJANGO_REQUEST_LEVEL", "WARNING"),
+            "propagate": True,
+        },
+        "ralph": {
+            "handlers": ["file"],
+            "level": os.environ.get("LOGGING_RALPH_LEVEL", "WARNING"),
+            "propagate": True,
+        },
+        "rq.worker": {
+            "level": os.environ.get("LOGGING_RQ_LEVEL", "WARNING"),
+            "handlers": ["file"],
+            "propagate": True,
+        },
+    },
+}
+
+def json_from_env(var, default=None):
+    """Helper for converting env string into json object."""
+    os_var = os.getenv(var)
+    if os_var is None:
+        return default
+    else:
+        try:
+            return json.loads(os_var)
+        except json.JSONDecodeError:
+            logging.getLogger().exception("Error loading JSON from env var %s, defaulting to %s", var, default)
+            return default
+
 DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
@@ -79,7 +142,7 @@ INSTALLED_APPS = (
     "django_rq",
     "import_export",
     "mptt",
-    "reversion",
+    "reveronion",
     "sitetree",
     "ralph.access_cards",
     "ralph.accounts",
@@ -171,12 +234,8 @@ DEFAULT_DATABASE_OPTIONS = {
     SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
     """,
 }
-DATABASE_OPTIONS_FROM_ENV = os.environ.get("DATABASE_OPTIONS", None)
-DATABASE_OPTIONS = (
-    json.loads(DATABASE_OPTIONS_FROM_ENV)
-    if DATABASE_OPTIONS_FROM_ENV
-    else DEFAULT_DATABASE_OPTIONS
-)
+
+DATABASE_OPTIONS = json_from_env("DATABASE_OPTIONS", default=DEFAULT_DATABASE_OPTIONS)
 
 DATABASE_SSL_CA = os.environ.get("DATABASE_SSL_CA", None)
 if DATABASE_SSL_CA:
@@ -245,55 +304,6 @@ LDAP_SERVER_OBJECT_USER_CLASS = "user"  # possible values: user, person
 ADMIN_SITE_HEADER = "Ralph 3"
 ADMIN_SITE_TITLE = "Ralph 3"
 
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "verbose": {
-            "datefmt": "%d.%m.%Y %H:%M:%S",
-            "format": (
-                "[%(asctime)08s,%(msecs)03d] %(levelname)-7s [%(processName)s"
-                " %(process)d] %(module)s - %(message)s"
-            ),
-        },
-        "simple": {
-            "datefmt": "%H:%M:%S",
-            "format": "[%(asctime)08s] %(levelname)-7s %(message)s",
-        },
-    },
-    "handlers": {
-        "console": {
-            "level": "DEBUG",
-            "class": "logging.StreamHandler",
-            "formatter": "simple",
-        },
-        "file": {
-            "level": "INFO",
-            "class": "logging.handlers.RotatingFileHandler",
-            "maxBytes": 1024 * 1024 * 100,  # 100 MB
-            "backupCount": 10,
-            "filename": os.environ.get("LOG_FILEPATH", LOG_FILEPATH),
-            "formatter": "verbose",
-        },
-    },
-    "loggers": {
-        "django.request": {
-            "handlers": ["file"],
-            "level": os.environ.get("LOGGING_DJANGO_REQUEST_LEVEL", "WARNING"),
-            "propagate": True,
-        },
-        "ralph": {
-            "handlers": ["file"],
-            "level": os.environ.get("LOGGING_RALPH_LEVEL", "WARNING"),
-            "propagate": True,
-        },
-        "rq.worker": {
-            "level": os.environ.get("LOGGING_RQ_LEVEL", "WARNING"),
-            "handlers": ["file"],
-            "propagate": True,
-        },
-    },
-}
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -452,7 +462,7 @@ DEPLOYMENT_MAX_DNS_ENTRIES_TO_CLEAN = 30
 # MY_EQUIPMENT_LINKS = [
 #     {'url': 'http://....', 'name': 'Link name'},
 # ]
-MY_EQUIPMENT_LINKS = json.loads(os.environ.get("MY_EQUIPMENT_LINKS", "[]"))
+MY_EQUIPMENT_LINKS = json_from_env("MY_EQUIPMENT_LINKS", [])
 MANAGING_DEVICES_MOVED_INFO = os.environ.get("MANAGING_DEVICES_MOVED_INFO", "")  # noqa
 MY_EQUIPMENT_REPORT_FAILURE_URL = os.environ.get("MY_EQUIPMENT_REPORT_FAILURE_URL", "")  # noqa
 MY_EQUIPMENT_SHOW_BUYOUT_DATE = bool_from_env("MY_EQUIPMENT_SHOW_BUYOUT_DATE")
@@ -526,14 +536,12 @@ RELEASE_REPORT_CONFIG = {
     # report with name 'release' is by default
     "DEFAULT_REPORT": os.environ.get("RELEASE_REPORT_CONFIG_DEFAULT_REPORT", "release"),
     # map transition id to different report
-    "REPORTS_MAPPER": json.loads(
-        os.environ.get("RELEASE_REPORT_CONFIG_REPORTS_MAPPER", "{}")
-    ),
+    "REPORTS_MAPPER": json_from_env("RELEASE_REPORT_CONFIG_REPORTS_MAPPER", {}),
 }
 
 MAP_IMPORTED_ID_TO_NEW_ID = False
 
-OPENSTACK_INSTANCES = json.loads(os.environ.get("OPENSTACK_INSTANCES", "[]"))
+OPENSTACK_INSTANCES = json_from_env("OPENSTACK_INSTANCES", [])
 DEFAULT_OPENSTACK_PROVIDER_NAME = os.environ.get(
     "DEFAULT_OPENSTACK_PROVIDER_NAME", "openstack"
 )
@@ -623,7 +631,7 @@ HERMES_CHANGE_MGMT_TOPICS = {
 # Hermes settings
 
 ENABLE_HERMES_INTEGRATION = bool_from_env("ENABLE_HERMES_INTEGRATION")
-HERMES = json.loads(os.environ.get("HERMES", "{}"))
+HERMES = json_from_env("HERMES", {})
 HERMES["ENABLED"] = ENABLE_HERMES_INTEGRATION
 # topic name where DC asset, cloud host, virtual server changes should be
 # announced
@@ -693,15 +701,12 @@ OAUTH_TOKEN_URL = "https://localhost/"
 
 GOOGLE_TAG_MANAGER_TAG_ID = os.environ.get("GOOGLE_TAG_MANAGER_TAG_ID", None)
 
-ASSET_BUYOUT_CATEGORY_TO_MONTHS = json.loads(
-    os.environ.get("ASSET_BUYOUT_CATEGORY_TO_MONTHS", "{}")
-)
+ASSET_BUYOUT_CATEGORY_TO_MONTHS = json_from_env("ASSET_BUYOUT_CATEGORY_TO_MONTHS", {})
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 3000
 
 SHOW_LOGIN_BUTTON = bool_from_env("SHOW_LOGIN_BUTTON", False)
 LOGIN_BUTTON_URL = os.environ.get("LOGIN_BUTTON_URL", "")
 
-DEFAULT_REGIONS_FOR_GROUP = json.loads(
-    os.environ.get("DEFAULT_REGIONS_FOR_GROUP", "{}")
-)
+DEFAULT_REGIONS_FOR_GROUP = json_from_env("DEFAULT_REGIONS_FOR_GROUP", {})
+
