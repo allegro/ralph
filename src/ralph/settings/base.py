@@ -107,6 +107,7 @@ LOGGING = {
     },
 }
 
+
 def json_from_env(var, default=None):
     """Helper for converting env string into json object."""
     os_var = os.getenv(var)
@@ -116,8 +117,11 @@ def json_from_env(var, default=None):
         try:
             return json.loads(os_var)
         except json.JSONDecodeError:
-            logging.getLogger().exception("Error loading JSON from env var %s, defaulting to %s", var, default)
+            logging.getLogger().exception(
+                "Error loading JSON from env var %s, defaulting to %s", var, default
+            )
             return default
+
 
 DEBUG = False
 
@@ -142,7 +146,7 @@ INSTALLED_APPS = (
     "django_rq",
     "import_export",
     "mptt",
-    "reveronion",
+    "reversion",
     "sitetree",
     "ralph.access_cards",
     "ralph.accounts",
@@ -709,4 +713,3 @@ SHOW_LOGIN_BUTTON = bool_from_env("SHOW_LOGIN_BUTTON", False)
 LOGIN_BUTTON_URL = os.environ.get("LOGIN_BUTTON_URL", "")
 
 DEFAULT_REGIONS_FOR_GROUP = json_from_env("DEFAULT_REGIONS_FOR_GROUP", {})
-
