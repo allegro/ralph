@@ -71,13 +71,13 @@ class MappedGroupOfNamesType(ActiveDirectoryGroupType):
         handle_groups(nested_groups_dns)
         return group_map
 
-    def group_name_from_info(self, group_info):
+    def group_name_from_info(self, group_info) -> str | None:
         """Map ldap group names into ralph names if mapping defined."""
         if self.ldap_groups:
             for dn in group_info[1]["distinguishedname"]:
-                mapped = self.ldap_groups.get(dn)
-                if mapped:
+                if mapped := self.ldap_groups.get(dn):
                     return mapped
+            return None
         # return original name if mapping not defined
         else:
             return super(MappedGroupOfNamesType, self).group_name_from_info(group_info)
