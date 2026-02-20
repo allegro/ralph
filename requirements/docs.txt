@@ -39,7 +39,7 @@ cmd2==2.7.0
     # via cliff
 colorama==0.4.6
     # via mkdocs-material
-cryptography==45.0.5
+cryptography==46.0.5
     # via
     #   django-cryptography-django5
     #   openstacksdk
@@ -62,7 +62,7 @@ defusedxml==0.7.1
     #   social-auth-core
 diff-match-patch==20241021
     # via django-import-export
-django==4.2.23
+django==4.2.28
     # via
     #   ralph (pyproject.toml)
     #   django-appconf
@@ -288,7 +288,7 @@ pbr==6.1.1
     #   python-keystoneclient
     #   python-novaclient
     #   stevedore
-pillow==11.3.0
+pillow==12.1.1
     # via ralph (pyproject.toml)
 platformdirs==4.3.8
     # via
@@ -313,7 +313,7 @@ psycopg-pool==3.2.7
     # via psycopg
 py-moneyed==3.0
     # via django-money
-pyasn1==0.6.1
+pyasn1==0.6.2
     # via
     #   pyasn1-modules
     #   python-ldap
@@ -329,7 +329,7 @@ pyhermes==0.6.0
     # via ralph (pyproject.toml)
 pyjwt==2.10.1
     # via social-auth-core
-pymdown-extensions==10.4
+pymdown-extensions==10.16.1
     # via mkdocs-material
 pyparsing==3.2.3
     # via oslo-utils
@@ -344,7 +344,7 @@ python-ironicclient==5.12.0
     # via ralph (pyproject.toml)
 python-keystoneclient==5.6.0
     # via ralph (pyproject.toml)
-python-ldap==3.4.4
+python-ldap==3.4.5
     # via django-auth-ldap
 python-novaclient==3.2.0
     # via ralph (pyproject.toml)
@@ -413,7 +413,7 @@ rq==1.16.2
     # via
     #   ralph (pyproject.toml)
     #   django-rq
-setuptools==65.7.0
+setuptools==78.1.1
     # via
     #   ralph (pyproject.toml)
     #   django-money
@@ -431,11 +431,11 @@ six==1.16.0
     #   pyhermes
     #   python-dateutil
     #   python-novaclient
-social-auth-app-django==5.4.3
+social-auth-app-django==5.6.0
     # via ralph (pyproject.toml)
 social-auth-core==4.7.0
     # via social-auth-app-django
-sqlparse==0.5.3
+sqlparse==0.5.4
     # via django
 statsd==3.3.0
     # via ralph (pyproject.toml)
@@ -472,7 +472,7 @@ tzdata==2025.2
     #   oslo-utils
 unidecode==0.4.18
     # via ralph (pyproject.toml)
-urllib3==2.5.0
+urllib3==2.6.3
     # via requests
 watchdog==6.0.0
     # via mkdocs
