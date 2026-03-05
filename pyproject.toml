@@ -13,7 +13,7 @@ dev = [
   "pudb",
   "ruff",
   "toml-sort>=0.23.1",
-  "werkzeug==0.16.1"
+  "werkzeug==3.1.6"
 ]
 docs = [
   "mkdocs",

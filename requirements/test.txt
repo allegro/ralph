@@ -48,7 +48,7 @@ coverage==7.9.2
     #   coveralls
 coveralls==4.0.1
     # via ralph (pyproject.toml:test)
-cryptography==45.0.5
+cryptography==46.0.5
     # via
     #   django-cryptography-django5
     #   openstacksdk
@@ -75,7 +75,7 @@ defusedxml==0.7.1
     #   social-auth-core
 diff-match-patch==20241021
     # via django-import-export
-django==4.2.23
+django==4.2.29
     # via
     #   ralph (pyproject.toml)
     #   django-appconf
@@ -314,7 +314,7 @@ pbr==6.1.1
     #   stevedore
 pexpect==4.9.0
     # via ipython
-pillow==11.3.0
+pillow==12.1.1
     # via ralph (pyproject.toml)
 platformdirs==4.3.8
     # via python-ironicclient
@@ -345,7 +345,7 @@ pure-eval==0.2.3
     # via stack-data
 py-moneyed==3.0
     # via django-money
-pyasn1==0.6.1
+pyasn1==0.6.2
     # via
     #   pyasn1-modules
     #   python-ldap
@@ -375,7 +375,7 @@ python-ironicclient==5.12.0
     # via ralph (pyproject.toml)
 python-keystoneclient==5.6.0
     # via ralph (pyproject.toml)
-python-ldap==3.4.4
+python-ldap==3.4.5
     # via django-auth-ldap
 python-novaclient==3.2.0
     # via ralph (pyproject.toml)
@@ -479,7 +479,7 @@ sphinxcontrib-qthelp==2.0.0
     # via sphinx
 sphinxcontrib-serializinghtml==2.0.0
     # via sphinx
-sqlparse==0.5.3
+sqlparse==0.5.4
     # via
     #   django
     #   django-debug-toolbar
@@ -536,7 +536,7 @@ tzdata==2025.2
     #   oslo-utils
 unidecode==0.4.18
     # via ralph (pyproject.toml)
-urllib3==2.5.0
+urllib3==2.6.3
     # via requests
 urwid==3.0.2
     # via
@@ -549,7 +549,7 @@ wcwidth==0.2.13
     #   cmd2
     #   prompt-toolkit
     #   urwid
-werkzeug==0.16.1
+werkzeug==3.1.6
     # via ralph (pyproject.toml:dev)
 wrapt==1.10.6
     # via
