@@ -2,6 +2,8 @@
 from urllib.parse import urlencode
 
 from ddt import data, ddt
+from django.db import connections
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from rest_framework import status
 
@@ -985,6 +987,71 @@ class DCHostAPITests(RalphAPITestCase):
         self.virtual.refresh_from_db()
         self.assertEqual(
             self.virtual.custom_fields.get(custom_field=cf.id).value, "test_value"
+        )
+
+    def test_fields_query_param_filters_dc_host_fields(self):
+        """Only requested fields are returned via ?fields= query param."""
+        expected_fields = [
+            "hostname",
+            "service_env",
+            "configuration_path",
+            "configuration_variables",
+            "ipaddresses",
+        ]
+        url = "{}?{}".format(
+            reverse("dchost-detail", args=(self.dc_asset.pk,)),
+            "fields=hostname,service_env,configuration_path,"
+            "configuration_variables,ipaddresses",
+        )
+        response = self.client.get(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertCountEqual(response.data.keys(), expected_fields)
+        # nested objects should still have their inner fields
+        self.assertIn("service_uid", response.data["service_env"])
+        self.assertIn("environment", response.data["service_env"])
+        self.assertIn("path", response.data["configuration_path"])
+
+    def test_fields_query_param_filters_dc_host_list(self):
+        """?fields= works on the list endpoint too."""
+        expected_fields = [
+            "hostname",
+            "service_env",
+            "configuration_path",
+            "configuration_variables",
+            "ipaddresses",
+        ]
+        url = "{}?{}".format(
+            reverse("dchost-list"),
+            "fields=hostname,service_env,configuration_path,"
+            "configuration_variables,ipaddresses",
+        )
+        response = self.client.get(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreater(response.data["count"], 0)
+        for item in response.data["results"]:
+            self.assertCountEqual(item.keys(), expected_fields)
+
+    def test_fields_query_count_no_worse_than_without(self):
+        """?fields= should use no more SQL queries than a full response."""
+        url_base = reverse("dchost-list") + "?limit=100"
+        url_fields = url_base + (
+            "&fields=hostname,service_env,configuration_path,"
+            "configuration_variables,ipaddresses"
+        )
+
+        with CaptureQueriesContext(connections["default"]) as baseline:
+            resp = self.client.get(url_base, format="json")
+            self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        with CaptureQueriesContext(connections["default"]) as filtered:
+            resp = self.client.get(url_fields, format="json")
+            self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        self.assertLessEqual(
+            len(filtered),
+            len(baseline),
+            "?fields= used %d queries, baseline used %d"
+            % (len(filtered), len(baseline)),
         )
 
 

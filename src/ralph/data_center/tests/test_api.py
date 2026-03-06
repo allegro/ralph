@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import datetime
 
+from django.db import connections
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from rest_framework import status
 
@@ -31,6 +33,7 @@ from ralph.data_center.tests.factories import (
     RackFactory,
     ServerRoomFactory,
 )
+from ralph.lib.custom_fields.models import CustomField
 from ralph.networks.tests.factories import IPAddressFactory
 from ralph.supports.tests.factories import SupportFactory, DataCenterAssetSupportFactory
 from ralph.virtual.tests.factories import CloudHostFactory, VirtualServerFactory
@@ -398,6 +401,53 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["support_end_date"], "2025-12-24")
+
+    def test_fields_query_param_filters_data_center_asset_fields(self):
+        """Only requested fields are returned via ?fields= query param."""
+        expected_fields = [
+            "hostname",
+            "service_env",
+            "configuration_path",
+            "configuration_variables",
+            "ipaddresses",
+        ]
+        url = "{}?{}".format(
+            reverse("datacenterasset-detail", args=(self.dc_asset.id,)),
+            "fields=hostname,service_env,configuration_path,"
+            "configuration_variables,ipaddresses",
+        )
+        response = self.client.get(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertCountEqual(response.data.keys(), expected_fields)
+        self.assertIn("service_uid", response.data["service_env"])
+        self.assertIn("environment", response.data["service_env"])
+        self.assertIn("path", response.data["configuration_path"])
+
+    def test_fields_query_count_no_worse_than_without(self):
+        """?fields= should use no more SQL queries than a full response."""
+        CustomField.objects.create(name="test_cf", use_as_configuration_variable=True)
+        self.dc_asset.update_custom_field("test_cf", "some_value")
+
+        url_base = reverse("datacenterasset-list") + "?limit=100"
+        url_fields = url_base + (
+            "&fields=hostname,service_env,configuration_path,"
+            "configuration_variables,ipaddresses"
+        )
+
+        with CaptureQueriesContext(connections["default"]) as baseline:
+            resp = self.client.get(url_base, format="json")
+            self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        with CaptureQueriesContext(connections["default"]) as filtered:
+            resp = self.client.get(url_fields, format="json")
+            self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        self.assertLessEqual(
+            len(filtered),
+            len(baseline),
+            "?fields= used %d queries, baseline used %d"
+            % (len(filtered), len(baseline)),
+        )
 
 
 class RackAPITests(RalphAPITestCase):

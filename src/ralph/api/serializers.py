@@ -134,7 +134,13 @@ class RalphAPISerializerMixin(
 
     def get_fields(self, *args, **kwargs):
         """
-        Bind every returned field to self (as a parent)
+        Bind every returned field to self (as a parent).
+
+        Supports sparse fieldsets via the ``fields`` query parameter.
+        When a request contains ``?fields=hostname,service_env``, only
+        the listed fields are returned. Unknown field names are silently
+        ignored.  The parameter is only applied to the **root** serializer
+        (not to nested serializers) and only for safe (read) requests.
         """
         fields = super().get_fields(*args, **kwargs)
         if (
@@ -143,6 +149,20 @@ class RalphAPISerializerMixin(
             and api_settings.URL_FIELD_NAME in fields
         ):
             del fields[api_settings.URL_FIELD_NAME]
+
+        request = self.context.get("request")
+        is_root = self.parent is None or isinstance(
+            self.parent, serializers.ListSerializer
+        )
+        if request and is_root:
+            requested = getattr(request, "query_params", {}).get("fields")
+            if requested:
+                allowed = set(
+                    name.strip() for name in requested.split(",") if name.strip()
+                )
+                fields = {
+                    name: field for name, field in fields.items() if name in allowed
+                }
 
         for field_name, field in fields.items():
             if not field.parent:
