@@ -145,7 +145,7 @@ class Ethernet(Component):
 
     def _validate_expose_in_dhcp_and_mac(self):
         """
-        Check if mac is not empty when exposing in DHCP.
+        Check if MAC is not empty when exposing in DHCP.
         """
         from ralph.networks.models import IPAddress
 
