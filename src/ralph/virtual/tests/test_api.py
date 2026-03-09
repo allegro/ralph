@@ -1,4 +1,6 @@
 from ddt import data, ddt, unpack
+from django.db import connections
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from rest_framework import status
 
@@ -395,6 +397,57 @@ class OpenstackModelsTestCase(RalphAPITestCase):
         host = CloudHost.objects.get(host_id=self.cloud_host.host_id)
         self.assertEqual(host.service_env, self.service_env[1])
 
+    def test_fields_query_param_filters_cloud_host_fields(self):
+        """Only requested fields are returned via ?fields= query param."""
+        expected_fields = [
+            "hostname",
+            "service_env",
+            "configuration_path",
+            "configuration_variables",
+            "ipaddresses",
+            "host_id",
+            "parent",
+            "tags",
+        ]
+        url = "{}?{}".format(
+            reverse("cloudhost-detail", args=(self.cloud_host.id,)),
+            "fields=hostname,service_env,configuration_path,"
+            "configuration_variables,ipaddresses,host_id,parent,tags",
+        )
+        response = self.client.get(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertCountEqual(response.data.keys(), expected_fields)
+        self.assertIsInstance(response.data["ipaddresses"], list)
+        self.assertIsInstance(response.data["tags"], list)
+
+    def test_fields_query_count_no_worse_than_without(self):
+        """?fields= should use no more SQL queries than a full response."""
+        self.cloud_host.tags.add("test_tag")
+        self.cloud_host.ip_addresses = ["10.20.30.40"]
+        CustomField.objects.create(name="test_cf", use_as_configuration_variable=True)
+        self.cloud_host.update_custom_field("test_cf", "cloud_value")
+
+        url_base = reverse("cloudhost-list") + "?limit=100"
+        url_fields = url_base + (
+            "&fields=hostname,service_env,configuration_path,"
+            "configuration_variables,ipaddresses,host_id,parent,tags"
+        )
+
+        with CaptureQueriesContext(connections["default"]) as baseline:
+            resp = self.client.get(url_base, format="json")
+            self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        with CaptureQueriesContext(connections["default"]) as filtered:
+            resp = self.client.get(url_fields, format="json")
+            self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        self.assertLessEqual(
+            len(filtered),
+            len(baseline),
+            "?fields= used %d queries, baseline used %d"
+            % (len(filtered), len(baseline)),
+        )
+
 
 class VirtualServerAPITestCase(RalphAPITestCase):
     def setUp(self):
@@ -577,3 +630,52 @@ class VirtualServerAPITestCase(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 1)
         self.assertEqual(response.data["results"][0]["id"], self.virtual_server.id)
+
+    def test_fields_query_param_filters_virtual_server_fields(self):
+        """Only requested fields are returned via ?fields= query param."""
+        expected_fields = [
+            "hostname",
+            "service_env",
+            "configuration_path",
+            "configuration_variables",
+            "ipaddresses",
+            "hypervisor",
+            "type",
+            "sn",
+        ]
+        url = "{}?{}".format(
+            reverse("virtualserver-detail", args=(self.virtual_server.id,)),
+            "fields=hostname,service_env,configuration_path,"
+            "configuration_variables,ipaddresses,hypervisor,type,sn",
+        )
+        response = self.client.get(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertCountEqual(response.data.keys(), expected_fields)
+        # nested type object should still have its inner fields
+        self.assertIn("name", response.data["type"])
+
+    def test_fields_query_count_no_worse_than_without(self):
+        """?fields= should use no more SQL queries than a full response."""
+        CustomField.objects.create(name="test_cf", use_as_configuration_variable=True)
+        self.virtual_server.update_custom_field("test_cf", "vs_value")
+
+        url_base = reverse("virtualserver-list") + "?limit=100"
+        url_fields = url_base + (
+            "&fields=hostname,service_env,configuration_path,"
+            "configuration_variables,ipaddresses,hypervisor,type,sn"
+        )
+
+        with CaptureQueriesContext(connections["default"]) as baseline:
+            resp = self.client.get(url_base, format="json")
+            self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        with CaptureQueriesContext(connections["default"]) as filtered:
+            resp = self.client.get(url_fields, format="json")
+            self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        self.assertLessEqual(
+            len(filtered),
+            len(baseline),
+            "?fields= used %d queries, baseline used %d"
+            % (len(filtered), len(baseline)),
+        )
