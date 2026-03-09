@@ -1,3 +1,10 @@
+ralph (20260309.1) jammy; urgency=medium
+
+  * #77 | Fix api
+  * Add option to limit fields in api output
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Mon, 09 Mar 2026 13:41:16 +0000
+
 ralph (20260129.1) jammy; urgency=medium
 
   * Add auto region assignment based on group
