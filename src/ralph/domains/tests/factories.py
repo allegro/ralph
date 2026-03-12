@@ -15,40 +15,22 @@ from ralph.domains.models import (
 from ralph.domains.models.domains import DomainProviderAdditionalServices
 
 
-class DomainFactory(DjangoModelFactory):
-    name = factory.Sequence(lambda n: "www.domain{}.com".format(n))
-    domain_status = DomainStatus.active
-    technical_owner = factory.SubFactory(UserFactory)
-    business_owner = factory.SubFactory(UserFactory)
-    service_env = factory.SubFactory(ServiceEnvironmentFactory)
-
-    class Meta:
-        model = Domain
-
-
 class DNSProviderFactory(DjangoModelFactory):
-    name = factory.Sequence(lambda n: "dns-provider{}".format(n))
+    name = factory.Sequence(lambda n: f"dns-provider{n}")
 
     class Meta:
         model = DNSProvider
 
 
 class DomainCategoryFactory(DjangoModelFactory):
-    name = factory.Sequence(lambda n: "domain-contract{}".format(n))
+    name = factory.Sequence(lambda n: f"domain-contract{n}")
 
     class Meta:
         model = DomainCategory
 
 
-class DomainContractFactory(DjangoModelFactory):
-    domain = factory.SubFactory(DomainFactory)
-
-    class Meta:
-        model = DomainContract
-
-
 class DomainRegistrantFactory(DjangoModelFactory):
-    name = factory.Iterator(["ovh", "home.pl", "nazwa.pl"])
+    name = factory.Sequence(lambda n: f"fancy-domain{n}.pl")
 
     class Meta:
         model = DomainRegistrant
@@ -56,8 +38,31 @@ class DomainRegistrantFactory(DjangoModelFactory):
 
 
 class DomainProviderAdditionalServicesFactory(DjangoModelFactory):
-    name = factory.Iterator(["Masking", "Backorder", "Acquisition"])
+    name = factory.Sequence(lambda n: f"important-domain-provider{n}")
 
     class Meta:
         model = DomainProviderAdditionalServices
         django_get_or_create = ["name"]
+
+
+class DomainFactory(DjangoModelFactory):
+    name = factory.Sequence(lambda n: f"www.domain{n}.com")
+    domain_status = DomainStatus.active
+    technical_owner = factory.SubFactory(UserFactory)
+    business_owner = factory.SubFactory(UserFactory)
+    service_env = factory.SubFactory(ServiceEnvironmentFactory)
+    dns_provider = factory.SubFactory(DNSProviderFactory)
+
+    class Meta:
+        model = Domain
+
+    @factory.post_generation
+    def post_additional_services(self, create, extracted, **kwargs):
+        self.additional_services.add(DomainProviderAdditionalServicesFactory())
+
+
+class DomainContractFactory(DjangoModelFactory):
+    domain = factory.SubFactory(DomainFactory)
+
+    class Meta:
+        model = DomainContract
