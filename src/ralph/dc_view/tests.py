@@ -8,8 +8,8 @@ from ralph.assets.models.choices import ObjectModelType
 from ralph.assets.tests.factories import (
     DataCenterAssetModelFactory,
     EnvironmentFactory,
-    ServiceEnvironment,
     ServiceFactory,
+    ServiceEnvironmentFactory,
 )
 from ralph.data_center.models.choices import Orientation
 from ralph.data_center.tests.factories import (
@@ -31,7 +31,7 @@ class TestRestAssetInfoPerRack(TestCase):
 
         environment = EnvironmentFactory()
         service = ServiceFactory(name="Service1")
-        service_env = ServiceEnvironment.objects.create(
+        service_env = ServiceEnvironmentFactory(
             service=service, environment=environment
         )
         asset_model = DataCenterAssetModelFactory(type=ObjectModelType.data_center)

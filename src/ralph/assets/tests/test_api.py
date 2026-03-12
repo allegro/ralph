@@ -120,9 +120,7 @@ class ServicesEnvironmentsAPITests(RalphAPITestCase):
         super().setUp()
         self.envs = EnvironmentFactory.create_batch(2)
         self.services = ServiceFactory.create_batch(2)
-        ServiceEnvironment.objects.create(
-            service=self.services[0], environment=self.envs[0]
-        )
+        ServiceEnvironmentFactory(service=self.services[0], environment=self.envs[0])
         self.team = TeamFactory()
         self.profit_center = ProfitCenterFactory()
 
@@ -140,7 +138,7 @@ class ServicesEnvironmentsAPITests(RalphAPITestCase):
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["name"], "test-env")
-        self.assertEqual(Environment.objects.count(), 3)
+        self.assertEqual(Environment.objects.count(), 4)
 
     def test_patch_environment(self):
         env = self.envs[0]

@@ -9,6 +9,8 @@ from ralph.assets.tests.factories import (
     MemoryFactory,
     ProcessorFactory,
     ServiceEnvironmentFactory,
+    BaseObjectFactory,
+    ComponentModelFactory,
 )
 from ralph.data_center.tests.factories import DataCenterAssetFactory
 from ralph.virtual.models import (
@@ -19,7 +21,16 @@ from ralph.virtual.models import (
     CloudProvider,
     VirtualServer,
     VirtualServerType,
+    VirtualComponent,
 )
+
+
+class VirtualComponentFactory(DjangoModelFactory):
+    base_object = factory.SubFactory(BaseObjectFactory)
+    model = factory.SubFactory(ComponentModelFactory)
+
+    class Meta:
+        model = VirtualComponent
 
 
 class CloudImageFactory(DjangoModelFactory):

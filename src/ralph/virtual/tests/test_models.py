@@ -1,12 +1,11 @@
 from ddt import data, ddt, unpack
 
-from ralph.assets.models.assets import ServiceEnvironment
 from ralph.assets.models.choices import ComponentType
-from ralph.assets.models.components import ComponentModel
 from ralph.assets.tests.factories import (
     EnvironmentFactory,
     ServiceEnvironmentFactory,
     ServiceFactory,
+    ComponentModelFactory,
 )
 from ralph.data_center.tests.factories import DataCenterAssetFullFactory, RackFactory
 from ralph.lib.custom_fields.models import (
@@ -24,6 +23,7 @@ from ralph.virtual.tests.factories import (
     CloudProjectFactory,
     CloudProviderFactory,
     VirtualServerFullFactory,
+    VirtualComponentFactory,
 )
 
 
@@ -58,37 +58,36 @@ class OpenstackModelsTestCase(RalphTestCase):
     def setUp(self):
         self.envs = EnvironmentFactory.create_batch(2)
         self.services = ServiceFactory.create_batch(2)
-        self.service_env = []
-        for i in range(0, 2):
-            self.service_env.append(
-                ServiceEnvironment.objects.create(
-                    service=self.services[i], environment=self.envs[i]
-                )
+        self.service_env = [
+            ServiceEnvironmentFactory(
+                service=self.services[i], environment=self.envs[i]
             )
+            for i in range(2)
+        ]
 
         self.cloud_provider = CloudProviderFactory(name="openstack")
         self.cloud_flavor = CloudFlavorFactory()
         self.cloud_project = CloudProjectFactory()
         self.cloud_host = CloudHostFactory(parent=self.cloud_project)
 
-        self.test_cpu = ComponentModel.objects.create(
+        self.test_cpu = ComponentModelFactory(
             name="vcpu1",
             cores=4,
             family="vCPU",
             type=ComponentType.processor,
         )
-        self.test_mem = ComponentModel.objects.create(
+        self.test_mem = ComponentModelFactory(
             name="1024 MiB vMEM",
             size="1024",
             type=ComponentType.memory,
         )
-        self.test_disk = ComponentModel.objects.create(
+        self.test_disk = ComponentModelFactory(
             name="4 GiB vDISK",
             size="4096",
             type=ComponentType.disk,
         )
 
-        VirtualComponent.objects.create(
+        VirtualComponentFactory(
             base_object=self.cloud_flavor,
             model=self.test_cpu,
         )

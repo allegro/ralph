@@ -45,6 +45,11 @@ class UserFactory(DjangoModelFactory):
                 self.groups.add(group)
 
 
+class SuperuserFactory(UserFactory):
+    is_superuser = True
+    is_staff = True
+
+
 class TeamFactory(DjangoModelFactory):
     name = factory.Iterator(["DBA", "sysadmins", "devops"])
 
