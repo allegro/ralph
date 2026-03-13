@@ -326,7 +326,7 @@ class ServicesEnvironmentsAPITests(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_patch_service_environment(self):
-        service_env = ServiceEnvironment.objects.all()[0]
+        service_env = self.services[0].serviceenvironment_set.first()
         url = reverse("serviceenvironment-detail", args=(service_env.id,))
         data = {
             "service": self.services[0].id,
