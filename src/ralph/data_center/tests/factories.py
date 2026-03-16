@@ -82,7 +82,7 @@ class ClusterFactory(DjangoModelFactory):
     def post_base_objects(self, create, extracted, **kwargs):
         if not create:
             return
-        if extracted:
+        if extracted is not None:
             for base_object in extracted:
                 BaseObjectClusterFactory(cluster=self, base_object=base_object)
         else:
@@ -92,6 +92,7 @@ class ClusterFactory(DjangoModelFactory):
 class BaseObjectClusterFactory(DjangoModelFactory):
     cluster = factory.SubFactory(ClusterFactory)
     base_object = factory.SubFactory(BaseObjectFactory)
+    is_master = False
 
     class Meta:
         model = BaseObjectCluster
