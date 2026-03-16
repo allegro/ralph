@@ -306,6 +306,7 @@ class EthernetWithIPAddressFactory(EthernetFactory):
         "ralph.networks.tests.factories.IPAddressWithNetworkFactory", "ethernet"
     )
 
+
 class ParentConfigurationModuleFactory(DjangoModelFactory):
     name = factory.Sequence(lambda n: "Parent Configuration Module {}".format(n))
     support_team = factory.SubFactory(TeamFactory)
