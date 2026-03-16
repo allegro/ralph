@@ -78,6 +78,16 @@ class ClusterFactory(DjangoModelFactory):
     def post_tags(self, create, extracted, **kwargs):
         self.tags.add("abc, cde", "xyz")
 
+    @factory.post_generation
+    def post_base_objects(self, create, extracted, **kwargs):
+        if not create:
+            return
+        if extracted:
+            for base_object in extracted:
+                BaseObjectClusterFactory(cluster=self, base_object=base_object)
+        else:
+            BaseObjectClusterFactory.create_batch(3, cluster=self)
+
 
 class BaseObjectClusterFactory(DjangoModelFactory):
     cluster = factory.SubFactory(ClusterFactory)

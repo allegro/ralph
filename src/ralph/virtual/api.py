@@ -194,7 +194,13 @@ class CloudFlavorViewSet(RalphAPIViewSet):
     queryset = CloudFlavor.objects.all()
     serializer_class = CloudFlavorSerializer
     save_serializer_class = SaveCloudFlavorSerializer
-    prefetch_related = ["tags", "virtualcomponent_set__model"]
+    prefetch_related = [
+        "tags",
+        "virtualcomponent_set__model",
+        "custom_fields",
+        "licences",
+        "content_type",
+    ]
     filterset_fields = ["flavor_id"]
 
     def destroy(self, request, *args, **kwargs):
@@ -296,6 +302,8 @@ class CloudProjectViewSet(RalphAPIViewSet):
         "tags",
         "licences",
         "cloudprovider",
+        "custom_fields",
+        "content_type",
     ]
 
 

@@ -53,6 +53,7 @@ class ServiceViewSet(RalphAPIViewSet):
             model = models.Service
             fields = ["active"]
 
+    renderer_classes = renderer_classes_without_form(RalphAPIViewSet.renderer_classes)
     queryset = models.Service.objects.all()
     serializer_class = serializers.ServiceSerializer
     save_serializer_class = serializers.SaveServiceSerializer
@@ -255,6 +256,7 @@ class ConfigurationModuleViewSet(RalphAPIViewSet):
     # don't allow for ConfigurationModule updating or deleting as it might
     # dissrupt configuration of many hosts!
     http_method_names = ["get", "post", "options", "head"]
+    prefetch_related = ["custom_fields", "children_modules"]
 
 
 class ConfigurationClassViewSet(RalphAPIViewSet):
@@ -262,7 +264,7 @@ class ConfigurationClassViewSet(RalphAPIViewSet):
     serializer_class = serializers.ConfigurationClassSerializer
     filterset_fields = ("module", "module__name", "class_name", "path")
     select_related = ["module"]
-    prefetch_related = ["tags"]
+    prefetch_related = ["tags", "custom_fields", "content_type"]
     # don't allow for ConfigurationClass updating or deleting as it might
     # dissrupt configuration of many hosts!
     http_method_names = ["get", "post", "options", "head"]
