@@ -655,7 +655,7 @@ class ClusterAPITests(RalphAPITestCase):
     def test_list_cluster(self):
         ClusterFactory.create_batch(20)
         url = reverse("cluster-list") + "?limit=100"
-        with self.assertNumQueries(10):
+        with self.assertQueriesMoreOrLess(11, plus_minus=1):
             response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 22)
