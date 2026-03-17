@@ -85,8 +85,12 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         self.assertEqual(len(response.data["memory"]), 2)
         self.assertEqual(response.data["memory"][0]["speed"], 1600)
         self.assertEqual(response.data["memory"][0]["size"], 8192)
-        self.assertEqual(response.data["business_owners"][0]["username"], "user1")
-        self.assertEqual(response.data["technical_owners"][0]["username"], "user2")
+        self.assertEqual(
+            response.data["business_owners"][0]["username"], self.user1.username
+        )
+        self.assertEqual(
+            response.data["technical_owners"][0]["username"], self.user2.username
+        )
 
     def test_get_data_center_asset_details_related_hosts(self):
         dc_asset_3 = DataCenterAssetFullFactory()
@@ -666,8 +670,12 @@ class ClusterAPITests(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["name"], self.cluster_1.name)
         self.assertEqual(response.data["hostname"], self.cluster_1.hostname)
-        self.assertEqual(response.data["business_owners"][0]["username"], "user1")
-        self.assertEqual(response.data["technical_owners"][0]["username"], "user2")
+        self.assertEqual(
+            response.data["business_owners"][0]["username"], self.user1.username
+        )
+        self.assertEqual(
+            response.data["technical_owners"][0]["username"], self.user2.username
+        )
         self.assertEqual(len(response.data["base_objects"]), 2)
         self.assertCountEqual(
             response.data["base_objects"],

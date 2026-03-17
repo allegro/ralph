@@ -5,25 +5,24 @@ from django.urls import reverse
 from rest_framework import status
 
 from ralph.api.tests._base import RalphAPITestCase
-from ralph.assets.models.assets import ServiceEnvironment
 from ralph.assets.models.choices import ComponentType
-from ralph.assets.models.components import ComponentModel
 from ralph.assets.tests.factories import (
+    ComponentModelFactory,
     EnvironmentFactory,
     EthernetFactory,
     ServiceFactory,
+    ServiceEnvironmentFactory,
 )
 from ralph.data_center.tests.factories import ClusterFactory, DataCenterAssetFactory
-from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
+from ralph.lib.custom_fields.models import CustomFieldTypes
+from ralph.lib.custom_fields.tests.factories import CustomFieldFactory
 from ralph.networks.tests.factories import IPAddressFactory
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
     CloudProject,
     CloudProvider,
-    VirtualComponent,
     VirtualServer,
-    VirtualServerType,
 )
 from ralph.virtual.tests.factories import (
     CloudFlavorFactory,
@@ -31,7 +30,9 @@ from ralph.virtual.tests.factories import (
     CloudHostFullFactory,
     CloudProjectFactory,
     CloudProviderFactory,
+    VirtualComponentFactory,
     VirtualServerFullFactory,
+    VirtualServerTypeFactory,
 )
 
 
@@ -44,7 +45,7 @@ class OpenstackModelsTestCase(RalphAPITestCase):
         self.service_env = []
         for i in range(0, 2):
             self.service_env.append(
-                ServiceEnvironment.objects.create(
+                ServiceEnvironmentFactory(
                     service=self.services[i], environment=self.envs[i]
                 )
             )
@@ -59,32 +60,32 @@ class OpenstackModelsTestCase(RalphAPITestCase):
         )
         self.cloud_host2 = CloudHostFactory()
 
-        self.test_cpu = ComponentModel.objects.create(
+        self.test_cpu = ComponentModelFactory(
             name="vcpu1",
             cores=5,
             family="vCPU",
             type=ComponentType.processor,
         )
-        self.test_mem = ComponentModel.objects.create(
+        self.test_mem = ComponentModelFactory(
             name="2000 MiB vMEM",
             size="2000",
             type=ComponentType.memory,
         )
-        self.test_disk = ComponentModel.objects.create(
+        self.test_disk = ComponentModelFactory(
             name="4 GiB vDISK",
             size="4096",
             type=ComponentType.disk,
         )
 
-        VirtualComponent.objects.create(
+        VirtualComponentFactory(
             base_object=self.cloud_flavor,
             model=self.test_cpu,
         )
-        VirtualComponent.objects.create(
+        VirtualComponentFactory(
             base_object=self.cloud_flavor,
             model=self.test_mem,
         )
-        VirtualComponent.objects.create(
+        VirtualComponentFactory(
             base_object=self.cloud_flavor,
             model=self.test_disk,
         )
@@ -132,8 +133,12 @@ class OpenstackModelsTestCase(RalphAPITestCase):
         )
         self.assertEqual(response.data["cloudflavor"]["disk"], self.cloud_flavor.disk)
         self.assertEqual(response.data["cloudflavor"]["name"], self.cloud_flavor.name)
-        self.assertEqual(response.data["business_owners"][0]["username"], "user1")
-        self.assertEqual(response.data["technical_owners"][0]["username"], "user2")
+        self.assertEqual(
+            response.data["business_owners"][0]["username"], self.user1.username
+        )
+        self.assertEqual(
+            response.data["technical_owners"][0]["username"], self.user2.username
+        )
 
     def test_filter_cloudhost_by_service_uid(self):
         cloud_host = CloudHostFactory()
@@ -424,7 +429,7 @@ class OpenstackModelsTestCase(RalphAPITestCase):
         """?fields= should use no more SQL queries than a full response."""
         self.cloud_host.tags.add("test_tag")
         self.cloud_host.ip_addresses = ["10.20.30.40"]
-        CustomField.objects.create(name="test_cf", use_as_configuration_variable=True)
+        CustomFieldFactory(name="test_cf", use_as_configuration_variable=True)
         self.cloud_host.update_custom_field("test_cf", "cloud_value")
 
         url_base = reverse("cloudhost-list") + "?limit=100"
@@ -455,7 +460,7 @@ class VirtualServerAPITestCase(RalphAPITestCase):
         self.hypervisor = DataCenterAssetFactory()
         self.cloud_hypervisor = CloudHostFactory()
         self.cluster = ClusterFactory()
-        self.type = VirtualServerType.objects.create(name="XEN")
+        self.type = VirtualServerTypeFactory(name="XEN")
         self.virtual_server = VirtualServerFullFactory(
             service_env__environment__name="some_env",
         )
@@ -494,8 +499,12 @@ class VirtualServerAPITestCase(RalphAPITestCase):
         self.assertEqual(len(response.data["memory"]), 2)
         self.assertEqual(response.data["memory"][0]["speed"], 1600)
         self.assertEqual(response.data["memory"][0]["size"], 8192)
-        self.assertEqual(response.data["business_owners"][0]["username"], "user1")
-        self.assertEqual(response.data["technical_owners"][0]["username"], "user2")
+        self.assertEqual(
+            response.data["business_owners"][0]["username"], self.user1.username
+        )
+        self.assertEqual(
+            response.data["technical_owners"][0]["username"], self.user2.username
+        )
 
     def test_create_virtual_server(self):
         virtual_server_count = VirtualServer.objects.count()
@@ -540,7 +549,7 @@ class VirtualServerAPITestCase(RalphAPITestCase):
         self.assertEqual(self.virtual_server.hostname, "s111111.local")
 
     def test_add_custom_field_to_virtual_server(self):
-        cf = CustomField.objects.create(
+        cf = CustomFieldFactory(
             name="test str", type=CustomFieldTypes.STRING, default_value="xyz"
         )
         url = (
@@ -656,7 +665,7 @@ class VirtualServerAPITestCase(RalphAPITestCase):
 
     def test_fields_query_count_no_worse_than_without(self):
         """?fields= should use no more SQL queries than a full response."""
-        CustomField.objects.create(name="test_cf", use_as_configuration_variable=True)
+        CustomFieldFactory(name="test_cf", use_as_configuration_variable=True)
         self.virtual_server.update_custom_field("test_cf", "vs_value")
 
         url_base = reverse("virtualserver-list") + "?limit=100"

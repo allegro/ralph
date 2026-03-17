@@ -9,17 +9,22 @@ from django.core import management
 from django.test import TestCase
 
 from ralph.accounts.models import Region
+from ralph.accounts.tests.factories import RegionFactory, UserFactory
 from ralph.assets.models import ConfigurationClass
 from ralph.assets.models.assets import (
     AssetModel,
     Category,
-    Environment,
     Manufacturer,
-    Service,
-    ServiceEnvironment,
 )
-from ralph.assets.models.choices import ObjectModelType
+from ralph.assets.tests.factories import (
+    BackOfficeAssetModelFactory,
+    DataCenterAssetModelFactory,
+    EnvironmentFactory,
+    ServiceEnvironmentFactory,
+    ServiceFactory,
+)
 from ralph.back_office.models import BackOfficeAsset, Warehouse
+from ralph.back_office.tests.factories import WarehouseFactory
 from ralph.data_center.models import DataCenterAsset, DataCenterAssetStatus
 from ralph.data_center.models.physical import DataCenter, Rack, ServerRoom
 from ralph.data_center.tests.factories import DataCenterFactory
@@ -44,47 +49,30 @@ class DataImporterTestCase(TestCase):
     def setUp(self):  # noqa
         self.base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-        asset_model = AssetModel()
-        asset_model.name = "asset_model_1"
-        asset_model.type = ObjectModelType.back_office
-        asset_model.save()
+        asset_model = BackOfficeAssetModelFactory(name="asset_model_1")
         asset_content_type = ContentType.objects.get_for_model(AssetModel)
         ImportedObjects.objects.create(
             content_type=asset_content_type, object_pk=asset_model.pk, old_object_pk=1
         )
 
-        warehouse = Warehouse()
-        warehouse.name = "warehouse_1"
-        warehouse.save()
-
+        warehouse = WarehouseFactory(name="warehouse_1")
         warehouse_content_type = ContentType.objects.get_for_model(Warehouse)
         ImportedObjects.objects.create(
             content_type=warehouse_content_type, object_pk=warehouse.pk, old_object_pk=1
         )
 
-        environment = Environment()
-        environment.name = "environment_1"
-        environment.save()
+        environment = EnvironmentFactory(name="environment_1")
+        service = ServiceFactory(name="service_1")
+        ServiceEnvironmentFactory(environment=environment, service=service)
 
-        service = Service()
-        service.name = "service_1"
-        service.save()
-
-        service_environment = ServiceEnvironment()
-        service_environment.environment = environment
-        service_environment.service = service
-        service_environment.save()
-
-        region = Region(name="region_1")
-        region.save()
+        region = RegionFactory(name="region_1")
         region_content_type = ContentType.objects.get_for_model(region)
         ImportedObjects.objects.create(
             content_type=region_content_type, object_pk=region.pk, old_object_pk=1
         )
 
-        user_model = get_user_model()
         for user in ("iron.man", "superman", "james.bond", "sherlock.holmes"):
-            user_model.objects.create(username=user)
+            UserFactory(username=user)
 
     def test_get_resource(self):
         """Test get resources method."""
@@ -253,11 +241,7 @@ class DataImporterTestCase(TestCase):
 class IPManagementTestCase(TestCase):
     def setUp(self):
         self.base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        asset_model = AssetModel()
-        asset_model.id = 1  # required by csvs file
-        asset_model.name = "asset_model_1"
-        asset_model.type = ObjectModelType.all
-        asset_model.save()
+        DataCenterAssetModelFactory(id=1, name="asset_model_1")
 
     def test_data_center_asset_is_imported_when_ip_management_is_created(self):
         xlsx_path = os.path.join(

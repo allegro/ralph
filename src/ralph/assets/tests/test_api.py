@@ -45,10 +45,8 @@ from ralph.data_center.tests.factories import (
 )
 from ralph.domains.models import Domain
 from ralph.domains.tests.factories import DomainFactory
-from ralph.lib.custom_fields.models import (
-    CustomField,
-    CustomFieldTypes,
-)
+from ralph.lib.custom_fields.models import CustomFieldTypes
+from ralph.lib.custom_fields.tests.factories import CustomFieldFactory
 from ralph.licences.models import Licence
 from ralph.licences.tests.factories import LicenceFactory
 from ralph.networks.tests.factories import IPAddressFactory
@@ -119,10 +117,10 @@ class ServicesEnvironmentsAPITests(RalphAPITestCase):
     def setUp(self):
         super().setUp()
         self.envs = EnvironmentFactory.create_batch(2)
-        self.services = ServiceFactory.create_batch(2)
-        ServiceEnvironment.objects.create(
-            service=self.services[0], environment=self.envs[0]
-        )
+        self.services = [
+            ServiceFactory(post_environments=[self.envs[0]]),
+            ServiceFactory(post_environments=[self.envs[1]]),
+        ]
         self.team = TeamFactory()
         self.profit_center = ProfitCenterFactory()
 
@@ -135,12 +133,13 @@ class ServicesEnvironmentsAPITests(RalphAPITestCase):
         self.assertIn("url", response.data)
 
     def test_create_environment(self):
+        env_count_before = Environment.objects.count()
         url = reverse("environment-list")
         data = {"name": "test-env"}
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["name"], "test-env")
-        self.assertEqual(Environment.objects.count(), 3)
+        self.assertEqual(Environment.objects.count(), env_count_before + 1)
 
     def test_patch_environment(self):
         env = self.envs[0]
@@ -327,14 +326,14 @@ class ServicesEnvironmentsAPITests(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_patch_service_environment(self):
-        service_env = ServiceEnvironment.objects.all()[0]
+        service_env = self.services[0].serviceenvironment_set.first()
         url = reverse("serviceenvironment-detail", args=(service_env.id,))
         data = {
             "service": self.services[0].id,
             "environment": self.envs[0].id,
         }
         response = self.client.patch(url, data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK, msg=response.data)
 
 
 class ProfitCenterAPITests(RalphAPITestCase):
@@ -541,17 +540,27 @@ class BaseObjectAPITests(RalphAPITestCase):
         self.conf_class_1 = ConfigurationClassFactory(
             id=999999, module=self.conf_module_2, class_name="cls1"
         )
+        dc_env = EnvironmentFactory(name="prod")
+        dc_service = ServiceFactory(
+            name="test-service",
+            uid="sc-bo-api-1",
+            post_environments=[dc_env],
+        )
+        dc_service_env = dc_service.serviceenvironment_set.get(environment=dc_env)
         self.dc_asset = DataCenterAssetFactory(
             barcode="12543",
             price="9.00",
-            service_env__service__name="test-service",
-            service_env__service__uid="sc-123",
-            service_env__environment__name="prod",
+            service_env=dc_service_env,
             configuration_path=self.conf_class_1,
         )
         self.dc_asset.tags.add("tag2")
         self.ip = IPAddressFactory(ethernet=EthernetFactory(base_object=self.dc_asset))
-        self.service = ServiceEnvironmentFactory(service__name="myservice")
+        my_env = EnvironmentFactory(name="myservice-env")
+        my_service = ServiceFactory(
+            name="myservice",
+            post_environments=[my_env],
+        )
+        self.service = my_service.serviceenvironment_set.get(environment=my_env)
 
     def test_get_base_objects_list(self):
         url = reverse("baseobject-list")
@@ -564,7 +573,7 @@ class BaseObjectAPITests(RalphAPITestCase):
         self.assertCountEqual(barcodes, set(["12345", "12543"]))
 
     def test_get_base_objects_list_different_type_with_custom_fields(self):
-        CustomField.objects.create(name="test_field")
+        CustomFieldFactory(name="test_field")
         self.dc_asset.update_custom_field("test_field", "abc")
         self.bo_asset.update_custom_field("test_field", "def")
         url = reverse("baseobject-list")
@@ -591,7 +600,7 @@ class BaseObjectAPITests(RalphAPITestCase):
         response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         service_env = response.data["service_env"]
-        self.assertEqual(service_env["service_uid"], "sc-123")
+        self.assertEqual(service_env["service_uid"], "sc-bo-api-1")
         self.assertEqual(service_env["service"], "test-service")
         self.assertEqual(service_env["environment"], "prod")
 
@@ -756,7 +765,7 @@ class BaseObjectAPITests(RalphAPITestCase):
         self.assertEqual(len(response.data["results"]), 1)
 
     def test_filter_by_deletion_check(self):
-        service_env = ServiceEnvironmentFactory(service__uid="sc-321")
+        service_env = ServiceEnvironmentFactory(service__uid="sc-del-check")
         asset = DataCenterAssetFactory(service_env=service_env)
         licence_future = LicenceFactory(
             service_env=service_env, valid_thru="2026-01-01"
@@ -771,7 +780,7 @@ class BaseObjectAPITests(RalphAPITestCase):
 
         url = "{}?{}".format(
             reverse("baseobject-list"),
-            urlencode({"service": "sc-321", "deletion_check": "2025-01-01"}),
+            urlencode({"service": "sc-del-check", "deletion_check": "2025-01-01"}),
         )
         response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -785,9 +794,7 @@ class BaseObjectAPITests(RalphAPITestCase):
 class DCHostAPITests(RalphAPITestCase):
     def setUp(self):
         super().setUp()
-        self.cf = CustomField.objects.create(
-            name="test_cf", use_as_configuration_variable=True
-        )
+        self.cf = CustomFieldFactory(name="test_cf", use_as_configuration_variable=True)
         # BO asset isn't DC Host - will be skipped in API
         self.bo_asset = BackOfficeAssetFactory(barcode="12345", hostname="host1")
         self.conf_module_1 = ConfigurationModuleFactory()
@@ -799,7 +806,7 @@ class DCHostAPITests(RalphAPITestCase):
         )
         self.dc_asset = DataCenterAssetFullFactory(
             service_env__service__name="test-service",
-            service_env__service__uid="sc-123",
+            service_env__service__uid="sc-dc-host-1",
             service_env__environment__name="prod",
             configuration_path=self.conf_class_1,
         )
@@ -807,11 +814,11 @@ class DCHostAPITests(RalphAPITestCase):
         self.virtual = VirtualServerFullFactory(
             parent=self.dc_asset,
             configuration_path__module__name="ralph2",
-            service_env__service__uid="sc-222",
+            service_env__service__uid="sc-dc-host-2",
             service_env__environment__name="some_env",
         )
         self.virtual.update_custom_field("test_cf", "def")
-        se = ServiceEnvironmentFactory(service__uid="sc-333")
+        se = ServiceEnvironmentFactory(service__uid="sc-dc-host-3")
         self.cloud_host = CloudHostFullFactory(
             configuration_path__module__name="ralph3",
             service_env=se,
@@ -827,7 +834,7 @@ class DCHostAPITests(RalphAPITestCase):
         VirtualServerFullFactory.create_batch(20, parent=dc_assets[0])
         CloudHostFullFactory.create_batch(20, hypervisor=dc_assets[0])
         url = reverse("dchost-list") + "?limit=100"
-        with self.assertQueriesMoreOrLess(19, plus_minus=1):
+        with self.assertQueriesMoreOrLess(18, plus_minus=2):
             response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 63)
@@ -861,7 +868,7 @@ class DCHostAPITests(RalphAPITestCase):
         self.assertEqual(len(dca["ipaddresses"]), 2)
         self.assertCountEqual(dca["tags"], ["abc, cde", "xyz"])
         self.assertEqual(dca["configuration_path"]["module"]["name"], "ralph")
-        self.assertEqual(dca["service_env"]["service_uid"], "sc-123")
+        self.assertEqual(dca["service_env"]["service_uid"], "sc-dc-host-1")
         self.assertEqual(dca["object_type"], "datacenterasset")
         self.assertEqual(dca["custom_fields"], {"test_cf": "abc"})
         self.assertEqual(dca["configuration_variables"], {"test_cf": "abc"})
@@ -879,7 +886,7 @@ class DCHostAPITests(RalphAPITestCase):
         self.assertEqual(len(virt["ipaddresses"]), 1)
         self.assertCountEqual(virt["tags"], ["abc, cde", "xyz"])
         self.assertEqual(virt["configuration_path"]["module"]["name"], "ralph2")
-        self.assertEqual(virt["service_env"]["service_uid"], "sc-222")
+        self.assertEqual(virt["service_env"]["service_uid"], "sc-dc-host-2")
         self.assertEqual(virt["object_type"], "virtualserver")
         self.assertEqual(virt["custom_fields"], {"test_cf": "def"})
         self.assertEqual(virt["configuration_variables"], {"test_cf": "def"})
@@ -895,7 +902,7 @@ class DCHostAPITests(RalphAPITestCase):
         self.assertEqual(cloud["hostname"], self.cloud_host.hostname)
         self.assertCountEqual(cloud["tags"], ["abc, cde", "xyz"])
         self.assertEqual(cloud["configuration_path"]["module"]["name"], "ralph3")
-        self.assertEqual(cloud["service_env"]["service_uid"], "sc-333")
+        self.assertEqual(cloud["service_env"]["service_uid"], "sc-dc-host-3")
         self.assertEqual(cloud["object_type"], "cloudhost")
         self.assertEqual(len(cloud["ethernet"]), 1)
         self.assertEqual(len(cloud["ipaddresses"]), 1)
@@ -915,7 +922,9 @@ class DCHostAPITests(RalphAPITestCase):
         self.assertEqual(response.data["count"], 1)
 
     def test_filter_by_service_uid(self):
-        url = "{}?{}".format(reverse("dchost-list"), urlencode({"service": "sc-222"}))
+        url = "{}?{}".format(
+            reverse("dchost-list"), urlencode({"service": "sc-dc-host-2"})
+        )
         response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 1)
@@ -976,7 +985,7 @@ class DCHostAPITests(RalphAPITestCase):
         self.assertEqual(self.cloud_host.hypervisor.id, new_hypervisor.id)
 
     def test_nested_customfields_view(self):
-        cf = CustomField.objects.create(
+        cf = CustomFieldFactory(
             name="test", type=CustomFieldTypes.STRING, default_value="xyz"
         )
         url = reverse("dchost-customfields-list", args=(self.virtual.id,))

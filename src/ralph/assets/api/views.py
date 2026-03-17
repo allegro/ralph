@@ -56,7 +56,7 @@ class ServiceViewSet(RalphAPIViewSet):
     queryset = models.Service.objects.all()
     serializer_class = serializers.ServiceSerializer
     save_serializer_class = serializers.SaveServiceSerializer
-    select_related = ["profit_center"]
+    select_related = ["profit_center", "support_team", "business_segment"]
     prefetch_related = ["business_owners", "technical_owners", "environments"]
     additional_filter_class = ServiceFilterSet
 
@@ -76,9 +76,16 @@ class ServiceEnvironmentViewSet(RalphAPIViewSet):
 
     queryset = models.ServiceEnvironment.objects.all()
     serializer_class = serializers.ServiceEnvironmentSerializer
-    select_related = ["service", "environment", "service__support_team"]
-    prefetch_related = ["tags"] + [
-        "service__{}".format(pr) for pr in ServiceViewSet.prefetch_related
+    select_related = [
+        "service",
+        "environment",
+        "service__support_team",
+        "content_type",
+        "service__profit_center",
+        "service__business_segment",
+    ]
+    prefetch_related = ["tags", "custom_fields"] + [
+        f"service__{pr}" for pr in ServiceViewSet.prefetch_related
     ]
     additional_filter_class = ServiceEnvFilterSet
 

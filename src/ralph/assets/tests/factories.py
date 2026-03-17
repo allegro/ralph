@@ -3,6 +3,7 @@ import factory
 from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyText
 
+from ralph.accounts.tests.factories import UserFactory, TeamFactory
 from ralph.assets.models.assets import (
     AssetHolder,
     AssetModel,
@@ -224,14 +225,61 @@ class ProfitCenterFactory(DjangoModelFactory):
 
 
 class ServiceFactory(DjangoModelFactory):
-    name = factory.Iterator(["Backup systems", "load_balancing", "databases"])
+    name = factory.Iterator(
+        [
+            "Backup systems",
+            "load_balancing",
+            "databases",
+            "web servers",
+            "mail servers",
+            "DNS",
+            "DHCP",
+            "Monitoring",
+            "Logging",
+            "Authentication",
+        ]
+    )
     uid = factory.Sequence(lambda n: "sc-{}".format(n))
     business_segment = factory.SubFactory(BusinessSegmentFactory)
     profit_center = factory.SubFactory(ProfitCenterFactory)
+    support_team = factory.SubFactory(TeamFactory)
 
     class Meta:
         model = Service
         django_get_or_create = ["name"]
+
+    @factory.post_generation
+    def post_environments(self, create, extracted, **kwargs):
+        if not create:
+            return
+        if extracted:
+            for environment in extracted:
+                ServiceEnvironmentFactory(service=self, environment=environment)
+        else:
+            for _ in ["dev", "test", "prod"]:
+                ServiceEnvironmentFactory(service=self)
+
+    @factory.post_generation
+    def post_business_owners(self, create, extracted, **kwargs):
+        if not create:
+            return
+        if extracted:
+            for business_owner in extracted:
+                self.business_owners.add(business_owner)
+        else:
+            for _ in range(3):
+                self.business_owners.add(UserFactory())
+
+    @factory.post_generation
+    def post_technical_owners(self, create, extracted, **kwargs):
+        if not create:
+            return
+        if extracted:
+            for technical_owner in extracted:
+                self.technical_owners.add(technical_owner)
+        else:
+            for _ in range(3):
+                self.technical_owners.add(UserFactory())
 
 
 class ServiceEnvironmentFactory(DjangoModelFactory):

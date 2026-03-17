@@ -7,7 +7,11 @@ from ralph.back_office.tests.factories import BackOfficeAssetFactory
 from ralph.data_importer.fields import ThroughField
 from ralph.data_importer.widgets import ManyToManyThroughWidget, UserManyToManyWidget
 from ralph.licences.models import BaseObjectLicence, LicenceUser
-from ralph.licences.tests.factories import LicenceFactory
+from ralph.licences.tests.factories import (
+    BaseObjectLicenceFactory,
+    LicenceFactory,
+    LicenceUserFactory,
+)
 
 
 class DataImporterFieldsTestCase(TestCase):
@@ -21,26 +25,26 @@ class DataImporterFieldsTestCase(TestCase):
         cls.licence2 = LicenceFactory()
 
     def setUp(self):
-        LicenceUser.objects.create(licence=self.licence, user=self.users[0])
+        LicenceUserFactory(licence=self.licence, user=self.users[0])
         for user in self.delete_users:
-            LicenceUser.objects.create(licence=self.licence, user=user)
-        BaseObjectLicence.objects.create(
+            LicenceUserFactory(licence=self.licence, user=user)
+        BaseObjectLicenceFactory(
             licence=self.licence,
             base_object=self.back_office_assets[0],
         )
-        BaseObjectLicence.objects.create(
+        BaseObjectLicenceFactory(
             licence=self.licence,
             base_object=self.back_office_assets[1],
         )
 
-        LicenceUser.objects.create(licence=self.licence2, user=self.users[0])
-        LicenceUser.objects.create(licence=self.licence2, user=self.users[3])
-        LicenceUser.objects.create(licence=self.licence2, user=self.delete_users[0])
-        BaseObjectLicence.objects.create(
+        LicenceUserFactory(licence=self.licence2, user=self.users[0])
+        LicenceUserFactory(licence=self.licence2, user=self.users[3])
+        LicenceUserFactory(licence=self.licence2, user=self.delete_users[0])
+        BaseObjectLicenceFactory(
             licence=self.licence2,
             base_object=self.back_office_assets[1],
         )
-        BaseObjectLicence.objects.create(
+        BaseObjectLicenceFactory(
             licence=self.licence2,
             base_object=self.back_office_assets[2],
         )
