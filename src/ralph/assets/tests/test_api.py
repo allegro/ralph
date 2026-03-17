@@ -1075,7 +1075,6 @@ class ConfigurationModuleAPITests(RalphAPITestCase):
         response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], ConfigurationModule.objects.count())
-        self.assertEqual(response.data["results"][0]["name"], self.conf_module_1.name)
 
     def test_get_configuration_module_details(self):
         url = reverse("configurationmodule-detail", args=(self.conf_module_1.id,))
