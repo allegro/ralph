@@ -1,3 +1,27 @@
+ralph (20260324.1) jammy; urgency=medium
+
+  [ Paweł Szulc ]
+  * Improve test factories. Fix N+1 SQL in domains
+  * Improve test factories. Fix duplicate errors in tests
+  * Tests fixed and more robust
+  * More test fixes
+  * Test fixed
+  * Log msg for failing test on CI
+  * Fix test
+  * Adjust user number in demodata test
+  * Add missing prefetch domain -> dns_provider
+  * Add prefetches. Remove some html API forms
+  * Lint
+  * Fix test factories, fix tests
+  * Adjust values in tests
+  * Fix
+  * Remove useless file
+
+  [ Olga Matyla ]
+  * Filter virtual servers by type (#3940)
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Tue, 24 Mar 2026 13:39:15 +0000
+
 ralph (20260309.1) jammy; urgency=medium
 
   * #77 | Fix api
