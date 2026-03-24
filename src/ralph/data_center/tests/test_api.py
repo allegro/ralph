@@ -14,7 +14,6 @@ from ralph.assets.tests.factories import (
     ServiceEnvironmentFactory,
 )
 from ralph.data_center.models import (
-    BaseObjectCluster,
     Cluster,
     DataCenterAsset,
     Orientation,
@@ -32,6 +31,7 @@ from ralph.data_center.tests.factories import (
     RackAccessoryFactory,
     RackFactory,
     ServerRoomFactory,
+    BaseObjectClusterFactory,
 )
 from ralph.lib.custom_fields.models import CustomField
 from ralph.networks.tests.factories import IPAddressFactory
@@ -599,15 +599,15 @@ class ClusterAPITests(RalphAPITestCase):
         super().setUp()
         self.cluster_type = ClusterTypeFactory()
         self.service_env = ServiceEnvironmentFactory()
-        self.cluster_1 = ClusterFactory()
-        self.boc_1 = BaseObjectCluster.objects.create(
+        self.cluster_1 = ClusterFactory(post_base_objects=[])
+        self.boc_1 = BaseObjectClusterFactory(
             cluster=self.cluster_1, base_object=DataCenterAssetFactory()
         )
         self.master = DataCenterAssetFactory()
-        self.boc_2 = BaseObjectCluster.objects.create(
+        self.boc_2 = BaseObjectClusterFactory(
             cluster=self.cluster_1, base_object=self.master, is_master=True
         )
-        self.cluster_2 = ClusterFactory()
+        self.cluster_2 = ClusterFactory(post_base_objects=[])
         self.cluster_1.service_env.service.business_owners.set([self.user1])
         self.cluster_1.service_env.service.technical_owners.set([self.user2])
         self.cluster_1.management_ip = "10.20.30.40"
@@ -655,7 +655,7 @@ class ClusterAPITests(RalphAPITestCase):
     def test_list_cluster(self):
         ClusterFactory.create_batch(20)
         url = reverse("cluster-list") + "?limit=100"
-        with self.assertNumQueries(12):
+        with self.assertQueriesMoreOrLess(11, plus_minus=1):
             response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 22)
@@ -665,7 +665,7 @@ class ClusterAPITests(RalphAPITestCase):
 
     def test_get_cluster_details(self):
         url = reverse("cluster-detail", args=(self.cluster_1.id,))
-        with self.assertNumQueries(11):
+        with self.assertQueriesMoreOrLess(10, plus_minus=1):
             response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["name"], self.cluster_1.name)

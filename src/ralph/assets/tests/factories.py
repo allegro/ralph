@@ -263,7 +263,7 @@ class ServiceFactory(DjangoModelFactory):
     def post_business_owners(self, create, extracted, **kwargs):
         if not create:
             return
-        if extracted:
+        if extracted is not None:
             for business_owner in extracted:
                 self.business_owners.add(business_owner)
         else:
@@ -274,7 +274,7 @@ class ServiceFactory(DjangoModelFactory):
     def post_technical_owners(self, create, extracted, **kwargs):
         if not create:
             return
-        if extracted:
+        if extracted is not None:
             for technical_owner in extracted:
                 self.technical_owners.add(technical_owner)
         else:
@@ -307,8 +307,19 @@ class EthernetWithIPAddressFactory(EthernetFactory):
     )
 
 
+class ParentConfigurationModuleFactory(DjangoModelFactory):
+    name = factory.Sequence(lambda n: "Parent Configuration Module {}".format(n))
+    support_team = factory.SubFactory(TeamFactory)
+
+    class Meta:
+        model = ConfigurationModule
+        django_get_or_create = ["name"]
+
+
 class ConfigurationModuleFactory(DjangoModelFactory):
     name = factory.Iterator(["ralph", "allegro", "auth", "order"])
+    parent = factory.SubFactory(ParentConfigurationModuleFactory)
+    support_team = factory.SubFactory(TeamFactory)
 
     class Meta:
         model = ConfigurationModule

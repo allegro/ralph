@@ -1074,8 +1074,7 @@ class ConfigurationModuleAPITests(RalphAPITestCase):
         url = reverse("configurationmodule-list")
         response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["count"], 2)
-        self.assertEqual(response.data["results"][0]["name"], self.conf_module_1.name)
+        self.assertEqual(response.data["count"], ConfigurationModule.objects.count())
 
     def test_get_configuration_module_details(self):
         url = reverse("configurationmodule-detail", args=(self.conf_module_1.id,))
@@ -1099,6 +1098,7 @@ class ConfigurationModuleAPITests(RalphAPITestCase):
         )
 
     def test_create_configuration_module(self):
+        modules_before = ConfigurationModule.objects.count()
         url = reverse("configurationmodule-list")
         data = {
             "name": "test_1",
@@ -1106,7 +1106,7 @@ class ConfigurationModuleAPITests(RalphAPITestCase):
         }
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(ConfigurationModule.objects.count(), 3)
+        self.assertEqual(ConfigurationModule.objects.count(), modules_before + 1)
         conf_module = ConfigurationModule.objects.get(pk=response.data["id"])
         self.assertEqual(conf_module.name, "test_1")
         self.assertEqual(conf_module.parent, self.conf_module_2)

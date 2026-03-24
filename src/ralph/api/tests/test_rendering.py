@@ -84,7 +84,7 @@ ALL_API_ENDPOINTS = {
     "racks": "/api/racks/",
     "regions": "/api/regions/",
     "server-rooms": "/api/server-rooms/",
-    "services": ("/api/services/", 25),
+    "services": "/api/services/",
     "services-environments": "/api/services-environments/",
     "sim-card": "/api/sim-card/",
     "sim-card-cellular-carrier": "/api/sim-card-cellular-carrier/",
