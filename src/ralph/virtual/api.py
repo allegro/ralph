@@ -334,6 +334,7 @@ class VirtualServerViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         "service_env__service__uid",
         "service_env__service__name",
         "service_env__service__id",
+        "type",
     ]
     additional_filter_class = VirtualServerFilterSet
     extended_filter_fields = dict(
