@@ -915,6 +915,14 @@ class DCHostAPITests(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 1)
 
+    def test_filter_by_hostname_case_insensitive(self):
+        url = "{}?{}".format(
+            reverse("dchost-list"), urlencode({"hostname__iexact": "AAAA"})
+        )
+        response = self.client.get(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["count"], 1)
+
     def test_filter_by_name(self):
         url = "{}?{}".format(reverse("dchost-list"), urlencode({"name": "aaaa"}))
         response = self.client.get(url, format="json")
