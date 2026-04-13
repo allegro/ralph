@@ -7,6 +7,7 @@ from django.db import connections, DEFAULT_DB_ALIAS
 from django.test.utils import CaptureQueriesContext  # noqa
 from rest_framework.test import APITestCase
 
+from ralph.accounts.tests.factories import SuperuserFactory, UserFactory
 from ralph.tests.models import Foo
 
 
@@ -88,9 +89,9 @@ class RalphAPITestCase(APITestCase):
             params.update(kwargs)
             return get_user_model().objects.create(**params)
 
-        cls.user1 = create_user("user1")
-        cls.user2 = create_user("user2")
-        cls.superuser = create_user("superuser", is_staff=True, is_superuser=True)
+        cls.user1 = UserFactory()
+        cls.user2 = UserFactory()
+        cls.superuser = SuperuserFactory()
 
     @classmethod
     def setUpClass(cls):

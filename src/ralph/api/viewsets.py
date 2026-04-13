@@ -146,7 +146,7 @@ class RalphAPIViewSetMetaclass(type):
 class RalphAPIViewSet(
     RalphAPIViewSetMixin, viewsets.ModelViewSet, metaclass=RalphAPIViewSetMetaclass
 ):
-    pass
+    ordering = ["id"]
 
 
 class RalphReadOnlyAPIViewSet(

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import datetime
 
+from django.db import connections
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from rest_framework import status
 
@@ -12,7 +14,6 @@ from ralph.assets.tests.factories import (
     ServiceEnvironmentFactory,
 )
 from ralph.data_center.models import (
-    BaseObjectCluster,
     Cluster,
     DataCenterAsset,
     Orientation,
@@ -30,7 +31,9 @@ from ralph.data_center.tests.factories import (
     RackAccessoryFactory,
     RackFactory,
     ServerRoomFactory,
+    BaseObjectClusterFactory,
 )
+from ralph.lib.custom_fields.models import CustomField
 from ralph.networks.tests.factories import IPAddressFactory
 from ralph.supports.tests.factories import SupportFactory, DataCenterAssetSupportFactory
 from ralph.virtual.tests.factories import CloudHostFactory, VirtualServerFactory
@@ -82,8 +85,12 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         self.assertEqual(len(response.data["memory"]), 2)
         self.assertEqual(response.data["memory"][0]["speed"], 1600)
         self.assertEqual(response.data["memory"][0]["size"], 8192)
-        self.assertEqual(response.data["business_owners"][0]["username"], "user1")
-        self.assertEqual(response.data["technical_owners"][0]["username"], "user2")
+        self.assertEqual(
+            response.data["business_owners"][0]["username"], self.user1.username
+        )
+        self.assertEqual(
+            response.data["technical_owners"][0]["username"], self.user2.username
+        )
 
     def test_get_data_center_asset_details_related_hosts(self):
         dc_asset_3 = DataCenterAssetFullFactory()
@@ -399,6 +406,53 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["support_end_date"], "2025-12-24")
 
+    def test_fields_query_param_filters_data_center_asset_fields(self):
+        """Only requested fields are returned via ?fields= query param."""
+        expected_fields = [
+            "hostname",
+            "service_env",
+            "configuration_path",
+            "configuration_variables",
+            "ipaddresses",
+        ]
+        url = "{}?{}".format(
+            reverse("datacenterasset-detail", args=(self.dc_asset.id,)),
+            "fields=hostname,service_env,configuration_path,"
+            "configuration_variables,ipaddresses",
+        )
+        response = self.client.get(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertCountEqual(response.data.keys(), expected_fields)
+        self.assertIn("service_uid", response.data["service_env"])
+        self.assertIn("environment", response.data["service_env"])
+        self.assertIn("path", response.data["configuration_path"])
+
+    def test_fields_query_count_no_worse_than_without(self):
+        """?fields= should use no more SQL queries than a full response."""
+        CustomField.objects.create(name="test_cf", use_as_configuration_variable=True)
+        self.dc_asset.update_custom_field("test_cf", "some_value")
+
+        url_base = reverse("datacenterasset-list") + "?limit=100"
+        url_fields = url_base + (
+            "&fields=hostname,service_env,configuration_path,"
+            "configuration_variables,ipaddresses"
+        )
+
+        with CaptureQueriesContext(connections["default"]) as baseline:
+            resp = self.client.get(url_base, format="json")
+            self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        with CaptureQueriesContext(connections["default"]) as filtered:
+            resp = self.client.get(url_fields, format="json")
+            self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        self.assertLessEqual(
+            len(filtered),
+            len(baseline),
+            "?fields= used %d queries, baseline used %d"
+            % (len(filtered), len(baseline)),
+        )
+
 
 class RackAPITests(RalphAPITestCase):
     def setUp(self):
@@ -545,15 +599,15 @@ class ClusterAPITests(RalphAPITestCase):
         super().setUp()
         self.cluster_type = ClusterTypeFactory()
         self.service_env = ServiceEnvironmentFactory()
-        self.cluster_1 = ClusterFactory()
-        self.boc_1 = BaseObjectCluster.objects.create(
+        self.cluster_1 = ClusterFactory(post_base_objects=[])
+        self.boc_1 = BaseObjectClusterFactory(
             cluster=self.cluster_1, base_object=DataCenterAssetFactory()
         )
         self.master = DataCenterAssetFactory()
-        self.boc_2 = BaseObjectCluster.objects.create(
+        self.boc_2 = BaseObjectClusterFactory(
             cluster=self.cluster_1, base_object=self.master, is_master=True
         )
-        self.cluster_2 = ClusterFactory()
+        self.cluster_2 = ClusterFactory(post_base_objects=[])
         self.cluster_1.service_env.service.business_owners.set([self.user1])
         self.cluster_1.service_env.service.technical_owners.set([self.user2])
         self.cluster_1.management_ip = "10.20.30.40"
@@ -601,7 +655,7 @@ class ClusterAPITests(RalphAPITestCase):
     def test_list_cluster(self):
         ClusterFactory.create_batch(20)
         url = reverse("cluster-list") + "?limit=100"
-        with self.assertNumQueries(12):
+        with self.assertQueriesMoreOrLess(11, plus_minus=1):
             response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 22)
@@ -611,13 +665,17 @@ class ClusterAPITests(RalphAPITestCase):
 
     def test_get_cluster_details(self):
         url = reverse("cluster-detail", args=(self.cluster_1.id,))
-        with self.assertNumQueries(11):
+        with self.assertQueriesMoreOrLess(10, plus_minus=1):
             response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["name"], self.cluster_1.name)
         self.assertEqual(response.data["hostname"], self.cluster_1.hostname)
-        self.assertEqual(response.data["business_owners"][0]["username"], "user1")
-        self.assertEqual(response.data["technical_owners"][0]["username"], "user2")
+        self.assertEqual(
+            response.data["business_owners"][0]["username"], self.user1.username
+        )
+        self.assertEqual(
+            response.data["technical_owners"][0]["username"], self.user2.username
+        )
         self.assertEqual(len(response.data["base_objects"]), 2)
         self.assertCountEqual(
             response.data["base_objects"],

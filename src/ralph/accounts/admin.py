@@ -3,9 +3,11 @@ from string import Formatter
 from urllib.parse import quote_plus, urlencode
 
 from django.conf import settings
+from django.contrib.admin.models import CHANGE, LogEntry
 from django.contrib.admin.utils import unquote
 from django.contrib.auth.admin import GroupAdmin, UserAdmin
 from django.contrib.auth.models import Group
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 from django.forms.models import model_to_dict
@@ -338,6 +340,47 @@ class RalphUserAdmin(UserAdmin, RalphAdmin):
             raise PermissionDenied
         with reversion.create_revision():
             return super().user_change_password(request, id, form_url)
+
+    def deactivate_users(self, request, queryset):
+        for user in queryset:
+            if not self.has_change_permission(request, obj=user):
+                self.message_user(
+                    request,
+                    _("You don't have permission to deactivate user {}.").format(
+                        user.username
+                    ),
+                    level="error",
+                )
+                continue
+            user.is_active = False
+            user.save()
+
+            LogEntry.objects.log_action(
+                user_id=request.user.pk,
+                content_type_id=ContentType.objects.get_for_model(user).pk,
+                object_id=user.pk,
+                object_repr=str(user),
+                action_flag=CHANGE,
+                change_message="Deactivated user via admin action.",
+            )
+
+            self.message_user(
+                request,
+                _("User {} has been deactivated.").format(user.username),
+                level="info",
+            )
+
+    deactivate_users.short_description = _("Deactivate users")
+
+    actions = [deactivate_users]
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+
+        if not request.user.is_superuser:
+            actions.pop(self.deactivate_users.__name__, None)
+
+        return actions
 
 
 @register(Group)

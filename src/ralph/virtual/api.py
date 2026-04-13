@@ -84,11 +84,20 @@ class SaveCloudFlavorSerializer(RalphAPISaveSerializer):
 class SaveCloudHostSerializer(RalphAPISaveSerializer):
     _validate_using_model_clean = False
     ip_addresses = serializers.ListField()
+    cores = serializers.IntegerField(required=False)
+    memory = serializers.IntegerField(required=False)
+    disk = serializers.IntegerField(required=False)
 
     def create(self, validated_data):
         ip_addresses = validated_data.pop("ip_addresses")
+        cores = validated_data.pop("cores", None)
+        memory = validated_data.pop("memory", None)
+        disk = validated_data.pop("disk", None)
         instance = super().create(validated_data)
         instance.ip_addresses = ip_addresses
+        instance.cores = cores
+        instance.memory = memory
+        instance.disk = disk
         return instance
 
     class Meta:
@@ -112,6 +121,9 @@ class CloudHostSerializer(NetworkComponentSerializerMixin, BaseObjectSerializer)
     parent = CloudProjectSimpleSerializer(source="cloudproject")
     cloudflavor = CloudFlavorSimpleSerializer()
     service_env = ServiceEnvironmentSimpleSerializer()
+    cores = serializers.IntegerField()
+    memory = serializers.IntegerField()
+    disk = serializers.IntegerField()
 
     class Meta(BaseObjectSerializer.Meta):
         model = CloudHost
@@ -182,7 +194,13 @@ class CloudFlavorViewSet(RalphAPIViewSet):
     queryset = CloudFlavor.objects.all()
     serializer_class = CloudFlavorSerializer
     save_serializer_class = SaveCloudFlavorSerializer
-    prefetch_related = ["tags", "virtualcomponent_set__model"]
+    prefetch_related = [
+        "tags",
+        "virtualcomponent_set__model",
+        "custom_fields",
+        "licences",
+        "content_type",
+    ]
     filterset_fields = ["flavor_id"]
 
     def destroy(self, request, *args, **kwargs):
@@ -251,6 +269,7 @@ class CloudHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     prefetch_related = base_object_descendant_prefetch_related + [
         "tags",
         "cloudflavor__virtualcomponent_set__model",
+        "virtualcomponent_set__model",
         "licences",
         Prefetch("ethernet_set", queryset=Ethernet.objects.select_related("ipaddress")),
     ]
@@ -260,6 +279,16 @@ class CloudHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         "service_env__service__name",
         "service_env__service__id",
     ]
+
+    extended_filter_fields = dict(
+        list(BaseObjectViewSetMixin.extended_filter_fields.items())
+        + list(
+            {
+                "cloudproject__name": ["parent__cloudproject__name"],
+                "cloudproject__id": ["parent__cloudproject__id"],
+            }.items()
+        )
+    )
 
     def get_queryset(self):
         return super().get_queryset().filter(visibility_scope_filter(self.request.user))
@@ -273,6 +302,8 @@ class CloudProjectViewSet(RalphAPIViewSet):
         "tags",
         "licences",
         "cloudprovider",
+        "custom_fields",
+        "content_type",
     ]
 
 
@@ -311,6 +342,7 @@ class VirtualServerViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         "service_env__service__uid",
         "service_env__service__name",
         "service_env__service__id",
+        "type",
     ]
     additional_filter_class = VirtualServerFilterSet
     extended_filter_fields = dict(

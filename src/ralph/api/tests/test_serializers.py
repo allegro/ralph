@@ -95,6 +95,58 @@ class TestRalphSerializer(RalphAPITestCase):
         self.assertEqual(len(history), 2)
         self.assertIn("new_bar", history[0].serialized_data)
 
+    def test_fields_query_param_limits_response_fields(self):
+        """Only the fields listed in ?fields= should be returned."""
+        foo = Foo.objects.create(bar="test_bar")
+        response = self.client.get(
+            "/test-ralph-api/foos/{}/".format(foo.id),
+            {"fields": "bar,id"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertCountEqual(response.data.keys(), ["bar", "id"])
+
+    def test_fields_query_param_single_field(self):
+        """A single field should work too."""
+        foo = Foo.objects.create(bar="single")
+        response = self.client.get(
+            "/test-ralph-api/foos/{}/".format(foo.id),
+            {"fields": "bar"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertCountEqual(response.data.keys(), ["bar"])
+
+    def test_fields_query_param_not_set_returns_all_fields(self):
+        """Without ?fields= all fields should be returned as usual."""
+        foo = Foo.objects.create(bar="all_fields")
+        response = self.client.get(
+            "/test-ralph-api/foos/{}/".format(foo.id),
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("bar", response.data)
+        self.assertIn("url", response.data)
+        self.assertIn("id", response.data)
+
+    def test_fields_query_param_ignores_unknown_fields(self):
+        """Unknown field names should be silently ignored."""
+        foo = Foo.objects.create(bar="unknown")
+        response = self.client.get(
+            "/test-ralph-api/foos/{}/".format(foo.id),
+            {"fields": "bar,nonexistent"},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertCountEqual(response.data.keys(), ["bar"])
+
+    def test_fields_query_param_on_list_endpoint(self):
+        """?fields= should also work on list endpoints."""
+        Foo.objects.create(bar="list_test")
+        response = self.client.get(
+            "/test-ralph-api/foos/",
+            {"fields": "id,bar"},
+        )
+        self.assertEqual(response.status_code, 200)
+        for item in response.data["results"]:
+            self.assertCountEqual(item.keys(), ["id", "bar"])
+
     def test_reversion_history_for_intermediary_model(self):
         region_pl = RegionFactory()
         bo_asset = BackOfficeAssetFactory(region=region_pl)

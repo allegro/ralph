@@ -74,6 +74,7 @@ class RalphUser(
         verbose_name=_("country"),
         choices=Country(),
         default=Country.pl.id,
+        db_index=True,
     )
     city = models.CharField(
         verbose_name=_("city"),

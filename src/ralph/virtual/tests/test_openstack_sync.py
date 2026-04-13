@@ -158,6 +158,9 @@ class TestOpenstackSync(RalphTestCase):
                 self.assertEqual(ralph_host.hostname, host["hostname"])
                 self.assertIn(host["tag"], ralph_host.tags.names())
                 self.assertEqual(set(host["ips"]), set(ips))
+                self.assertIsNotNone(ralph_host.disk)
+                self.assertIsNotNone(ralph_host.cores)
+                self.assertIsNotNone(ralph_host.memory)
 
     def test_check_ralph_delete(self):
         ralph_projects = self.ralph_client.get_ralph_servers_data(

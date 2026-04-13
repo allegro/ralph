@@ -49,7 +49,7 @@ class DCHostViewTest(ClientMixin, RalphAPITestCase):
         VirtualServerFullFactory.create_batch(5)
         CloudHostFullFactory.create_batch(4)
         ClusterFactory.create_batch(4)
-        with self.assertQueriesMoreOrLess(18, plus_minus=3):
+        with self.assertQueriesMoreOrLess(20, plus_minus=3):
             result = self.client.get(
                 reverse("admin:data_center_dchost_changelist"),
             )

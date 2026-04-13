@@ -278,7 +278,13 @@ class CloudHostAdmin(
         "get_tags",
     ]
     list_filter_prefix = [BaseObjectHostnameFilter]
-    list_filter_postfix = ["cloudprovider", "cloudflavor", TagsListFilter, "hypervisor"]
+    list_filter_postfix = [
+        "parent__cloudproject__name",
+        "cloudprovider",
+        "cloudflavor",
+        TagsListFilter,
+        "hypervisor",
+    ]
     list_filter = generate_list_filter_with_common_fields(
         list_filter_prefix, list_filter_postfix
     )
@@ -341,11 +347,11 @@ class CloudHostAdmin(
             "Components",
             {
                 "fields": [
-                    "cloudflavor_name",
                     "get_cpu",
                     "get_memory",
                     "get_disk",
                     "image_name",
+                    "cloudflavor_name",
                 ]
             },
         ),
@@ -356,7 +362,14 @@ class CloudHostAdmin(
             super()
             .get_queryset(request)
             .filter(visibility_scope_filter(request.user))
-            .prefetch_related("tags", "ethernet_set__ipaddress")
+            .polymorphic_prefetch_related(
+                CloudHost=[
+                    "tags",
+                    "ethernet_set__ipaddress",
+                    "cloudflavor__virtualcomponent_set__model",
+                    "virtualcomponent_set__model",
+                ]
+            )
         )
 
     def has_delete_permission(self, request, obj=None):
@@ -395,7 +408,15 @@ class CloudHostAdmin(
 
     @mark_safe
     def cloudflavor_name(self, obj):
-        return '<a href="{}">{}</a>'.format(
+        tooltip = "\n".join(
+            [
+                f"Cores: {obj.cloudflavor.cores}",
+                f"RAM size: {obj.cloudflavor.memory}MiB",
+                f"Disk size: {obj.cloudflavor.disk / 1024}GiB",
+            ]
+        )
+        return '<a title="{}" href="{}">{}</a>'.format(
+            tooltip,
             reverse("admin:virtual_cloudflavor_change", args=(obj.cloudflavor.id,)),
             obj.cloudflavor.name,
         )
@@ -457,17 +478,17 @@ class CloudHostAdmin(
     get_configuration_path._permission_field = "configuration_path"
 
     def get_cpu(self, obj):
-        return obj.cloudflavor.cores
+        return obj.cores
 
     get_cpu.short_description = _("vCPU cores")
 
     def get_memory(self, obj):
-        return obj.cloudflavor.memory
+        return obj.memory
 
     get_memory.short_description = _("RAM size (MiB)")
 
     def get_disk(self, obj):
-        return obj.cloudflavor.disk / 1024 if obj.cloudflavor.disk else None
+        return obj.disk / 1024 if obj.disk is not None else None
 
     get_disk.short_description = _("Disk size (GiB)")
 

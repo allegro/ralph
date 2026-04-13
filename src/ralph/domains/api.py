@@ -43,6 +43,7 @@ class DomainViewSet(RalphAPIViewSet):
         "custom_fields",
         "content_type",
         "additional_services",
+        "dns_provider",
         "licences__baseobjectlicence_set",
     ]
 

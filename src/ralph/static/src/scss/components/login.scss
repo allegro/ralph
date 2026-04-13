@@ -12,6 +12,18 @@
             position: absolute;
             background: $primary-color;
             color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .oauth-login-link {
+            font-size: 0.8em;
+            color: #fff;
+            text-decoration: none;
+            &:hover {
+                color: #fff;
+                text-decoration: underline;
+            }
         }
     }
     .login-header {

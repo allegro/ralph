@@ -128,6 +128,10 @@ class RalphAPIRenderingTests(APIPermissionsTestMixin, APITestCase):
 
     @data(*ALL_API_ENDPOINTS.keys())
     def test_browsable_endpoint(self, model_name):
+        # Note: browsable API renders an HTML form at the bottom of the page
+        # which generates extra SQL queries for loading FK/choice widgets,
+        # not just the API response itself. Keep this in mind when adjusting
+        # max_queries for specific endpoints.
         endpoint, max_queries = (
             ALL_API_ENDPOINTS[model_name]
             if isinstance(ALL_API_ENDPOINTS[model_name], tuple)

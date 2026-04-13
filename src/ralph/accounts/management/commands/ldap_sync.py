@@ -11,6 +11,7 @@ from django.core.management.base import BaseCommand
 from functools import lru_cache
 from ldap.controls import SimplePagedResultsControl
 
+from ralph.accounts.models import RalphUser, Region
 from ralph.helpers import cache
 
 logger = logging.getLogger(__name__)
@@ -68,7 +69,7 @@ class LDAPConnectionManager(object):
 
 
 @cache(seconds=600)
-def get_nested_groups():
+def get_nested_groups() -> tuple[dict[str, set[str]], defaultdict[str, set[str]]]:
     """
     Fetching users in nested group based on custom LDAP filter
     (AUTH_LDAP_NESTED_FILTER) e.g. (memberOf:{}). AUTH_LDAP_NESTED_FILTER
@@ -76,12 +77,12 @@ def get_nested_groups():
     contains DN for nested group.
     """
     # mapping from django group name to set of users (usernames) belonging to it
-    group_users = {}
+    group_name_to_usernames: dict[str, set[str]] = {}
     # mapping from user (username) to set of groups DNs to which he belongs to
-    users_groups = defaultdict(set)
+    username_to_group_names: defaultdict[str, set[str]] = defaultdict(set)
     nested_groups = getattr(settings, "AUTH_LDAP_NESTED_GROUPS", None)
     if not nested_groups:
-        return group_users, users_groups
+        return group_name_to_usernames, username_to_group_names
     nested_filter = getattr(settings, "AUTH_LDAP_NESTED_FILTER", "(memberOf:{})")
     logger.info("Fetching nested groups from LDAP")
     with LDAPConnectionManager() as conn:
@@ -99,7 +100,7 @@ def get_nested_groups():
                 settings.AUTH_LDAP_QUERY_PAGE_SIZE,
             )
             logger.info("{} fetched".format(ralph_group_name))
-            group_users[ralph_group_name] = set(
+            group_name_to_usernames[ralph_group_name] = set(
                 [
                     u[1][settings.AUTH_LDAP_USER_USERNAME_ATTR][0]
                     .decode("utf-8")
@@ -109,13 +110,13 @@ def get_nested_groups():
             )
             logger.info(
                 "Users in nested group {}: {}".format(
-                    ralph_group_name, group_users[ralph_group_name]
+                    ralph_group_name, group_name_to_usernames[ralph_group_name]
                 )
             )
-            for username in group_users[ralph_group_name]:
+            for username in group_name_to_usernames[ralph_group_name]:
                 # notice group DN here, not Django group name!
-                users_groups[username].add(ldap_group_name)
-    return group_users, users_groups
+                username_to_group_names[username].add(ldap_group_name)
+    return group_name_to_usernames, username_to_group_names
 
 
 def _make_paged_query(conn, search_base, search_scope, ad_query, attr_list, page_size):
@@ -156,7 +157,29 @@ def _make_paged_query(conn, search_base, search_scope, ad_query, attr_list, page
     return result
 
 
-class NestedGroups(object):
+def _add_regions(user: RalphUser, region_names: list[str]):
+    for region_name in region_names:
+        try:
+            user.regions.add(Region.objects.get(name=region_name))
+            logger.info("Assigned {} to region {}".format(user.username, region_name))
+        except Region.DoesNotExist:
+            logger.warning(
+                "Region {} does not exist, cannot assign to user {}".format(
+                    region_name,
+                    user.username,
+                )
+            )
+
+
+def assign_user_to_group(user: RalphUser, group: Group):
+    user.groups.add(group)
+    default_regions = settings.DEFAULT_REGIONS_FOR_GROUP.get(group.name, [])
+    _add_regions(user, default_regions)
+
+    logger.info("Added {} to {}".format(user.username, group.name))
+
+
+class NestedGroups:
     """
     Class fetch nested groups and mapping them to standard Django's
     group (get or create). django_auth_ldap and their class for nested
@@ -170,19 +193,17 @@ class NestedGroups(object):
     def get_group_from_db(self, name):
         return Group.objects.get_or_create(name=name)[0]
 
-    def handle(self, user):
+    def handle(self, user: RalphUser):
         """
         Match user to group in fetched groups from LDAP and assign user
         to Django's group.
         """
-
         if not self.group_users:
             return
         for group_name, users in self.group_users.items():
             if user.username in users:
                 group = self.get_group_from_db(group_name)
-                user.groups.add(group)
-                logger.info("Added {} to {}".format(user.username, group_name))
+                assign_user_to_group(user, group)
 
 
 class Command(BaseCommand):

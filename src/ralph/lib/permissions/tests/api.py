@@ -2,7 +2,6 @@
 from django.conf.urls import include
 from django.urls import re_path
 from rest_framework import permissions, routers, serializers, viewsets
-
 from ralph.lib.permissions.api import (
     ObjectPermissionsMixin,
     PermissionsForObjectFilter,

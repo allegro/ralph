@@ -2,5 +2,5 @@
 from django.db import models
 
 
-class TransitionField(models.PositiveIntegerField):
+class TransitionField(models.PositiveBigIntegerField):
     pass

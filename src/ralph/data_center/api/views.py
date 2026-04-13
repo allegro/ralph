@@ -40,6 +40,7 @@ from ralph.data_center.models import (
     RackAccessory,
     ServerRoom,
 )
+from ralph.lib.api.utils import renderer_classes_without_form
 from ralph.lib.visibility_scope.filters import visibility_scope_filter
 from ralph.virtual.models import CloudHost, VirtualServer
 
@@ -50,6 +51,7 @@ class DataCenterAssetFilterSet(NetworkableObjectFilters):
 
 
 class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
+    renderer_classes = renderer_classes_without_form(RalphAPIViewSet.renderer_classes)
     queryset = DataCenterAsset.objects.all()
     serializer_class = DataCenterAssetSerializer
     save_serializer_class = DataCenterAssetSaveSerializer

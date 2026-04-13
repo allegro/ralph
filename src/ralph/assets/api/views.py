@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import django_filters
-from django.db.models import Prefetch
+from django.contrib.contenttypes.models import ContentType
+from django.db.models import Prefetch, Q
 from django_filters import Filter
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.permissions import SAFE_METHODS
@@ -17,8 +18,10 @@ from ralph.data_center.models import Cluster, DataCenterAsset
 from ralph.lib.api.utils import renderer_classes_without_form
 from ralph.lib.visibility_scope.filters import visibility_scope_filter
 from ralph.licences.api import BaseObjectLicenceViewSet
-from ralph.licences.models import BaseObjectLicence
+from ralph.licences.models import BaseObjectLicence, Licence
 from ralph.networks.models import IPAddress
+from ralph.supports.models import Support
+from ralph.ssl_certificates.models import SSLCertificate
 from ralph.virtual.models import CloudHost, VirtualServer
 
 
@@ -50,10 +53,11 @@ class ServiceViewSet(RalphAPIViewSet):
             model = models.Service
             fields = ["active"]
 
+    renderer_classes = renderer_classes_without_form(RalphAPIViewSet.renderer_classes)
     queryset = models.Service.objects.all()
     serializer_class = serializers.ServiceSerializer
     save_serializer_class = serializers.SaveServiceSerializer
-    select_related = ["profit_center"]
+    select_related = ["profit_center", "support_team", "business_segment"]
     prefetch_related = ["business_owners", "technical_owners", "environments"]
     additional_filter_class = ServiceFilterSet
 
@@ -73,11 +77,16 @@ class ServiceEnvironmentViewSet(RalphAPIViewSet):
 
     queryset = models.ServiceEnvironment.objects.all()
     serializer_class = serializers.ServiceEnvironmentSerializer
-    select_related = ["service", "environment", "service__support_team"]
-    # allow to only add environments through service resource
-    http_method_names = ["get", "delete"]
-    prefetch_related = ["tags"] + [
-        "service__{}".format(pr) for pr in ServiceViewSet.prefetch_related
+    select_related = [
+        "service",
+        "environment",
+        "service__support_team",
+        "content_type",
+        "service__profit_center",
+        "service__business_segment",
+    ]
+    prefetch_related = ["tags", "custom_fields"] + [
+        f"service__{pr}" for pr in ServiceViewSet.prefetch_related
     ]
     additional_filter_class = ServiceEnvFilterSet
 
@@ -106,8 +115,23 @@ class AssetModelViewSet(RalphAPIViewSet):
 
 
 class BaseObjectFilterSet(NetworkableObjectFilters):
+    deletion_check = django_filters.DateFilter(method="filter_deletion_check")
+
     class Meta(NetworkableObjectFilters.Meta):
         model = models.BaseObject
+
+    def filter_deletion_check(self, queryset, name, value):
+        licence_ct = ContentType.objects.get_for_model(Licence)
+        support_ct = ContentType.objects.get_for_model(Support)
+        ssl_ct = ContentType.objects.get_for_model(SSLCertificate)
+        data_center_asset_ct = ContentType.objects.get_for_model(DataCenterAsset)
+
+        return queryset.filter(
+            Q(content_type=data_center_asset_ct)
+            | Q(content_type=licence_ct, licence__valid_thru__gte=value)
+            | Q(content_type=support_ct, support__date_to__gte=value)
+            | Q(content_type=ssl_ct, sslcertificate__date_to__gte=value)
+        )
 
 
 base_object_descendant_prefetch_related = [
@@ -232,6 +256,7 @@ class ConfigurationModuleViewSet(RalphAPIViewSet):
     # don't allow for ConfigurationModule updating or deleting as it might
     # dissrupt configuration of many hosts!
     http_method_names = ["get", "post", "options", "head"]
+    prefetch_related = ["custom_fields", "children_modules"]
 
 
 class ConfigurationClassViewSet(RalphAPIViewSet):
@@ -239,7 +264,7 @@ class ConfigurationClassViewSet(RalphAPIViewSet):
     serializer_class = serializers.ConfigurationClassSerializer
     filterset_fields = ("module", "module__name", "class_name", "path")
     select_related = ["module"]
-    prefetch_related = ["tags"]
+    prefetch_related = ["tags", "custom_fields", "content_type"]
     # don't allow for ConfigurationClass updating or deleting as it might
     # dissrupt configuration of many hosts!
     http_method_names = ["get", "post", "options", "head"]

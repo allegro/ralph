@@ -54,7 +54,7 @@ def mirror_groups(self):
     )
     if target_group_names != current_group_names:
         logger.info(
-            "Modifing user groups: current = {}, target = {}".format(
+            "Modifying user groups: current = {}, target = {}".format(
                 ", ".join(current_group_names), ", ".join(target_group_names)
             )
         )

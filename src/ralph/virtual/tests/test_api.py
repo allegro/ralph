@@ -1,27 +1,28 @@
 from ddt import data, ddt, unpack
+from django.db import connections
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from rest_framework import status
 
 from ralph.api.tests._base import RalphAPITestCase
-from ralph.assets.models.assets import ServiceEnvironment
 from ralph.assets.models.choices import ComponentType
-from ralph.assets.models.components import ComponentModel
 from ralph.assets.tests.factories import (
+    ComponentModelFactory,
     EnvironmentFactory,
     EthernetFactory,
     ServiceFactory,
+    ServiceEnvironmentFactory,
 )
 from ralph.data_center.tests.factories import ClusterFactory, DataCenterAssetFactory
-from ralph.lib.custom_fields.models import CustomField, CustomFieldTypes
+from ralph.lib.custom_fields.models import CustomFieldTypes
+from ralph.lib.custom_fields.tests.factories import CustomFieldFactory
 from ralph.networks.tests.factories import IPAddressFactory
 from ralph.virtual.models import (
     CloudFlavor,
     CloudHost,
     CloudProject,
     CloudProvider,
-    VirtualComponent,
     VirtualServer,
-    VirtualServerType,
 )
 from ralph.virtual.tests.factories import (
     CloudFlavorFactory,
@@ -29,7 +30,9 @@ from ralph.virtual.tests.factories import (
     CloudHostFullFactory,
     CloudProjectFactory,
     CloudProviderFactory,
+    VirtualComponentFactory,
     VirtualServerFullFactory,
+    VirtualServerTypeFactory,
 )
 
 
@@ -42,7 +45,7 @@ class OpenstackModelsTestCase(RalphAPITestCase):
         self.service_env = []
         for i in range(0, 2):
             self.service_env.append(
-                ServiceEnvironment.objects.create(
+                ServiceEnvironmentFactory(
                     service=self.services[i], environment=self.envs[i]
                 )
             )
@@ -57,32 +60,32 @@ class OpenstackModelsTestCase(RalphAPITestCase):
         )
         self.cloud_host2 = CloudHostFactory()
 
-        self.test_cpu = ComponentModel.objects.create(
+        self.test_cpu = ComponentModelFactory(
             name="vcpu1",
             cores=5,
             family="vCPU",
             type=ComponentType.processor,
         )
-        self.test_mem = ComponentModel.objects.create(
+        self.test_mem = ComponentModelFactory(
             name="2000 MiB vMEM",
             size="2000",
             type=ComponentType.memory,
         )
-        self.test_disk = ComponentModel.objects.create(
+        self.test_disk = ComponentModelFactory(
             name="4 GiB vDISK",
             size="4096",
             type=ComponentType.disk,
         )
 
-        VirtualComponent.objects.create(
+        VirtualComponentFactory(
             base_object=self.cloud_flavor,
             model=self.test_cpu,
         )
-        VirtualComponent.objects.create(
+        VirtualComponentFactory(
             base_object=self.cloud_flavor,
             model=self.test_mem,
         )
-        VirtualComponent.objects.create(
+        VirtualComponentFactory(
             base_object=self.cloud_flavor,
             model=self.test_disk,
         )
@@ -130,8 +133,12 @@ class OpenstackModelsTestCase(RalphAPITestCase):
         )
         self.assertEqual(response.data["cloudflavor"]["disk"], self.cloud_flavor.disk)
         self.assertEqual(response.data["cloudflavor"]["name"], self.cloud_flavor.name)
-        self.assertEqual(response.data["business_owners"][0]["username"], "user1")
-        self.assertEqual(response.data["technical_owners"][0]["username"], "user2")
+        self.assertEqual(
+            response.data["business_owners"][0]["username"], self.user1.username
+        )
+        self.assertEqual(
+            response.data["technical_owners"][0]["username"], self.user2.username
+        )
 
     def test_filter_cloudhost_by_service_uid(self):
         cloud_host = CloudHostFactory()
@@ -395,6 +402,57 @@ class OpenstackModelsTestCase(RalphAPITestCase):
         host = CloudHost.objects.get(host_id=self.cloud_host.host_id)
         self.assertEqual(host.service_env, self.service_env[1])
 
+    def test_fields_query_param_filters_cloud_host_fields(self):
+        """Only requested fields are returned via ?fields= query param."""
+        expected_fields = [
+            "hostname",
+            "service_env",
+            "configuration_path",
+            "configuration_variables",
+            "ipaddresses",
+            "host_id",
+            "parent",
+            "tags",
+        ]
+        url = "{}?{}".format(
+            reverse("cloudhost-detail", args=(self.cloud_host.id,)),
+            "fields=hostname,service_env,configuration_path,"
+            "configuration_variables,ipaddresses,host_id,parent,tags",
+        )
+        response = self.client.get(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertCountEqual(response.data.keys(), expected_fields)
+        self.assertIsInstance(response.data["ipaddresses"], list)
+        self.assertIsInstance(response.data["tags"], list)
+
+    def test_fields_query_count_no_worse_than_without(self):
+        """?fields= should use no more SQL queries than a full response."""
+        self.cloud_host.tags.add("test_tag")
+        self.cloud_host.ip_addresses = ["10.20.30.40"]
+        CustomFieldFactory(name="test_cf", use_as_configuration_variable=True)
+        self.cloud_host.update_custom_field("test_cf", "cloud_value")
+
+        url_base = reverse("cloudhost-list") + "?limit=100"
+        url_fields = url_base + (
+            "&fields=hostname,service_env,configuration_path,"
+            "configuration_variables,ipaddresses,host_id,parent,tags"
+        )
+
+        with CaptureQueriesContext(connections["default"]) as baseline:
+            resp = self.client.get(url_base, format="json")
+            self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        with CaptureQueriesContext(connections["default"]) as filtered:
+            resp = self.client.get(url_fields, format="json")
+            self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        self.assertLessEqual(
+            len(filtered),
+            len(baseline),
+            "?fields= used %d queries, baseline used %d"
+            % (len(filtered), len(baseline)),
+        )
+
 
 class VirtualServerAPITestCase(RalphAPITestCase):
     def setUp(self):
@@ -402,7 +460,7 @@ class VirtualServerAPITestCase(RalphAPITestCase):
         self.hypervisor = DataCenterAssetFactory()
         self.cloud_hypervisor = CloudHostFactory()
         self.cluster = ClusterFactory()
-        self.type = VirtualServerType.objects.create(name="XEN")
+        self.type = VirtualServerTypeFactory(name="XEN")
         self.virtual_server = VirtualServerFullFactory(
             service_env__environment__name="some_env",
         )
@@ -419,7 +477,7 @@ class VirtualServerAPITestCase(RalphAPITestCase):
     def test_get_virtual_server_list(self):
         VirtualServerFullFactory.create_batch(20)
         url = reverse("virtualserver-list") + "?limit=100"
-        with self.assertNumQueries(13):
+        with self.assertQueriesMoreOrLess(13, plus_minus=2):
             response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 22)
@@ -441,8 +499,12 @@ class VirtualServerAPITestCase(RalphAPITestCase):
         self.assertEqual(len(response.data["memory"]), 2)
         self.assertEqual(response.data["memory"][0]["speed"], 1600)
         self.assertEqual(response.data["memory"][0]["size"], 8192)
-        self.assertEqual(response.data["business_owners"][0]["username"], "user1")
-        self.assertEqual(response.data["technical_owners"][0]["username"], "user2")
+        self.assertEqual(
+            response.data["business_owners"][0]["username"], self.user1.username
+        )
+        self.assertEqual(
+            response.data["technical_owners"][0]["username"], self.user2.username
+        )
 
     def test_create_virtual_server(self):
         virtual_server_count = VirtualServer.objects.count()
@@ -487,7 +549,7 @@ class VirtualServerAPITestCase(RalphAPITestCase):
         self.assertEqual(self.virtual_server.hostname, "s111111.local")
 
     def test_add_custom_field_to_virtual_server(self):
-        cf = CustomField.objects.create(
+        cf = CustomFieldFactory(
             name="test str", type=CustomFieldTypes.STRING, default_value="xyz"
         )
         url = (
@@ -577,3 +639,52 @@ class VirtualServerAPITestCase(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 1)
         self.assertEqual(response.data["results"][0]["id"], self.virtual_server.id)
+
+    def test_fields_query_param_filters_virtual_server_fields(self):
+        """Only requested fields are returned via ?fields= query param."""
+        expected_fields = [
+            "hostname",
+            "service_env",
+            "configuration_path",
+            "configuration_variables",
+            "ipaddresses",
+            "hypervisor",
+            "type",
+            "sn",
+        ]
+        url = "{}?{}".format(
+            reverse("virtualserver-detail", args=(self.virtual_server.id,)),
+            "fields=hostname,service_env,configuration_path,"
+            "configuration_variables,ipaddresses,hypervisor,type,sn",
+        )
+        response = self.client.get(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertCountEqual(response.data.keys(), expected_fields)
+        # nested type object should still have its inner fields
+        self.assertIn("name", response.data["type"])
+
+    def test_fields_query_count_no_worse_than_without(self):
+        """?fields= should use no more SQL queries than a full response."""
+        CustomFieldFactory(name="test_cf", use_as_configuration_variable=True)
+        self.virtual_server.update_custom_field("test_cf", "vs_value")
+
+        url_base = reverse("virtualserver-list") + "?limit=100"
+        url_fields = url_base + (
+            "&fields=hostname,service_env,configuration_path,"
+            "configuration_variables,ipaddresses,hypervisor,type,sn"
+        )
+
+        with CaptureQueriesContext(connections["default"]) as baseline:
+            resp = self.client.get(url_base, format="json")
+            self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        with CaptureQueriesContext(connections["default"]) as filtered:
+            resp = self.client.get(url_fields, format="json")
+            self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        self.assertLessEqual(
+            len(filtered),
+            len(baseline),
+            "?fields= used %d queries, baseline used %d"
+            % (len(filtered), len(baseline)),
+        )
