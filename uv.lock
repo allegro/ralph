@@ -2,6 +2,9 @@ version = 1
 revision = 3
 requires-python = "==3.10.*"
 
+[manifest]
+constraints = [{ name = "cmd2", specifier = "<3" }]
+
 [[package]]
 name = "alabaster"
 version = "0.7.16"
@@ -99,15 +102,6 @@ wheels = [
 ]
 
 [[package]]
-name = "backports-strenum"
-version = "1.3.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/35/c7/2ed54c32fed313591ffb21edbd48db71e68827d43a61938e5a0bc2b6ec91/backports_strenum-1.3.1.tar.gz", hash = "sha256:77c52407342898497714f0596e86188bb7084f89063226f4ba66863482f42414", size = 7257, upload-time = "2023-12-09T14:36:40.937Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/d6/50/56cf20e2ee5127b603b81d5a69580a1a325083e2b921aa8f067da83927c0/backports_strenum-1.3.1-py3-none-any.whl", hash = "sha256:cdcfe36dc897e2615dc793b7d3097f54d359918fc448754a517e6f23044ccf83", size = 8304, upload-time = "2023-12-09T14:36:39.905Z" },
-]
-
-[[package]]
 name = "certifi"
 version = "2026.2.25"
 source = { registry = "https://pypi.org/simple" }
@@ -194,20 +188,18 @@ wheels = [
 
 [[package]]
 name = "cmd2"
-version = "3.4.0"
+version = "2.7.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "backports-strenum" },
     { name = "gnureadline", marker = "sys_platform == 'darwin'" },
     { name = "pyperclip" },
     { name = "pyreadline3", marker = "sys_platform == 'win32'" },
-    { name = "rich" },
     { name = "rich-argparse" },
-    { name = "typing-extensions" },
+    { name = "wcwidth" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/70/39/c0c85040ea9b9465ec345ec9ae89416aef9a8672e74bc23c5cc1a2142ea0/cmd2-3.4.0.tar.gz", hash = "sha256:fd43ef7540609469f055858146f2c592ca4c58e3c336b5efbc5502459ab0bdb2", size = 710127, upload-time = "2026-03-03T16:09:08.413Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/75/68/4bf43d284e41c01c6011146e5c2824aa6f17a3bb1ef10ba3dbbae5cf31dc/cmd2-2.7.0.tar.gz", hash = "sha256:81d8135b46210e1d03a5a810baf859069a62214788ceeec3588f44eed86fbeeb", size = 593131, upload-time = "2025-06-30T16:54:26.983Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/28/16/3dc2eaeeef97a2e47679d9ada72dd56d5033d3d9ed8f0c8d3c75ddf3bc07/cmd2-3.4.0-py3-none-any.whl", hash = "sha256:9bf15718bcc5a99c863518d6209f8e36990b18826dbb4aceeb53d17215edcbaf", size = 148210, upload-time = "2026-03-03T16:09:07.221Z" },
+    { url = "https://files.pythonhosted.org/packages/4c/83/0f65933b7daa436912173f3d63232d158b60686318fccc7cf458ff15bfe8/cmd2-2.7.0-py3-none-any.whl", hash = "sha256:c85faf603e8cfeb4302206f49c0530a83d63386b0d90ff6a957f2c816eb767d7", size = 154309, upload-time = "2025-06-30T16:54:25.039Z" },
 ]
 
 [[package]]
@@ -1825,6 +1817,7 @@ dependencies = [
     { name = "django-threadlocals" },
     { name = "djangorestframework" },
     { name = "djangorestframework-xml" },
+    { name = "dogpile-cache" },
     { name = "drf-nested-routers" },
     { name = "factory-boy" },
     { name = "faker" },
@@ -1925,6 +1918,7 @@ requires-dist = [
     { name = "django-threadlocals", specifier = "==0.8" },
     { name = "djangorestframework", specifier = "==3.15.0" },
     { name = "djangorestframework-xml", specifier = "==2.0.0" },
+    { name = "dogpile-cache", specifier = ">=1.5.0" },
     { name = "drf-nested-routers", specifier = "==0.92.5" },
     { name = "factory-boy", specifier = "==3.2.1" },
     { name = "faker", specifier = "==0.9.0" },

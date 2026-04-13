@@ -30,8 +30,6 @@ babel==2.11.0
     #   py-moneyed
     #   python-novaclient
     #   sphinx
-backports-strenum==1.3.1
-    # via cmd2
 certifi==2026.2.25
     # via requests
 cffi==2.0.0
@@ -47,8 +45,10 @@ cliff==4.13.3
     # via
     #   osc-lib
     #   python-ironicclient
-cmd2==3.4.0
-    # via cliff
+cmd2==2.7.0
+    # via
+    #   -c (workspace)
+    #   cliff
 colorama==0.4.6
     # via mkdocs-material
 coverage==7.13.5
@@ -157,6 +157,7 @@ docutils==0.21.2
     # via sphinx
 dogpile-cache==1.5.0
     # via
+    #   ralph (pyproject.toml)
     #   openstacksdk
     #   python-ironicclient
 drf-nested-routers==0.92.5
@@ -482,7 +483,6 @@ rfc3986==2.0.0
     # via oslo-config
 rich==15.0.0
     # via
-    #   cmd2
     #   rich-argparse
     #   typer
 rich-argparse==1.7.2
@@ -583,7 +583,6 @@ typing==3.6.6
 typing-extensions==4.15.0
     # via
     #   asgiref
-    #   cmd2
     #   cryptography
     #   dogpile-cache
     #   exceptiongroup
@@ -613,6 +612,7 @@ watchdog==6.0.0
     # via mkdocs
 wcwidth==0.6.0
     # via
+    #   cmd2
     #   prompt-toolkit
     #   urwid
 werkzeug==0.16.1

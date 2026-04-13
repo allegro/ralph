@@ -1,6 +1,6 @@
 [build-system]
 build-backend = "uv_build"
-requires = ["uv_build>=0.9.2"]
+requires = ["uv_build>=0.9.2,<0.12"]
 
 [dependency-groups]
 dev = [
@@ -58,6 +58,7 @@ dependencies = [
   "djangorestframework==3.15.0",
   "djangorestframework_xml==2.0.0",
   "django~=5.0.0",
+  "dogpile-cache>=1.5.0",
   "drf-nested-routers==0.92.5",
   "factory-boy==3.2.1",
   "funcsigs==0.4",
@@ -121,6 +122,7 @@ test_ralph = "ralph.__main__:test"
 validate_ralph = "ralph.cross_validator.__main__:main"
 
 [tool.ruff]
+line-length = 88
 exclude = [
   "*local.py",
   "*migrations*"
@@ -133,7 +135,7 @@ select = ["E4", "E7", "E9", "F"]
 
 [tool.uv]
 default-groups = ["dev", "test"]
+constraint-dependencies = ["cmd2<3"]
 
-[tools.ruff.format]
+[tool.ruff.format]
 line-ending = "auto"
-line-length = 88
