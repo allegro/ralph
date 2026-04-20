@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 import operator
+from copy import copy
 from functools import reduce
 
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.admin import SimpleListFilter
 from django.contrib.admin.views.main import ChangeList, ORDER_VAR
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Prefetch, Q
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
@@ -29,16 +32,19 @@ from ralph.admin.mixins import (
     RalphAdminImportExportMixin,
     RalphTabularInline,
 )
+from ralph.admin.sites import ralph_site
 from ralph.admin.views.extra import RalphDetailViewAdmin
 from ralph.admin.views.main import RalphChangeList
 from ralph.admin.views.multiadd import MulitiAddAdminMixin
 from ralph.assets.invoice_report import AssetInvoiceReportMixin
 from ralph.assets.models.base import BaseObject, BaseObjectPolymorphicQuerySet
 from ralph.assets.models.components import Ethernet
+from ralph.assets.models.switch import SwitchPort, SwitchTemplate
 from ralph.assets.views import ComponentsAdminView
 from ralph.attachments.admin import AttachmentsMixin
 from ralph.data_center.admin_actions import assign_management_hostname_and_ip
 from ralph.data_center.forms import DataCenterAssetForm
+from ralph.helpers import get_model_view_url_name
 from ralph.data_center.models.components import DiskShare, DiskShareMount
 from ralph.data_center.models.hosts import DCHost
 from ralph.data_center.models.physical import (
@@ -308,6 +314,72 @@ class DataCenterAssetOperation(OperationViewReadOnlyForExisiting):
     inlines = OperationViewReadOnlyForExisiting.admin_class.inlines
 
 
+class DataCenterAssetSwitchPortsView(RalphDetailViewAdmin):
+    icon = "plug"
+    name = "dc_asset_switchports"
+    label = _("Switch Ports")
+    url_name = "data_center_asset_switchports"
+
+    class SwitchPortInline(RalphTabularInline):
+        model = SwitchPort
+        raw_id_fields = ("remote_port",)
+        extra = 0
+        fields = ("name", "speed", "remote_port")
+
+    inlines = [SwitchPortInline]
+
+    def dispatch(self, request, model, pk, *args, **kwargs):
+        self.object = get_object_or_404(model, pk=pk)
+
+        if request.method == "POST" and "generate_from_template" in request.POST:
+            templates = SwitchTemplate.objects.filter(switch_model=self.object.model)
+            template = templates.first()
+            if template:
+                created = 0
+                for i in range(template.port_count):
+                    port_name = "{}{}".format(template.prefix, i)
+                    _, was_created = SwitchPort.objects.get_or_create(
+                        base_object=self.object,
+                        name=port_name,
+                        defaults={"speed": template.speed},
+                    )
+                    if was_created:
+                        created += 1
+                messages.success(
+                    request,
+                    _("Generated {} switch ports from template '{}'.").format(
+                        created, template.name
+                    ),
+                )
+            else:
+                messages.error(
+                    request,
+                    _("No switch template found for model '{}'.").format(
+                        self.object.model
+                    ),
+                )
+            return redirect(request.path)
+
+        self.views = kwargs["views"]
+        extra_context = copy(super(RalphDetailViewAdmin, self).get_context_data())
+        extra_context["object"] = self.object
+        extra_context["transition_url_name"] = get_model_view_url_name(
+            model, "transition"
+        )
+        self.admin_class_instance = self.admin_class(
+            model, ralph_site, change_views=self.views
+        )
+        extra_context["media"] += self.admin_class_instance.media
+        return self.admin_class_instance.change_view(
+            request, pk, extra_context=extra_context
+        )
+
+
+DataCenterAssetSwitchPortsView.admin_class.change_form_template = (
+    "data_center/datacenterasset/switchports_tab.html"
+)
+
+
 class DataCenterAssetChangeList(RalphChangeList):
     def get_ordering(self, request, queryset):
         """Adds extra ordering params for ordering by location."""
@@ -367,6 +439,7 @@ class DataCenterAssetAdmin(
         DataCenterAssetLicence,
         DataCenterAssetSupport,
         DataCenterAssetOperation,
+        DataCenterAssetSwitchPortsView,
     ]
     form = DataCenterAssetForm
     if settings.ENABLE_DNSAAS_INTEGRATION:

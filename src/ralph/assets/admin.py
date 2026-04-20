@@ -32,6 +32,7 @@ from ralph.assets.models.components import (
     Processor,
 )
 from ralph.assets.models.configuration import ConfigurationClass, ConfigurationModule
+from ralph.assets.models.switch import SwitchPort, SwitchTemplate
 from ralph.data_importer import resources
 from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
 from ralph.lib.table.table import Table, TableWithUrl
@@ -348,3 +349,21 @@ class BaseObjectAdmin(RalphAdmin):
 @register(AssetHolder)
 class AssetHolderAdmin(RalphAdmin):
     search_fields = ["name"]
+
+
+@register(SwitchTemplate)
+class SwitchTemplateAdmin(RalphAdmin):
+    list_display = ["name", "switch_model", "port_count", "prefix", "speed"]
+    list_filter = ["speed", "switch_model"]
+    search_fields = ["name", "switch_model__name", "prefix"]
+    raw_id_fields = ["switch_model"]
+    fields = ("name", "switch_model", "port_count", "prefix", "speed")
+
+
+@register(SwitchPort)
+class SwitchPortAdmin(RalphAdmin):
+    list_display = ["name", "base_object", "speed", "remote_port"]
+    list_filter = ["speed"]
+    search_fields = ["name"]
+    raw_id_fields = ["base_object", "remote_port"]
+    fields = ("base_object", "name", "speed", "remote_port")

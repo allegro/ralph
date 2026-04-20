@@ -109,6 +109,7 @@ sitetrees = [
                     section(_("Databases"), "data_center", "Database"),
                     section(_("Disk Shares"), "data_center", "DiskShare"),
                     section(_("Server Rooms"), "data_center", "ServerRoom"),
+                    section(_("Switch Templates"), "assets", "SwitchTemplate"),
                     section(_("Preboots"), "deployment", "Preboot"),
                     section(
                         _("Preboot configuration"), "deployment", "PrebootConfiguration"

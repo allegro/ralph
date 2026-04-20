@@ -13,7 +13,11 @@ class SwitchTemplate(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
     )
     port_count = models.PositiveIntegerField()
     prefix = models.CharField(help_text="e.g. et-0/0/", max_length=64)
-    speed = models.CharField(choices=EthernetSpeed(), max_length=32)
+    speed = models.PositiveIntegerField(
+        verbose_name=_("speed"),
+        choices=EthernetSpeed(),
+        default=EthernetSpeed.unknown.id,
+    )
 
 
 class SwitchPort(AdminAbsoluteUrlMixin, models.Model):
@@ -21,7 +25,11 @@ class SwitchPort(AdminAbsoluteUrlMixin, models.Model):
         BaseObject, related_name="switchports_set", on_delete=models.CASCADE
     )
     name = models.CharField(_("name"), max_length=255)
-    speed = models.CharField(choices=EthernetSpeed(), max_length=32)
+    speed = models.PositiveIntegerField(
+        verbose_name=_("speed"),
+        choices=EthernetSpeed(),
+        default=EthernetSpeed.unknown.id,
+    )
     remote_port = models.ForeignKey(
         Ethernet, on_delete=models.SET_NULL, null=True, blank=True, default=None
     )

@@ -1,0 +1,13 @@
+{% extends "admin/extra_views/base_admin_change.html" %}
+{% load i18n %}
+
+{% block field_sets %}
+{% if object.model and object.model.switch_templates.all %}
+<div class="small-12 columns" style="margin-bottom: 1rem;">
+    <form method="post">
+        {% csrf_token %}
+        <input type="submit" name="generate_from_template" value="{% trans 'Generate ports from template' %}" class="default" />
+    </form>
+</div>
+{% endif %}
+{% endblock %}

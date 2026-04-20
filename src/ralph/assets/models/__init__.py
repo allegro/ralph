@@ -32,6 +32,7 @@ from ralph.assets.models.components import (
     Processor,
 )
 from ralph.assets.models.configuration import ConfigurationClass, ConfigurationModule
+from ralph.assets.models.switch import SwitchPort, SwitchTemplate
 
 __all__ = [
     "Asset",
@@ -62,5 +63,7 @@ __all__ = [
     "Processor",
     "Service",
     "ServiceEnvironment",
+    "SwitchPort",
+    "SwitchTemplate",
     "Ethernet",
 ]
