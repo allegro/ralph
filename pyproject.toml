@@ -13,7 +13,7 @@ dev = [
   "pudb",
   "ruff",
   "toml-sort>=0.23.1",
-  "werkzeug==0.16.1"
+  "werkzeug==3.1.6"
 ]
 docs = [
   "mkdocs",
@@ -89,7 +89,7 @@ dependencies = [
   "raven",
   "redis~=4.0",
   "requests-oauthlib==1.3.0",
-  "requests==2.32.4",
+  "requests==2.33.0",
   "rq==1.16.2",
   "setuptools<66.0",
   "simplejson==3.8.2",
