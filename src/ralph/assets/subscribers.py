@@ -152,7 +152,10 @@ def update_service_handler(service_data):
                 )
                 return
         case ServiceActionType.UPDATE | ServiceActionType.REFRESH:
-            if service_type not in settings.HERMES_SERVICE_SYNC_COMPONENTS_TYPES and Service.objects.filter(uid=service_uid).count() == 0:
+            if (
+                service_type not in settings.HERMES_SERVICE_SYNC_COMPONENTS_TYPES
+                and Service.objects.filter(uid=service_uid).count() == 0
+            ):
                 logger.info(
                     "Will not sync service %s. It's not present yet and type %s not synced",
                     service_uid,
