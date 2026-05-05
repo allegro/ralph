@@ -642,19 +642,13 @@ HERMES["ENABLED"] = ENABLE_HERMES_INTEGRATION
 HERMES_HOST_UPDATE_TOPIC_NAME = os.environ.get("HERMES_HOST_UPDATE_TOPIC_NAME", None)
 
 HERMES_SERVICE_TOPICS = {
-    "CREATE": os.environ.get(
-        "SERVICE_CREATE_HERMES_TOPIC_NAME", "hermes.service.create"
-    ),
-    "DELETE": os.environ.get(
-        "SERVICE_DELETE_HERMES_TOPIC_NAME", "hermes.service.delete"
-    ),
     "UPDATE": os.environ.get(
         "SERVICE_UPDATE_HERMES_TOPIC_NAME", "hermes.service.update"
-    ),
-    "REFRESH": os.environ.get(
-        "SERVICE_REFRESH_HERMES_TOPIC_NAME", "hermes.service.refresh"
-    ),
+    )
 }
+
+if types := os.getenv("HERMES_SERVICE_SYNC_COMPONENTS_TYPES"):
+    HERMES_SERVICE_SYNC_COMPONENTS_TYPES = set(types.split(","))
 
 if ENABLE_HERMES_INTEGRATION:
     INSTALLED_APPS += ("pyhermes.apps.django",)
