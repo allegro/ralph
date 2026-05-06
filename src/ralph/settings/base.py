@@ -647,7 +647,7 @@ HERMES_SERVICE_TOPICS = {
     )
 }
 
-if types := os.getenv("HERMES_SERVICE_SYNC_COMPONENTS_TYPES"):
+if types := os.getenv("HERMES_SERVICE_SYNC_COMPONENTS_TYPES", default="service"):
     HERMES_SERVICE_SYNC_COMPONENTS_TYPES = set(types.split(","))
 
 if ENABLE_HERMES_INTEGRATION:
