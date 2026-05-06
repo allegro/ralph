@@ -2,7 +2,7 @@
 from copy import copy
 
 from django.core.exceptions import ImproperlyConfigured
-from django.http import Http404
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 
 from ralph.admin.mixins import (
@@ -145,7 +145,8 @@ class RalphDetailView(
         try:
             self.object = self.get_object(model, pk)
         except model.DoesNotExist:
-            raise Http404
+            return HttpResponseRedirect("..")
+
         return super().dispatch(request, model, *args, **kwargs)
 
     def get_context_data(self, **kwargs):

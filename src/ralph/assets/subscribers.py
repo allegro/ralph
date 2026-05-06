@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 import logging
+from enum import Enum
 
 import pyhermes
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.exceptions import BadRequest
 
 from ralph.assets.models.assets import (
     BusinessSegment,
@@ -93,9 +95,14 @@ def _update_profit_center(service, profit_center_name):
         )[0]
 
 
-@pyhermes.subscriber(topic=settings.HERMES_SERVICE_TOPICS["CREATE"])
+class ServiceActionType(str, Enum):
+    CREATE = "create"
+    UPDATE = "update"
+    REFRESH = "refresh"
+    DELETE = "delete"
+
+
 @pyhermes.subscriber(topic=settings.HERMES_SERVICE_TOPICS["UPDATE"])
-@pyhermes.subscriber(topic=settings.HERMES_SERVICE_TOPICS["REFRESH"])
 def update_service_handler(service_data):
     """
     Update information about Service from Hermes event.
@@ -122,6 +129,52 @@ def update_service_handler(service_data):
         }
     """
     try:
+        action_type: ServiceActionType = ServiceActionType(service_data["actionType"])
+        service_type = service_data["type"]
+        service_uid = service_data["uid"]
+        log_extra = {
+            "action_type": ACTION_TYPE,
+            "operation_type": action_type,
+            "service_uid": service_uid,
+            "service_type": service_type,
+        }
+    except:  # noqa
+        raise BadRequest("Incorrect data format")
+
+    match action_type:
+        case ServiceActionType.CREATE:
+            if service_type not in settings.HERMES_SERVICE_SYNC_COMPONENTS_TYPES:
+                logger.info(
+                    "Will not sync service %s. Type %s not synced",
+                    service_uid,
+                    service_type,
+                    extra=log_extra,
+                )
+                return
+        case ServiceActionType.UPDATE | ServiceActionType.REFRESH:
+            if (
+                service_type not in settings.HERMES_SERVICE_SYNC_COMPONENTS_TYPES
+                and Service.objects.filter(uid=service_uid).count() == 0
+            ):
+                logger.info(
+                    "Will not sync service %s. It's not present yet and type %s not synced",
+                    service_uid,
+                    service_type,
+                    extra=log_extra,
+                )
+                return
+        case ServiceActionType.DELETE:
+            delete_service_handler(service_data)
+            return
+        case _:
+            return  # noqa
+
+    logger.info(
+        "Syncing service %s",
+        service_uid,
+        extra=log_extra,
+    )
+    try:
         service, _ = Service.objects.update_or_create(
             uid=service_data["uid"],
             defaults={
@@ -129,14 +182,7 @@ def update_service_handler(service_data):
             },
         )
     except Exception as e:
-        logger.exception(
-            e,
-            extra={
-                "action_type": ACTION_TYPE,
-                "service_uid": service_data["uid"],
-                "service_name": service_data["name"],
-            },
-        )
+        logger.exception(e, extra=log_extra)
     else:
         _update_service_owners(
             service=service,
@@ -158,15 +204,10 @@ def update_service_handler(service_data):
             "Synced service `{}` with UID `{}`.".format(
                 service_data["name"], service_data["uid"]
             ),
-            extra={
-                "action_type": ACTION_TYPE,
-                "service_uid": service_data["uid"],
-                "service_name": service_data["name"],
-            },
+            extra=log_extra,
         )
 
 
-@pyhermes.subscriber(topic=settings.HERMES_SERVICE_TOPICS["DELETE"])
 def delete_service_handler(service_data):
     """
     Set service active to False if service deleted.
