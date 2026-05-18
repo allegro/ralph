@@ -82,6 +82,10 @@ class Service(
     def get_autocomplete_queryset(cls):
         return cls._default_manager.filter(active=True)
 
+    class Meta:
+        verbose_name = _("Service / Component")
+        verbose_name_plural = _("Services / Components")
+
 
 class ServiceEnvironment(AdminAbsoluteUrlMixin, AutocompleteTooltipMixin, BaseObject):
     _allow_in_dashboard = True

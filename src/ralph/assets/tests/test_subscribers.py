@@ -12,10 +12,14 @@ from ralph.assets.models import Service
 from ralph.assets.subscribers import ACTION_TYPE
 from ralph.assets.tests.factories import ServiceEnvironmentFactory, ServiceFactory
 from ralph.data_center.tests.factories import DataCenterAssetFactory
+from django.test.utils import override_settings
 
 
 @unittest.skipUnless(
     settings.ENABLE_HERMES_INTEGRATION, reason="Hermes integration is disabled"
+)
+@override_settings(
+    HERMES_SERVICE_SYNC_COMPONENTS_TYPES=["service", "third party system"]
 )
 class ServiceSubscribersTestCase(TestCase):
     def setUp(self):
@@ -37,7 +41,9 @@ class ServiceSubscribersTestCase(TestCase):
 
     def test_update_service_when_service_does_not_exist(self):
         data = {
+            "actionType": "update",
             "uid": "sc-001",
+            "type": "service",
             "name": "TestName",
             "status": "Active",
             "isActive": True,
@@ -46,7 +52,7 @@ class ServiceSubscribersTestCase(TestCase):
             "technicalOwners": [{"username": "technical_user2"}],
             "area": {"name": "new area", "profitCenter": "test-PC"},
         }
-        response = self._make_request(data, settings.HERMES_SERVICE_TOPICS["CREATE"])
+        response = self._make_request(data, settings.HERMES_SERVICE_TOPICS["UPDATE"])
         self.assertEqual(response.status_code, 204)
         service = Service.objects.get(uid="sc-001")
         self.assertTrue(service.active)
@@ -74,7 +80,9 @@ class ServiceSubscribersTestCase(TestCase):
         service.technical_owners.add(UserFactory(username="technical_user2"))
         ServiceEnvironmentFactory(service=service, environment__name="prod")
         data = {
+            "actionType": "update",
             "uid": service.uid,
+            "type": "service",
             "name": "New name",
             "status": "Active",
             "isActive": True,
@@ -99,6 +107,74 @@ class ServiceSubscribersTestCase(TestCase):
             [user.username for user in service.technical_owners.all()],
         )
 
+    def test_create_third_party_system(self):
+        service_uid = "sc-64564"
+        data = {
+            "actionType": "create",
+            "uid": service_uid,
+            "type": "third party system",
+            "name": "Some third party system",
+            "status": "Active",
+            "isActive": True,
+            "environments": ["dev"],
+            "businessOwners": [{"username": "business_user3"}],
+            "technicalOwners": [{"username": "technical_user3"}],
+            "area": {"name": "new area", "profitCenter": "new-PC"},
+        }
+        response = self._make_request(data, settings.HERMES_SERVICE_TOPICS["UPDATE"])
+        self.assertEqual(response.status_code, 204)
+        service = Service.objects.get(uid=service_uid)
+        self.assertTrue(service.active)
+        self.assertEqual(service.name, "Some third party system")
+
+    def test_create_service_of_unknown_type_doesnt_create(self):
+        service_uid = "sc-64561"
+        data = {
+            "actionType": "create",
+            "uid": service_uid,
+            "type": "some weird type",
+            "name": "Some service with weird type",
+            "status": "Active",
+            "isActive": True,
+            "environments": ["dev"],
+            "businessOwners": [{"username": "business_user3"}],
+            "technicalOwners": [{"username": "technical_user3"}],
+            "area": {"name": "new area", "profitCenter": "new-PC"},
+        }
+        response = self._make_request(data, settings.HERMES_SERVICE_TOPICS["UPDATE"])
+        self.assertEqual(response.status_code, 204)
+        with self.assertRaises(Service.DoesNotExist):
+            Service.objects.get(uid=service_uid)
+
+    def test_create_service_change_to_unknown_type_then_change_back_works(self):
+        service_uid = "sc-64562"
+        data = {
+            "actionType": "create",
+            "uid": service_uid,
+            "type": "service",
+            "name": "This will change types",
+            "status": "Active",
+            "isActive": True,
+            "environments": ["dev"],
+            "businessOwners": [{"username": "business_user3"}],
+            "technicalOwners": [{"username": "technical_user3"}],
+            "area": {"name": "new area", "profitCenter": "new-PC"},
+        }
+        response = self._make_request(data, settings.HERMES_SERVICE_TOPICS["UPDATE"])
+        self.assertEqual(response.status_code, 204)
+        self.assertIsNotNone(Service.objects.get(uid=service_uid))
+        data["actionType"] = "update"
+        data["type"] = "some weird type"
+        data["name"] = "This has new type"
+        response = self._make_request(data, settings.HERMES_SERVICE_TOPICS["UPDATE"])
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(Service.objects.get(uid=service_uid).name, "This has new type")
+        data["type"] = "service"
+        data["name"] = "This has old type"
+        response = self._make_request(data, settings.HERMES_SERVICE_TOPICS["UPDATE"])
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(Service.objects.get(uid=service_uid).name, "This has old type")
+
     @patch("ralph.assets.subscribers.logger")
     def test_update_service_environment_when_environment_assigned_to_object(
         self, mock_logger
@@ -109,7 +185,9 @@ class ServiceSubscribersTestCase(TestCase):
         )
         DataCenterAssetFactory(service_env=service_env)
         data = {
+            "actionType": "update",
             "uid": service.uid,
+            "type": "service",
             "name": "New name",
             "status": "Active",
             "isActive": False,
@@ -134,7 +212,9 @@ class ServiceSubscribersTestCase(TestCase):
     def test_delete_with_valid_event_data(self):
         service = ServiceFactory(active=True)
         data = {
+            "actionType": "delete",
             "uid": service.uid,
+            "type": "service",
             "name": "Service name",
             "status": "Inactive",
             "isActive": False,
@@ -142,7 +222,7 @@ class ServiceSubscribersTestCase(TestCase):
             "businessOwners": [{"username": "business_user1"}],
             "technicalOwners": [{"username": "technical_user1"}],
         }
-        response = self._make_request(data, settings.HERMES_SERVICE_TOPICS["DELETE"])
+        response = self._make_request(data, settings.HERMES_SERVICE_TOPICS["UPDATE"])
         self.assertEqual(response.status_code, 204)
         service.refresh_from_db()
         self.assertFalse(service.active)
@@ -153,7 +233,9 @@ class ServiceSubscribersTestCase(TestCase):
         service_env = ServiceEnvironmentFactory(service=service)
         DataCenterAssetFactory(service_env=service_env)
         data = {
+            "actionType": "delete",
             "uid": service.uid,
+            "type": "service",
             "name": "Service name",
             "status": "Inactive",
             "isActive": False,
@@ -161,7 +243,7 @@ class ServiceSubscribersTestCase(TestCase):
             "businessOwners": [{"username": "business_user"}],
             "technicalOwners": [{"username": "technical_user"}],
         }
-        response = self._make_request(data, settings.HERMES_SERVICE_TOPICS["DELETE"])
+        response = self._make_request(data, settings.HERMES_SERVICE_TOPICS["UPDATE"])
         self.assertEqual(response.status_code, 204)
         mock_logger.error.assert_called_with(
             "Can not delete service - it has assigned some base objects",
