@@ -2,6 +2,8 @@
 #    uv pip compile pyproject.toml --group dev --group test -o requirements/test.txt
 alabaster==0.7.16
     # via sphinx
+annotated-types==0.7.0
+    # via pydantic
 appdirs==1.4.4
     # via openstacksdk
 argparse==1.4.0
@@ -353,6 +355,10 @@ pyasn1-modules==0.4.2
     # via python-ldap
 pycparser==2.22
     # via cffi
+pydantic==2.13.4
+    # via ralph (pyproject.toml)
+pydantic-core==2.46.4
+    # via pydantic
 pygments==2.19.2
     # via
     #   ipython
@@ -528,8 +534,13 @@ typing-extensions==4.14.1
     #   psycopg
     #   psycopg-pool
     #   py-moneyed
+    #   pydantic
+    #   pydantic-core
     #   referencing
     #   rich
+    #   typing-inspection
+typing-inspection==0.4.2
+    # via pydantic
 tzdata==2025.2
     # via
     #   oslo-serialization

@@ -80,6 +80,7 @@ dependencies = [
   "positional==1.0.1",
   "prettytable==0.7.2",
   "psycopg[binary,pool]>=3.2.10",
+  "pydantic>=2.13.4",
   "pyhermes~=0.6.0",
   "python-dateutil==2.9.0",
   "python-ironicclient",

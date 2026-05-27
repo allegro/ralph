@@ -181,6 +181,7 @@ INSTALLED_APPS = (
     "ralph.lib.hooks",
     "ralph.notifications",
     "ralph.ssl_certificates",
+    "ralph.switchports",
     "rest_framework",
     "rest_framework.authtoken",
     "djmoney",
