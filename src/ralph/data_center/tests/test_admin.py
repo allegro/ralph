@@ -11,12 +11,13 @@ from django.urls import reverse
 from ralph.accounts.tests.factories import UserFactory
 from ralph.assets.tests.factories import ServiceEnvironmentFactory, ServiceFactory
 from ralph.data_center.admin import DataCenterAssetAdmin
-from ralph.data_center.models import DataCenterAsset, DataCenterAssetStatus
+from ralph.data_center.models import DataCenterAsset, DataCenterAssetStatus, Rack
 from ralph.data_center.tests.factories import (
     DataCenterAssetFactory,
     DataCenterAssetFullFactory,
     DataCenterFactory,
     RackFactory,
+    RackModuleFactory,
     ServerRoomFactory,
 )
 from ralph.lib.custom_fields.models import (
@@ -277,3 +278,140 @@ class DataCenterAssetAdminAssignManagementHostnameTest(TransactionTestCase):
         )
         self.assertEqual(self.dca.management_hostname, "")
         self.assertEqual(self.dca.management_ip, "")
+
+
+class RackModuleAdminTest(TransactionTestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_superuser(
+            username="root", password="password", email="email@email.pl"
+        )
+        result = self.client.login(username="root", password="password")
+        self.assertEqual(result, True)
+        self.dc = DataCenterFactory()
+        self.rack_module = RackModuleFactory(data_center=self.dc)
+
+    def test_changelist_view(self):
+        url = reverse("admin:data_center_rackmodule_changelist")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, self.rack_module.name)
+
+    def test_add_rack_module(self):
+        url = reverse("admin:data_center_rackmodule_add")
+        data = {
+            "name": "New Rack Module",
+            "data_center": self.dc.id,
+            "description": "Test description",
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, 302)
+        from ralph.data_center.models.physical import RackModule
+
+        self.assertTrue(RackModule.objects.filter(name="New Rack Module").exists())
+
+    def test_change_rack_module(self):
+        url = self.rack_module.get_absolute_url()
+        data = {
+            "name": "Updated Module",
+            "data_center": self.dc.id,
+            "description": "Updated description",
+        }
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, 302)
+        self.rack_module.refresh_from_db()
+        self.assertEqual(self.rack_module.name, "Updated Module")
+        self.assertEqual(self.rack_module.description, "Updated description")
+
+    def test_rack_name_display(self):
+        rack = RackFactory(rack_module=self.rack_module)
+        url = reverse("admin:data_center_rackmodule_changelist")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, rack.name)
+
+
+class CombineRacksIntoModuleTest(TransactionTestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_superuser(
+            username="root", password="password", email="email@email.pl"
+        )
+        result = self.client.login(username="root", password="password")
+        self.assertEqual(result, True)
+        self.server_room = ServerRoomFactory()
+        self.rack1: Rack = RackFactory(name="Rack 1", server_room=self.server_room)  # noqa
+        self.rack2: Rack = RackFactory(name="Rack 2", server_room=self.server_room)  # noqa
+        self.rack3: Rack = RackFactory(name="Rack 3", server_room=self.server_room)  # noqa
+
+    def _perform_action(self, racks):
+        url = reverse("admin:data_center_rack_changelist")
+        data = {
+            "action": "combine",
+            "_selected_action": [rack.pk for rack in racks],
+        }
+        return self.client.post(url, data, follow=True)
+
+    def test_combine_racks_creates_module(self):
+        from ralph.data_center.models.physical import RackModule
+
+        response = self._perform_action([self.rack1, self.rack2, self.rack3])
+        self.assertEqual(response.status_code, 200)
+        module = RackModule.objects.get()
+        self.assertEqual(module.name, "Module 1 / 2 / 3")
+        self.assertEqual(module.data_center, self.server_room.data_center)
+        self.rack1.refresh_from_db()
+        self.rack2.refresh_from_db()
+        self.rack3.refresh_from_db()
+        self.assertEqual(self.rack1.rack_module, module)
+        self.assertEqual(self.rack2.rack_module, module)
+        self.assertEqual(self.rack3.rack_module, module)
+
+    def test_combine_racks_requires_at_least_two(self):
+        from ralph.data_center.models.physical import RackModule
+
+        response = self._perform_action([self.rack1])
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Select at least 2 racks")
+        self.assertEqual(RackModule.objects.count(), 0)
+
+    def test_combine_racks_fails_if_already_in_module(self):
+        from ralph.data_center.models.physical import RackModule
+
+        existing_module = RackModuleFactory(data_center=self.server_room.data_center)
+        self.rack1.rack_module = existing_module
+        self.rack1.save()
+        response = self._perform_action([self.rack1, self.rack2])
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "already part of a module")
+        # No new module created
+        self.assertEqual(RackModule.objects.count(), 1)
+
+    def test_combine_racks_fails_if_different_data_centers(self):
+        from ralph.data_center.models.physical import RackModule
+
+        other_server_room = ServerRoomFactory(
+            data_center=DataCenterFactory(name="Other DC")
+        )
+        rack_other_dc = RackFactory(name="Rack 99", server_room=other_server_room)
+        response = self._perform_action([self.rack1, rack_other_dc])
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "same data center")
+        self.assertEqual(RackModule.objects.count(), 0)
+
+    def test_combine_racks_name_uses_numbers_from_rack_names(self):
+        from ralph.data_center.models.physical import RackModule
+
+        rack_a = RackFactory(name="Row-A-10", server_room=self.server_room)
+        rack_b = RackFactory(name="Row-B-5", server_room=self.server_room)
+        self._perform_action([rack_a, rack_b])
+        module = RackModule.objects.get()
+        # regex extracts first number: 10 from "Row-A-10", 5 from "Row-B-5"
+        self.assertEqual(module.name, "Module 10 / 5")
+
+    def test_combine_racks_name_fallback_for_no_numbers(self):
+        from ralph.data_center.models.physical import RackModule
+
+        rack_a = RackFactory(name="Alpha", server_room=self.server_room)
+        rack_b = RackFactory(name="Beta", server_room=self.server_room)
+        self._perform_action([rack_a, rack_b])
+        module = RackModule.objects.get()
+        self.assertEqual(module.name, "Module Alpha / Beta")

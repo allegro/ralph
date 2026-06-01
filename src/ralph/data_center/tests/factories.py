@@ -30,6 +30,7 @@ from ralph.data_center.models.physical import (
     DataCenterAsset,
     Rack,
     RackAccessory,
+    RackModule,
     ServerRoom,
 )
 from ralph.data_center.models.virtual import (
@@ -116,6 +117,14 @@ class ServerRoomFactory(DjangoModelFactory):
     class Meta:
         model = ServerRoom
         django_get_or_create = ["name"]
+
+
+class RackModuleFactory(DjangoModelFactory):
+    name = factory.Sequence(lambda n: "Rack Module {}".format(n))
+    data_center = factory.SubFactory(DataCenterFactory)
+
+    class Meta:
+        model = RackModule
 
 
 class AccessoryFactory(DjangoModelFactory):
