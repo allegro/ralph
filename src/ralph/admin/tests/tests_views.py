@@ -52,6 +52,7 @@ FACTORY_MAP = {
     "ralph.data_center.models.physical.DataCenter": "ralph.data_center.tests.factories.DataCenterFactory",  # noqa
     "ralph.data_center.models.physical.DataCenterAsset": "ralph.data_center.tests.factories.DataCenterAssetFullFactory",  # noqa
     "ralph.data_center.models.physical.Rack": "ralph.data_center.tests.factories.RackFactory",  # noqa
+    "ralph.data_center.models.physical.RackModule": "ralph.data_center.tests.factories.RackModuleFactory",  # noqa
     "ralph.data_center.models.physical.RackAccessory": "ralph.data_center.tests.factories.RackAccessoryFactory",  # noqa
     "ralph.data_center.models.physical.ServerRoom": "ralph.data_center.tests.factories.ServerRoomFactory",  # noqa
     "ralph.data_center.models.virtual.BaseObjectCluster": "ralph.data_center.tests.factories.BaseObjectClusterFactory",  # noqa
