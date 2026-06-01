@@ -105,3 +105,43 @@ table {
         }
     }
 }
+
+#result_list {
+    thead th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: $thead-bg-color;
+
+        &:first-child {
+            left: 0;
+            z-index: 3;
+        }
+    }
+
+    tbody tr {
+        td:first-child,
+        th:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 1;
+        }
+
+        &:nth-child(even) td:first-child,
+        &:nth-child(even) th:first-child {
+            background-color: $row-even-bg-color;
+        }
+        &:nth-child(odd) td:first-child,
+        &:nth-child(odd) th:first-child {
+            background-color: $row-odd-bg-color;
+        }
+        &:nth-child(even):hover td:first-child,
+        &:nth-child(even):hover th:first-child {
+            background-color: darken($row-even-bg-color, 1%);
+        }
+        &:nth-child(odd):hover td:first-child,
+        &:nth-child(odd):hover th:first-child {
+            background-color: darken($row-odd-bg-color, 1%);
+        }
+    }
+}
