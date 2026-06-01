@@ -1,9 +1,11 @@
 import re
 from typing import Union
 
+from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 
-from ralph.data_center.models import DataCenterAsset, DataCenterAssetStatus
+from ralph.data_center.models import DataCenterAsset, DataCenterAssetStatus, Rack
+from ralph.data_center.models.physical import RackModule, DataCenter
 
 
 def assign_management_hostname_and_ip(modeladmin, request, queryset):
@@ -95,3 +97,43 @@ def _infer_ip(asset: DataCenterAsset, rack_number: str) -> Union[str, None]:
             return f"{ip_prefix}.{rack_ip_part}.{position_ip_part}"
     except:  # noqa
         raise RuntimeError("can't infer management IP address")
+
+
+def combine_racks_into_module(modeladmin, request, queryset):
+    if queryset.count() < 2:
+        modeladmin.message_user(
+            request, "Select at least 2 racks to combine into a module", level="ERROR"
+        )
+        return
+    if any([rack.rack_module for rack in queryset.all()]):
+        modeladmin.message_user(
+            request, "Some of the racks are already part of a module", level="ERROR"
+        )
+        return
+    if queryset.values("server_room__data_center").distinct().count() > 1:
+        modeladmin.message_user(
+            request, "Racks should belong to the same data center", level="ERROR"
+        )
+        return
+
+    def _names():
+        for rack in queryset.all():
+            if match := re.match(r".*?(\d+).*?", rack.name):
+                yield str(match.groups()[0])
+            else:
+                yield rack.name
+
+    module_name = "Module " + " / ".join(sorted(_names()))
+    dc: DataCenter = queryset.first().server_room.data_center
+    with transaction.atomic():
+        module = RackModule.objects.create(name=module_name, data_center=dc)
+        queryset.update(rack_module=module)
+
+    modeladmin.message_user(
+        request, f"{len(queryset)} racks added to module {module_name}", level="INFO"
+    )
+
+
+combine_racks_into_module.short_description = _(
+    "Combine selected racks into a RackModule"
+)

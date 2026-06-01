@@ -37,7 +37,10 @@ from ralph.assets.models.base import BaseObject, BaseObjectPolymorphicQuerySet
 from ralph.assets.models.components import Ethernet
 from ralph.assets.views import ComponentsAdminView
 from ralph.attachments.admin import AttachmentsMixin
-from ralph.data_center.admin_actions import assign_management_hostname_and_ip
+from ralph.data_center.admin_actions import (
+    assign_management_hostname_and_ip,
+    combine_racks_into_module,
+)
 from ralph.data_center.forms import DataCenterAssetForm
 from ralph.data_center.models.components import DiskShare, DiskShareMount
 from ralph.data_center.models.hosts import DCHost
@@ -49,6 +52,7 @@ from ralph.data_center.models.physical import (
     Rack,
     RackAccessory,
     ServerRoom,
+    RackModule,
 )
 from ralph.data_center.models.virtual import (
     BaseObjectCluster,
@@ -640,6 +644,22 @@ class RackAccessoryInline(RalphTabularInline):
     model = RackAccessory
 
 
+@register(RackModule)
+class RackModuleAdmin(RalphAdmin):
+    list_display = [
+        "name",
+        "rack_name",
+        "data_center",
+    ]
+    search_fields = ["name"]
+    list_prefetch_related = ["rack"]
+
+    def rack_name(self, obj):
+        return " / ".join([rack.name for rack in obj.racks.all()])
+
+    rack_name.short_description = _("Racks")
+
+
 @register(Rack)
 class RackAdmin(RalphAdmin):
     exclude = ["accessories"]
@@ -648,12 +668,15 @@ class RackAdmin(RalphAdmin):
         "server_room_name",
         "data_center_name",
         "reverse_ordering",
+        "rack_module",
     ]
     list_filter = ["server_room__data_center"]  # TODO use fk field in filter
-    list_select_related = ["server_room", "server_room__data_center"]
+    list_select_related = ["server_room", "server_room__data_center", "rack_module"]
     search_fields = ["name"]
     inlines = [RackAccessoryInline]
     resource_classes = [resources.RackResource]
+    actions = ["combine"]
+    raw_id_fields = ["rack_module"]
 
     def server_room_name(self, obj):
         return obj.server_room.name if obj.server_room else ""
@@ -675,6 +698,11 @@ class RackAdmin(RalphAdmin):
         return super(RackAdmin, self).formfield_for_foreignkey(
             db_field, request, **kwargs
         )
+
+    def combine(self, *args, **kwargs):
+        return combine_racks_into_module(self, *args, **kwargs)
+
+    combine.short_description = combine_racks_into_module.short_description
 
 
 @register(RackAccessory)
