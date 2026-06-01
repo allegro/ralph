@@ -4,7 +4,7 @@ from typing import Union
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 
-from ralph.data_center.models import DataCenterAsset, DataCenterAssetStatus, Rack
+from ralph.data_center.models import DataCenterAsset, DataCenterAssetStatus
 from ralph.data_center.models.physical import RackModule, DataCenter
 
 
