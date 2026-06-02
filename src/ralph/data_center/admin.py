@@ -20,7 +20,8 @@ from ralph.admin.filters import (
     MacAddressFilter,
     RelatedAutocompleteFieldListFilter,
     TagsListFilter,
-    TreeRelatedAutocompleteFilterWithDescendants, custom_title_filter,
+    TreeRelatedAutocompleteFilterWithDescendants,
+    custom_title_filter,
 )
 from ralph.admin.helpers import generate_html_link
 from ralph.admin.mixins import (
@@ -630,7 +631,6 @@ class DataCenterAssetAdmin(
 
     location_module.short_description = _("Location – module")
     location_module.admin_order_field = "rack__rack_module__name"
-
 
     def get_created_date(self, obj):
         """
