@@ -14,25 +14,36 @@ class QuerysetRelatedMixin(object):
 
     Default select_related is taken from related admin site
     `list_select_related` attribute.
+    Default prefetch_related is taken from related admin site
+    `list_prefetch_related` attribute.
+
+    Keep in mind it's only used for polymorphic models
     """
 
     select_related = None
     prefetch_related = None
     _skip_admin_list_select_related = False
+    _skip_admin_list_prefetch_related = False
 
     def __init__(self, *args, **kwargs):
         self.select_related = kwargs.pop("select_related", self.select_related) or []
         self.prefetch_related = (
             kwargs.pop("prefetch_related", self.prefetch_related) or []
         )
-        if getattr(self, "queryset", None) is not None:
-            admin_site = ralph_site._registry.get(self.queryset.model)
+        if queryset := getattr(self, "queryset", None):
+            admin_site = ralph_site._registry.get(queryset.model)
             if (
                 admin_site
                 and not self._skip_admin_list_select_related
                 and admin_site.list_select_related
             ):
                 self.select_related.extend(admin_site.list_select_related)
+            if (
+                admin_site
+                and not self._skip_admin_list_prefetch_related
+                and admin_site.list_prefetch_related
+            ):
+                self.prefetch_related.extend(admin_site.list_prefetch_related)
         super().__init__(*args, **kwargs)
 
     def get_queryset(self):

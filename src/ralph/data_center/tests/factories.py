@@ -101,7 +101,9 @@ class BaseObjectClusterFactory(DjangoModelFactory):
 
 
 class DataCenterFactory(DjangoModelFactory):
-    name = factory.Iterator(["DC1", "DC2", "DC3", "DC4", "DC5"])
+    name = factory.Iterator(
+        ["DC1", "DC2", "DC3", "DC4", "DC5", "DC6", "DC7", "DC8", "DC9", "DC10", "DC11"]
+    )
 
     class Meta:
         model = DataCenter
@@ -110,13 +112,18 @@ class DataCenterFactory(DjangoModelFactory):
 
 class ServerRoomFactory(DjangoModelFactory):
     name = factory.Iterator(
-        ["Server Room A", "Server Room B", "Server Room C", "Server Room D"]
+        [
+            "Server Room A",
+            "Server Room B",
+            "Server Room C",
+            "Server Room D",
+            "Server Room E",
+        ]
     )
     data_center = factory.SubFactory(DataCenterFactory)
 
     class Meta:
         model = ServerRoom
-        django_get_or_create = ["name"]
 
 
 class RackModuleFactory(DjangoModelFactory):

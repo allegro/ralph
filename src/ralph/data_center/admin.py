@@ -625,7 +625,6 @@ class DataCenterAssetAdmin(
     #                DataCenterAssetChangeList.get_ordering()
     show_location.admin_order_field = "slot_no"
 
-    @mark_safe
     def location_module(self, obj):
         return obj.rack.rack_module if obj.rack and obj.rack.rack_module else "-"
 
@@ -648,7 +647,9 @@ class DataCenterAssetAdmin(
 
 @register(ServerRoom)
 class ServerRoomAdmin(RalphAdmin):
-    list_select_related = ["data_center"]
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("data_center")
+
     search_fields = ["name", "data_center__name"]
     resource_classes = [resources.ServerRoomResource]
     list_display = ["name", "data_center"]
@@ -660,13 +661,20 @@ class RackAccessoryInline(RalphTabularInline):
 
 @register(RackModule)
 class RackModuleAdmin(RalphAdmin):
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .prefetch_related("racks")
+            .select_related("data_center")
+        )
+
     list_display = [
         "name",
         "rack_name",
         "data_center",
     ]
     search_fields = ["name"]
-    list_prefetch_related = ["rack"]
 
     def rack_name(self, obj):
         return " / ".join([rack.name for rack in obj.racks.all()])
@@ -676,6 +684,13 @@ class RackModuleAdmin(RalphAdmin):
 
 @register(Rack)
 class RackAdmin(RalphAdmin):
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .select_related("server_room__data_center", "rack_module")
+        )
+
     exclude = ["accessories"]
     list_display = [
         "name",
@@ -685,7 +700,6 @@ class RackAdmin(RalphAdmin):
         "rack_module",
     ]
     list_filter = ["server_room__data_center"]  # TODO use fk field in filter
-    list_select_related = ["server_room", "server_room__data_center", "rack_module"]
     search_fields = ["name"]
     inlines = [RackAccessoryInline]
     resource_classes = [resources.RackResource]

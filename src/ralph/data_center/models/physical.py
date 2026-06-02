@@ -280,7 +280,7 @@ class RackModule(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
     data_center = models.ForeignKey(
         DataCenter,
         verbose_name=_("data center"),
-        null=True,
+        null=False,
         blank=False,
         related_name="rack_modules",
         on_delete=models.CASCADE,
