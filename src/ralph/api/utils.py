@@ -41,7 +41,7 @@ class QuerysetRelatedMixin(object):
             if (
                 admin_site
                 and not self._skip_admin_list_prefetch_related
-                and admin_site.list_prefetch_related
+                and getattr(admin_site, "list_prefetch_related", None)
             ):
                 self.prefetch_related.extend(admin_site.list_prefetch_related)
         super().__init__(*args, **kwargs)
