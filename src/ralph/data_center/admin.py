@@ -444,6 +444,7 @@ class DataCenterAssetAdmin(
         "remarks",
         "budget_info",
         "rack",
+        "rack__rack_module",
         "rack__server_room",
         "rack__server_room__data_center",
         "position",
