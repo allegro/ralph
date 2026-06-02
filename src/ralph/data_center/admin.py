@@ -20,7 +20,7 @@ from ralph.admin.filters import (
     MacAddressFilter,
     RelatedAutocompleteFieldListFilter,
     TagsListFilter,
-    TreeRelatedAutocompleteFilterWithDescendants,
+    TreeRelatedAutocompleteFilterWithDescendants, custom_title_filter,
 )
 from ralph.admin.helpers import generate_html_link
 from ralph.admin.mixins import (
@@ -386,6 +386,7 @@ class DataCenterAssetAdmin(
         "invoice_date",
         "invoice_no",
         "show_location",
+        "location_module",
         "service_env",
         "configuration_path",
         "property_of",
@@ -444,7 +445,10 @@ class DataCenterAssetAdmin(
         "remarks",
         "budget_info",
         "rack",
-        "rack__rack_module",
+        (
+            "rack__rack_module",
+            custom_title_filter("Rack module", RelatedAutocompleteFieldListFilter),
+        ),
         "rack__server_room",
         "rack__server_room__data_center",
         "position",
@@ -462,6 +466,7 @@ class DataCenterAssetAdmin(
         "model__manufacturer",
         "model__category",
         "rack",
+        "rack__rack_module",
         "rack__server_room",
         "rack__server_room__data_center",
         "service_env",
@@ -618,6 +623,14 @@ class DataCenterAssetAdmin(
     #                The rest of the ordering is configured in
     #                DataCenterAssetChangeList.get_ordering()
     show_location.admin_order_field = "slot_no"
+
+    @mark_safe
+    def location_module(self, obj):
+        return obj.rack.rack_module if obj.rack and obj.rack.rack_module else "-"
+
+    location_module.short_description = _("Location – module")
+    location_module.admin_order_field = "rack__rack_module__name"
+
 
     def get_created_date(self, obj):
         """
