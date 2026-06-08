@@ -7,3 +7,4 @@ from ..admin.mixins import RalphAdmin
 class PortAdmin(RalphAdmin):
     list_display = ("label", "data_center_asset")
     list_filter = ("data_center_asset",)
+    raw_id_fields = ("data_center_asset",)

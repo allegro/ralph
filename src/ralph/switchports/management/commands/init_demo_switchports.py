@@ -36,7 +36,7 @@ class Command(BaseCommand):
         dry_run: bool = options["dry_run"]
 
         switches: list[str] = self.backend.get_switches()
-        for switch_hostname in switches[30:40]:  # TODO
+        for switch_hostname in switches:  # TODO
             switch: SwitchDTO = self.backend.get_switchports(switch_hostname)
             if dry_run:
                 pp(switch)
@@ -116,7 +116,7 @@ class Command(BaseCommand):
         if downlink_only and port.uplink:
             return None
         self.stdout.write(
-            f"Will create port {port.model_dump()}"
+            f"Will create port {port.model_dump(include={'name', 'status', 'interface_mode', 'remote_name', 'remote_port'})}"
         )  # 'name', 'status', 'interface_mode', 'remote_name', 'remote_port'})}" )  # include={'name', 'status', 'type'})}")
         return Port.objects.get_or_create(label=port.name, data_center_asset=switch)[0]
 
@@ -125,13 +125,30 @@ class Command(BaseCommand):
     ) -> tuple[Port, Connection] | None:
         if not self._hostname_valid(interface.remote_name):
             return None
-        dca, _ = DataCenterAsset.objects.get_or_create(
-            hostname=interface.remote_name, defaults={"model": self.unknown_model}
+        dca, _ = (
+            DataCenterAsset.objects.get_or_create(  # this will not always be a DCA in real life
+                hostname=interface.remote_name, defaults={"model": self.unknown_model}
+            )
         )
         host_port: Port = Port.objects.get_or_create(
             label=interface.remote_port, data_center_asset=dca
         )[0]
+
+        connection_1 = Connection.objects.filter(members__port=switch_port).first()
+        connection_2 = Connection.objects.filter(members__port=host_port).first()
+        both_connections = bool(connection_1 and connection_2)
+        if both_connections and connection_1 == connection_2:
+            return host_port, connection_1
+
         with transaction.atomic():
+            if both_connections:
+                connection_1.delete()
+                connection_2.delete()
+            else:
+                if connection_1:
+                    connection_1.delete()
+                if connection_2:
+                    connection_2.delete()
             conn = Connection.objects.create()
             for port in [switch_port, host_port]:
                 ConnectionMember.objects.get_or_create(connection=conn, port=port)
