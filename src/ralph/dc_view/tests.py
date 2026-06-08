@@ -87,6 +87,7 @@ class TestRestAssetInfoPerRack(TestCase):
                 "orientation": "{}".format(self.rack_1.get_orientation_desc()),
                 "rack_admin_url": self.rack_1.get_absolute_url(),
                 "reverse_ordering": self.rack_1.reverse_ordering,
+                "is_active": self.rack_1.active,
             },
             "devices": [
                 {
