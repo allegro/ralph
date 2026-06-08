@@ -321,6 +321,7 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
         ),
         verbose_name=_("RU order top to bottom"),
     )
+    active = models.BooleanField(default=True)
 
     class Meta:
         unique_together = ("name", "server_room")

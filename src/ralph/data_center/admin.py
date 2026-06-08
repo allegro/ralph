@@ -648,6 +648,7 @@ class RackAdmin(RalphAdmin):
         "server_room_name",
         "data_center_name",
         "reverse_ordering",
+        "active"
     ]
     list_filter = ["server_room__data_center"]  # TODO use fk field in filter
     list_select_related = ["server_room", "server_room__data_center"]
