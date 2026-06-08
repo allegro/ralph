@@ -17,6 +17,7 @@ from ralph.data_center.models.physical import (
     Gap,
     Rack,
     RackAccessory,
+    RackModule,
     ServerRoom,
 )
 from ralph.data_center.models.virtual import (
@@ -46,6 +47,7 @@ __all__ = [
     "Orientation",
     "Rack",
     "RackAccessory",
+    "RackModule",
     "RackOrientation",
     "ServerRoom",
 ]

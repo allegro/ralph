@@ -11,12 +11,14 @@ from ralph.data_center.api.views import (
     RackAccessoryViewSet,
     RackViewSet,
     ServerRoomViewSet,
+    RackModuleViewSet,
 )
 
 router.register(r"accessories", AccessoryViewSet)
 router.register(r"databases", DatabaseViewSet)
 router.register(r"data-centers", DataCenterViewSet)
 router.register(r"data-center-assets", DataCenterAssetViewSet)
+router.register(r"rack-modules", RackModuleViewSet)
 router.register(r"racks", RackViewSet)
 router.register(r"rack-accessories", RackAccessoryViewSet)
 router.register(r"server-rooms", ServerRoomViewSet)
