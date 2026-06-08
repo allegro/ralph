@@ -698,6 +698,7 @@ class RackAdmin(RalphAdmin):
         "data_center_name",
         "reverse_ordering",
         "rack_module",
+        "active"
     ]
     list_filter = ["server_room__data_center"]  # TODO use fk field in filter
     search_fields = ["name"]

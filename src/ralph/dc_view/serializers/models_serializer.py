@@ -149,6 +149,7 @@ class PDUSerializer(serializers.ModelSerializer):
 class RackBaseSerializer(serializers.ModelSerializer):
     free_u = serializers.IntegerField(source="get_free_u", read_only=True)
     orientation = serializers.CharField(source="get_orientation_desc")
+    is_active = serializers.BooleanField(source="active", read_only=True)
 
     class Meta:
         model = Rack
@@ -163,6 +164,7 @@ class RackBaseSerializer(serializers.ModelSerializer):
             "description",
             "orientation",
             "reverse_ordering",
+            "is_active",
         )
 
     def update(self, data):
