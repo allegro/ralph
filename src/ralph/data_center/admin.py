@@ -21,6 +21,7 @@ from ralph.admin.filters import (
     RelatedAutocompleteFieldListFilter,
     TagsListFilter,
     TreeRelatedAutocompleteFilterWithDescendants,
+    custom_title_filter,
 )
 from ralph.admin.helpers import generate_html_link
 from ralph.admin.mixins import (
@@ -37,7 +38,10 @@ from ralph.assets.models.base import BaseObject, BaseObjectPolymorphicQuerySet
 from ralph.assets.models.components import Ethernet
 from ralph.assets.views import ComponentsAdminView
 from ralph.attachments.admin import AttachmentsMixin
-from ralph.data_center.admin_actions import assign_management_hostname_and_ip
+from ralph.data_center.admin_actions import (
+    assign_management_hostname_and_ip,
+    combine_racks_into_module,
+)
 from ralph.data_center.forms import DataCenterAssetForm
 from ralph.data_center.models.components import DiskShare, DiskShareMount
 from ralph.data_center.models.hosts import DCHost
@@ -49,6 +53,7 @@ from ralph.data_center.models.physical import (
     Rack,
     RackAccessory,
     ServerRoom,
+    RackModule,
 )
 from ralph.data_center.models.virtual import (
     BaseObjectCluster,
@@ -382,6 +387,7 @@ class DataCenterAssetAdmin(
         "invoice_date",
         "invoice_no",
         "show_location",
+        "location_module",
         "service_env",
         "configuration_path",
         "property_of",
@@ -440,6 +446,10 @@ class DataCenterAssetAdmin(
         "remarks",
         "budget_info",
         "rack",
+        (
+            "rack__rack_module",
+            custom_title_filter("Rack module", RelatedAutocompleteFieldListFilter),
+        ),
         "rack__server_room",
         "rack__server_room__data_center",
         "position",
@@ -457,6 +467,7 @@ class DataCenterAssetAdmin(
         "model__manufacturer",
         "model__category",
         "rack",
+        "rack__rack_module",
         "rack__server_room",
         "rack__server_room__data_center",
         "service_env",
@@ -614,6 +625,12 @@ class DataCenterAssetAdmin(
     #                DataCenterAssetChangeList.get_ordering()
     show_location.admin_order_field = "slot_no"
 
+    def location_module(self, obj):
+        return obj.rack.rack_module if obj.rack and obj.rack.rack_module else "-"
+
+    location_module.short_description = _("Location – module")
+    location_module.admin_order_field = "rack__rack_module__name"
+
     def get_created_date(self, obj):
         """
         Return created date for asset (since created is blacklisted by
@@ -630,7 +647,9 @@ class DataCenterAssetAdmin(
 
 @register(ServerRoom)
 class ServerRoomAdmin(RalphAdmin):
-    list_select_related = ["data_center"]
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("data_center")
+
     search_fields = ["name", "data_center__name"]
     resource_classes = [resources.ServerRoomResource]
     list_display = ["name", "data_center"]
@@ -640,20 +659,53 @@ class RackAccessoryInline(RalphTabularInline):
     model = RackAccessory
 
 
+@register(RackModule)
+class RackModuleAdmin(RalphAdmin):
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .prefetch_related("racks")
+            .select_related("data_center")
+        )
+
+    list_display = [
+        "name",
+        "rack_name",
+        "data_center",
+    ]
+    search_fields = ["name"]
+
+    def rack_name(self, obj):
+        return " / ".join([rack.name for rack in obj.racks.all()])
+
+    rack_name.short_description = _("Racks")
+
+
 @register(Rack)
 class RackAdmin(RalphAdmin):
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .select_related("server_room__data_center", "rack_module")
+        )
+
     exclude = ["accessories"]
     list_display = [
         "name",
         "server_room_name",
         "data_center_name",
         "reverse_ordering",
+        "rack_module",
+        "active"
     ]
     list_filter = ["server_room__data_center"]  # TODO use fk field in filter
-    list_select_related = ["server_room", "server_room__data_center"]
     search_fields = ["name"]
     inlines = [RackAccessoryInline]
     resource_classes = [resources.RackResource]
+    actions = ["combine"]
+    raw_id_fields = ["rack_module"]
 
     def server_room_name(self, obj):
         return obj.server_room.name if obj.server_room else ""
@@ -675,6 +727,11 @@ class RackAdmin(RalphAdmin):
         return super(RackAdmin, self).formfield_for_foreignkey(
             db_field, request, **kwargs
         )
+
+    def combine(self, *args, **kwargs):
+        return combine_racks_into_module(self, *args, **kwargs)
+
+    combine.short_description = combine_racks_into_module.short_description
 
 
 @register(RackAccessory)

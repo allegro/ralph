@@ -23,6 +23,7 @@ from ralph.data_center.models import (
     RackAccessory,
     ServerRoom,
 )
+from ralph.data_center.models.physical import RackModule
 
 
 class ClusterTypeSerializer(RalphAPISerializer):
@@ -105,12 +106,30 @@ class SimpleRackSerializer(RalphAPISerializer):
         exclude = ("accessories",)
 
 
+class RackModuleSerializer(RalphAPISerializer):
+    class _RackSerializer(RalphAPISerializer):
+        class Meta:
+            model = Rack
+            fields = ("id", "url", "name")
+
+    racks = serializers.SerializerMethodField()
+
+    class Meta:
+        model = RackModule
+        fields = "__all__"
+
+    def get_racks(self, obj):
+        return self._RackSerializer(
+            obj.racks.all(), many=True, context=self.context
+        ).data
+
+
 class RackSerializer(RalphAPISerializer):
     accessories = RackAccessorySerializer(
         read_only=True, many=True, source="rackaccessory_set"
     )
 
-    class Meta(SimpleRackSerializer.Meta):
+    class Meta:
         model = Rack
         depth = 2
         exclude = ()

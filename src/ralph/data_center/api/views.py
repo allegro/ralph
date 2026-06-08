@@ -27,6 +27,7 @@ from ralph.data_center.api.serializers import (
     RackAccessorySerializer,
     RackSerializer,
     ServerRoomSerializer,
+    RackModuleSerializer,
 )
 from ralph.data_center.models import (
     Accessory,
@@ -40,6 +41,7 @@ from ralph.data_center.models import (
     RackAccessory,
     ServerRoom,
 )
+from ralph.data_center.models.physical import RackModule
 from ralph.lib.api.utils import renderer_classes_without_form
 from ralph.lib.visibility_scope.filters import visibility_scope_filter
 from ralph.virtual.models import CloudHost, VirtualServer
@@ -122,10 +124,16 @@ class RackAccessoryViewSet(RalphAPIViewSet):
     serializer_class = RackAccessorySerializer
 
 
+class RackModuleViewSet(RalphAPIViewSet):
+    queryset = RackModule.objects.all()
+    serializer_class = RackModuleSerializer
+
+
 class RackViewSet(RalphAPIViewSet):
     queryset = Rack.objects.all()
     serializer_class = RackSerializer
     prefetch_related = ["rackaccessory_set", "rackaccessory_set__accessory"]
+    select_related = ["rack_module", "server_room__data_center"]
 
 
 class ServerRoomViewSet(RalphAPIViewSet):

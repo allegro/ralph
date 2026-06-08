@@ -188,6 +188,10 @@
                 &:hover, &.active {
                     @include active-border();
                 }
+                &.inactive {
+                    opacity: 0.4;
+                    filter: grayscale(100%);
+                }
             }
         }
     }

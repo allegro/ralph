@@ -3,6 +3,7 @@ import abc
 import logging
 from collections import OrderedDict
 
+
 from ralph.lib.dj_choices import Choices
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist, ValidationError

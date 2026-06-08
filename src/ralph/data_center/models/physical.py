@@ -274,6 +274,22 @@ class RackManager(models.Manager):
         return super().get_queryset().select_related("server_room__data_center")
 
 
+class RackModule(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
+    _allow_in_dashboard = False
+
+    data_center = models.ForeignKey(
+        DataCenter,
+        verbose_name=_("data center"),
+        null=False,
+        blank=False,
+        related_name="rack_modules",
+        on_delete=models.CASCADE,
+    )
+    data_center._autocomplete = False
+    data_center._filter_title = _("data center")
+    description = models.CharField(_("description"), max_length=250, blank=True)
+
+
 class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
     _allow_in_dashboard = True
 
@@ -286,6 +302,13 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
         blank=False,
         related_name="racks",
         on_delete=models.CASCADE,
+    )
+    rack_module = models.ForeignKey(
+        RackModule,
+        null=True,
+        blank=True,
+        related_name="racks",
+        on_delete=models.SET_NULL,
     )
     server_room._autocomplete = False
     server_room._filter_title = _("server room")
@@ -321,6 +344,7 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
         ),
         verbose_name=_("RU order top to bottom"),
     )
+    active = models.BooleanField(default=True)
 
     class Meta:
         unique_together = ("name", "server_room")
