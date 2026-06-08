@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 from enum import Enum
 from typing import Any
-from urllib.error import HTTPError
 
 import requests
 from django.conf import settings
@@ -38,7 +37,7 @@ class Vlan(BaseModel):
     name: str
 
 
-class Interface(BaseModel):
+class InterfaceDTO(BaseModel):
     name: str = Field(..., description="Interface short name, e.g. '0/0/0'")
     name_cfg: str = Field(..., description="Interface config name, e.g. 'xe-0/0/0'")
     speed: int = Field(..., description="Interface speed in Mbps")
@@ -49,21 +48,37 @@ class Interface(BaseModel):
     interface_mode: InterfaceMode = Field(
         ..., description="Interface mode (access/trunk)"
     )
-    remote_name: str | None = Field(None, description="LLDP remote system name")
+    remote_name: str = Field(..., description="LLDP remote system name")
     remote_id: str | None = Field(None, description="LLDP remote chassis ID (MAC)")
     remote_port: str | None = Field(None, description="LLDP remote port identifier")
     vlans: list[Vlan] = Field(
         default_factory=list, description="List of assigned VLANs"
     )
-    native_vlan: int | None = Field(None, description="Native VLAN ID")
+    native_vlan: Vlan | None = Field(None, description="Native VLAN ID")
     mtu: str = Field(..., description="Maximum transmission unit")
 
 
-class SwitchOutput(BaseModel):
+class SwitchDTO(BaseModel):
     hostname: str = Field(..., description="Switch hostname")
-    ralph_id: str = Field(..., description="Ralph ID of the switch")
-    ports: list[Interface] = Field(default_factory=list)
+    sn: str = Field(..., description="Switch serial number")
+    barcode: str = Field(..., description="Switch barcode")
+    model: str = Field(..., description="Switch model")
+    ansible_unify_model: str = Field(..., description="Ansible unify model name")
+    acs_device_type: str = Field(..., description="ACS device type")
+    ralph_id: int = Field(..., description="Ralph ID of the switch")
+    ports: list[InterfaceDTO] = Field(default_factory=list)
+    location_rack: str = Field(..., description="Rack location")
+    location_dc: str = Field(..., description="Data center location")
+    location_position: int = Field(..., description="Position in rack", strict=False)
     model_config = ConfigDict(extra="allow")
+
+    @property
+    def manufacturer_name(self) -> str | None:
+        return (
+            self.acs_device_type.split("#")[-1].title()
+            if self.acs_device_type
+            else None
+        )
 
 
 class JobId(str):
@@ -71,7 +86,7 @@ class JobId(str):
 
 
 class SwitchportSyncBackend:
-    def get_switchports(self, switch: DataCenterAsset) -> SwitchOutput:
+    def get_switchports(self, switch: DataCenterAsset) -> SwitchDTO:
         raise NotImplementedError
 
     def trigger_switch_refresh_on_backend(self, switch: DataCenterAsset) -> JobId:
@@ -106,9 +121,9 @@ class NetmakerSwitchportBackend(SwitchportSyncBackend):
 
         return response["hostnames"]
 
-    def get_switchports(self, switch: DataCenterAsset) -> SwitchOutput:
+    def get_switchports(self, switch_hostname: str) -> SwitchDTO:
         response = requests.get(
-            self._switchports_url(switch.hostname), headers=self._auth()
+            self._switchports_url(switch_hostname), headers=self._auth()
         )
         response.raise_for_status()
         response: dict[str, Any] = response.json()
@@ -117,18 +132,18 @@ class NetmakerSwitchportBackend(SwitchportSyncBackend):
                 f"Response with status {response.get('status')}", response=response
             )
 
-        return SwitchOutput(**response["result"])
+        return SwitchDTO(**response["result"])
 
     def trigger_switch_refresh_on_backend(self, switch: DataCenterAsset) -> JobId:
         pass
 
 
-if True:
-    # Example usage
-    backend = NetmakerSwitchportBackend()
-    switch = DataCenterAsset(hostname="rack105-sw1.dc4.local")
-    try:
-        switchports = backend.get_switchports(switch)
-        print(switchports)
-    except HTTPError as e:
-        print(f"Failed to get switchports: {e}")
+# if True:
+#     # Example usage
+#     backend = NetmakerSwitchportBackend()
+#     switch = DataCenterAsset(hostname="rack105-sw1.dc4.local")
+#     try:
+#         switchports = backend.get_switchports(switch)
+#         print(switchports)
+#     except HTTPError as e:
+#         print(f"Failed to get switchports: {e}")
