@@ -14,6 +14,8 @@ class QuerysetRelatedMixin(object):
 
     Default select_related is taken from related admin site
     `list_select_related` attribute.
+
+    Keep in mind it's only used for polymorphic models
     """
 
     select_related = None

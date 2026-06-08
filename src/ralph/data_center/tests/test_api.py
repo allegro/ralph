@@ -19,6 +19,7 @@ from ralph.data_center.models import (
     Orientation,
     Rack,
     RackAccessory,
+    RackModule,
     RackOrientation,
     DataCenterAssetStatus,
 )
@@ -28,8 +29,10 @@ from ralph.data_center.tests.factories import (
     ClusterTypeFactory,
     DataCenterAssetFactory,
     DataCenterAssetFullFactory,
+    DataCenterFactory,
     RackAccessoryFactory,
     RackFactory,
+    RackModuleFactory,
     ServerRoomFactory,
     BaseObjectClusterFactory,
 )
@@ -711,3 +714,87 @@ class ClusterAPITests(RalphAPITestCase):
             response.data["masters"][0],
             self.get_full_url(reverse("baseobject-detail", args=(self.master.id,))),
         )
+
+
+class RackModuleAPITests(RalphAPITestCase):
+    def setUp(self):
+        super().setUp()
+        self.data_center = DataCenterFactory()
+        self.rack_module = RackModuleFactory(data_center=self.data_center)
+        self.rack = RackFactory(rack_module=self.rack_module)
+
+    def test_get_rack_module_list(self):
+        url = reverse("rackmodule-list")
+        response = self.client.get(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["count"], RackModule.objects.count())
+
+    def test_get_rack_module_details(self):
+        url = reverse("rackmodule-detail", args=(self.rack_module.id,))
+        response = self.client.get(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["name"], self.rack_module.name)
+        self.assertIn(
+            str(self.data_center.id),
+            response.data["data_center"],
+        )
+        self.assertEqual(len(response.data["racks"]), 1)
+        self.assertEqual(response.data["racks"][0]["id"], self.rack.id)
+        self.assertEqual(response.data["racks"][0]["name"], self.rack.name)
+
+    def test_create_rack_module(self):
+        url = reverse("rackmodule-list")
+        data = {
+            "name": "New Module",
+            "data_center": self.data_center.id,
+            "description": "Test module description",
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        rack_module = RackModule.objects.get(pk=response.data["id"])
+        self.assertEqual(rack_module.name, "New Module")
+        self.assertEqual(rack_module.data_center, self.data_center)
+        self.assertEqual(rack_module.description, "Test module description")
+
+    def test_create_rack_module_without_description(self):
+        url = reverse("rackmodule-list")
+        data = {
+            "name": "Module without desc",
+            "data_center": self.data_center.id,
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        rack_module = RackModule.objects.get(pk=response.data["id"])
+        self.assertEqual(rack_module.name, "Module without desc")
+        self.assertEqual(rack_module.description, "")
+
+    def test_patch_rack_module(self):
+        url = reverse("rackmodule-detail", args=(self.rack_module.id,))
+        data = {
+            "name": "Updated Module",
+            "description": "Updated description",
+        }
+        response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.rack_module.refresh_from_db()
+        self.assertEqual(self.rack_module.name, "Updated Module")
+        self.assertEqual(self.rack_module.description, "Updated description")
+
+    def test_patch_rack_module_data_center(self):
+        new_dc = DataCenterFactory(name="DC New")
+        url = reverse("rackmodule-detail", args=(self.rack_module.id,))
+        data = {"data_center": new_dc.id}
+        response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.rack_module.refresh_from_db()
+        self.assertEqual(self.rack_module.data_center, new_dc)
+
+    def test_rack_module_racks_are_read_only(self):
+        """Racks should not be assignable via RackModule endpoint."""
+        url = reverse("rackmodule-detail", args=(self.rack_module.id,))
+        new_rack = RackFactory()
+        data = {"racks": [{"id": new_rack.id}]}
+        response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # racks field is read-only / serializer method - should not change
+        self.assertNotIn(new_rack, self.rack_module.racks.all())
