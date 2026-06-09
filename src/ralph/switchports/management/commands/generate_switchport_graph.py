@@ -19,7 +19,7 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             "--output",
-            help="Write the generated Mermaid graph to a file instead of stdout.",
+            help="Write the generated graph to a file instead of stdout.",
         )
         parser.add_argument(
             "--direction",
@@ -27,33 +27,89 @@ class Command(BaseCommand):
             default="LR",
             help="Mermaid graph direction.",
         )
+        parser.add_argument(
+            "--depth",
+            type=int,
+            default=1,
+            help=(
+                "Neighborhood depth for --hostname filtering. "
+                "1 means direct connections, 2 includes neighbors of neighbors, etc."
+            ),
+        )
 
     def handle(self, *args, **options):
-        graph = build_mermaid_graph(
-            get_connections(options["hostnames"]),
+        depth = options["depth"]
+        if depth < 1:
+            raise CommandError("--depth must be >= 1")
+
+        content = build_mermaid_graph(
+            get_connections(options["hostnames"], depth=depth),
             direction=options["direction"],
         )
+
         output = options.get("output")
         if not output:
-            self.stdout.write(graph)
+            self.stdout.write(content)
             return
 
         output_path = Path(output)
         if output_path.parent != Path(".") and not output_path.parent.exists():
             raise CommandError(f"Output directory does not exist: {output_path.parent}")
-        output_path.write_text(graph, encoding="utf-8")
+        output_path.write_text(content, encoding="utf-8")
         self.stdout.write(f"Saved graph to {output_path}")
 
 
-def get_connections(hostnames: list[str]) -> list[Connection]:
+def get_connections(hostnames: list[str], depth: int = 1) -> list[Connection]:
     queryset = Connection.objects.prefetch_related(
         "members__port__data_center_asset"
     ).order_by("id")
-    if hostnames:
-        queryset = queryset.filter(
-            members__port__data_center_asset__hostname__in=hostnames
-        ).distinct()
-    return list(queryset)
+    if not hostnames:
+        return list(queryset)
+
+    seed_assets = set(
+        Port.objects.filter(data_center_asset__hostname__in=hostnames)
+        .values_list("data_center_asset_id", flat=True)
+        .distinct()
+    )
+    if not seed_assets:
+        return []
+
+    visited_assets = set(seed_assets)
+    frontier = set(seed_assets)
+    connection_ids: set[int] = set()
+
+    for _ in range(depth):
+        if not frontier:
+            break
+
+        level_connection_ids = set(
+            Connection.objects.filter(members__port__data_center_asset_id__in=frontier)
+            .values_list("id", flat=True)
+            .distinct()
+        )
+        new_connection_ids = level_connection_ids - connection_ids
+        if not new_connection_ids:
+            break
+
+        connection_ids.update(new_connection_ids)
+
+        neighbor_assets = set(
+            Port.objects.filter(connectionmember__connection_id__in=new_connection_ids)
+            .values_list("data_center_asset_id", flat=True)
+            .distinct()
+        )
+        frontier = neighbor_assets - visited_assets
+        visited_assets.update(neighbor_assets)
+
+    if not connection_ids:
+        return []
+
+    return list(queryset.filter(id__in=connection_ids))
+
+
+# ---------------------------------------------------------------------------
+# Mermaid output
+# ---------------------------------------------------------------------------
 
 
 def build_mermaid_graph(
@@ -92,6 +148,11 @@ def build_mermaid_graph(
         lines.append('    empty["No switchport connections found"]')
 
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Shared helpers
+# ---------------------------------------------------------------------------
 
 
 def _member_sort_key(member) -> tuple[str, str, int]:

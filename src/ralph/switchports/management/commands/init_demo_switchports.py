@@ -36,6 +36,7 @@ class Command(BaseCommand):
         dry_run: bool = options["dry_run"]
 
         switches: list[str] = self.backend.get_switches()
+        # last_success = switches.index("rack613-sw1.dc5.alledc.net")
         for switch_hostname in switches:  # TODO
             switch: SwitchDTO = self.backend.get_switchports(switch_hostname)
             if dry_run:

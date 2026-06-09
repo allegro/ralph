@@ -1,7 +1,7 @@
 from io import StringIO
 from tempfile import TemporaryDirectory
 
-from django.core.management import call_command
+from django.core.management import CommandError, call_command
 from django.test import TestCase
 
 from ralph.data_center.tests.factories import DataCenterAssetFactory
@@ -26,6 +26,9 @@ class GenerateSwitchportGraphCommandTestCase(TestCase):
         self.extra_port = Port.objects.create(
             label="eth1", data_center_asset=self.extra_host
         )
+        self.extra_port_deep = Port.objects.create(
+            label="eth2", data_center_asset=self.extra_host
+        )
 
         self.connection = Connection.objects.create()
         ConnectionMember.objects.create(
@@ -43,6 +46,19 @@ class GenerateSwitchportGraphCommandTestCase(TestCase):
             connection=self.extra_connection, port=self.extra_port
         )
 
+        # Third hop chain for depth tests: sw1 -> srv1 -> srv2 -> srv3
+        self.deep_host = DataCenterAssetFactory(hostname="srv3.example.com")
+        self.deep_port = Port.objects.create(
+            label="eth9", data_center_asset=self.deep_host
+        )
+        self.deep_connection = Connection.objects.create()
+        ConnectionMember.objects.create(
+            connection=self.deep_connection, port=self.extra_port_deep
+        )
+        ConnectionMember.objects.create(
+            connection=self.deep_connection, port=self.deep_port
+        )
+
     def test_command_outputs_mermaid_graph(self):
         out = StringIO()
 
@@ -50,14 +66,10 @@ class GenerateSwitchportGraphCommandTestCase(TestCase):
 
         output = out.getvalue()
         self.assertIn("graph LR", output)
-        # nodes are per-hostname, not per-port
         self.assertIn("sw1.example.com", output)
         self.assertIn("srv1.example.com", output)
-        # port names appear on the edge, not in the node label
         self.assertNotIn("sw1.example.com<br/>Gi0/1", output)
-        # edge label contains both port names regardless of order
         self.assertTrue("Gi0/1" in output and "eth0" in output)
-        # node ids are asset-based
         switch_id = f"asset_{self.switch.pk}"
         server_id = f"asset_{self.server.pk}"
         expected_edges = {
@@ -67,15 +79,11 @@ class GenerateSwitchportGraphCommandTestCase(TestCase):
         self.assertTrue(any(edge in output for edge in expected_edges))
 
     def test_same_hostname_single_node(self):
-        """Two ports from the same asset share one node; both port names appear on separate edges."""
         out = StringIO()
-        # server_backup_port (eth1) on self.server is connected to extra_host via extra_connection
-        # self.server already appears in connection (eth0 ↔ Gi0/1) — should still be one node
 
         call_command("generate_switchport_graph", stdout=out)
 
         output = out.getvalue()
-        # srv1.example.com must appear exactly once as a node definition
         self.assertEqual(output.count(f'asset_{self.server.pk}["srv1.example.com"]'), 1)
 
     def test_command_filters_connections_by_hostname(self):
@@ -92,6 +100,57 @@ class GenerateSwitchportGraphCommandTestCase(TestCase):
         self.assertIn("eth1", output)
         self.assertNotIn("sw1.example.com", output)
         self.assertNotIn("Gi0/1", output)
+
+    def test_depth_1_only_direct_neighbors(self):
+        out = StringIO()
+
+        call_command(
+            "generate_switchport_graph",
+            "--hostname=sw1.example.com",
+            "--depth=1",
+            stdout=out,
+        )
+
+        output = out.getvalue()
+        self.assertIn("sw1.example.com", output)
+        self.assertIn("srv1.example.com", output)
+        self.assertIn("Gi0/1", output)
+        self.assertIn("eth0", output)
+        self.assertNotIn("srv2.example.com", output)
+        self.assertNotIn("srv3.example.com", output)
+
+    def test_depth_2_includes_neighbors_of_neighbors(self):
+        out = StringIO()
+
+        call_command(
+            "generate_switchport_graph",
+            "--hostname=sw1.example.com",
+            "--depth=2",
+            stdout=out,
+        )
+
+        output = out.getvalue()
+        self.assertIn("srv2.example.com", output)
+        self.assertIn("eth1", output)
+        self.assertNotIn("srv3.example.com", output)
+
+    def test_depth_3_includes_third_hop(self):
+        out = StringIO()
+
+        call_command(
+            "generate_switchport_graph",
+            "--hostname=sw1.example.com",
+            "--depth=3",
+            stdout=out,
+        )
+
+        output = out.getvalue()
+        self.assertIn("srv3.example.com", output)
+        self.assertIn("eth9", output)
+
+    def test_rejects_invalid_depth(self):
+        with self.assertRaises(CommandError):
+            call_command("generate_switchport_graph", "--depth=0")
 
     def test_command_writes_graph_to_file(self):
         with TemporaryDirectory() as tmp_dir:

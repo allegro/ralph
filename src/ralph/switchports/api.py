@@ -39,6 +39,9 @@ class ConnectionViewSet(RalphAPIViewSet):
         "members__port__data_center_asset"
     )
     serializer_class = ConnectionSerializer
+    extended_filter_fields = {
+        "hostname": ["members__port__data_center_asset__hostname"]
+    }
 
 
 router.register(r"ports", PortViewSet)

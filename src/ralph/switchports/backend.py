@@ -40,7 +40,7 @@ class Vlan(BaseModel):
 class InterfaceDTO(BaseModel):
     name: str = Field(..., description="Interface short name, e.g. '0/0/0'")
     name_cfg: str = Field(..., description="Interface config name, e.g. 'xe-0/0/0'")
-    speed: int = Field(..., description="Interface speed in Mbps")
+    speed: int | None = Field(..., description="Interface speed in Mbps")
     desc: str = Field("", description="Interface description")
     uplink: bool = Field(False, description="Whether this is an uplink interface")
     status: InterfaceStatus = Field(..., description="Operational status")
