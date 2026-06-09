@@ -1,3 +1,23 @@
+ralph (20260609.1) jammy; urgency=medium
+
+  [ Paweł Szulc ]
+  * Add RackModule - combine Racks into logical modules
+  * Add RackModule - combine Racks into logical modules
+  * Test RackModule
+  * Fix test
+  * Search DCA by rack module
+  * Show location module in DCA table
+  * Format
+  * Added list_prefetch_related for completeness. Added info about caveat. Fixed select_related in some admin sites
+  * Fix list_prefetch_related
+  * Remove prefetch
+
+  [ Olga Matyla ]
+  * Sticky header in tables (#3947)
+  * Rack status (#3949)
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Tue, 09 Jun 2026 08:07:30 +0000
+
 ralph (20260506.1) jammy; urgency=medium
 
   * Use new topic in service sync
