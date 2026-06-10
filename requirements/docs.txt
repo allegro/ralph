@@ -39,7 +39,7 @@ cmd2==2.7.0
     # via cliff
 colorama==0.4.6
     # via mkdocs-material
-cryptography==45.0.5
+cryptography==46.0.7
     # via
     #   django-cryptography-django5
     #   openstacksdk
@@ -288,7 +288,7 @@ pbr==6.1.1
     #   python-keystoneclient
     #   python-novaclient
     #   stevedore
-pillow==11.3.0
+pillow==12.2.0
     # via ralph (pyproject.toml)
 platformdirs==4.3.8
     # via
@@ -313,7 +313,7 @@ psycopg-pool==3.2.7
     # via psycopg
 py-moneyed==3.0
     # via django-money
-pyasn1==0.6.1
+pyasn1==0.6.3
     # via
     #   pyasn1-modules
     #   python-ldap
@@ -380,7 +380,7 @@ referencing==0.36.2
     #   jsonschema-specifications
 regex==2024.11.6
     # via mkdocs-material
-requests==2.32.4
+requests==2.33.0
     # via
     #   ralph (pyproject.toml)
     #   keystoneauth1
@@ -435,7 +435,7 @@ social-auth-app-django==5.4.3
     # via ralph (pyproject.toml)
 social-auth-core==4.7.0
     # via social-auth-app-django
-sqlparse==0.5.3
+sqlparse==0.5.4
     # via django
 statsd==3.3.0
     # via ralph (pyproject.toml)
