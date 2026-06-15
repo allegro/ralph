@@ -1,18 +1,24 @@
-from pprint import pp
+import polars as pl
 
 from django.core.management import BaseCommand
-from django.db import transaction
 
-from ralph.assets.models import Manufacturer, AssetModel, Category, ObjectModelType
-from ralph.data_center.models import DataCenterAsset, DataCenter, ServerRoom, Rack
+from ralph.assets.models import (
+    Manufacturer,
+    AssetModel,
+    Category,
+    ObjectModelType,
+    Asset,
+    Ethernet,
+)
+from ralph.data_center.models import DataCenterAsset
 from ralph.switchports.backend import (
     NetmakerSwitchportBackend,
     SwitchDTO,
     InterfaceDTO,
-    InterfaceStatus,
-    InterfaceMode,
 )
-from ralph.switchports.models import Port, Connection, ConnectionMember
+from ralph.switchports.connections import connect
+from ralph.switchports.models import Port
+from ralph.virtual.models import CloudHost
 
 
 class Command(BaseCommand):
@@ -33,30 +39,39 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        def _add_remote_asset(interface: InterfaceDTO) -> dict:
+            dic = interface.model_dump(exclude={"vlans", "native_vlan", "mtu"})
+            dic.update({"dca": self._get_remote_instance(interface)})
+            return dic
+
         dry_run: bool = options["dry_run"]
 
         switches: list[str] = self.backend.get_switches()
-        # last_success = switches.index("rack613-sw1.dc5.alledc.net")
-        for switch_hostname in switches:  # TODO
+        for switch_hostname in switches:
             switch: SwitchDTO = self.backend.get_switchports(switch_hostname)
+            with pl.Config(tbl_rows=500, tbl_cols=30, fmt_str_lengths=100):
+                print(
+                    pl.DataFrame([_add_remote_asset(p) for p in reversed(switch.ports)])
+                )
+
             if dry_run:
-                pp(switch)
                 continue
 
-            switch_instance: DataCenterAsset = self._get_or_create_switch(
-                switch, include_rack=True
-            )
+            switch_instance: DataCenterAsset = self._get_switch(switch)
             for interface_dto in switch.ports:
-                port = self._get_or_create_port(
-                    switch_instance,
-                    interface_dto,
-                    up_only=True,
-                    access_only=True,
-                    downlink_only=True,
-                )
-                self._create_related_asset_and_connection(
-                    interface_dto, port
-                ) if port else None
+                port = Port.objects.get_or_create(
+                    label=interface_dto.name, data_center_asset=switch_instance
+                )[0]
+                dca = self._get_remote_instance(interface_dto)
+                if port and dca:
+                    remote_port = Port.objects.get_or_create(
+                        label=interface_dto.remote_port, data_center_asset=dca
+                    )[0]
+                    connect(port, remote_port)
+                else:
+                    print(
+                        f"Could not connect port {interface_dto} to remote asset Port: {port}, DCA: {dca}"
+                    )
 
     def _get_or_create_model(self, switch: SwitchDTO) -> AssetModel:
         return AssetModel.objects.get_or_create(
@@ -72,94 +87,59 @@ class Command(BaseCommand):
     def _get_or_create_manufacturer(self, switch: SwitchDTO) -> Manufacturer:
         return Manufacturer.objects.get_or_create(name=switch.manufacturer_name)[0]
 
-    def _get_or_create_switch(
-        self, switch: SwitchDTO, include_rack=True
-    ) -> DataCenterAsset:
-        rack = None
-        if include_rack:
-            dc, _ = DataCenter.objects.get_or_create(name=switch.location_dc)
-            server_room, _ = ServerRoom.objects.get_or_create(
-                name="UNKNOWN", data_center=dc
-            )
-            rack, _ = Rack.objects.get_or_create(
-                name=switch.location_rack, defaults={"server_room": server_room}
-            )
+    def _get_switch(self, switch: SwitchDTO) -> DataCenterAsset:
+        return DataCenterAsset.objects.get(hostname=switch.hostname)
 
-        dca, created = DataCenterAsset.objects.get_or_create(
-            hostname=switch.hostname,
-            defaults={
-                "model": self._get_or_create_model(switch),
-                "rack": rack if include_rack else None,
-                "position": switch.location_position if include_rack else None,
-                "barcode": switch.barcode,
-                "sn": switch.sn,
-            },
-        )
-        if created:
-            self.stdout.write(f"Created switch {dca.hostname}")
-        else:
-            self.stdout.write(f"Switch {dca.hostname} already exists")
-            self.stdout.write(f"Data: {switch.model_dump(exclude={'ports'})}")
+    def _get_remote_instance(self, interface: InterfaceDTO) -> DataCenterAsset | None:
+        dca = self._get_remote_instance_by_mac(interface)
+        if not dca:
+            dca = self._get_remote_instance_by_hostname(interface)
         return dca
 
-    def _get_or_create_port(
-        self,
-        switch: DataCenterAsset,
-        port: InterfaceDTO,
-        up_only=True,
-        access_only=True,
-        downlink_only=True,
-    ) -> Port | None:
-        if up_only and port.status != InterfaceStatus.UP:
+    def _get_remote_instance_by_mac(
+        self, interface: InterfaceDTO
+    ) -> DataCenterAsset | None:
+        try:
+            eth = Ethernet.objects.get(mac=interface.remote_id)
+        except Ethernet.DoesNotExist:
             return None
-        if access_only and port.interface_mode != InterfaceMode.ACCESS:
-            return None
-        if downlink_only and port.uplink:
-            return None
-        self.stdout.write(
-            f"Will create port {port.model_dump(include={'name', 'status', 'interface_mode', 'remote_name', 'remote_port'})}"
-        )  # 'name', 'status', 'interface_mode', 'remote_name', 'remote_port'})}" )  # include={'name', 'status', 'type'})}")
-        return Port.objects.get_or_create(label=port.name, data_center_asset=switch)[0]
+        try:
+            return Asset.polymorphic_objects.get(id=eth.base_object.id)
+        except Asset.DoesNotExist:
+            try:
+                obj = CloudHost.objects.get(id=eth.base_object.id)
+                return obj.hypervisor
+            except CloudHost.DoesNotExist:
+                return None
 
-    def _create_related_asset_and_connection(
-        self, interface: InterfaceDTO, switch_port: Port
-    ) -> tuple[Port, Connection] | None:
-        if not self._hostname_valid(interface.remote_name):
+    def _get_remote_instance_by_hostname(
+        self, interface: InterfaceDTO
+    ) -> DataCenterAsset | None:
+        hostname = self._get_hostname(interface)
+        if not hostname:
             return None
-        dca, _ = (
-            DataCenterAsset.objects.get_or_create(  # this will not always be a DCA in real life
-                hostname=interface.remote_name, defaults={"model": self.unknown_model}
-            )
-        )
-        host_port: Port = Port.objects.get_or_create(
-            label=interface.remote_port, data_center_asset=dca
-        )[0]
+        try:
+            return Asset.polymorphic_objects.get(hostname=hostname)
+        except Asset.DoesNotExist:
+            try:
+                obj = CloudHost.objects.get(hostname=hostname)
+                return obj.hypervisor
+            except CloudHost.DoesNotExist:
+                return None
 
-        connection_1 = Connection.objects.filter(members__port=switch_port).first()
-        connection_2 = Connection.objects.filter(members__port=host_port).first()
-        both_connections = bool(connection_1 and connection_2)
-        if both_connections and connection_1 == connection_2:
-            return host_port, connection_1
+    def _get_hostname(self, interface: InterfaceDTO) -> str | None:
+        def _get_from_remote_name():
+            if len(interface.remote_name.split(" ")) > 1:
+                return None
+            if len(interface.remote_name.split(".")) < 2:
+                return None
+            return interface.remote_name
 
-        with transaction.atomic():
-            if both_connections:
-                connection_1.delete()
-                connection_2.delete()
+        def _get_from_desc():
+            desc = interface.desc
+            if len(desc.split()) >= 3 and len(desc.split()[0].split(".")) >= 2:
+                return desc.split()[0]
             else:
-                if connection_1:
-                    connection_1.delete()
-                if connection_2:
-                    connection_2.delete()
-            conn = Connection.objects.create()
-            for port in [switch_port, host_port]:
-                ConnectionMember.objects.get_or_create(connection=conn, port=port)
+                return None
 
-        return host_port, conn
-
-    def _hostname_valid(self, hostname: str) -> bool:
-        """Simple validation"""
-        if len(hostname.split(" ")) > 1:
-            return False
-        if len(hostname.split(".")) < 2:
-            return False
-        return True
+        return _get_from_remote_name() or _get_from_desc()

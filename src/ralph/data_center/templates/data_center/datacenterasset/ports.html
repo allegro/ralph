@@ -1,0 +1,45 @@
+{% extends BASE_TEMPLATE %}
+{% load i18n %}
+
+{% block bodyclass %}ports-tab{% endblock%}
+
+{% block view_content %}
+
+<h1>{% trans "Ports" %}</h1>
+
+{% if ports_data %}
+<table>
+    <thead>
+        <tr>
+            <th>{% trans "Port" %}</th>
+            <th>{% trans "Remote port" %}</th>
+            <th>{% trans "Remote asset" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for entry in ports_data %}
+        <tr>
+            <td>{{ entry.port.label }}</td>
+            <td>
+                {% if entry.remote_port %}
+                    {{ entry.remote_port.label }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>
+                {% if entry.remote_asset %}
+                    <a href="{{ entry.remote_asset.get_absolute_url }}">{{ entry.remote_asset.hostname }}</a>
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>{% trans "No ports found for this asset." %}</p>
+{% endif %}
+
+{% endblock %}

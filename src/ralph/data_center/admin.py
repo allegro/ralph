@@ -61,7 +61,7 @@ from ralph.data_center.models.virtual import (
     ClusterType,
     Database,
 )
-from ralph.data_center.views import RelationsView
+from ralph.data_center.views import PortsView, RelationsView
 from ralph.data_importer import resources
 from ralph.deployment.mixins import ActiveDeploymentMessageMixin
 from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
@@ -349,6 +349,10 @@ class DataCenterAssetRelationsView(RelationsView):
     url = "datacenterasset_relations"
 
 
+class DataCenterAssetPortsView(PortsView):
+    pass
+
+
 @register(DataCenterAsset)
 class DataCenterAssetAdmin(
     ActiveDeploymentMessageMixin,
@@ -372,6 +376,7 @@ class DataCenterAssetAdmin(
         DataCenterAssetLicence,
         DataCenterAssetSupport,
         DataCenterAssetOperation,
+        DataCenterAssetPortsView,
     ]
     form = DataCenterAssetForm
     if settings.ENABLE_DNSAAS_INTEGRATION:

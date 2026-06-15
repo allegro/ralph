@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class InterfaceStatus(str, Enum):
     UP = "up"
     DOWN = "down"
-    UNKOWN = "unknown"
+    UNKNOWN = "unknown"
     OTHER = "other"
 
 
@@ -38,6 +38,8 @@ class Vlan(BaseModel):
 
 
 class InterfaceDTO(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
     name: str = Field(..., description="Interface short name, e.g. '0/0/0'")
     name_cfg: str = Field(..., description="Interface config name, e.g. 'xe-0/0/0'")
     speed: int | None = Field(..., description="Interface speed in Mbps")
@@ -89,9 +91,6 @@ class SwitchportSyncBackend:
     def get_switchports(self, switch: DataCenterAsset) -> SwitchDTO:
         raise NotImplementedError
 
-    def trigger_switch_refresh_on_backend(self, switch: DataCenterAsset) -> JobId:
-        raise NotImplementedError
-
     def refresh_status(self, job_id: JobId) -> RefreshStatus:
         raise NotImplementedError
 
@@ -105,6 +104,9 @@ class NetmakerSwitchportBackend(SwitchportSyncBackend):
 
     def _switchports_url(self, hostname: str) -> str:
         return f"{self.host}/api/switchApp/switch/{hostname}"
+
+    def _switch_refresh_url(self, hostname: str) -> str:
+        return f"{self.host}/api/switchApp/switch/{hostname}/refresh"
 
     def _auth(self) -> dict:
         oauth_token = settings.JWT_TOKEN
@@ -134,16 +136,15 @@ class NetmakerSwitchportBackend(SwitchportSyncBackend):
 
         return SwitchDTO(**response["result"])
 
-    def trigger_switch_refresh_on_backend(self, switch: DataCenterAsset) -> JobId:
-        pass
+    def refresh_switch(self, switch_hostname: str) -> dict:
+        response = requests.post(
+            self._switch_refresh_url(switch_hostname), headers=self._auth()
+        )
+        response.raise_for_status()
+        response_dict: dict[str, Any] = response.json()
+        if not response_dict.get("success"):
+            raise requests.exceptions.HTTPError(
+                f"Response with status {response_dict.get('status')}", response=response
+            )
 
-
-# if True:
-#     # Example usage
-#     backend = NetmakerSwitchportBackend()
-#     switch = DataCenterAsset(hostname="rack105-sw1.dc4.local")
-#     try:
-#         switchports = backend.get_switchports(switch)
-#         print(switchports)
-#     except HTTPError as e:
-#         print(f"Failed to get switchports: {e}")
+        return response_dict

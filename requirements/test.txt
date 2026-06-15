@@ -320,6 +320,10 @@ pillow==11.3.0
     # via ralph (pyproject.toml)
 platformdirs==4.3.8
     # via python-ironicclient
+polars==1.41.2
+    # via ralph (pyproject.toml:dev)
+polars-runtime-32==1.41.2
+    # via polars
 positional==1.0.1
     # via ralph (pyproject.toml)
 prettytable==0.7.2
