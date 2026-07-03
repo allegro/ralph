@@ -67,8 +67,16 @@ description = "Stop and remove containers"
 run = "podman compose -f docker/docker-compose-dev.yml -p ralph build"
 description = "Rebuild images"
 
+[tasks.frontend]
+run = [
+  "npm install",
+  "node node_modules/.bin/gulp",
+]
+description = "Install JS deps and build static vendor assets"
+alias = ["static", "js"]
+
 [tasks.init]
-depends = ["db"]
+depends = ["db", "frontend"]
 depends_post = ["init_transitions"]
 run = [
   "cp -n src/ralph/settings/local.template src/ralph/settings/local.py || true",
