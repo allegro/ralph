@@ -97,6 +97,7 @@ FACTORY_MAP = {
     "ralph.supports.models.BaseObjectsSupport": "ralph.supports.tests.factories.BaseObjectsSupportFactory",  # noqa
     "ralph.supports.models.Support": "ralph.supports.tests.factories.SupportFactory",  # noqa
     "ralph.supports.models.SupportType": "ralph.supports.tests.factories.SupportTypeFactory",  # noqa
+    "ralph.switchports.models.Port": "ralph.switchports.tests.factories.PortFactory",  # noqa
     "ralph.trade_marks.models.TradeMark": "ralph.trade_marks.tests.factories.TradeMarkFactory",  # noqa
     "ralph.trade_marks.models.TradeMarksLinkedDomains": "ralph.trade_marks.tests.factories.TradeMarksLinkedDomainsFactory",  # noqa
     "ralph.trade_marks.models.UtilityModel": "ralph.trade_marks.tests.factories.UtilityModelFactory",  # noqa

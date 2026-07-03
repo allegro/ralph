@@ -1,0 +1,254 @@
+{% extends BASE_TEMPLATE %}
+{% load i18n %}
+
+{% block bodyclass %}switchport-grid{% endblock %}
+
+{% block view_content %}
+
+<h1>{% trans "Switchport Grid" %} &mdash; {{ object.rack }}</h1>
+
+{% if not switch_configs %}
+<p>{% trans "No switch configurations defined for this rack. Add switches in the Rack Configuration form first." %}</p>
+{% elif not rows %}
+<p>{% trans "No assets found in this rack." %}</p>
+{% else %}
+
+<div class="grid-toolbar">
+    <form method="post" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" name="refresh_validation" class="btn-refresh">
+            &#x21bb; {% trans "Refresh from netmaker" %}
+        </button>
+    </form>
+    {% if last_refresh %}
+    <span class="last-refresh">{% trans "Last refresh:" %} {{ last_refresh }}</span>
+    {% endif %}
+</div>
+
+<form method="post">
+    {% csrf_token %}
+
+    <table class="switchport-grid-table">
+        <thead>
+            <tr>
+                <th class="col-position">{% trans "U" %}</th>
+                <th class="col-hostname">{% trans "Asset" %}</th>
+                {% for sc in switch_configs %}
+                <th class="col-port">
+                    {{ sc.label }}
+                    <br>
+                    <a href="{{ sc.switch.get_absolute_url }}" class="switch-hostname">{{ sc.switch.hostname }}</a>
+                </th>
+                <th class="col-validation">
+                    {% trans "netmaker" %}
+                </th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                <td class="col-position">{{ row.asset.position|default:"-" }}</td>
+                <td class="col-hostname">
+                    <a href="{{ row.asset.get_absolute_url }}">{{ row.asset.hostname|default:row.asset.barcode }}</a>
+                </td>
+                {% for cell in row.cells %}
+                <td class="col-port">
+                    <input type="text"
+                           name="{{ cell.field_name }}"
+                           value="{{ cell.value }}"
+                           size="6"
+                           placeholder="port"
+                           autocomplete="off">
+                </td>
+                <td class="col-validation">
+                    {% if cell.validation %}
+                    <span class="{{ cell.validation.css_class }}">
+                        {% if cell.validation.remote_asset %}
+                            <a href="{{ cell.validation.remote_asset.get_absolute_url }}" class="{{ cell.validation.css_class }}">
+                                {{ cell.validation.label }}
+                            </a>
+                            {% if cell.validation.match %}&#x2714;{% endif %}
+                            {% if cell.validation.match == False %}&#x2716;{% endif %}
+                        {% else %}
+                            {{ cell.validation.label }}
+                        {% endif %}
+                    </span>
+                    {% elif cell.value and has_validation %}
+                    <span class="validation-nodata">-</span>
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="submit-row" style="margin-top: 1rem;">
+        <input type="submit" value="{% trans 'Save connections' %}" class="default">
+    </div>
+</form>
+
+<div class="help" style="margin-top: 1rem; padding: 0.5rem; background: #f0f0f0; border-radius: 4px;">
+    <p><strong>{% trans "How to use:" %}</strong></p>
+    <ul style="margin: 0.5rem 0 0 1.5rem;">
+        <li>{% trans "Enter a port number (e.g. <code>20</code>) to connect an asset to the switch on port <code>0/0/20</code>." %}</li>
+        <li>{% trans "Enter a full port label (e.g. <code>0/0/20</code> or <code>1/0/5</code>) for non-standard port naming." %}</li>
+        <li>{% trans "Clear a cell to disconnect the asset from that switch." %}</li>
+        <li>{% trans "Click <strong>Refresh from netmaker</strong> to validate what is actually connected according to the backend." %}</li>
+    </ul>
+</div>
+
+{% endif %}
+
+<style>
+    .grid-toolbar {
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    .btn-refresh {
+        background: #417690;
+        color: #fff;
+        border: none;
+        padding: 6px 14px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+    }
+    .btn-refresh:hover {
+        background: #205067;
+    }
+    .last-refresh {
+        font-size: 12px;
+        color: #666;
+    }
+
+    .switchport-grid-table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 13px;
+    }
+    .switchport-grid-table th,
+    .switchport-grid-table td {
+        border: 1px solid #ccc;
+        padding: 4px 6px;
+        text-align: center;
+        vertical-align: middle;
+    }
+    .switchport-grid-table thead th {
+        background: #417690;
+        color: #fff;
+        font-weight: bold;
+        white-space: nowrap;
+    }
+    .switchport-grid-table thead th.col-validation {
+        background: #5a8fa8;
+        font-size: 11px;
+        font-weight: normal;
+    }
+    .switchport-grid-table thead th .switch-hostname {
+        color: #fff;
+        text-decoration: underline;
+        font-weight: normal;
+        font-size: 12px;
+        opacity: 0.9;
+    }
+    .switchport-grid-table thead th .switch-hostname:hover {
+        opacity: 1;
+    }
+    .switchport-grid-table tbody tr:nth-child(even) {
+        background: #f9f9f9;
+    }
+    .switchport-grid-table tbody tr:hover {
+        background: #e8f4f8;
+    }
+    .switchport-grid-table .col-position {
+        width: 40px;
+        font-weight: bold;
+    }
+    .switchport-grid-table .col-hostname {
+        text-align: left;
+        white-space: nowrap;
+        min-width: 200px;
+    }
+    .switchport-grid-table .col-port {
+        width: 80px;
+    }
+    .switchport-grid-table .col-port input {
+        width: 60px;
+        text-align: center;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        padding: 3px;
+        font-size: 13px;
+    }
+    .switchport-grid-table .col-port input:focus {
+        border-color: #417690;
+        outline: none;
+        box-shadow: 0 0 3px rgba(65, 118, 144, 0.3);
+    }
+    .switchport-grid-table .col-validation {
+        width: 120px;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+
+    /* Validation status styles */
+    .validation-ok {
+        color: #2e7d32;
+        font-weight: bold;
+    }
+    .validation-ok a {
+        color: #2e7d32;
+        text-decoration: underline;
+    }
+    .validation-mismatch {
+        color: #e65100;
+        font-weight: bold;
+    }
+    .validation-mismatch a {
+        color: #e65100;
+        text-decoration: underline;
+    }
+    .validation-warning {
+        color: #f57c00;
+    }
+    .validation-error {
+        color: #c62828;
+        font-weight: bold;
+    }
+    .validation-error a {
+        color: #c62828;
+        text-decoration: underline;
+    }
+    .validation-nodata {
+        color: #999;
+    }
+</style>
+
+<script>
+(function() {
+    // Highlight changed cells
+    var inputs = document.querySelectorAll('.switchport-grid-table input[type="text"]');
+    inputs.forEach(function(input) {
+        var original = input.value;
+        input.dataset.original = original;
+        if (original) {
+            input.style.background = '#e8f5e9';
+        }
+        input.addEventListener('input', function() {
+            if (this.value !== this.dataset.original) {
+                this.style.background = '#fff3e0';
+            } else if (this.value) {
+                this.style.background = '#e8f5e9';
+            } else {
+                this.style.background = '';
+            }
+        });
+    });
+})();
+</script>
+
+{% endblock %}

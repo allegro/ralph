@@ -1,5 +1,4 @@
 from ralph.data_center.models.choices import (
-    ConnectionType,
     DataCenterAssetStatus,
     Orientation,
     RackOrientation,
@@ -11,7 +10,6 @@ from ralph.data_center.models.components import (
 from ralph.data_center.models.hosts import DCHost
 from ralph.data_center.models.physical import (
     Accessory,
-    Connection,
     DataCenter,
     DataCenterAsset,
     Gap,
@@ -31,8 +29,6 @@ from ralph.data_center.models.virtual import (
 __all__ = [
     "Accessory",
     "BaseObjectCluster",
-    "Connection",
-    "ConnectionType",
     "Cluster",
     "ClusterStatus",
     "ClusterType",

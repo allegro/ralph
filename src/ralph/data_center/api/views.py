@@ -78,7 +78,6 @@ class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
             to_attr="physical_servers",
         ),
         "rack__server_room__data_center",
-        "connections",
         "tags",
         "memory_set",
         Prefetch(

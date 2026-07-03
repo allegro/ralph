@@ -1,7 +1,21 @@
 from ralph.admin.decorators import register
 from . import connections
-from .models import Port
-from ..admin.mixins import RalphAdmin
+from .models import Port, RackConfiguration, RackSwitchConfiguration
+from .views import RackSwitchportGridView
+from ..admin.mixins import RalphAdmin, RalphTabularInline
+
+
+class RackSwitchConfigurationInline(RalphTabularInline):
+    model = RackSwitchConfiguration
+    verbose_name_plural = "Rack Configuration"
+    fk_name = "rack_configuration"
+    raw_id_fields = ["switch"]
+
+
+@register(RackConfiguration)
+class RackConfigurationAdmin(RalphAdmin):
+    inlines = [RackSwitchConfigurationInline]
+    change_views = [RackSwitchportGridView]
 
 
 @register(Port)

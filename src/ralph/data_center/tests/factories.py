@@ -20,12 +20,10 @@ from ralph.assets.tests.factories import (
     ServiceEnvironmentFactory,
 )
 from ralph.data_center.models import BaseObjectCluster
-from ralph.data_center.models.choices import ConnectionType
 from ralph.data_center.models.components import DiskShare, DiskShareMount
 from ralph.data_center.models.physical import (
     Accessory,
     ACCESSORY_DATA,
-    Connection,
     DataCenter,
     DataCenterAsset,
     Rack,
@@ -229,15 +227,6 @@ class DataCenterAssetFullFactory(DataCenterAssetFactory):
     @factory.post_generation
     def post_tags(self, create, extracted, **kwargs):
         self.tags.add("abc, cde", "xyz")
-
-
-class ConnectionFactory(DjangoModelFactory):
-    outbound = factory.SubFactory(DataCenterAssetFactory)
-    inbound = factory.SubFactory(DataCenterAssetFactory)
-    connection_type = factory.Iterator([ConnectionType.network.id])
-
-    class Meta:
-        model = Connection
 
 
 class DatabaseFactory(DjangoModelFactory):

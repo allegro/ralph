@@ -47,7 +47,6 @@ from ralph.data_center.models.components import DiskShare, DiskShareMount
 from ralph.data_center.models.hosts import DCHost
 from ralph.data_center.models.physical import (
     Accessory,
-    Connection,
     DataCenter,
     DataCenterAsset,
     Rack,
@@ -73,6 +72,7 @@ from ralph.networks.forms import SimpleNetworkWithManagementIPForm
 from ralph.networks.views import NetworkWithTerminatorsView
 from ralph.operations.views import OperationViewReadOnlyForExisiting
 from ralph.supports.models import BaseObjectsSupport
+from ralph.switchports.models import RackConfiguration
 
 
 def generate_list_filter_with_common_fields(prefix=None, postfix=None):
@@ -687,6 +687,13 @@ class RackModuleAdmin(RalphAdmin):
     rack_name.short_description = _("Racks")
 
 
+class RackConfigurationInline(RalphTabularInline):
+    model = RackConfiguration
+    can_delete = False
+    verbose_name_plural = "Rack Configuration"
+    fk_name = "rack"
+
+
 @register(Rack)
 class RackAdmin(RalphAdmin):
     def get_queryset(self, request):
@@ -707,7 +714,7 @@ class RackAdmin(RalphAdmin):
     ]
     list_filter = ["server_room__data_center"]  # TODO use fk field in filter
     search_fields = ["name"]
-    inlines = [RackAccessoryInline]
+    inlines = [RackAccessoryInline, RackConfigurationInline]
     resource_classes = [resources.RackResource]
     actions = ["combine"]
     raw_id_fields = ["rack_module"]
@@ -751,11 +758,6 @@ class RackAccessoryAdmin(RalphAdmin):
 @register(Database)
 class DatabaseAdmin(RalphAdmin):
     pass
-
-
-@register(Connection)
-class ConnectionAdmin(RalphAdmin):
-    resource_classes = [resources.ConnectionResource]
 
 
 @register(DiskShare)
