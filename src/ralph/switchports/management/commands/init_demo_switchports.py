@@ -11,12 +11,13 @@ from ralph.assets.models import (
     ObjectModelType,
 )
 from ralph.data_center.models import DataCenterAsset
-from ralph.switchports.asset_matching import RemoteAsset, cross_validate, extract_asset
-from ralph.switchports.backend import (
+from ralph.switchports.netmaker.asset_matching import cross_validate, extract_asset
+from ralph.switchports.netmaker.backend import (
     NetmakerSwitchportBackend,
     SwitchDTO,
 )
-from ralph.switchports.dto import InterfaceDTO
+from ralph.switchports.netmaker.dto import InterfaceDTO
+from ralph.switchports.netmaker.lldp import RemoteAsset
 
 counter = Counter()
 
@@ -144,7 +145,7 @@ class Command(BaseCommand):
 
         # Połączona analiza: MAC-i z 2 wpisami + konflikty + next_mac
         from ralph.assets.models import Ethernet
-        from ralph.switchports.asset_matching import next_mac
+        from ralph.switchports.mac import next_mac
 
         # Zbiór MAC-ów które mają conflict
         conflict_macs = {

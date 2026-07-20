@@ -452,7 +452,7 @@ RALPH_INTERNAL_SERVICES = {
     },
     "SWITCHPORTS_REFRESH": {
         "queue_name": "ralph_switchports",
-        "method": "ralph.switchports.tasks.run_rack_refresh",
+        "method": "ralph.switchports.sync.tasks.run_rack_refresh",
     },
 }
 

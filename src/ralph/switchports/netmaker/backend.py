@@ -12,7 +12,7 @@ from oauthlib.oauth2.rfc6749.errors import CustomOAuth2Error
 from requests_oauthlib import OAuth2Session
 
 from ralph.data_center.models import DataCenterAsset
-from ralph.switchports.dto import SwitchDTO, RefreshStatus
+from ralph.switchports.netmaker.dto import SwitchDTO, RefreshStatus
 
 logger = logging.getLogger(__name__)
 

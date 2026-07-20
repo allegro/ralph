@@ -5,6 +5,7 @@ from django.db.models import Prefetch
 
 from ralph.admin.views.extra import RalphDetailView
 from ralph.data_center.models import DataCenterAsset
+from ralph.switchports.constants import SWITCH_SENTINEL_LABEL
 from ralph.switchports.models import BackendValidationResult, ConnectionMember, Port
 from ralph.switchports.presentation import build_validation_context
 from ralph.virtual.models import VirtualServer
@@ -86,7 +87,11 @@ class PortsView(RalphDetailView):
         results = BackendValidationResult.objects.filter(
             switch=self.object
         ).select_related("remote_asset")
-        return {vr.port_label: vr for vr in results if vr.port_label != "__switch__"}
+        return {
+            vr.port_label: vr
+            for vr in results
+            if vr.port_label != SWITCH_SENTINEL_LABEL
+        }
 
     def _remote_switch_validation_map(self, remote_asset_ids):
         """netmaker results where the REMOTE asset is the switch.
@@ -102,7 +107,7 @@ class PortsView(RalphDetailView):
         return {
             (vr.switch_id, vr.port_label): vr
             for vr in results
-            if vr.port_label != "__switch__"
+            if vr.port_label != SWITCH_SENTINEL_LABEL
         }
 
     def get_context_data(self, **kwargs):

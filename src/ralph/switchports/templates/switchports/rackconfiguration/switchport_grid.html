@@ -26,6 +26,12 @@
     {% endif %}
 </div>
 
+{% if has_conflicts %}
+<div class="conflict-banner">
+    &#9888; {% trans "Some ports you entered are already in use by another asset. Review the highlighted cells, tick 'overwrite' to reassign each one, then Save again. Everything else was already saved." %}
+</div>
+{% endif %}
+
 <form method="post">
     {% csrf_token %}
 
@@ -56,7 +62,7 @@
                     <a href="{{ row.asset.get_absolute_url }}">{{ row.asset.barcode|default:row.asset.hostname }}</a>
                 </td>
                 {% for cell in row.cells %}
-                <td class="col-port">
+                <td class="col-port{% if cell.is_conflict %} port-conflict{% endif %}">
                     <div class="port-cell">
                         <input type="text"
                                name="{{ cell.field_name }}"
@@ -74,6 +80,13 @@
                                 title="{% trans 'Connect this server to a different switch than the column default (exception).' %}"
                                 aria-label="{% trans 'Override switch' %}">&#8644;</button>
                     </div>
+                    {% if cell.is_conflict %}
+                    <label class="conflict-note"
+                           title="{% blocktrans with sw=cell.conflict_switch port=cell.conflict_port owner=cell.conflict_owner %}{{ port }} on {{ sw }} is already used by {{ owner }}. Tick to reassign it.{% endblocktrans %}">
+                        <input type="checkbox" name="{{ cell.force_field_name }}" value="1">
+                        {% blocktrans with owner=cell.conflict_owner %}overwrite ({{ owner }}){% endblocktrans %}
+                    </label>
+                    {% endif %}
                     <div class="override-wrap{% if cell.is_override %} open{% endif %}">
                         <input type="text"
                                name="{{ cell.override_field_name }}"
@@ -331,6 +344,39 @@
         font-size: 11px;
         white-space: nowrap;
         background: rgba(58, 82, 97, 0.04);
+    }
+
+    /* Conflict: a cell whose edit would steal a port already in use. */
+    .conflict-banner {
+        background: #fff4e5;
+        border: 1px solid #ef6c00;
+        color: #8a4b00;
+        padding: 8px 12px;
+        border-radius: 4px;
+        margin-bottom: 1rem;
+        font-size: 13px;
+    }
+    .switchport-grid-table td.col-port.port-conflict {
+        background: #fdecea;
+        box-shadow: inset 0 0 0 2px #c62828;
+    }
+    .col-port.port-conflict .port-input {
+        border-color: #c62828;
+        background: #fff;
+    }
+    .col-port .conflict-note {
+        display: block;
+        margin-top: 4px;
+        font-size: 10px;
+        line-height: 1.2;
+        color: #c62828;
+        white-space: nowrap;
+        cursor: pointer;
+        font-weight: bold;
+    }
+    .col-port .conflict-note input {
+        vertical-align: middle;
+        margin-right: 2px;
     }
 </style>
 

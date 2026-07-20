@@ -15,23 +15,22 @@ from django.conf import settings
 from django.db import connections as db_connections
 from django.utils import timezone
 
-from ralph.switchports.backend import NetmakerSwitchportBackend
+from ralph.switchports.constants import (
+    DEFAULT_LOCK_BLOCKING_TIMEOUT,
+    DEFAULT_LOCK_TIMEOUT,
+    DEFAULT_MAX_PARALLEL,
+    REFRESH_QUEUE_NAME,
+)
 from ralph.switchports.models import (
     RackConfiguration,
     RefreshJobStatus,
     SwitchportRefreshJob,
 )
-from ralph.switchports.validation import (
-    iter_rack_switches,
-    rebuild_validation_for_switch,
-)
+from ralph.switchports.netmaker.backend import NetmakerSwitchportBackend
+from ralph.switchports.sync.refresh import rebuild_validation_for_switch
+from ralph.switchports.sync.switches import iter_rack_switches
 
 logger = logging.getLogger(__name__)
-
-DEFAULT_MAX_PARALLEL = 4  # number of switches to refresh in parallel for a single refresh (button click)
-DEFAULT_LOCK_TIMEOUT = 300
-DEFAULT_LOCK_BLOCKING_TIMEOUT = 120
-QUEUE_NAME = "ralph_switchports"
 
 
 def _refresh_single_switch(rack_configuration_id, switch, in_thread=True):
@@ -56,7 +55,7 @@ def _refresh_single_switch(rack_configuration_id, switch, in_thread=True):
         "SWITCHPORT_REFRESH_LOCK_BLOCKING_TIMEOUT",
         DEFAULT_LOCK_BLOCKING_TIMEOUT,
     )
-    conn = django_rq.get_connection(QUEUE_NAME)
+    conn = django_rq.get_connection(REFRESH_QUEUE_NAME)
     lock = conn.lock(
         f"switchport-refresh:{switch.hostname}",
         timeout=lock_timeout,

@@ -1,6 +1,6 @@
 from django.core.management import BaseCommand
 
-from ralph.switchports.backend import (
+from ralph.switchports.netmaker.backend import (
     NetmakerSwitchportBackend,
 )
 
@@ -16,7 +16,7 @@ class Command(BaseCommand):
             action="append",
             dest="hostnames",
             default=[],
-            help="Limit graph to connections touching the given hostname. Repeatable.",
+            help="Hostname of switch to refresh. Repeatable.",
         )
 
     def handle(self, *args, **options):

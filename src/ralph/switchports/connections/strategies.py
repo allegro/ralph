@@ -2,7 +2,7 @@ import abc
 
 from django.db import transaction
 
-from ralph.switchports.models import Port, Connection, ConnectionMember
+from ralph.switchports.models import Connection, ConnectionMember, Port
 
 
 class ConnectionAlreadyExistsException(Exception):
