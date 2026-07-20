@@ -11,7 +11,6 @@ def check_transition_templates(transition_templates):
     # to prevent AppRegistryNotReady
     from ralph.lib.transitions.models import Transition
 
-    return []
     errors = []
     if transition_templates:
         if not isinstance(transition_templates, (list, tuple)):
