@@ -5,7 +5,7 @@
 
 {% block view_content %}
 
-<h1>{% trans "Switchport Grid" %} &mdash; {{ object.rack }}</h1>
+<h1>{% trans "Switchport Grid" %} &mdash; {{ object }}</h1>
 
 {% if not switch_configs %}
 <p>{% trans "No switch configurations defined for this rack. Add switches in the Rack Configuration form first." %}</p>
@@ -20,6 +20,7 @@
             &#x21bb; {% trans "Refresh from netmaker" %}
         </button>
     </form>
+    <span id="refresh-status" class="refresh-status"></span>
     {% if last_refresh %}
     <span class="last-refresh">{% trans "Last refresh:" %} {{ last_refresh }}</span>
     {% endif %}
@@ -35,13 +36,15 @@
                 <th class="col-hostname">{% trans "Asset" %}</th>
                 {% for sc in switch_configs %}
                 <th class="col-port">
-                    {{ sc.label }}
-                    <br>
-                    <a href="{{ sc.switch.get_absolute_url }}" class="switch-hostname">{{ sc.switch.hostname }}</a>
+                    <span class="col-label">{{ sc.label }}</span>
+                    <a href="{{ sc.switch.get_absolute_url }}" class="switch-hostname">{{ sc.switch.barcode }}</a>
+                    <span class="switch-fqdn" title="{{ sc.switch.hostname }}">{{ sc.switch.hostname }}</span>
                 </th>
+                {% if sc.backend_validation %}
                 <th class="col-validation">
                     {% trans "netmaker" %}
                 </th>
+                {% endif %}
                 {% endfor %}
             </tr>
         </thead>
@@ -50,34 +53,46 @@
             <tr>
                 <td class="col-position">{{ row.asset.position|default:"-" }}</td>
                 <td class="col-hostname">
-                    <a href="{{ row.asset.get_absolute_url }}">{{ row.asset.hostname|default:row.asset.barcode }}</a>
+                    <a href="{{ row.asset.get_absolute_url }}">{{ row.asset.barcode|default:row.asset.hostname }}</a>
                 </td>
                 {% for cell in row.cells %}
                 <td class="col-port">
-                    <input type="text"
-                           name="{{ cell.field_name }}"
-                           value="{{ cell.value }}"
-                           size="6"
-                           placeholder="port"
-                           autocomplete="off">
+                    <div class="port-cell">
+                        <input type="text"
+                               name="{{ cell.field_name }}"
+                               value="{{ cell.value }}"
+                               size="3"
+                               placeholder="&mdash;"
+                               autocomplete="off"
+                               class="port-input"
+                               data-sc-id="{{ cell.switch_config.id }}"
+                               data-asset-id="{{ row.asset.id }}"
+                               data-live-check="{% if cell.switch_config.backend_validation %}1{% else %}0{% endif %}">
+                        <span class="live-check" aria-hidden="true"></span>
+                        <button type="button"
+                                class="override-toggle{% if cell.is_override %} active{% endif %}"
+                                title="{% trans 'Connect this server to a different switch than the column default (exception).' %}"
+                                aria-label="{% trans 'Override switch' %}">&#8644;</button>
+                    </div>
+                    <div class="override-wrap{% if cell.is_override %} open{% endif %}">
+                        <input type="text"
+                               name="{{ cell.override_field_name }}"
+                               value="{{ cell.override_value }}"
+                               placeholder="{% trans 'alt switch' %}"
+                               autocomplete="off"
+                               title="{% trans 'Barcode, hostname or rack position (e.g. rack12u42) of the alternate switch.' %}"
+                               class="override-input{% if cell.is_override %} override-set{% endif %}">
+                    </div>
                 </td>
+                {% if cell.switch_config.backend_validation %}
                 <td class="col-validation">
                     {% if cell.validation %}
-                    <span class="{{ cell.validation.css_class }}">
-                        {% if cell.validation.remote_asset %}
-                            <a href="{{ cell.validation.remote_asset.get_absolute_url }}" class="{{ cell.validation.css_class }}">
-                                {{ cell.validation.label }}
-                            </a>
-                            {% if cell.validation.match %}&#x2714;{% endif %}
-                            {% if cell.validation.match == False %}&#x2716;{% endif %}
-                        {% else %}
-                            {{ cell.validation.label }}
-                        {% endif %}
-                    </span>
+                    {% include "switchports/_netmaker_cell.html" with validation=cell.validation %}
                     {% elif cell.value and has_validation %}
-                    <span class="validation-nodata">-</span>
+                    <span class="validation-nodata">&mdash;</span>
                     {% endif %}
                 </td>
+                {% endif %}
                 {% endfor %}
             </tr>
             {% endfor %}
@@ -95,7 +110,17 @@
         <li>{% trans "Enter a port number (e.g. <code>20</code>) to connect an asset to the switch on port <code>0/0/20</code>." %}</li>
         <li>{% trans "Enter a full port label (e.g. <code>0/0/20</code> or <code>1/0/5</code>) for non-standard port naming." %}</li>
         <li>{% trans "Clear a cell to disconnect the asset from that switch." %}</li>
+        <li>{% trans "Click the <strong>&#8644;</strong> icon in a cell to connect a single server to a different switch than the column default (barcode, hostname or a rack position like <code>rack102u42</code>)." %}</li>
+        <li>{% trans "As you type a port for a default switch, a live indicator shows whether netmaker already reports the expected asset there (no save needed)." %}</li>
         <li>{% trans "Click <strong>Refresh from netmaker</strong> to validate what is actually connected according to the backend." %}</li>
+    </ul>
+    <p style="margin-top: 0.75rem;"><strong>{% trans "netmaker column legend:" %}</strong></p>
+    <ul style="margin: 0.5rem 0 0 1.5rem;">
+        <li><span class="nm-badge nm-stat nm-up"><span class="nm-key">L</span>&#x2191;</span> {% trans "Operational status (link state). Hover for details." %}</li>
+        <li><span class="nm-badge nm-stat nm-up"><span class="nm-key">A</span>&#x2191;</span> {% trans "Administrative status (enabled / shut). Hover for details." %}</li>
+        <li>{% trans "Arrow shows the state:" %} <span class="nm-badge nm-stat nm-up">&#x2191;</span> {% trans "up," %} <span class="nm-badge nm-stat nm-down">&#x2193;</span> {% trans "down," %} <span class="nm-badge nm-stat nm-unknown">?</span> {% trans "unknown." %}</li>
+        <li><span class="nm-badge nm-speed">10G</span> {% trans "Interface speed. Hover for exact Mbps." %}</li>
+        <li>{% trans "Click the &#x25B8; triangle on a netmaker cell to expand the full backend data (JSON)." %}</li>
     </ul>
 </div>
 
@@ -124,29 +149,114 @@
         font-size: 12px;
         color: #666;
     }
+    .refresh-status {
+        font-size: 12px;
+        font-weight: bold;
+    }
+    .refresh-status .spinner {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        margin-right: 4px;
+        border: 2px solid #ccc;
+        border-top-color: #417690;
+        border-radius: 50%;
+        animation: rs-spin 0.8s linear infinite;
+        vertical-align: middle;
+    }
+    @keyframes rs-spin { to { transform: rotate(360deg); } }
+    .refresh-status.running { color: #b26a00; }
+    .refresh-status.success { color: #2e7d32; }
+    .refresh-status.error { color: #c62828; }
+
+    .col-port .port-cell {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+    }
+    .col-port .live-check {
+        display: inline-block;
+        min-width: 12px;
+        font-size: 12px;
+        font-weight: bold;
+        line-height: 1;
+    }
+    .col-port .live-check.ok { color: #2e7d32; }
+    .col-port .live-check.mismatch { color: #c62828; }
+    .col-port .live-check.warn { color: #ef6c00; }
+
+    .col-port .override-toggle {
+        border: none;
+        background: transparent;
+        color: #b0b7bd;
+        cursor: pointer;
+        font-size: 13px;
+        line-height: 1;
+        padding: 0 1px;
+        border-radius: 3px;
+    }
+    .col-port .override-toggle:hover { color: #8e24aa; background: #f3e5f9; }
+    .col-port .override-toggle.active { color: #8e24aa; }
+    .col-port .override-wrap {
+        display: none;
+        margin-top: 3px;
+    }
+    .col-port .override-wrap.open { display: block; }
+    .col-port .override-input {
+        width: 68px;
+        margin: 0 auto;
+        font-size: 10px;
+        text-align: center;
+        border: 1px solid #d9c2e6;
+        border-radius: 3px;
+        padding: 2px;
+        color: #6a1b9a;
+        background: #faf5fd;
+    }
+    .col-port .override-input.override-set {
+        border-color: #8e24aa;
+        background: #f3e5f9;
+        font-weight: bold;
+    }
 
     .switchport-grid-table {
-        border-collapse: collapse;
-        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        width: auto;
         font-size: 13px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        border-radius: 6px;
+        overflow: hidden;
     }
     .switchport-grid-table th,
     .switchport-grid-table td {
-        border: 1px solid #ccc;
-        padding: 4px 6px;
+        border-bottom: 1px solid #e3e6e8;
+        border-right: 1px solid #eef0f1;
+        padding: 5px 8px;
         text-align: center;
         vertical-align: middle;
     }
     .switchport-grid-table thead th {
-        background: #417690;
+        background: #2c3e4c;
         color: #fff;
         font-weight: bold;
         white-space: nowrap;
+        border-bottom: 2px solid #1f2d38;
+        border-right-color: rgba(255, 255, 255, 0.12);
+        padding: 8px;
     }
     .switchport-grid-table thead th.col-validation {
-        background: #5a8fa8;
+        background: #3a5261;
         font-size: 11px;
         font-weight: normal;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+    }
+    .switchport-grid-table thead th .col-label {
+        display: block;
+        font-size: 14px;
+        letter-spacing: 0.02em;
     }
     .switchport-grid-table thead th .switch-hostname {
         color: #fff;
@@ -158,96 +268,273 @@
     .switchport-grid-table thead th .switch-hostname:hover {
         opacity: 1;
     }
+    .switchport-grid-table thead th .switch-fqdn {
+        display: block;
+        max-width: 90px;
+        margin: 1px auto 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 10px;
+        font-weight: normal;
+        opacity: 0.85;
+        cursor: help;
+    }
     .switchport-grid-table tbody tr:nth-child(even) {
-        background: #f9f9f9;
+        background: #fafbfc;
     }
     .switchport-grid-table tbody tr:hover {
-        background: #e8f4f8;
+        background: #eef6fa;
+    }
+    .switchport-grid-table tbody td.col-position,
+    .switchport-grid-table tbody td.col-hostname {
+        border-right: 1px solid #e3e6e8;
     }
     .switchport-grid-table .col-position {
-        width: 40px;
+        width: 36px;
         font-weight: bold;
+        color: #55606a;
     }
     .switchport-grid-table .col-hostname {
         text-align: left;
         white-space: nowrap;
-        min-width: 200px;
+        width: 1%;
+        padding-right: 16px;
+    }
+    .switchport-grid-table .col-hostname a {
+        font-weight: 600;
     }
     .switchport-grid-table .col-port {
-        width: 80px;
+        width: 96px;
     }
-    .switchport-grid-table .col-port input {
-        width: 60px;
+    .switchport-grid-table .col-port .port-input {
+        width: 46px;
         text-align: center;
-        border: 1px solid #ddd;
-        border-radius: 3px;
-        padding: 3px;
+        border: 1px solid #cfd6db;
+        border-radius: 4px;
+        padding: 4px 2px;
         font-size: 13px;
+        transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
     }
-    .switchport-grid-table .col-port input:focus {
-        border-color: #417690;
+    .switchport-grid-table .col-port .port-input:focus {
+        border-color: #2c3e4c;
         outline: none;
-        box-shadow: 0 0 3px rgba(65, 118, 144, 0.3);
+        box-shadow: 0 0 0 2px rgba(44, 62, 76, 0.18);
     }
+    /* Live validity feedback (client-side, no save needed) */
+    .col-port .port-input.chk-ok { border-color: #2e7d32; background: #e7f5e8; }
+    .col-port .port-input.chk-mismatch { border-color: #c62828; background: #fdecea; }
+    .col-port .port-input.chk-warn { border-color: #ef6c00; background: #fff4e5; }
+    .col-port .port-input.changed { box-shadow: inset 3px 0 0 0 #ef6c00; }
     .switchport-grid-table .col-validation {
-        width: 120px;
+        width: 190px;
         font-size: 11px;
         white-space: nowrap;
-    }
-
-    /* Validation status styles */
-    .validation-ok {
-        color: #2e7d32;
-        font-weight: bold;
-    }
-    .validation-ok a {
-        color: #2e7d32;
-        text-decoration: underline;
-    }
-    .validation-mismatch {
-        color: #e65100;
-        font-weight: bold;
-    }
-    .validation-mismatch a {
-        color: #e65100;
-        text-decoration: underline;
-    }
-    .validation-warning {
-        color: #f57c00;
-    }
-    .validation-error {
-        color: #c62828;
-        font-weight: bold;
-    }
-    .validation-error a {
-        color: #c62828;
-        text-decoration: underline;
-    }
-    .validation-nodata {
-        color: #999;
+        background: rgba(58, 82, 97, 0.04);
     }
 </style>
 
+{% include "switchports/_netmaker_styles.html" %}
+
+{{ client_validation|json_script:"switch-validation-data" }}
+
 <script>
 (function() {
-    // Highlight changed cells
-    var inputs = document.querySelectorAll('.switchport-grid-table input[type="text"]');
-    inputs.forEach(function(input) {
-        var original = input.value;
-        input.dataset.original = original;
-        if (original) {
-            input.style.background = '#e8f5e9';
-        }
-        input.addEventListener('input', function() {
-            if (this.value !== this.dataset.original) {
-                this.style.background = '#fff3e0';
-            } else if (this.value) {
-                this.style.background = '#e8f5e9';
-            } else {
-                this.style.background = '';
+    // ------------------------------------------------------------------
+    // Embedded validation data (default switches only). Instant, no AJAX.
+    // ------------------------------------------------------------------
+    var VALIDATION = {};
+    try {
+        var dataEl = document.getElementById('switch-validation-data');
+        VALIDATION = dataEl ? (JSON.parse(dataEl.textContent) || {}) : {};
+        if (typeof VALIDATION !== 'object') { VALIDATION = {}; }
+    } catch (e) { VALIDATION = {}; }
+
+    function portLabel(value) {
+        value = (value || '').trim();
+        if (!value) { return null; }
+        if (value.indexOf('/') !== -1) { return value; }
+        return '0/0/' + value;
+    }
+
+    // Update a single port cell: unsaved-marker + live validity colouring.
+    function updateCell(input) {
+        try {
+            var cell = input.closest('td');
+            var indicator = cell ? cell.querySelector('.live-check') : null;
+            var override = cell ? cell.querySelector('.override-input') : null;
+            var overrideOn = !!(override && override.value.trim());
+
+            // Unsaved marker (orange left bar).
+            input.classList.toggle('changed', input.value !== input.dataset.original);
+
+            // Reset validity state.
+            input.classList.remove('chk-ok', 'chk-mismatch', 'chk-warn');
+            if (indicator) {
+                indicator.className = 'live-check';
+                indicator.textContent = '';
+                indicator.title = '';
             }
+
+            if (input.dataset.liveCheck !== '1' || overrideOn) { return; }
+
+            var label = portLabel(input.value);
+            if (!label) { return; }
+
+            var scData = VALIDATION[input.dataset.scId];
+            if (!scData) { return; }
+
+            function set(cls, glyph, tip) {
+                input.classList.add(cls);
+                if (indicator) {
+                    indicator.className = 'live-check ' + cls.replace('chk-', '');
+                    indicator.textContent = glyph;
+                    indicator.title = tip;
+                }
+            }
+
+            if (scData.switch_not_found) {
+                set('chk-mismatch', '\u2717', 'Switch not found in netmaker');
+                return;
+            }
+            var port = scData.ports[label];
+            if (!port) {
+                set('chk-warn', '?', 'netmaker reports nothing on ' + label);
+                return;
+            }
+            var assetId = parseInt(input.dataset.assetId, 10);
+            if (port.status === 'ASSET_FOUND') {
+                if (port.remote_asset_id === assetId) {
+                    set('chk-ok', '\u2713',
+                        'netmaker confirms this asset on ' + label);
+                } else {
+                    set('chk-mismatch', '\u2717', 'netmaker reports ' +
+                        (port.remote_hostname || 'another asset') + ' on ' + label);
+                }
+            } else if (port.status === 'PORT_NOT_FOUND') {
+                set('chk-warn', '\u25cb', 'netmaker reports the port as empty');
+            } else if (port.status === 'ASSET_CONFLICT') {
+                set('chk-mismatch', '!',
+                    'netmaker reports conflicting assets on ' + label);
+            }
+        } catch (err) { /* never break the page on a single cell */ }
+    }
+
+    // ------------------------------------------------------------------
+    // Override switch toggle (collapsed by default; it is an exception).
+    // ------------------------------------------------------------------
+    document.querySelectorAll('.override-toggle').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var cell = btn.closest('td');
+            var wrap = cell.querySelector('.override-wrap');
+            var override = cell.querySelector('.override-input');
+            var open = wrap.classList.toggle('open');
+            btn.classList.toggle(
+                'active', open || !!(override && override.value.trim())
+            );
+            if (open && override) { override.focus(); }
+            var portInput = cell.querySelector('.port-input');
+            if (portInput) { updateCell(portInput); }
         });
     });
+    document.querySelectorAll('.override-input').forEach(function(override) {
+        override.addEventListener('input', function() {
+            var cell = override.closest('td');
+            var btn = cell.querySelector('.override-toggle');
+            if (btn) { btn.classList.toggle('active', !!override.value.trim()); }
+            var portInput = cell.querySelector('.port-input');
+            if (portInput) { updateCell(portInput); }
+        });
+    });
+
+    // ------------------------------------------------------------------
+    // Column-wise ordering of the port inputs, so Arrow Up/Down can jump to
+    // the cell directly below/above (same switch column, next/previous row).
+    // ------------------------------------------------------------------
+    var columns = {};
+    document.querySelectorAll('.switchport-grid-table input.port-input')
+        .forEach(function(input) {
+            var col = input.dataset.scId;
+            (columns[col] = columns[col] || []).push(input);
+        });
+
+    function moveVertically(input, delta) {
+        var col = columns[input.dataset.scId];
+        if (!col) { return; }
+        var idx = col.indexOf(input);
+        if (idx === -1) { return; }
+        var target = col[idx + delta];
+        if (target) {
+            target.focus();
+            target.select();
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Wire the port inputs (unsaved marker + live validity + keyboard nav).
+    // ------------------------------------------------------------------
+    document.querySelectorAll('.switchport-grid-table input.port-input')
+        .forEach(function(input) {
+            input.dataset.original = input.value;
+            input.addEventListener('input', function() { updateCell(this); });
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    moveVertically(this, 1);
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    moveVertically(this, -1);
+                }
+            });
+            updateCell(input);  // initial state
+        });
+
+    // ------------------------------------------------------------------
+    // Refresh status badge polling (in progress / finished).
+    // ------------------------------------------------------------------
+    var statusEl = document.getElementById('refresh-status');
+    var initialRunning = {{ refresh_job.is_running|yesno:"true,false,false" }};
+    var statusUrl = window.location.pathname + '?refresh_status=1';
+
+    function renderStatus(data) {
+        if (!statusEl) { return; }
+        if (!data || !data.status) { statusEl.textContent = ''; return; }
+        if (data.is_running) {
+            statusEl.className = 'refresh-status running';
+            statusEl.innerHTML = '<span class="spinner"></span>Refresh in progress\u2026';
+        } else if (data.status === 'SUCCESS') {
+            statusEl.className = 'refresh-status success';
+            var s = data.summary || {};
+            statusEl.textContent = '\u2713 Refresh finished (' +
+                (s.refreshed_switches || 0) + ' switch(es), ' +
+                (s.ports_processed || 0) + ' port(s)).';
+        } else if (data.status === 'ERROR') {
+            statusEl.className = 'refresh-status error';
+            var errs = (data.summary && data.summary.errors) || [];
+            statusEl.textContent = '\u2717 Refresh finished with errors' +
+                (errs.length ? ' (' + errs.length + ' switch(es) failed).' : '.');
+        }
+    }
+
+    function poll() {
+        fetch(statusUrl, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                renderStatus(data);
+                if (data && data.is_running) {
+                    setTimeout(poll, 3000);
+                } else if (data && data.status) {
+                    // Reload once to show freshly pulled netmaker columns.
+                    setTimeout(function() { window.location.reload(); }, 1200);
+                }
+            })
+            .catch(function() { /* stop polling on error */ });
+    }
+
+    if (initialRunning) {
+        renderStatus({status: 'IN_PROGRESS', is_running: true});
+        setTimeout(poll, 2000);
+    }
 })();
 </script>
 

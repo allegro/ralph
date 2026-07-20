@@ -1,0 +1,67 @@
+{% extends BASE_TEMPLATE %}
+{% load i18n %}
+
+{% block view_content %}
+
+<h1>{% trans "Rack Configuration" %} &mdash; {{ object }}</h1>
+
+<form method="post">
+    {% csrf_token %}
+
+    <div class="rack-config-description">
+        {{ config_form.as_p }}
+    </div>
+
+    <h2>{% trans "Switch columns" %}</h2>
+    <p class="help">
+        {% trans "Define the switch columns for this rack (e.g. eth1, eth2, mgmt). Enter each switch by its barcode, hostname, or a rack position like <code>rack12u42</code> (switch at position 42 of the rack whose name ends with 12, in this rack's data center)." %}
+    </p>
+
+    {{ formset.management_form }}
+    {% if formset.non_form_errors %}
+    <ul class="errorlist">
+        {% for error in formset.non_form_errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <table class="rack-switch-config-table">
+        <thead>
+            <tr>
+                <th>{% trans "Label" %}</th>
+                <th>{% trans "Switch (barcode, hostname or rackNuM)" %}</th>
+                <th>{% trans "Netmaker validation" %}</th>
+                <th>{% trans "Delete" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for form in formset %}
+            <tr>
+                {{ form.id }}
+                <td>
+                    {{ form.label }}
+                    {{ form.label.errors }}
+                </td>
+                <td>
+                    {{ form.switch_identifier }}
+                    {{ form.switch_identifier.errors }}
+                </td>
+                <td>
+                    {{ form.backend_validation }}
+                    {{ form.backend_validation.errors }}
+                </td>
+                <td>
+                    {% if form.instance.pk %}{{ form.DELETE }}{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="submit-row">
+        <button type="submit" class="button default">{% trans "Save" %}</button>
+    </div>
+</form>
+
+{% endblock %}

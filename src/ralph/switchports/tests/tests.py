@@ -5,7 +5,12 @@ from unittest.mock import patch
 from django.core.management import CommandError, call_command
 from django.test import TestCase
 
-from ralph.data_center.tests.factories import DataCenterAssetFactory, RackFactory
+from ralph.data_center.tests.factories import (
+    DataCenterAssetFactory,
+    DataCenterFactory,
+    RackFactory,
+    ServerRoomFactory,
+)
 from ralph.switchports.dto import (
     InterfaceDTO,
     InterfaceMode,
@@ -19,10 +24,15 @@ from ralph.switchports.models import (
     Port,
     RackConfiguration,
     RackSwitchConfiguration,
+    RackSwitchConfigurationOverride,
     ValidationStatus,
 )
 from ralph.switchports.validation import refresh_validation_for_rack
-from ralph.switchports.views import RackSwitchportGridView, _port_label_for_switch
+from ralph.switchports.views import (
+    RackSwitchportGridView,
+    _port_label_for_switch,
+    _resolve_switch,
+)
 
 
 class GenerateSwitchportGraphCommandTestCase(TestCase):
@@ -198,6 +208,46 @@ class PortLabelForSwitchTestCase(TestCase):
         self.assertEqual(_port_label_for_switch("  20  "), "0/0/20")
 
 
+class ResolveSwitchTestCase(TestCase):
+    def setUp(self):
+        self.dc = DataCenterFactory(name="DC-resolve")
+        self.server_room = ServerRoomFactory(
+            name="SR-resolve", data_center=self.dc
+        )
+        self.rack = RackFactory(name="Rack 12", server_room=self.server_room)
+        self.switch = DataCenterAssetFactory(
+            hostname="resolve.sw.local",
+            barcode="RSW-BC-1",
+            rack=self.rack,
+            position=42,
+        )
+
+    def test_resolve_by_barcode(self):
+        self.assertEqual(_resolve_switch("RSW-BC-1"), self.switch)
+
+    def test_resolve_by_hostname(self):
+        self.assertEqual(_resolve_switch("resolve.sw.local"), self.switch)
+
+    def test_resolve_by_rack_position(self):
+        self.assertEqual(_resolve_switch("rack12u42", self.dc), self.switch)
+
+    def test_resolve_rack_position_strips_whitespace(self):
+        self.assertEqual(_resolve_switch("  rack12u42 ", self.dc), self.switch)
+
+    def test_rack_position_requires_dc_context(self):
+        # Without a data center the position format must not be attempted.
+        self.assertIsNone(_resolve_switch("rack12u42"))
+
+    def test_rack_position_unknown_returns_none(self):
+        self.assertIsNone(_resolve_switch("rack12u99", self.dc))
+
+    def test_unknown_identifier_returns_none(self):
+        self.assertIsNone(_resolve_switch("nope-nothing", self.dc))
+
+    def test_blank_returns_none(self):
+        self.assertIsNone(_resolve_switch("   ", self.dc))
+
+
 class RackSwitchportGridViewTestCase(TestCase):
     def setUp(self):
         self.rack = RackFactory(name="TestRack-Grid")
@@ -212,7 +262,7 @@ class RackSwitchportGridViewTestCase(TestCase):
             hostname="srv2.example.com", rack=self.rack, position=2
         )
 
-        self.rack_config = RackConfiguration.objects.create(rack=self.rack)
+        self.rack_config, _ = RackConfiguration.objects.get_or_create(rack=self.rack)
         self.sc_eth1 = RackSwitchConfiguration.objects.create(
             rack_configuration=self.rack_config,
             switch=self.switch_eth1,
@@ -232,7 +282,7 @@ class RackSwitchportGridViewTestCase(TestCase):
     def _make_view(self):
         """Create a view instance with self.object set."""
         view = RackSwitchportGridView()
-        view.object = self.rack_config
+        view.object = self.rack
         return view
 
     def test_get_rack_assets_returns_assets_in_rack(self):
@@ -380,7 +430,7 @@ class RefreshValidationTestCase(TestCase):
         self.server = DataCenterAssetFactory(
             hostname="srv1.dc.example.com", rack=self.rack, position=10
         )
-        self.rack_config = RackConfiguration.objects.create(rack=self.rack)
+        self.rack_config, _ = RackConfiguration.objects.get_or_create(rack=self.rack)
         self.sc_eth1 = RackSwitchConfiguration.objects.create(
             rack_configuration=self.rack_config,
             switch=self.switch,
@@ -434,6 +484,30 @@ class RefreshValidationTestCase(TestCase):
         self.assertEqual(result_empty.status, ValidationStatus.PORT_NOT_FOUND)
 
     @patch("ralph.switchports.validation.NetmakerSwitchportBackend")
+    def test_refresh_skips_switch_with_backend_validation_disabled(self, MockBackend):
+        # Stale result that should be cleaned up once validation is disabled
+        BackendValidationResult.objects.create(
+            rack_configuration=self.rack_config,
+            switch=self.switch,
+            port_label="0/0/10",
+            status=ValidationStatus.ASSET_FOUND,
+            remote_hostname="stale.example.com",
+        )
+        self.sc_eth1.backend_validation = False
+        self.sc_eth1.save()
+
+        summary = refresh_validation_for_rack(self.rack_config)
+
+        self.assertEqual(summary["skipped_switches"], 1)
+        self.assertEqual(summary["refreshed_switches"], 0)
+        # Backend must not be queried for a disabled switch
+        MockBackend.return_value.get_switchports.assert_not_called()
+        # Stale cached results must be removed
+        self.assertFalse(
+            BackendValidationResult.objects.filter(switch=self.switch).exists()
+        )
+
+    @patch("ralph.switchports.validation.NetmakerSwitchportBackend")
     def test_refresh_switch_not_found(self, MockBackend):
         MockBackend.return_value.get_switchports.side_effect = Exception("Not found")
 
@@ -483,3 +557,385 @@ class RefreshValidationTestCase(TestCase):
         self.assertTrue(
             BackendValidationResult.objects.filter(port_label="0/0/10").exists()
         )
+
+    def _switch_dto(self, ports):
+        return SwitchDTO(
+            hostname="sw1.dc.example.com",
+            sn="SN123",
+            barcode="BC123",
+            model="TestModel",
+            ansible_unify_model="test",
+            acs_device_type="vendor#TestVendor",
+            ralph_id=self.switch.id,
+            location_rack="TestRack",
+            location_dc="DC1",
+            location_position=44,
+            ports=ports,
+        )
+
+    @patch("ralph.switchports.validation.NetmakerSwitchportBackend")
+    def test_refresh_creates_missing_switch_ports(self, MockBackend):
+        MockBackend.return_value.get_switchports.return_value = self._switch_dto(
+            [
+                _make_interface("0/0/10", remote_name="srv1.dc.example.com"),
+                _make_interface("0/0/11", remote_name=""),
+            ]
+        )
+
+        summary = refresh_validation_for_rack(self.rack_config)
+
+        self.assertEqual(summary["switch_ports_created"], 2)
+        self.assertEqual(
+            set(
+                Port.objects.filter(data_center_asset=self.switch).values_list(
+                    "label", flat=True
+                )
+            ),
+            {"0/0/10", "0/0/11"},
+        )
+        # No server ports may be created by the refresh.
+        self.assertFalse(Port.objects.filter(data_center_asset=self.server).exists())
+
+    @patch("ralph.switchports.validation.NetmakerSwitchportBackend")
+    def test_refresh_deletes_vanished_switch_ports(self, MockBackend):
+        # Port that the backend will no longer report.
+        Port.objects.create(label="0/0/99", data_center_asset=self.switch)
+        MockBackend.return_value.get_switchports.return_value = self._switch_dto(
+            [_make_interface("0/0/10", remote_name="srv1.dc.example.com")]
+        )
+
+        summary = refresh_validation_for_rack(self.rack_config)
+
+        self.assertEqual(summary["switch_ports_deleted"], 1)
+        self.assertEqual(
+            set(
+                Port.objects.filter(data_center_asset=self.switch).values_list(
+                    "label", flat=True
+                )
+            ),
+            {"0/0/10"},
+        )
+
+    @patch("ralph.switchports.validation.NetmakerSwitchportBackend")
+    def test_refresh_keeps_existing_switch_ports(self, MockBackend):
+        existing = Port.objects.create(label="0/0/10", data_center_asset=self.switch)
+        MockBackend.return_value.get_switchports.return_value = self._switch_dto(
+            [_make_interface("0/0/10", remote_name="srv1.dc.example.com")]
+        )
+
+        summary = refresh_validation_for_rack(self.rack_config)
+
+        self.assertEqual(summary.get("switch_ports_created", 0), 0)
+        self.assertEqual(summary.get("switch_ports_deleted", 0), 0)
+        ports = Port.objects.filter(data_center_asset=self.switch)
+        self.assertEqual(ports.count(), 1)
+        self.assertEqual(ports.first().id, existing.id)
+
+    @patch("ralph.switchports.validation.NetmakerSwitchportBackend")
+    def test_connected_switch_port_is_kept_even_if_backend_drops_it(
+        self, MockBackend
+    ):
+        switch_port = Port.objects.create(
+            label="0/0/99", data_center_asset=self.switch
+        )
+        server_port = Port.objects.create(label="eth1", data_center_asset=self.server)
+        connection = Connection.objects.create()
+        ConnectionMember.objects.create(connection=connection, port=switch_port)
+        ConnectionMember.objects.create(connection=connection, port=server_port)
+
+        # Backend no longer reports 0/0/99, but the port still has a connection,
+        # so it (and its connection) must be preserved.
+        MockBackend.return_value.get_switchports.return_value = self._switch_dto(
+            [_make_interface("0/0/10", remote_name="srv1.dc.example.com")]
+        )
+
+        summary = refresh_validation_for_rack(self.rack_config)
+
+        # The connected switch port is not counted as deleted...
+        self.assertEqual(summary.get("switch_ports_deleted", 0), 0)
+        # ...and everything survives: both ports, the connection and its members.
+        self.assertTrue(Port.objects.filter(id=switch_port.id).exists())
+        self.assertTrue(Port.objects.filter(id=server_port.id).exists())
+        self.assertTrue(Connection.objects.filter(id=connection.id).exists())
+        self.assertEqual(ConnectionMember.objects.count(), 2)
+
+
+class BuildValidationContextTestCase(TestCase):
+    def setUp(self):
+        self.rack = RackFactory(name="TestRack-Presentation")
+        self.switch = DataCenterAssetFactory(hostname="sw-pres.dc.example.com")
+        self.server = DataCenterAssetFactory(hostname="srv-pres.dc.example.com")
+        self.rack_config, _ = RackConfiguration.objects.get_or_create(rack=self.rack)
+
+    def _make_vr(self, **kwargs):
+        defaults = dict(
+            rack_configuration=self.rack_config,
+            switch=self.switch,
+            port_label="0/0/10",
+            status=ValidationStatus.ASSET_FOUND,
+            remote_asset=self.server,
+            remote_hostname="srv-pres.dc.example.com",
+            oper_status="up",
+            admin_status="up",
+            speed=25000,
+            raw_data={"name": "0/0/10", "speed": 25000},
+        )
+        defaults.update(kwargs)
+        return BackendValidationResult.objects.create(**defaults)
+
+    def test_none_returns_none(self):
+        from ralph.switchports.presentation import build_validation_context
+
+        self.assertIsNone(build_validation_context(None, expected_asset_id=1))
+
+    def test_asset_found_match(self):
+        from ralph.switchports.presentation import build_validation_context
+
+        vr = self._make_vr()
+        ctx = build_validation_context(vr, expected_asset_id=self.server.id)
+        self.assertTrue(ctx["match"])
+        self.assertEqual(ctx["css_class"], "validation-ok")
+        self.assertEqual(ctx["oper_symbol"], "\u2191")
+        self.assertEqual(ctx["admin_symbol"], "\u2191")
+        self.assertEqual(ctx["speed_display"], "25G")
+        self.assertIn("0/0/10", ctx["raw_json"])
+
+    def test_asset_found_mismatch(self):
+        from ralph.switchports.presentation import build_validation_context
+
+        vr = self._make_vr()
+        ctx = build_validation_context(vr, expected_asset_id=self.server.id + 999)
+        self.assertFalse(ctx["match"])
+        self.assertEqual(ctx["css_class"], "validation-mismatch")
+
+    def test_format_speed(self):
+        from ralph.switchports.presentation import format_speed
+
+        self.assertEqual(format_speed(25000), "25G")
+        self.assertEqual(format_speed(1000), "1G")
+        self.assertEqual(format_speed(100), "100M")
+        self.assertEqual(format_speed(None), "")
+
+    def test_status_symbol(self):
+        from ralph.switchports.presentation import status_symbol
+
+        self.assertEqual(status_symbol("up"), "\u2191")
+        self.assertEqual(status_symbol("down"), "\u2193")
+        self.assertEqual(status_symbol("weird"), "?")
+        self.assertEqual(status_symbol(""), "?")
+
+
+class SwitchOverrideTestCase(TestCase):
+    def setUp(self):
+        self.rack = RackFactory(name="TestRack-Override")
+        self.switch_eth1 = DataCenterAssetFactory(hostname="ovr.sw.eth1.local")
+        self.switch_alt = DataCenterAssetFactory(
+            hostname="ovr.sw.alt.local", barcode="ALT-BC-1"
+        )
+        self.server1 = DataCenterAssetFactory(
+            hostname="ovr-srv1.example.com", rack=self.rack, position=1
+        )
+        self.rack_config, _ = RackConfiguration.objects.get_or_create(rack=self.rack)
+        self.sc_eth1 = RackSwitchConfiguration.objects.create(
+            rack_configuration=self.rack_config,
+            switch=self.switch_eth1,
+            label="eth1",
+        )
+
+    def _make_view(self):
+        view = RackSwitchportGridView()
+        view.object = self.rack
+        return view
+
+    def test_effective_switch_defaults_to_column_switch(self):
+        view = self._make_view()
+        override_map = view._build_override_map([self.sc_eth1])
+        self.assertEqual(
+            view._effective_switch(self.sc_eth1, self.server1.id, override_map),
+            self.switch_eth1,
+        )
+
+    def test_effective_switch_uses_override(self):
+        RackSwitchConfigurationOverride.objects.create(
+            rack_switch_configuration=self.sc_eth1,
+            data_center_asset=self.server1,
+            switch=self.switch_alt,
+        )
+        view = self._make_view()
+        override_map = view._build_override_map([self.sc_eth1])
+        self.assertEqual(
+            view._effective_switch(self.sc_eth1, self.server1.id, override_map),
+            self.switch_alt,
+        )
+
+    def test_connection_map_recognizes_override_switch(self):
+        # server1:eth1 physically connected to the ALTERNATE switch
+        RackSwitchConfigurationOverride.objects.create(
+            rack_switch_configuration=self.sc_eth1,
+            data_center_asset=self.server1,
+            switch=self.switch_alt,
+        )
+        asset_port = Port.objects.create(label="eth1", data_center_asset=self.server1)
+        switch_port = Port.objects.create(
+            label="0/0/7", data_center_asset=self.switch_alt
+        )
+        conn = Connection.objects.create()
+        ConnectionMember.objects.create(connection=conn, port=asset_port)
+        ConnectionMember.objects.create(connection=conn, port=switch_port)
+
+        view = self._make_view()
+        assets = list(view._get_rack_assets())
+        switch_configs = list(view._get_switch_configs())
+        connection_map = view._build_connection_map(assets, switch_configs)
+
+        key = (self.server1.id, self.sc_eth1.id)
+        self.assertIn(key, connection_map)
+        self.assertEqual(connection_map[key]["actual_switch_id"], self.switch_alt.id)
+        self.assertEqual(connection_map[key]["switch_port_label"], "0/0/7")
+
+    def test_iter_rack_switches_includes_overrides(self):
+        from ralph.switchports.validation import iter_rack_switches
+
+        RackSwitchConfigurationOverride.objects.create(
+            rack_switch_configuration=self.sc_eth1,
+            data_center_asset=self.server1,
+            switch=self.switch_alt,
+        )
+        switches = iter_rack_switches(self.rack_config)
+        ids = {s.id for s in switches}
+        self.assertEqual(ids, {self.switch_eth1.id, self.switch_alt.id})
+
+    def test_client_validation_excludes_overrides_and_disabled(self):
+        view = self._make_view()
+        switch_configs = list(view._get_switch_configs())
+        # a validation result on the default switch
+        BackendValidationResult.objects.create(
+            rack_configuration=self.rack_config,
+            switch=self.switch_eth1,
+            port_label="0/0/5",
+            status=ValidationStatus.ASSET_FOUND,
+            remote_asset=self.server1,
+            remote_hostname="ovr-srv1.example.com",
+        )
+        validation_map, switch_status = view._build_validation_map(switch_configs)
+        client = view._build_client_validation(
+            switch_configs, validation_map, switch_status
+        )
+        self.assertIn(str(self.sc_eth1.id), client)
+        self.assertIn("0/0/5", client[str(self.sc_eth1.id)]["ports"])
+
+        # disabling backend validation drops the column from client data
+        self.sc_eth1.backend_validation = False
+        self.sc_eth1.save()
+        switch_configs = list(view._get_switch_configs())
+        validation_map, switch_status = view._build_validation_map(switch_configs)
+        client = view._build_client_validation(
+            switch_configs, validation_map, switch_status
+        )
+        self.assertNotIn(str(self.sc_eth1.id), client)
+
+
+class _FakeLock:
+    def acquire(self, *args, **kwargs):
+        return True
+
+    def release(self):
+        return None
+
+
+class _FakeRedis:
+    def lock(self, *args, **kwargs):
+        return _FakeLock()
+
+
+class RunRackRefreshTaskTestCase(TestCase):
+    def setUp(self):
+        self.rack = RackFactory(name="TestRack-AsyncRefresh")
+        self.switch_a = DataCenterAssetFactory(hostname="async.sw.a.local")
+        self.switch_b = DataCenterAssetFactory(hostname="async.sw.b.local")
+        self.server = DataCenterAssetFactory(
+            hostname="async-srv.example.com", rack=self.rack, position=3
+        )
+        self.rack_config, _ = RackConfiguration.objects.get_or_create(rack=self.rack)
+        self.sc_a = RackSwitchConfiguration.objects.create(
+            rack_configuration=self.rack_config, switch=self.switch_a, label="eth1"
+        )
+        self.sc_b = RackSwitchConfiguration.objects.create(
+            rack_configuration=self.rack_config, switch=self.switch_b, label="eth2"
+        )
+
+    def _switch_dto(self, hostname):
+        return SwitchDTO(
+            hostname=hostname,
+            sn="SN",
+            barcode="BC",
+            model="M",
+            ansible_unify_model="test",
+            acs_device_type="vendor#V",
+            ralph_id=1,
+            location_rack="R",
+            location_dc="DC",
+            location_position=1,
+            ports=[_make_interface("0/0/1", remote_name="")],
+        )
+
+    @patch("ralph.switchports.tasks.django_rq.get_connection")
+    @patch("ralph.switchports.tasks.NetmakerSwitchportBackend")
+    def test_run_rack_refresh_success(self, MockBackend, mock_conn):
+        from ralph.switchports.models import RefreshJobStatus, SwitchportRefreshJob
+        from ralph.switchports.tasks import run_rack_refresh
+
+        mock_conn.return_value = _FakeRedis()
+        backend = MockBackend.return_value
+        backend.refresh_switch.return_value = {"success": True}
+        backend.get_switchports.side_effect = lambda hostname, **kw: self._switch_dto(
+            hostname
+        )
+
+        job = SwitchportRefreshJob.objects.create(
+            rack_configuration=self.rack_config,
+            status=RefreshJobStatus.PENDING,
+        )
+
+        with self.settings(SWITCHPORT_REFRESH_MAX_PARALLEL=1):
+            run_rack_refresh(self.rack_config.id, job.id)
+
+        job.refresh_from_db()
+        self.assertEqual(job.status, RefreshJobStatus.SUCCESS)
+        self.assertEqual(job.summary["refreshed_switches"], 2)
+        self.assertIsNotNone(job.finished_at)
+        # backend refresh triggered per switch, ports pulled into Ralph
+        self.assertEqual(backend.refresh_switch.call_count, 2)
+        self.assertTrue(
+            BackendValidationResult.objects.filter(
+                rack_configuration=self.rack_config, switch=self.switch_a
+            ).exists()
+        )
+        self.assertTrue(
+            BackendValidationResult.objects.filter(
+                rack_configuration=self.rack_config, switch=self.switch_b
+            ).exists()
+        )
+
+    @patch("ralph.switchports.tasks.django_rq.get_connection")
+    @patch("ralph.switchports.tasks.NetmakerSwitchportBackend")
+    def test_run_rack_refresh_records_switch_errors(self, MockBackend, mock_conn):
+        from ralph.switchports.models import RefreshJobStatus, SwitchportRefreshJob
+        from ralph.switchports.tasks import run_rack_refresh
+
+        mock_conn.return_value = _FakeRedis()
+        backend = MockBackend.return_value
+        backend.refresh_switch.side_effect = Exception("backend down")
+
+        job = SwitchportRefreshJob.objects.create(
+            rack_configuration=self.rack_config,
+            status=RefreshJobStatus.PENDING,
+        )
+
+        with self.settings(SWITCHPORT_REFRESH_MAX_PARALLEL=1):
+            run_rack_refresh(self.rack_config.id, job.id)
+
+        job.refresh_from_db()
+        self.assertEqual(job.status, RefreshJobStatus.ERROR)
+        self.assertEqual(len(job.summary["errors"]), 2)
+

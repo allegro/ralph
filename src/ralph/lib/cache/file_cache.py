@@ -58,6 +58,11 @@ def file_cache(subdir: str, key_arg: str | None = None):
         def wrapper(*args, **kwargs):
             from django.conf import settings
 
+            # Reserved kwarg to bypass a stale cache entry: skip the read and
+            # overwrite the cache with a freshly computed value. Never forwarded
+            # to the wrapped function.
+            force_refresh = kwargs.pop("force_refresh", False)
+
             cache_base = getattr(settings, "FILE_CACHE_DIR", None)
             if not cache_base:
                 return func(*args, **kwargs)
@@ -74,7 +79,7 @@ def file_cache(subdir: str, key_arg: str | None = None):
                 # No-arg cache: single file for the whole function
                 cache_file = cache_dir / "_result.json"
 
-            if cache_file.exists():
+            if cache_file.exists() and not force_refresh:
                 logger.info("file_cache hit: %s", cache_file)
                 content = cache_file.read_text()
                 if is_pydantic:

@@ -8,38 +8,103 @@
 <h1>{% trans "Ports" %}</h1>
 
 {% if ports_data %}
-<table>
+<table class="ports-table">
     <thead>
         <tr>
-            <th>{% trans "Port" %}</th>
-            <th>{% trans "Remote port" %}</th>
-            <th>{% trans "Remote asset" %}</th>
+            <th class="col-port-label">{% trans "Port" %}</th>
+            <th class="col-remote-asset">{% trans "Remote asset" %}</th>
+            <th class="col-remote-port">{% trans "Remote port" %}</th>
+            <th class="col-validation">{% trans "netmaker" %}</th>
         </tr>
     </thead>
     <tbody>
         {% for entry in ports_data %}
         <tr>
-            <td>{{ entry.port.label }}</td>
-            <td>
+            <td class="col-port-label">{{ entry.port.label }}</td>
+            <td class="col-remote-asset">
+                {% if entry.remote_asset %}
+                    <a href="{{ entry.remote_asset.get_absolute_url }}">{{ entry.remote_asset.barcode|default:entry.remote_asset.hostname }}</a>
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td class="col-remote-port">
                 {% if entry.remote_port %}
                     {{ entry.remote_port.label }}
                 {% else %}
                     -
                 {% endif %}
             </td>
-            <td>
-                {% if entry.remote_asset %}
-                    <a href="{{ entry.remote_asset.get_absolute_url }}">{{ entry.remote_asset.hostname }}</a>
+            <td class="col-validation">
+                {% if entry.validation %}
+                {% include "switchports/_netmaker_cell.html" with validation=entry.validation %}
                 {% else %}
-                    -
+                <span class="validation-nodata">-</span>
                 {% endif %}
             </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+
+<div class="help" style="margin-top: 1rem; padding: 0.5rem; background: #f0f0f0; border-radius: 4px;">
+    <p><strong>{% trans "netmaker column legend:" %}</strong></p>
+    <ul style="margin: 0.5rem 0 0 1.5rem;">
+        <li><span class="nm-badge nm-stat nm-up"><span class="nm-key">L</span>&#x2191;</span> {% trans "Operational status (link state). Hover for details." %}</li>
+        <li><span class="nm-badge nm-stat nm-up"><span class="nm-key">A</span>&#x2191;</span> {% trans "Administrative status (enabled / shut). Hover for details." %}</li>
+        <li>{% trans "Arrow shows the state:" %} <span class="nm-badge nm-stat nm-up">&#x2191;</span> {% trans "up," %} <span class="nm-badge nm-stat nm-down">&#x2193;</span> {% trans "down," %} <span class="nm-badge nm-stat nm-unknown">?</span> {% trans "unknown." %}</li>
+        <li><span class="nm-badge nm-speed">10G</span> {% trans "Interface speed. Hover for exact Mbps." %}</li>
+        <li>{% trans "Click the &#x25B8; triangle on a netmaker cell to expand the full backend data (JSON)." %}</li>
+    </ul>
+    <p style="margin-top: 0.5rem; color: #666; font-size: 12px;">
+        {% trans "This view is read-only. To edit connections use the Switchport Grid on the rack." %}
+    </p>
+</div>
 {% else %}
 <p>{% trans "No ports found for this asset." %}</p>
 {% endif %}
+
+{% include "switchports/_netmaker_styles.html" %}
+
+<style>
+    .ports-table {
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+    .ports-table th,
+    .ports-table td {
+        border: 1px solid #ccc;
+        padding: 4px 8px;
+        text-align: left;
+        vertical-align: middle;
+    }
+    .ports-table thead th {
+        background: #417690;
+        color: #fff;
+        font-weight: bold;
+        white-space: nowrap;
+    }
+    .ports-table thead th.col-validation {
+        background: #5a8fa8;
+        font-size: 11px;
+        font-weight: normal;
+    }
+    .ports-table tbody tr:nth-child(even) {
+        background: #f9f9f9;
+    }
+    .ports-table tbody tr:hover {
+        background: #e8f4f8;
+    }
+    .ports-table .col-port-label {
+        font-weight: bold;
+        white-space: nowrap;
+    }
+    .ports-table .col-remote-port {
+        white-space: nowrap;
+    }
+    .ports-table .col-validation {
+        min-width: 190px;
+    }
+</style>
 
 {% endblock %}

@@ -98,6 +98,12 @@ run = "uv run ralph runserver"
 alias = ["s", "default"]
 description = "Run local server"
 
+[tasks.worker]
+depends = ["db"]
+env = { OBJC_DISABLE_INITIALIZE_FORK_SAFETY = "YES" }
+run = "uv run ralph rqworker --worker-class=ralph.lib.external_services.worker.RalphSimpleWorker ralph_async_transitions ralph_switchports"
+description = "Run the RQ worker"
+
 [tasks.requirements]
 run = [
   "uv pip compile pyproject.toml --group dev --group docs --group test --group prod -o requirements/dev.txt",

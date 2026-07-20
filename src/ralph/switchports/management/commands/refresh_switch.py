@@ -22,5 +22,5 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         hostnames = options.get("hostnames", [])
         for hostname in hostnames:
-            job_id = self.backend.refresh_switch(hostname)
-            print(job_id)
+            response = self.backend.refresh_switch(hostname)
+            print(response)

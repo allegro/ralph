@@ -1,0 +1,42 @@
+{% load i18n %}{% comment %}
+Renders the netmaker validation cell for a single port/connection.
+Expects a `validation` context variable (see switchports.presentation.build_validation_context).
+{% endcomment %}
+{% if validation %}
+<details class="nm-details{% if not validation.raw_json %} nm-details-empty{% endif %}">
+    <summary class="nm-cell">
+        <span class="nm-asset {{ validation.css_class }}">
+            {% if validation.remote_asset %}
+                <a href="{{ validation.remote_asset.get_absolute_url }}" class="{{ validation.css_class }}">
+                    {{ validation.remote_asset.barcode }}
+                </a>
+                {% if validation.match %}&#x2714;{% endif %}
+                {% if validation.match == False %}&#x2716;{% endif %}
+            {% else %}
+                {{ validation.label }}
+            {% endif %}
+        </span>
+        <span class="nm-slot">
+            {% if validation.oper_status %}
+            <span class="nm-badge nm-stat nm-{{ validation.oper_status }}"
+                  title="{% trans 'Operational status (link state)' %}: {{ validation.oper_status }}"><span class="nm-key">L</span>{{ validation.oper_symbol }}</span>
+            {% endif %}
+        </span>
+        <span class="nm-slot">
+            {% if validation.admin_status %}
+            <span class="nm-badge nm-stat nm-{{ validation.admin_status }}"
+                  title="{% trans 'Administrative status' %}: {{ validation.admin_status }}"><span class="nm-key">A</span>{{ validation.admin_symbol }}</span>
+            {% endif %}
+        </span>
+        <span class="nm-slot nm-slot-speed">
+            {% if validation.speed_display %}
+            <span class="nm-badge nm-speed"
+                  title="{% trans 'Speed' %}: {{ validation.speed }} Mbps">{{ validation.speed_display }}</span>
+            {% endif %}
+        </span>
+    </summary>
+    {% if validation.raw_json %}
+    <pre class="nm-json">{{ validation.raw_json }}</pre>
+    {% endif %}
+</details>
+{% endif %}

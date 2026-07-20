@@ -1,0 +1,148 @@
+{% comment %}
+Shared styles and behaviour for the netmaker validation cell.
+Include once per page that renders "switchports/_netmaker_cell.html".
+{% endcomment %}
+<style>
+    /* Validation status styles */
+    .validation-ok {
+        color: #2e7d32;
+        font-weight: bold;
+    }
+    .validation-ok a {
+        color: #2e7d32;
+        text-decoration: underline;
+    }
+    .validation-mismatch {
+        color: #e65100;
+        font-weight: bold;
+    }
+    .validation-mismatch a {
+        color: #e65100;
+        text-decoration: underline;
+    }
+    .validation-warning {
+        color: #f57c00;
+    }
+    .validation-error {
+        color: #c62828;
+        font-weight: bold;
+    }
+    .validation-error a {
+        color: #c62828;
+        text-decoration: underline;
+    }
+    .validation-nodata {
+        color: #999;
+    }
+
+    /* netmaker cell layout with compact status badges */
+    .nm-details {
+        width: 100%;
+    }
+    .nm-details > summary {
+        list-style: none;
+        cursor: pointer;
+    }
+    .nm-details > summary::-webkit-details-marker {
+        display: none;
+    }
+    .nm-details > summary::before {
+        content: "\25B8"; /* right-pointing triangle */
+        display: inline-block;
+        font-size: 9px;
+        /*color: #888; */
+        transition: transform 0.15s ease;
+    }
+    .nm-details[open] > summary::before {
+        transform: rotate(90deg);
+    }
+    .nm-details-empty > summary {
+        cursor: default;
+    }
+    .nm-details-empty > summary::before {
+        content: "";
+    }
+    /* invisible grid: triangle | barcode | L | A | speed
+       fixed columns keep every value aligned vertically across rows */
+    .nm-cell {
+        display: grid;
+        grid-template-columns: 10px 76px 26px 26px 34px;
+        align-items: center;
+        column-gap: 4px;
+        text-align: left;
+    }
+    .nm-json {
+        text-align: left;
+        margin: 6px 0 2px;
+        padding: 6px 8px;
+        background: #1e1e1e;
+        color: #d4d4d4;
+        border-radius: 4px;
+        font-size: 11px;
+        line-height: 1.4;
+        white-space: pre;
+        overflow-x: auto;
+        max-height: 320px;
+        overflow-y: auto;
+        max-width: 420px;
+    }
+    .nm-asset {
+        white-space: nowrap;
+    }
+    .nm-slot {
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-start;
+    }
+    .nm-badge {
+        font-size: 11px;
+        line-height: 1;
+        cursor: help;
+    }
+    .nm-stat {
+        display: inline-flex;
+        align-items: center;
+        font-family: monospace;
+        font-size: 12px;
+        font-weight: bold;
+        border: 1px solid currentColor;
+        border-radius: 3px;
+        padding: 1px 3px;
+    }
+    .nm-stat .nm-key {
+        font-size: 9px;
+        opacity: 0.65;
+        margin-right: 1px;
+    }
+    .nm-speed {
+        font-size: 10px;
+        font-weight: bold;
+        color: #555;
+        background: #eef1f3;
+        border: 1px solid #d4dade;
+        border-radius: 3px;
+        padding: 1px 3px;
+    }
+    /* status colors reinforce (but do NOT solely convey) the arrow glyph */
+    .nm-up {
+        color: #2e7d32;
+    }
+    .nm-down {
+        color: #c62828;
+    }
+    .nm-unknown,
+    .nm-other {
+        color: #9e9e9e;
+    }
+</style>
+
+<script>
+(function() {
+    // Clicking a link inside a <summary> should navigate, not toggle the panel
+    document.querySelectorAll('.nm-cell a').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    });
+})();
+</script>

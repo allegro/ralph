@@ -1,17 +1,8 @@
 from django.db import connection
-from rq import Worker
+from rq import SimpleWorker, Worker
 
 
-class RalphWorker(Worker):
-    """
-    Worker for Ralph jobs on RQ.
-
-    Use it in management command using `--worker-class` param, for example:
-    ```
-    ralph rqworker --worker-class=ralph.lib.external_services.worker.RalphWorker default  # noqa
-    ```
-    """
-
+class _CloseObsoleteConnectionsMixin:
     def perform_job(self, *args, **kwargs):
         """
         Handles connection (wait) timeouts on RQ.
@@ -40,3 +31,30 @@ class RalphWorker(Worker):
         result = super().perform_job(*args, **kwargs)
         connection.close_if_unusable_or_obsolete()
         return result
+
+
+class RalphWorker(_CloseObsoleteConnectionsMixin, Worker):
+    """
+    Worker for Ralph jobs on RQ.
+
+    Use it in management command using `--worker-class` param, for example:
+    ```
+    ralph rqworker --worker-class=ralph.lib.external_services.worker.RalphWorker default  # noqa
+    ```
+    """
+
+
+class RalphSimpleWorker(_CloseObsoleteConnectionsMixin, SimpleWorker):
+    """
+    Non-forking Ralph worker (runs jobs in the worker process).
+
+    Use it for jobs that spawn threads (e.g. the switchport netmaker refresh)
+    and on platforms where forking a work-horse is problematic - notably macOS,
+    where ``fork()`` after Objective-C initialization crashes the child with
+    ``+[... initialize] may have been in progress in another thread when
+    fork() was called``.
+    ```
+    ralph rqworker --worker-class=ralph.lib.external_services.worker.RalphSimpleWorker ralph_switchports  # noqa
+    ```
+    """
+

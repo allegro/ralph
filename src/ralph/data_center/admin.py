@@ -72,7 +72,7 @@ from ralph.networks.forms import SimpleNetworkWithManagementIPForm
 from ralph.networks.views import NetworkWithTerminatorsView
 from ralph.operations.views import OperationViewReadOnlyForExisiting
 from ralph.supports.models import BaseObjectsSupport
-from ralph.switchports.models import RackConfiguration
+from ralph.switchports.views import RackConfigurationView, RackSwitchportGridView
 
 
 def generate_list_filter_with_common_fields(prefix=None, postfix=None):
@@ -687,13 +687,6 @@ class RackModuleAdmin(RalphAdmin):
     rack_name.short_description = _("Racks")
 
 
-class RackConfigurationInline(RalphTabularInline):
-    model = RackConfiguration
-    can_delete = False
-    verbose_name_plural = "Rack Configuration"
-    fk_name = "rack"
-
-
 @register(Rack)
 class RackAdmin(RalphAdmin):
     def get_queryset(self, request):
@@ -703,6 +696,7 @@ class RackAdmin(RalphAdmin):
             .select_related("server_room__data_center", "rack_module")
         )
 
+    change_views = [RackConfigurationView, RackSwitchportGridView]
     exclude = ["accessories"]
     list_display = [
         "name",
@@ -714,7 +708,7 @@ class RackAdmin(RalphAdmin):
     ]
     list_filter = ["server_room__data_center"]  # TODO use fk field in filter
     search_fields = ["name"]
-    inlines = [RackAccessoryInline, RackConfigurationInline]
+    inlines = [RackAccessoryInline]
     resource_classes = [resources.RackResource]
     actions = ["combine"]
     raw_id_fields = ["rack_module"]

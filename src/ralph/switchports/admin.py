@@ -1,21 +1,44 @@
 from ralph.admin.decorators import register
 from . import connections
-from .models import Port, RackConfiguration, RackSwitchConfiguration
-from .views import RackSwitchportGridView
-from ..admin.mixins import RalphAdmin, RalphTabularInline
+from .models import (
+    Port,
+    RackSwitchConfigurationOverride,
+    SwitchportRefreshJob,
+)
+from ..admin.mixins import RalphAdmin
 
 
-class RackSwitchConfigurationInline(RalphTabularInline):
-    model = RackSwitchConfiguration
-    verbose_name_plural = "Rack Configuration"
-    fk_name = "rack_configuration"
-    raw_id_fields = ["switch"]
+@register(RackSwitchConfigurationOverride)
+class RackSwitchConfigurationOverrideAdmin(RalphAdmin):
+    list_display = ("rack_switch_configuration", "data_center_asset", "switch")
+    list_filter = ("rack_switch_configuration__label",)
+    raw_id_fields = ("rack_switch_configuration", "data_center_asset", "switch")
+    search_fields = (
+        "data_center_asset__hostname",
+        "data_center_asset__barcode",
+        "switch__hostname",
+        "switch__barcode",
+    )
 
 
-@register(RackConfiguration)
-class RackConfigurationAdmin(RalphAdmin):
-    inlines = [RackSwitchConfigurationInline]
-    change_views = [RackSwitchportGridView]
+@register(SwitchportRefreshJob)
+class SwitchportRefreshJobAdmin(RalphAdmin):
+    list_display = ("rack_configuration", "status", "started_at", "finished_at")
+    list_filter = ("status",)
+    search_fields = ("rack_configuration__rack__name",)
+    readonly_fields = (
+        "rack_configuration",
+        "status",
+        "started_at",
+        "finished_at",
+        "summary",
+        "error",
+        "created",
+        "modified",
+    )
+
+    def has_add_permission(self, request):
+        return False
 
 
 @register(Port)

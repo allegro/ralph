@@ -6,6 +6,7 @@ from ralph.networks.models import IPAddress
 
 
 class RackConfiguration(AdminAbsoluteUrlMixin, models.Model):
+    """Configuration of switches for given rack."""
     rack = models.OneToOneField(
         "data_center.Rack", on_delete=models.CASCADE, related_name="rack_configuration"
     )
@@ -28,9 +29,56 @@ class RackSwitchConfiguration(AdminAbsoluteUrlMixin, models.Model):
         help_text="Switch role e.g. eth1, eth2, mgmt",
         db_index=True,
     )
+    backend_validation = models.BooleanField(
+        default=True,
+        help_text=(
+            "When enabled, netmaker backend validation is fetched and the "
+            "netmaker column is shown for this switch in the switchport grid."
+        ),
+    )
 
     class Meta:
         unique_together = ("rack_configuration", "label")
+
+    def __str__(self):
+        return f"{self.label} -> {self.switch.hostname}"
+
+
+class RackSwitchConfigurationOverride(AdminAbsoluteUrlMixin, models.Model):
+    """Per-server exception to a switch column's default switch.
+
+    A column (RackSwitchConfiguration, e.g. ``eth1``) defines the switch that
+    every server in the rack connects to by default. This model is the
+    exception: it lets a single ``data_center_asset`` in that rack connect its
+    ``eth1`` port to a *different* switch than the column default.
+    """
+
+    rack_switch_configuration = models.ForeignKey(
+        RackSwitchConfiguration,
+        on_delete=models.CASCADE,
+        related_name="overrides",
+    )
+    data_center_asset = models.ForeignKey(
+        DataCenterAsset,
+        on_delete=models.CASCADE,
+        related_name="+",
+        help_text="The server whose connection deviates from the column default.",
+    )
+    switch = models.ForeignKey(
+        DataCenterAsset,
+        on_delete=models.CASCADE,
+        related_name="+",
+        help_text="The alternate switch this server connects to for this column.",
+    )
+
+    class Meta:
+        unique_together = ("rack_switch_configuration", "data_center_asset")
+
+    def __str__(self):
+        return (
+            f"override {self.data_center_asset.hostname} "
+            f"{self.rack_switch_configuration.label} -> {self.switch.hostname}"
+        )
 
 
 class AddressReservation(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
@@ -135,9 +183,81 @@ class BackendValidationResult(TimeStampMixin, models.Model):
         default="",
         help_text="Raw hostname reported by LLDP (even if not matched to a Ralph asset)",
     )
+    oper_status = models.CharField(
+        max_length=20,
+        blank=True,
+        default="",
+        help_text="Operational status reported by the backend (up/down/unknown)",
+    )
+    admin_status = models.CharField(
+        max_length=20,
+        blank=True,
+        default="",
+        help_text="Administrative status reported by the backend (up/down/unknown)",
+    )
+    speed = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Interface speed in Mbps",
+    )
+    raw_data = models.JSONField(
+        null=True,
+        blank=True,
+        help_text="Full interface payload reported by the backend (netmaker)",
+    )
 
     class Meta:
         unique_together = ("rack_configuration", "switch", "port_label")
 
     def __str__(self):
         return f"Validation {self.switch.hostname}:{self.port_label} -> {self.status}"
+
+
+class RefreshJobStatus(models.TextChoices):
+    PENDING = "PENDING", "Pending"
+    IN_PROGRESS = "IN_PROGRESS", "In progress"
+    SUCCESS = "SUCCESS", "Success"
+    ERROR = "ERROR", "Error"
+
+
+class SwitchportRefreshJob(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
+    """Tracks an asynchronous netmaker refresh for a whole rack.
+
+    A single job triggers a backend (netmaker) refresh of every switch related
+    to the rack (both the column switches and the per-server override switches)
+    and then pulls the fresh ports back into Ralph. Its ``status`` powers the
+    in-progress / finished indicator shown in the switchport grid.
+    """
+
+    rack_configuration = models.ForeignKey(
+        RackConfiguration,
+        on_delete=models.CASCADE,
+        related_name="refresh_jobs",
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=RefreshJobStatus.choices,
+        default=RefreshJobStatus.PENDING,
+        db_index=True,
+    )
+    started_at = models.DateTimeField(null=True, blank=True)
+    finished_at = models.DateTimeField(null=True, blank=True)
+    summary = models.JSONField(
+        null=True,
+        blank=True,
+        help_text="Per-switch counts and errors collected during the refresh.",
+    )
+    error = models.TextField(blank=True, default="")
+
+    class Meta:
+        ordering = ("-created",)
+
+    def __str__(self):
+        return f"Refresh {self.rack_configuration_id} [{self.status}]"
+
+    @property
+    def is_running(self) -> bool:
+        return self.status in (
+            RefreshJobStatus.PENDING,
+            RefreshJobStatus.IN_PROGRESS,
+        )
