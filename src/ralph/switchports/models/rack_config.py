@@ -13,6 +13,7 @@ from ralph.lib.mixins.models import AdminAbsoluteUrlMixin
 
 class RackConfiguration(AdminAbsoluteUrlMixin, models.Model):
     """Configuration of switches for given rack."""
+
     rack = models.OneToOneField(
         "data_center.Rack", on_delete=models.CASCADE, related_name="rack_configuration"
     )

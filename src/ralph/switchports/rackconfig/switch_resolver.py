@@ -60,9 +60,7 @@ def resolve_switch_by_position(
             server_room__data_center=dc,
             name__endswith=match.group("rack_number"),
         )
-        return DataCenterAsset.objects.get(
-            rack=rack, position=match.group("position")
-        )
+        return DataCenterAsset.objects.get(rack=rack, position=match.group("position"))
     except (
         Rack.DoesNotExist,
         Rack.MultipleObjectsReturned,

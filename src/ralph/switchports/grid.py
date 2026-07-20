@@ -36,10 +36,7 @@ def get_rack_assets(rack):
 
 def get_switch_configs(rack_configuration: RackConfiguration):
     """All RackSwitchConfigurations (columns) for this rack, ordered by label."""
-    return (
-        rack_configuration.switches.select_related("switch")
-        .order_by("label")
-    )
+    return rack_configuration.switches.select_related("switch").order_by("label")
 
 
 def build_connection_map(assets, switch_configs) -> dict:
@@ -144,8 +141,15 @@ def build_client_validation(switch_configs, validation_map, switch_status) -> di
     return client
 
 
-def _cell_validation(sc, effective_switch_obj, switch_port_label, asset_id,
-                     validation_map, switch_status, has_validation):
+def _cell_validation(
+    sc,
+    effective_switch_obj,
+    switch_port_label,
+    asset_id,
+    validation_map,
+    switch_status,
+    has_validation,
+):
     """Resolve the netmaker validation badge for a single grid cell."""
     if not sc.backend_validation:
         # Backend validation disabled: no netmaker column for this switch.

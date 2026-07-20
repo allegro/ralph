@@ -51,7 +51,9 @@ class RackSwitchportGridView(RalphDetailView):
 
     def _latest_refresh_job(self):
         return (
-            SwitchportRefreshJob.objects.filter(rack_configuration=self.rack_configuration)
+            SwitchportRefreshJob.objects.filter(
+                rack_configuration=self.rack_configuration
+            )
             .order_by("-created")
             .first()
         )

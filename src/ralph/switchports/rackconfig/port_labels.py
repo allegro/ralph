@@ -26,5 +26,5 @@ def to_display(port_label: str) -> str:
     ``0/0/42`` shows as ``42``; non-default labels (``1/0/5``) are shown as-is.
     """
     if port_label.startswith(DEFAULT_SWITCH_PORT_PREFIX):
-        return port_label[len(DEFAULT_SWITCH_PORT_PREFIX):]
+        return port_label[len(DEFAULT_SWITCH_PORT_PREFIX) :]
     return port_label

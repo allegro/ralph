@@ -27,8 +27,7 @@ def sync_switch_ports(
     See the module docstring for the create / delete / keep-connected rules.
     """
     existing_ports = {
-        port.label: port
-        for port in Port.objects.filter(data_center_asset=switch)
+        port.label: port for port in Port.objects.filter(data_center_asset=switch)
     }
     existing_labels = set(existing_ports)
 
@@ -47,9 +46,9 @@ def sync_switch_ports(
                     for label in labels_to_create
                 ]
             )
-            summary["switch_ports_created"] = (
-                summary.get("switch_ports_created", 0) + len(labels_to_create)
-            )
+            summary["switch_ports_created"] = summary.get(
+                "switch_ports_created", 0
+            ) + len(labels_to_create)
 
 
 def _delete_unconnected_ports(candidate_ports: list[Port], summary: dict) -> None:
@@ -59,9 +58,9 @@ def _delete_unconnected_ports(candidate_ports: list[Port], summary: dict) -> Non
     (and the server port on the other side) is never torn down here.
     """
     connected_port_ids = set(
-        ConnectionMember.objects.filter(
-            port__in=candidate_ports
-        ).values_list("port_id", flat=True)
+        ConnectionMember.objects.filter(port__in=candidate_ports).values_list(
+            "port_id", flat=True
+        )
     )
     ports_to_delete = [
         port for port in candidate_ports if port.id not in connected_port_ids
@@ -69,6 +68,6 @@ def _delete_unconnected_ports(candidate_ports: list[Port], summary: dict) -> Non
     if not ports_to_delete:
         return
     Port.objects.filter(id__in=[port.id for port in ports_to_delete]).delete()
-    summary["switch_ports_deleted"] = (
-        summary.get("switch_ports_deleted", 0) + len(ports_to_delete)
+    summary["switch_ports_deleted"] = summary.get("switch_ports_deleted", 0) + len(
+        ports_to_delete
     )

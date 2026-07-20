@@ -28,7 +28,11 @@ class OauthTokenAuthMixin:
         self._token = None
 
     def _get_token(self):
-        if self._token_expiration is None or datetime.now() > self._token_expiration or self._token is None:
+        if (
+            self._token_expiration is None
+            or datetime.now() > self._token_expiration
+            or self._token is None
+        ):
             return self._fetch_oauth_token()
         else:
             return self._token

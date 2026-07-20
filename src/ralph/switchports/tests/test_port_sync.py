@@ -94,12 +94,8 @@ class SyncSwitchPortsTestCase(TestCase):
         self.assertEqual(ports.first().id, existing.id)
 
     @patch(BACKEND)
-    def test_connected_switch_port_is_kept_even_if_backend_drops_it(
-        self, MockBackend
-    ):
-        switch_port = Port.objects.create(
-            label="0/0/99", data_center_asset=self.switch
-        )
+    def test_connected_switch_port_is_kept_even_if_backend_drops_it(self, MockBackend):
+        switch_port = Port.objects.create(label="0/0/99", data_center_asset=self.switch)
         server_port = Port.objects.create(label="eth1", data_center_asset=self.server)
         connection = Connection.objects.create()
         ConnectionMember.objects.create(connection=connection, port=switch_port)

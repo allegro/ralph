@@ -132,10 +132,7 @@ class GridTestCase(TestCase):
         )
 
         conflict_cells = [
-            cell
-            for row in rows
-            for cell in row["cells"]
-            if cell.get("is_conflict")
+            cell for row in rows for cell in row["cells"] if cell.get("is_conflict")
         ]
         self.assertEqual(len(conflict_cells), 1)
         cell = conflict_cells[0]

@@ -84,9 +84,8 @@ def apply_cell_edit(asset, sc, edit: CellEdit, connection_map, dc) -> CellResult
     existing_label = existing["switch_port_label"] if existing else None
     existing_switch_id = existing["actual_switch_id"] if existing else None
 
-    unchanged = (
-        existing_label == new_label
-        and existing_switch_id == (target_switch.id if new_label else None)
+    unchanged = existing_label == new_label and existing_switch_id == (
+        target_switch.id if new_label else None
     )
     if unchanged:
         return CellResult()

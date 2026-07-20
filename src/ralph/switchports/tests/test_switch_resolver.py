@@ -12,9 +12,7 @@ from ralph.switchports.rackconfig.switch_resolver import resolve_switch
 class ResolveSwitchTestCase(TestCase):
     def setUp(self):
         self.dc = DataCenterFactory(name="DC-resolve")
-        self.server_room = ServerRoomFactory(
-            name="SR-resolve", data_center=self.dc
-        )
+        self.server_room = ServerRoomFactory(name="SR-resolve", data_center=self.dc)
         self.rack = RackFactory(name="Rack 12", server_room=self.server_room)
         self.switch = DataCenterAssetFactory(
             hostname="resolve.sw.local",

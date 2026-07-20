@@ -30,9 +30,7 @@ def switch_port_owner(
     member = getattr(switch_port, "connectionmember", None)
     if member is None:
         return None
-    for peer in member.connection.members.select_related(
-        "port__data_center_asset"
-    ):
+    for peer in member.connection.members.select_related("port__data_center_asset"):
         owner = peer.port.data_center_asset
         if owner.id not in (this_asset.id, target_switch.id):
             return owner

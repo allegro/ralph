@@ -66,12 +66,7 @@ def refresh_validation_for_rack(
                     switch.hostname,
                     exc_info=True,
                 )
-        rebuild_validation_for_switch(
-            backend,
-            rack_configuration,
-            switch,
-            summary
-        )
+        rebuild_validation_for_switch(backend, rack_configuration, switch, summary)
 
     return summary
 
@@ -90,9 +85,7 @@ def rebuild_validation_for_switch(
     in which case they are kept — see ``sync.port_sync``).
     """
     try:
-        switch_dto = backend.get_switchports(
-            switch.hostname
-        )
+        switch_dto = backend.get_switchports(switch.hostname)
     except Exception:
         logger.warning(
             "Failed to fetch switchports from backend for %s",
@@ -138,7 +131,9 @@ def rebuild_validation_for_switch(
         remote = RemoteAsset.from_interface_dto(interface)
         asset_from_name, asset_from_desc, asset_from_mac = extract_asset(remote)
 
-        if is_consistent := cross_validate(asset_from_name, asset_from_desc, asset_from_mac):
+        if is_consistent := cross_validate(
+            asset_from_name, asset_from_desc, asset_from_mac
+        ):
             if not is_consistent:
                 resolved_asset = asset_from_name or asset_from_desc or asset_from_mac
                 status = ValidationStatus.ASSET_CONFLICT

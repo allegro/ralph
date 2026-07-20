@@ -15,24 +15,18 @@ class SwitchPortOwnerTestCase(TestCase):
         switch_port = Port.objects.create(
             label=switch_label, data_center_asset=self.switch
         )
-        server_port = Port.objects.create(
-            label=server_label, data_center_asset=server
-        )
+        server_port = Port.objects.create(label=server_label, data_center_asset=server)
         conn = Connection.objects.create()
         ConnectionMember.objects.create(connection=conn, port=switch_port)
         ConnectionMember.objects.create(connection=conn, port=server_port)
         return switch_port
 
     def test_nonexistent_port_has_no_owner(self):
-        self.assertIsNone(
-            switch_port_owner(self.switch, "0/0/30", self.server_b)
-        )
+        self.assertIsNone(switch_port_owner(self.switch, "0/0/30", self.server_b))
 
     def test_unconnected_port_has_no_owner(self):
         Port.objects.create(label="0/0/30", data_center_asset=self.switch)
-        self.assertIsNone(
-            switch_port_owner(self.switch, "0/0/30", self.server_b)
-        )
+        self.assertIsNone(switch_port_owner(self.switch, "0/0/30", self.server_b))
 
     def test_port_owned_by_another_asset(self):
         self._connect("0/0/30", self.server_a)
@@ -43,6 +37,4 @@ class SwitchPortOwnerTestCase(TestCase):
 
     def test_port_owned_by_this_asset_is_not_a_conflict(self):
         self._connect("0/0/30", self.server_a)
-        self.assertIsNone(
-            switch_port_owner(self.switch, "0/0/30", self.server_a)
-        )
+        self.assertIsNone(switch_port_owner(self.switch, "0/0/30", self.server_a))

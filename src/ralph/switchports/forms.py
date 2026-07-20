@@ -44,9 +44,7 @@ class RackSwitchConfigurationForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.pk and self.instance.switch_id:
             switch = self.instance.switch
-            self.fields["switch_identifier"].initial = (
-                switch.barcode or switch.hostname
-            )
+            self.fields["switch_identifier"].initial = switch.barcode or switch.hostname
 
     def clean(self):
         cleaned_data = super().clean()

@@ -78,10 +78,7 @@ def _refresh_single_switch(rack_configuration_id, switch, in_thread=True):
 
         # 2. Pull the fresh ports into Ralph, bypassing the stale file cache.
         rebuild_validation_for_switch(
-            backend,
-            rack_configuration,
-            switch,
-            per_switch_summary
+            backend, rack_configuration, switch, per_switch_summary
         )
         if per_switch_summary["switch_not_found"]:
             entry["status"] = "switch_not_found"

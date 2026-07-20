@@ -57,4 +57,3 @@ class RalphSimpleWorker(_CloseObsoleteConnectionsMixin, SimpleWorker):
     ralph rqworker --worker-class=ralph.lib.external_services.worker.RalphSimpleWorker ralph_switchports  # noqa
     ```
     """
-

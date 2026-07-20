@@ -71,9 +71,7 @@ class ApplyCellEditTestCase(TestCase):
         self.assertEqual(result.conflict["typed_value"], "30")
         # server1 got no port/connection on the switch.
         self.assertFalse(
-            Port.objects.filter(
-                label="eth1", data_center_asset=self.server1
-            ).exists()
+            Port.objects.filter(label="eth1", data_center_asset=self.server1).exists()
         )
         # server2 keeps its connection.
         self.assertEqual(ConnectionMember.objects.count(), 2)
@@ -91,10 +89,7 @@ class ApplyCellEditTestCase(TestCase):
             label="0/0/30", data_center_asset=self.switch_eth1
         )
         member = switch_port.connectionmember
-        peers = {
-            m.port.data_center_asset_id
-            for m in member.connection.members.all()
-        }
+        peers = {m.port.data_center_asset_id for m in member.connection.members.all()}
         self.assertIn(self.server1.id, peers)
         self.assertNotIn(self.server2.id, peers)
 
@@ -139,9 +134,7 @@ class ApplyCellEditTestCase(TestCase):
 
     def test_override_to_alt_switch_is_persisted(self):
         alt = DataCenterAssetFactory(hostname="ce.sw.alt.local", barcode="ALT-CE-1")
-        result = self._apply(
-            self.server1, new_value="7", override_value="ALT-CE-1"
-        )
+        result = self._apply(self.server1, new_value="7", override_value="ALT-CE-1")
         self.assertEqual(result.created, 1)
         self.assertTrue(
             RackSwitchConfigurationOverride.objects.filter(

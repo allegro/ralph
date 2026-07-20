@@ -100,6 +100,8 @@ django==4.2.23
     #   django-reversion
     #   django-rq
     #   django-silk
+    #   django-stubs
+    #   django-stubs-ext
     #   django-taggit
     #   djangorestframework
     #   drf-nested-routers
@@ -140,6 +142,10 @@ django-silk==5.4.0
     # via ralph (pyproject.toml:dev)
 django-sitetree==1.18.0
     # via ralph (pyproject.toml)
+django-stubs==6.0.7
+    # via djangorestframework-stubs
+django-stubs-ext==6.0.7
+    # via django-stubs
 django-taggit==3.1.0
     # via ralph (pyproject.toml)
 django-threadlocals==0.8
@@ -148,6 +154,8 @@ djangorestframework==3.15.0
     # via
     #   ralph (pyproject.toml)
     #   drf-nested-routers
+djangorestframework-stubs==3.17.0
+    # via ralph (pyproject.toml)
 djangorestframework-xml==2.0.0
     # via ralph (pyproject.toml)
 docopt==0.6.2
@@ -573,6 +581,7 @@ toml-sort==0.24.2
 tomli==2.2.1
     # via
     #   coverage
+    #   django-stubs
     #   ipdb
     #   sphinx
 tomlkit==0.13.3
@@ -581,11 +590,18 @@ traitlets==5.14.3
     # via
     #   ipython
     #   matplotlib-inline
+types-pyyaml==6.0.12.20260518
+    # via
+    #   django-stubs
+    #   djangorestframework-stubs
 typing==3.6.6
     # via ralph (pyproject.toml)
 typing-extensions==4.14.1
     # via
     #   asgiref
+    #   django-stubs
+    #   django-stubs-ext
+    #   djangorestframework-stubs
     #   dogpile-cache
     #   exceptiongroup
     #   ipython
