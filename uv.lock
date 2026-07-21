@@ -108,15 +108,6 @@ wheels = [
 ]
 
 [[package]]
-name = "backports-strenum"
-version = "1.3.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/35/c7/2ed54c32fed313591ffb21edbd48db71e68827d43a61938e5a0bc2b6ec91/backports_strenum-1.3.1.tar.gz", hash = "sha256:77c52407342898497714f0596e86188bb7084f89063226f4ba66863482f42414", size = 7257, upload-time = "2023-12-09T14:36:40.937Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/d6/50/56cf20e2ee5127b603b81d5a69580a1a325083e2b921aa8f067da83927c0/backports_strenum-1.3.1-py3-none-any.whl", hash = "sha256:cdcfe36dc897e2615dc793b7d3097f54d359918fc448754a517e6f23044ccf83", size = 8304, upload-time = "2023-12-09T14:36:39.905Z" },
-]
-
-[[package]]
 name = "certifi"
 version = "2026.6.17"
 source = { registry = "https://pypi.org/simple" }
@@ -184,7 +175,7 @@ wheels = [
 
 [[package]]
 name = "cliff"
-version = "4.14.0"
+version = "4.13.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "autopage" },
@@ -193,27 +184,25 @@ dependencies = [
     { name = "pyyaml" },
     { name = "stevedore" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c2/3b/f0314dfc0c24b2bce7c6e99ef51fd116babe804e02c8d575ed87a66ac412/cliff-4.14.0.tar.gz", hash = "sha256:66f2fbb0e18c348e44794014cfed92bf6522ef997e0c096df199dad195182f8a", size = 89670, upload-time = "2026-05-13T09:01:11.055Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/63/84/b88238422187543d4bbc71405e2dfc3b27327f4473da8e231d797ba38db3/cliff-4.13.3.tar.gz", hash = "sha256:5b77f5db16c963dceecd1600d4d74d889a1921e3f1ec0439bdebc91d7f1338dc", size = 89309, upload-time = "2026-04-08T09:10:52.032Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/35/42/72e0e60f60e4857374d2f950e4de7952cc4eea8c7b9e0419d2b662d0313c/cliff-4.14.0-py3-none-any.whl", hash = "sha256:2ca28f61cb7bf0b3b3f3061955b22e07f40a270a8837d1ce0f462f985bf7d77f", size = 86891, upload-time = "2026-05-13T09:01:09.564Z" },
+    { url = "https://files.pythonhosted.org/packages/a4/e5/c71eec2d29089238066171bfccc6569a8b7223a30513c5bc535904d1ff6b/cliff-4.13.3-py3-none-any.whl", hash = "sha256:b852bf9281212074a69a505b9cd4806b49812d4805ccd350a05e914be9f4c0da", size = 86556, upload-time = "2026-04-08T09:10:50.673Z" },
 ]
 
 [[package]]
 name = "cmd2"
-version = "3.5.1"
+version = "2.7.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "backports-strenum" },
     { name = "gnureadline", marker = "sys_platform == 'darwin'" },
     { name = "pyperclip" },
     { name = "pyreadline3", marker = "sys_platform == 'win32'" },
-    { name = "rich" },
     { name = "rich-argparse" },
-    { name = "typing-extensions" },
+    { name = "wcwidth" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/42/b0/a28751b91b81d4adf2cea305bd29a5465c3f7991b7e2ca1e96b4d9bfa40e/cmd2-3.5.1.tar.gz", hash = "sha256:1637f765e764b022dfa617f4711fb441599732082eb6310cf8739fbaec2335a0", size = 707325, upload-time = "2026-04-24T14:52:55.287Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/75/68/4bf43d284e41c01c6011146e5c2824aa6f17a3bb1ef10ba3dbbae5cf31dc/cmd2-2.7.0.tar.gz", hash = "sha256:81d8135b46210e1d03a5a810baf859069a62214788ceeec3588f44eed86fbeeb", size = 593131, upload-time = "2025-06-30T16:54:26.983Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/26/04/af57eb5fcb194c3cc476af904928e23ca51568232248b4932fb36c23b8a9/cmd2-3.5.1-py3-none-any.whl", hash = "sha256:321ebcfaea9dbbd8651c0bb10fdaf197f11b95f355d782d50eee9b5ef250f428", size = 147525, upload-time = "2026-04-24T14:52:53.426Z" },
+    { url = "https://files.pythonhosted.org/packages/4c/83/0f65933b7daa436912173f3d63232d158b60686318fccc7cf458ff15bfe8/cmd2-2.7.0-py3-none-any.whl", hash = "sha256:c85faf603e8cfeb4302206f49c0530a83d63386b0d90ff6a957f2c816eb767d7", size = 154309, upload-time = "2025-06-30T16:54:25.039Z" },
 ]
 
 [[package]]
@@ -596,35 +585,6 @@ wheels = [
 ]
 
 [[package]]
-name = "django-stubs"
-version = "6.0.7"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "django" },
-    { name = "django-stubs-ext" },
-    { name = "tomli" },
-    { name = "types-pyyaml" },
-    { name = "typing-extensions" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/8a/90/087c6e424e705e05182e543ef6b366a59eb5c92ab008b0dbbba55f357a40/django_stubs-6.0.7.tar.gz", hash = "sha256:bc55431c0af745a64e39cf33a8d36c87dccbedeae2fe26fab47dd355270e8538", size = 282293, upload-time = "2026-07-14T10:08:27.122Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/02/86/230ae6056221b543d63f7710d73967fe1c6840693540e99ea3c54f45859c/django_stubs-6.0.7-py3-none-any.whl", hash = "sha256:7ed9a14c438e589272ca04e966dee82a4d1ff7ca5c2171bc986c50a0d03ec35b", size = 547460, upload-time = "2026-07-14T10:08:25.626Z" },
-]
-
-[[package]]
-name = "django-stubs-ext"
-version = "6.0.7"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "django" },
-    { name = "typing-extensions" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/36/50/917f7224ea470e89cdcdc93d3dfe75b8391adf976cf12f2ecdb5f5d122be/django_stubs_ext-6.0.7.tar.gz", hash = "sha256:c3172c5126614fd2a44d0196b313b44c21f717cb09477ba52b447d41f4ce613e", size = 6665, upload-time = "2026-07-14T10:07:56.933Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/83/65/4d73fce956b5ebf26449259664360e539fbe95f0e86be396c28b636ba72a/django_stubs_ext-6.0.7-py3-none-any.whl", hash = "sha256:53a9c7c5a7c7e718cc6308cfce1e7470f2cac0b9d38dbcd60fbfa82704f1d592", size = 10362, upload-time = "2026-07-14T10:07:55.653Z" },
-]
-
-[[package]]
 name = "django-taggit"
 version = "6.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -655,20 +615,6 @@ wheels = [
 ]
 
 [[package]]
-name = "djangorestframework-stubs"
-version = "3.17.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "django-stubs" },
-    { name = "types-pyyaml" },
-    { name = "typing-extensions" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/9d/a1/45e25dab89b3dfc5da7a138f7e82aca4e970269c53a3fceed1e94b31d390/djangorestframework_stubs-3.17.0.tar.gz", hash = "sha256:74c0307cad304c03c15aee5955ec2fdeab0ac854b5bea569dc124892792e2b96", size = 33115, upload-time = "2026-05-13T18:58:36.554Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/72/ff/6e27d4aea12f67d14e0c0ec41869307ae98ad3816858ddc2a56bc3f4e0b5/djangorestframework_stubs-3.17.0-py3-none-any.whl", hash = "sha256:babe2703f0401507780848439f49f76222a178b4fc73a6dcb30d0952a0a6dbc6", size = 57629, upload-time = "2026-05-13T18:58:34.779Z" },
-]
-
-[[package]]
 name = "djangorestframework-xml"
 version = "2.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -691,16 +637,16 @@ wheels = [
 
 [[package]]
 name = "dogpile-cache"
-version = "1.5.0"
+version = "1.3.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "decorator" },
     { name = "stevedore" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e7/c8/301ff89746e76745b937606df4753c032787c59ecb37dd4d4250bddc8929/dogpile_cache-1.5.0.tar.gz", hash = "sha256:849c5573c9a38f155cd4173103c702b637ede0361c12e864876877d0cd125eec", size = 947962, upload-time = "2025-10-11T17:35:36.898Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/cb/b7/2fa37f52b4f38bc8eb6d4923163dd822ca6f9e2f817378478a5de73b239e/dogpile_cache-1.3.4.tar.gz", hash = "sha256:4f0295575f5fdd3f7e13c84ba8e36656971d1869a2081b4737ec99ede378a8c0", size = 933234, upload-time = "2025-01-28T14:24:55.502Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/dc/80/12235e5b75bb2c586733280854f131b86051e0bbdfb55349ff70d0f72cf9/dogpile_cache-1.5.0-py3-none-any.whl", hash = "sha256:dc7b47d37844db15e8fdc0243c1b58857a2ddc52a5118237a97127bac200e18d", size = 64447, upload-time = "2025-10-11T17:35:38.573Z" },
+    { url = "https://files.pythonhosted.org/packages/3c/82/d118accb66f9048acbc4ff91592755c24d52f54cce40d6b0b2a0ce351cf5/dogpile.cache-1.3.4-py3-none-any.whl", hash = "sha256:a393412f93d24a8942fdf9248dc80678127d54c5e60a7be404027aa193cafe12", size = 62859, upload-time = "2025-01-28T14:24:57.109Z" },
 ]
 
 [[package]]
@@ -1199,12 +1145,9 @@ sdist = { url = "https://files.pythonhosted.org/packages/a3/fb/bcf568236ade99903
 
 [[package]]
 name = "mysqlclient"
-version = "2.2.8"
+version = "2.0.3"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/eb/b0/9df076488cb2e536d40ce6dbd4273c1f20a386e31ffe6e7cb613902b3c2a/mysqlclient-2.2.8.tar.gz", hash = "sha256:8ed20c5615a915da451bb308c7d0306648a4fd9a2809ba95c992690006306199", size = 92287, upload-time = "2026-02-10T10:58:37.405Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/60/d0/22b896a2f8f797ee3517a0c1c1fe576cd38768cd25e2a7362a7277725ed4/mysqlclient-2.2.8-cp310-cp310-win_amd64.whl", hash = "sha256:86db31bba7b3480fec2751350e9790e24f016f89af33a87bab7e79f7196474e8", size = 206873, upload-time = "2026-02-10T10:58:40.996Z" },
-]
+sdist = { url = "https://files.pythonhosted.org/packages/3c/df/59cd2fa5e48d0804d213bdcb1acb4d08c403b61c7ff7ed4dd4a6a2deb3f7/mysqlclient-2.0.3.tar.gz", hash = "sha256:f6ebea7c008f155baeefe16c56cd3ee6239f7a5a9ae42396c2f1860f08a7c432", size = 88886, upload-time = "2021-01-01T13:11:39.006Z" }
 
 [[package]]
 name = "netaddr"
@@ -1795,7 +1738,7 @@ wheels = [
 
 [[package]]
 name = "python-ironicclient"
-version = "6.1.0"
+version = "5.13.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "cliff" },
@@ -1811,9 +1754,9 @@ dependencies = [
     { name = "requests" },
     { name = "stevedore" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/55/97/8297507baea80115f2123c25bb516acc300b2c703a4e69adf8961940f911/python_ironicclient-6.1.0.tar.gz", hash = "sha256:10bdbce434311a24188f36b5e29a6f6ab1cdae2155de23081ff4089c8e11872e", size = 237687, upload-time = "2026-05-18T08:40:44.964Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/10/a3/16315f1ba8b233a0ec45d2479fd677cc005efa687365900010b09f7e32a1/python_ironicclient-5.13.0.tar.gz", hash = "sha256:ad422a52969875fc8b7adce67d3cdbb42e370261c766c34496c84c98d585e288", size = 225872, upload-time = "2025-09-01T13:39:35.932Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/6e/07/88c4aef1478cfa24e48f831520e534b94ad7f1a0877d63e3f55c0c81aa5b/python_ironicclient-6.1.0-py3-none-any.whl", hash = "sha256:5f31ed9fb70b667b496e2eb89cdffc7bd6ec8869176b179e238273cb725f3c40", size = 259382, upload-time = "2026-05-18T08:40:43.035Z" },
+    { url = "https://files.pythonhosted.org/packages/6e/9b/5f7fb3fd1e8d8eb0f281a3926778c82259ddd28c806964f1c7d30c9b3252/python_ironicclient-5.13.0-py3-none-any.whl", hash = "sha256:72c0ef3fe75e4468fc753f9a7d094603a2e972bc13db21d854d10b9d16875e84", size = 246811, upload-time = "2025-09-01T13:39:34.601Z" },
 ]
 
 [[package]]
@@ -1926,6 +1869,7 @@ version = "3"
 source = { editable = "." }
 dependencies = [
     { name = "babel" },
+    { name = "cmd2" },
     { name = "debtcollector" },
     { name = "django" },
     { name = "django-auth-ldap" },
@@ -1943,8 +1887,8 @@ dependencies = [
     { name = "django-taggit" },
     { name = "django-threadlocals" },
     { name = "djangorestframework" },
-    { name = "djangorestframework-stubs" },
     { name = "djangorestframework-xml" },
+    { name = "dogpile-cache" },
     { name = "drf-nested-routers" },
     { name = "factory-boy" },
     { name = "faker" },
@@ -2029,6 +1973,7 @@ test = [
 [package.metadata]
 requires-dist = [
     { name = "babel", specifier = "==2.11.0" },
+    { name = "cmd2", specifier = "==2.7.0" },
     { name = "debtcollector", specifier = "==1.3.0" },
     { name = "django", specifier = "~=4.2.0" },
     { name = "django-auth-ldap", specifier = "~=2.0" },
@@ -2046,8 +1991,8 @@ requires-dist = [
     { name = "django-taggit" },
     { name = "django-threadlocals", specifier = "==0.8" },
     { name = "djangorestframework", specifier = "==3.15.0" },
-    { name = "djangorestframework-stubs", specifier = ">=3.17.0" },
     { name = "djangorestframework-xml", specifier = "==2.0.0" },
+    { name = "dogpile-cache", specifier = "==1.3.4" },
     { name = "drf-nested-routers", specifier = "==0.92.5" },
     { name = "factory-boy", specifier = "==3.2.1" },
     { name = "faker", specifier = "==0.9.0" },
@@ -2058,7 +2003,7 @@ requires-dist = [
     { name = "markdown", specifier = "==3.2.1" },
     { name = "monotonic", specifier = "==0.6" },
     { name = "msgpack-python", specifier = "==0.4.7" },
-    { name = "mysqlclient", specifier = ">=2.2.8" },
+    { name = "mysqlclient", specifier = "~=2.0.1" },
     { name = "netaddr", specifier = "==0.10.1" },
     { name = "netifaces" },
     { name = "odfpy", specifier = ">=1.4.1" },
@@ -2076,7 +2021,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.13.4" },
     { name = "pyhermes", specifier = "~=0.6.0" },
     { name = "python-dateutil", specifier = "==2.9.0" },
-    { name = "python-ironicclient" },
+    { name = "python-ironicclient", specifier = "==5.13.0" },
     { name = "python-keystoneclient" },
     { name = "python-novaclient", specifier = "==3.2.0" },
     { name = "pytz", specifier = "==2025.1" },
@@ -2593,15 +2538,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/37/78/fda3361b56efc27944f24225f6ecd13d96d6fcfe37bd0eb34e2f4c63f9fc/typer-0.27.0.tar.gz", hash = "sha256:629bd12ea5d13a17148125d9a264f949eb171fb3f120f9b04d85873cab054fa5", size = 203430, upload-time = "2026-07-15T19:21:07.007Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/40/03/26a383c9e58c213199d1aad1c3d353cfc22d4444ec6d2c0bf8ad02523843/typer-0.27.0-py3-none-any.whl", hash = "sha256:6f4b27631e47f077871b7dc30e933ec0131c1390fbe0e387ea5574b5bac9ccf1", size = 122716, upload-time = "2026-07-15T19:21:05.553Z" },
-]
-
-[[package]]
-name = "types-pyyaml"
-version = "6.0.12.20260518"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/b8/83/4a1afc3fbfcf5b8d46fc390cd95ed6b0dc9010a265f4e9f46314efffa37a/types_pyyaml-6.0.12.20260518.tar.gz", hash = "sha256:d917f83fb38462550338c1297faedd860b3ec83912b96b1e3d73255f7473e466", size = 17850, upload-time = "2026-05-18T06:01:58.675Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/06/a2/c01db32be2ae7d6a1689972f3c492b149ee4e164b12fdfd9f64b50888215/types_pyyaml-6.0.12.20260518-py3-none-any.whl", hash = "sha256:d2150f75a231c9fe9c7463bd29487d93e60bac90400287351384bc2284eba7cd", size = 20312, upload-time = "2026-05-18T06:01:57.368Z" },
 ]
 
 [[package]]
