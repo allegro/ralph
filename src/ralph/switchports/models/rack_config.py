@@ -17,7 +17,7 @@ class RackConfiguration(AdminAbsoluteUrlMixin, models.Model):
     rack = models.OneToOneField(
         "data_center.Rack", on_delete=models.CASCADE, related_name="rack_configuration"
     )
-    description = models.TextField(blank=True)
+    description = models.TextField(blank=True, max_length=1024)
 
     def __str__(self):
         return f"{self.rack} configuration"
