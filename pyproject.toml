@@ -68,7 +68,7 @@ dependencies = [
   "keystoneauth1",
   "monotonic==0.6",
   "msgpack-python==0.4.7",
-  "mysqlclient~=2.0.1",
+  "mysqlclient>=2.2.8",
   "netaddr==0.10.1",
   "netifaces",
   "odfpy>=1.4.1",
@@ -102,7 +102,7 @@ dependencies = [
   "stevedore",
   "tblib>=3.1.0",
   "typing==3.6.6",
-  "wrapt==1.10.6"
+  "wrapt==1.10.6",
 ]
 dynamic = [
   "authors",

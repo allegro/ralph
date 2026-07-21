@@ -34,7 +34,7 @@ services:
 
   db:
     platform: linux/amd64
-    image: mysql:5.7
+    image: mysql:8.4
     environment:
       MYSQL_DATABASE: ralph_ng
       MYSQL_ROOT_PASSWORD: ralph_ng
