@@ -253,7 +253,7 @@ pbr==7.0.3
     #   python-ironicclient
     #   python-keystoneclient
     #   python-novaclient
-pillow==12.3.0
+pillow==12.0.0
     # via ralph (pyproject.toml)
 platformdirs==4.10.1
     # via python-ironicclient

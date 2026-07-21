@@ -316,7 +316,7 @@ pbr==7.0.3
     #   python-novaclient
 pexpect==4.9.0
     # via ipython
-pillow==12.3.0
+pillow==12.0.0
     # via ralph (pyproject.toml)
 platformdirs==4.10.1
     # via python-ironicclient
