@@ -52,7 +52,7 @@ class RackSwitchConfigurationFactory(DjangoModelFactory):
 
     rack_configuration = SubFactory(RackConfigurationFactory)
     switch = SubFactory(DataCenterAssetFactory)
-    label = 'eth1'
+    label = "eth1"
     backend_validation = False
 
 

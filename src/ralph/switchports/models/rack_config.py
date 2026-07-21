@@ -35,6 +35,7 @@ class RackSwitchConfiguration(AdminAbsoluteUrlMixin, models.Model):
         null=False,
         help_text="Switch role e.g. eth1, eth2, mgmt",
         db_index=True,
+        max_length=255,
     )
     backend_validation = models.BooleanField(
         default=True,

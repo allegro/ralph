@@ -21,7 +21,7 @@ class AddressReservation(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
 
 
 class Port(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
-    label = models.CharField(max_length=255)
+    label = models.CharField(blank=False, null=False, max_length=255, db_index=True)
     data_center_asset = models.ForeignKey(
         DataCenterAsset,
         on_delete=models.CASCADE,

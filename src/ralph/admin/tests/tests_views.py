@@ -132,6 +132,7 @@ EXCLUDE_MODELS = [
     "ralph.lib.custom_fields.models.CustomField",
     "ralph.lib.transitions.models.TransitionModel",
     "ralph.networks.models.networks.DiscoveryQueue",
+    "ralph.switchports.models.rack_config.RackSwitchConfigurationOverride",
     "ralph.switchports.models.validation.SwitchportRefreshJob",
     "ralph.tests.models.Bar",
     "ralph.tests.models.Car",
