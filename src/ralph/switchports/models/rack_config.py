@@ -30,11 +30,12 @@ class RackSwitchConfiguration(AdminAbsoluteUrlMixin, models.Model):
     switch = models.ForeignKey(
         DataCenterAsset, on_delete=models.CASCADE, related_name="rack_switches"
     )
-    label = models.TextField(
+    label = models.CharField(
         blank=False,
         null=False,
         help_text="Switch role e.g. eth1, eth2, mgmt",
         max_length=255,
+        db_index=True,
     )
     backend_validation = models.BooleanField(
         default=True,
