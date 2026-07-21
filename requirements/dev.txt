@@ -278,7 +278,7 @@ msgpack==1.1.1
     # via oslo-serialization
 msgpack-python==0.4.7
     # via ralph (pyproject.toml)
-mysqlclient==2.0.3
+mysqlclient==2.2.8
     # via ralph (pyproject.toml)
 netaddr==0.10.1
     # via
