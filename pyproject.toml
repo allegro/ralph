@@ -23,7 +23,7 @@ docs = [
   "mkdocs_bootstrap"
 ]
 prod = [
-  "gunicorn"
+  "gunicorn==23.0.0"
 ]
 test = [
   "coverage",
@@ -46,7 +46,7 @@ dependencies = [
   "django-cryptography-django5",
   "django-extensions==3.1.5",
   "django-filter==25.1",
-  "django-import-export~=4.0",
+  "django-import-export==4.0.2",
   "django-money==3.4.1",
   "django-mptt==0.14",
   "django-prometheus==2.2.0",
@@ -63,7 +63,7 @@ dependencies = [
   "drf-nested-routers==0.92.5",
   "factory-boy==3.2.1",
   "funcsigs==0.4",
-  "hiredis>=3.1.0",
+  "hiredis==3.2.1",
   "iso8601==0.1.11",
   "keystoneauth1",
   "monotonic==0.6",
@@ -78,16 +78,16 @@ dependencies = [
   "oslo.i18n==6.5.1",
   "oslo.serialization==5.7.0",
   "oslo.utils==8.2.0",
-  "pbr",
-  "pillow==12.0.0",
+  "pbr==6.1.1",
+  "pillow==11.3.0",
   "positional==1.0.1",
   "prettytable==0.7.2",
   "psycopg[binary,pool]>=3.2.10",
   "pydantic>=2.13.4",
   "pyhermes~=0.6.0",
   "python-dateutil==2.9.0",
-  "python-ironicclient==5.13.0",
-  "python-keystoneclient",
+  "python-ironicclient==5.12.0",
+  "python-keystoneclient==5.6.0",
   "python-novaclient==3.2.0",
   "pytz==2025.1",
   "raven",

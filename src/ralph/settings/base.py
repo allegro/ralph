@@ -450,6 +450,10 @@ RALPH_INTERNAL_SERVICES = {
         "queue_name": "ralph_async_transitions",
         "method": "ralph.lib.transitions.async.run_async_transition",
     },
+    "SWITCHPORTS_REFRESH": {
+        "queue_name": "ralph_switchports",
+        "method": "ralph.switchports.sync.tasks.run_rack_refresh",
+    },
 }
 
 # Switchport netmaker refresh tuning. MAX_PARALLEL bounds simultaneous backend

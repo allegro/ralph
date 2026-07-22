@@ -31,7 +31,7 @@ babel==2.11.0
     #   py-moneyed
     #   python-novaclient
     #   sphinx
-certifi==2026.6.17
+certifi==2026.7.22
     # via requests
 cffi==2.1.0
     # via cryptography
@@ -117,7 +117,7 @@ django-extensions==3.1.5
     # via ralph (pyproject.toml)
 django-filter==25.1
     # via ralph (pyproject.toml)
-django-import-export==4.4.1
+django-import-export==4.0.2
     # via ralph (pyproject.toml)
 django-js-asset==4.0.1
     # via django-mptt
@@ -176,7 +176,7 @@ gnureadline==8.3.3
     # via cmd2
 gprof2dot==2025.4.14
     # via django-silk
-hiredis==3.4.0
+hiredis==3.2.1
     # via ralph (pyproject.toml)
 idna==3.18
     # via requests
@@ -300,7 +300,7 @@ packaging==26.2
     #   sphinx
 parso==0.8.7
     # via jedi
-pbr==7.0.3
+pbr==6.1.1
     # via
     #   ralph (pyproject.toml)
     #   debtcollector
@@ -316,9 +316,9 @@ pbr==7.0.3
     #   python-novaclient
 pexpect==4.9.0
     # via ipython
-pillow==12.0.0
+pillow==11.3.0
     # via ralph (pyproject.toml)
-platformdirs==4.10.1
+platformdirs==4.11.0
     # via python-ironicclient
 polars==1.43.0
     # via ralph (pyproject.toml:dev)
@@ -381,9 +381,9 @@ python-dateutil==2.9.0
     # via
     #   ralph (pyproject.toml)
     #   faker
-python-ironicclient==5.13.0
+python-ironicclient==5.12.0
     # via ralph (pyproject.toml)
-python-keystoneclient==5.8.0
+python-keystoneclient==5.6.0
     # via ralph (pyproject.toml)
 python-ldap==3.4.7
     # via django-auth-ldap
@@ -512,7 +512,7 @@ stevedore==5.8.0
     #   oslo-config
     #   python-ironicclient
     #   python-keystoneclient
-tablib==3.9.0
+tablib==3.5.0
     # via django-import-export
 tblib==3.2.2
     # via ralph (pyproject.toml)
