@@ -88,6 +88,7 @@ dependencies = [
   "python-dateutil==2.9.0",
   "python-ironicclient==5.12.0",
   "python-keystoneclient==5.6.0",
+  "python-ldap==3.4.4",
   "python-novaclient==3.2.0",
   "pytz==2025.1",
   "raven",
