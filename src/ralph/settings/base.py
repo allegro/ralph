@@ -467,6 +467,8 @@ SWITCHPORT_REFRESH_LOCK_TIMEOUT = int(
 SWITCHPORT_REFRESH_LOCK_BLOCKING_TIMEOUT = int(
     os.environ.get("SWITCHPORT_REFRESH_LOCK_BLOCKING_TIMEOUT", 120)
 )
+NETMAKER_HOST = os.getenv("NETMAKER_HOST")
+NETMAKER_TOKEN = os.getenv("NETMAKER_TOKEN")
 
 # =============================================================================
 # DC view

@@ -39,6 +39,8 @@ def _attach_port_metrics(data, vr):
     data["admin_symbol"] = status_symbol(vr.admin_status)
     data["speed"] = vr.speed
     data["speed_display"] = format_speed(vr.speed)
+    data["remote_id"] = vr.raw_data.get("remote_id")
+    data["desc"] = vr.raw_data.get("desc")
     if vr.raw_data:
         data["raw_json"] = json.dumps(
             vr.raw_data, indent=2, ensure_ascii=False, sort_keys=True

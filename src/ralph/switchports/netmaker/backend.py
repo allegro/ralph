@@ -1,15 +1,13 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timedelta
+import os
 from typing import Any
 
 import requests
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 
-from oauthlib.oauth2 import BackendApplicationClient
-from oauthlib.oauth2.rfc6749.errors import CustomOAuth2Error
-from requests_oauthlib import OAuth2Session
 
 from ralph.data_center.models import DataCenterAsset
 from ralph.switchports.netmaker.dto import SwitchDTO, RefreshStatus
@@ -22,39 +20,23 @@ class JobId(str):
 
 
 class OauthTokenAuthMixin:
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._token_expiration = None
-        self._token = None
+    def _auth(self) -> dict:
+        return {"Authorization": f"Bearer {self._get_token()}"}
 
     def _get_token(self):
-        if (
-            self._token_expiration is None
-            or datetime.now() > self._token_expiration
-            or self._token is None
-        ):
-            return self._fetch_oauth_token()
-        else:
-            return self._token
+        if token := os.environ.get("OAUTH_TOKEN"):
+            return token
+        raise ImproperlyConfigured("OAUTH_TOKEN env is not set")
 
-    def _fetch_oauth_token(self):
-        client_id = settings.OAUTH_CLIENT_ID
-        secret = settings.OAUTH_SECRET
-        token_url = settings.OAUTH_TOKEN_URL
-        client = BackendApplicationClient(client_id=client_id)
-        oauth = OAuth2Session(client=client)
-        try:
-            token = oauth.fetch_token(
-                token_url=token_url, client_id=client_id, client_secret=secret
-            )
-        except CustomOAuth2Error as e:
-            logger.error(str(e))
-            return None
 
-        expire_in = token.get("expires_in")
-        self._token_expiration = datetime.now() + timedelta(0, expire_in - 60)
-        self._token = token.get("access_token")
-        return self._token
+class StaticTokenMixin:
+    def _auth(self) -> dict:
+        return {"Authorization": f"Token {self._get_token()}"}
+
+    def _get_token(self) -> str:
+        if token := settings.NETMAKER_TOKEN:
+            return token
+        raise ImproperlyConfigured("NETMAKER_TOKEN env is not set")
 
 
 class SwitchportSyncBackend:
@@ -65,7 +47,7 @@ class SwitchportSyncBackend:
         raise NotImplementedError
 
 
-class NetmakerSwitchportBackend(SwitchportSyncBackend, OauthTokenAuthMixin):
+class NetmakerSwitchportBackendBase(SwitchportSyncBackend):
     def __init__(self, *args, **kwargs):
         self.host = settings.NETMAKER_HOST
         super().__init__(*args, **kwargs)
@@ -78,9 +60,6 @@ class NetmakerSwitchportBackend(SwitchportSyncBackend, OauthTokenAuthMixin):
 
     def _switch_refresh_url(self, hostname: str) -> str:
         return f"{self.host}/api/switchApp/switch/{hostname}/refresh"
-
-    def _auth(self) -> dict:
-        return {"Authorization": f"Bearer {self._get_token()}"}
 
     def get_switches(self) -> list[str]:
         response = requests.get(self._switches_url(), headers=self._auth())
@@ -124,3 +103,13 @@ class NetmakerSwitchportBackend(SwitchportSyncBackend, OauthTokenAuthMixin):
             )
 
         return response_dict
+
+
+class NetmakerSwitchportBackend(NetmakerSwitchportBackendBase, StaticTokenMixin):
+    pass
+
+
+class NetmakerSwitchportBackendOauth(
+    NetmakerSwitchportBackendBase, OauthTokenAuthMixin
+):
+    pass

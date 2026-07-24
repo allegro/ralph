@@ -15,6 +15,8 @@
             <th class="col-remote-asset">{% trans "Remote asset" %}</th>
             <th class="col-remote-port">{% trans "Remote port" %}</th>
             <th class="col-validation">{% trans "netmaker" %}</th>
+            <th class="col-validation">{% trans "netmaker MAC" %}</th>
+            <th class="col-validation">{% trans "netmaker desc" %}</th>
         </tr>
     </thead>
     <tbody>
@@ -23,7 +25,7 @@
             <td class="col-port-label">{{ entry.port.label }}</td>
             <td class="col-remote-asset">
                 {% if entry.remote_asset %}
-                    <a href="{{ entry.remote_asset.get_absolute_url }}">{{ entry.remote_asset.barcode|default:entry.remote_asset.hostname }}</a>
+                    <a href="{{ entry.remote_asset.get_absolute_url }}">{{ entry.remote_asset }}</a>
                 {% else %}
                     -
                 {% endif %}
@@ -42,6 +44,20 @@
                 <span class="validation-nodata">-</span>
                 {% endif %}
             </td>
+          <td class="col-validation">
+            {% if entry.validation %}
+              {{ entry.validation.remote_id }}
+            {% else %}
+              <span class="validation-nodata">-</span>
+            {% endif %}
+          </td>
+          <td class="col-validation">
+            {% if entry.validation %}
+              {{ entry.validation.desc }}
+            {% else %}
+              <span class="validation-nodata">-</span>
+            {% endif %}
+          </td>
         </tr>
         {% endfor %}
     </tbody>
