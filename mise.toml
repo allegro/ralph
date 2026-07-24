@@ -100,7 +100,7 @@ description = "Run local server"
 
 [tasks.worker]
 depends = ["db"]
-env = { OBJC_DISABLE_INITIALIZE_FORK_SAFETY = "YES" }
+env = { OBJC_DISABLE_INITIALIZE_FORK_SAFETY = "YES" }  # necessary for Mac OS
 run = "uv run ralph rqworker --worker-class=ralph.lib.external_services.worker.RalphSimpleWorker ralph_async_transitions ralph_switchports"
 description = "Run the RQ worker"
 
