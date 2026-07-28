@@ -90,7 +90,6 @@ class SwitchOverrideTestCase(TestCase):
         switch_configs = list(grid.get_switch_configs(self.rack_config))
         # a validation result on the default switch
         BackendValidationResult.objects.create(
-            rack_configuration=self.rack_config,
             switch=self.switch_eth1,
             port_label="0/0/5",
             status=ValidationStatus.ASSET_FOUND,

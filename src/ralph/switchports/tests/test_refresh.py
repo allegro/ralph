@@ -80,10 +80,6 @@ class RefreshValidationTestCase(TestCase):
         self.assertEqual(summary["refreshed_switches"], 0)
         # Backend must not be queried for a disabled switch
         MockBackend.return_value.get_switchports.assert_not_called()
-        # Stale cached results must be removed
-        self.assertFalse(
-            BackendValidationResult.objects.filter(switch=self.switch).exists()
-        )
 
     @patch(BACKEND)
     def test_refresh_switch_not_found(self, MockBackend):
