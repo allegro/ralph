@@ -6,9 +6,9 @@ renders the result. Each function owns one lookup, and the per-cell edge cases
 (override switch, SWITCH_NOT_FOUND sentinel, PORT_NOT_FOUND fallback, display
 label stripping) are assembled in ``build_grid_rows``.
 """
+
 from typing import Iterable
 
-from openstack.baremetal.v1.node import ValidationResult
 
 from ralph.data_center.models import DataCenterAsset
 from ralph.switchports.constants import (
@@ -39,7 +39,9 @@ def get_rack_assets(rack) -> Iterable[DataCenterAsset]:
     )
 
 
-def get_switch_configs(rack_configuration: RackConfiguration) -> Iterable[RackSwitchConfiguration]:
+def get_switch_configs(
+    rack_configuration: RackConfiguration,
+) -> Iterable[RackSwitchConfiguration]:
     """All RackSwitchConfigurations (columns) for this rack, ordered by label."""
     return rack_configuration.switches.select_related("switch").order_by("label")
 
@@ -168,7 +170,9 @@ def _cell_validation(
             "css_class": "validation-error",
             "label": "SWITCH N/F",
         }
-    vr: BackendValidationResult | None = validation_map.get((effective_switch_obj.id, switch_port_label))
+    vr: BackendValidationResult | None = validation_map.get(
+        (effective_switch_obj.id, switch_port_label)
+    )
     if vr is not None:
         return build_validation_context(vr, expected_asset_id=asset_id)
     if has_validation:
@@ -246,11 +250,10 @@ def build_grid_rows(
     return rows
 
 
-def _propose_port(
-    asset: DataCenterAsset,
-    switch: DataCenterAsset
-) -> str | None:
-    port_proposals = BackendValidationResult.objects.filter(switch=switch, remote_asset=asset)
+def _propose_port(asset: DataCenterAsset, switch: DataCenterAsset) -> str | None:
+    port_proposals = BackendValidationResult.objects.filter(
+        switch=switch, remote_asset=asset
+    )
     if port_proposals:
         return " ".join([p.port_label for p in port_proposals])
     return None

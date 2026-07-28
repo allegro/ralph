@@ -126,16 +126,20 @@ def rebuild_validation_for_switch(
         summary["ports_processed"] += len(results_to_create)
 
 
-def _backend_validation_results_to_create(switch: DataCenterAsset, switch_dto: SwitchDTO) -> list[BackendValidationResult]:
+def _backend_validation_results_to_create(
+    switch: DataCenterAsset, switch_dto: SwitchDTO
+) -> list[BackendValidationResult]:
     results_to_create = []
     for interface in switch_dto.ports:
         port_label = interface.name
         remote = RemoteAsset.from_interface_dto(interface)
         asset_from_name, asset_from_desc, asset_from_mac = extract_asset(remote)
 
-        if (is_consistent := cross_validate(
-            asset_from_name, asset_from_desc, asset_from_mac
-        )) is not None:
+        if (
+            is_consistent := cross_validate(
+                asset_from_name, asset_from_desc, asset_from_mac
+            )
+        ) is not None:
             if not is_consistent:
                 resolved_asset = asset_from_name or asset_from_desc or asset_from_mac
                 status = ValidationStatus.ASSET_CONFLICT

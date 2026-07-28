@@ -103,18 +103,20 @@ class RackSwitchportGridView(RalphDetailView):
             last_refresh_dict = {}
             for switch in switches:
                 last_result = (
-                    BackendValidationResult.objects.filter(
-                        switch=switch
-                    )
+                    BackendValidationResult.objects.filter(switch=switch)
                     .order_by("-modified")
                     .first()
                 )
                 if last_result:
-                    last_refresh_dict[switch.barcode] = last_result.modified.strftime('%d/%m/%y %H:%M')
+                    last_refresh_dict[switch.barcode] = last_result.modified.strftime(
+                        "%d/%m/%y %H:%M"
+                    )
                 else:
                     last_refresh_dict[switch.barcode] = _("Never")
             if last_refresh_dict:
-                last_refresh = ", ".join({f"{k} => {v}" for k,v in last_refresh_dict.items()})
+                last_refresh = ", ".join(
+                    {f"{k} => {v}" for k, v in last_refresh_dict.items()}
+                )
 
         context["switch_configs"] = switch_configs
         context["switch_status"] = switch_status

@@ -74,9 +74,7 @@ def _refresh_single_switch(switch, in_thread=True):
         backend.refresh_switch(switch.hostname)
 
         # 2. Pull the fresh ports into Ralph
-        rebuild_validation_for_switch(
-            backend, switch, per_switch_summary
-        )
+        rebuild_validation_for_switch(backend, switch, per_switch_summary)
         if per_switch_summary["switch_not_found"]:
             entry["status"] = "switch_not_found"
         else:
@@ -133,17 +131,11 @@ def run_rack_refresh(rack_configuration_id, refresh_job_id):
             # visibility issues; used when the backend must not be hit in
             # parallel at all.
             for switch in switches:
-                entries.append(
-                    _refresh_single_switch(
-                        switch, in_thread=False
-                    )
-                )
+                entries.append(_refresh_single_switch(switch, in_thread=False))
         else:
             with ThreadPoolExecutor(max_workers=max_parallel) as executor:
                 futures = [
-                    executor.submit(
-                        _refresh_single_switch, switch
-                    )
+                    executor.submit(_refresh_single_switch, switch)
                     for switch in switches
                 ]
                 for future in as_completed(futures):

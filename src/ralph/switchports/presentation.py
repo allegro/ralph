@@ -7,7 +7,6 @@ expandable raw JSON) in exactly the same way.
 
 import json
 
-from openstack.baremetal.v1.node import ValidationResult
 
 from ralph.switchports.models import ValidationStatus, BackendValidationResult
 
@@ -50,7 +49,9 @@ def _attach_port_metrics(data: dict, vr: BackendValidationResult):
     return data
 
 
-def build_validation_context(vr: BackendValidationResult, expected_asset_id=None) -> dict:
+def build_validation_context(
+    vr: BackendValidationResult, expected_asset_id=None
+) -> dict:
     """Build the template context dict for a single BackendValidationResult.
 
     ``expected_asset_id`` is the id of the asset we expect netmaker to report on

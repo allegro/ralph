@@ -73,14 +73,10 @@ class RunRackRefreshTaskTestCase(TestCase):
         # backend refresh triggered per switch, ports pulled into Ralph
         self.assertEqual(backend.refresh_switch.call_count, 2)
         self.assertTrue(
-            BackendValidationResult.objects.filter(
-                switch=self.switch_a
-            ).exists()
+            BackendValidationResult.objects.filter(switch=self.switch_a).exists()
         )
         self.assertTrue(
-            BackendValidationResult.objects.filter(
-                switch=self.switch_b
-            ).exists()
+            BackendValidationResult.objects.filter(switch=self.switch_b).exists()
         )
 
     @patch("ralph.switchports.sync.tasks.django_rq.get_connection")
