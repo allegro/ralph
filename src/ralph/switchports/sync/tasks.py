@@ -33,7 +33,7 @@ from ralph.switchports.sync.switches import iter_rack_switches
 logger = logging.getLogger(__name__)
 
 
-def _refresh_single_switch(rack_configuration_id, switch, in_thread=True):
+def _refresh_single_switch(switch, in_thread=True):
     """Refresh one switch: backend refresh (locked) + pull ports into Ralph.
 
     When ``in_thread`` is True this runs in a worker thread and manages its own
@@ -69,16 +69,13 @@ def _refresh_single_switch(rack_configuration_id, switch, in_thread=True):
             entry["error"] = "another refresh for this switch is already running"
             return entry
 
-        # Rack configuration must be reloaded inside this thread's DB connection.
-        rack_configuration = RackConfiguration.objects.get(pk=rack_configuration_id)
-
         # 1. Trigger the backend (netmaker) refresh. switchApp does this
         #    synchronously, so this blocks until backend data is fresh.
         backend.refresh_switch(switch.hostname)
 
-        # 2. Pull the fresh ports into Ralph, bypassing the stale file cache.
+        # 2. Pull the fresh ports into Ralph
         rebuild_validation_for_switch(
-            backend, rack_configuration, switch, per_switch_summary
+            backend, switch, per_switch_summary
         )
         if per_switch_summary["switch_not_found"]:
             entry["status"] = "switch_not_found"
@@ -88,7 +85,7 @@ def _refresh_single_switch(rack_configuration_id, switch, in_thread=True):
     except Exception as e:  # noqa
         logger.exception("Failed to refresh switch %s", switch.hostname)
         entry["status"] = "error"
-        entry["error"] = str(e)
+        entry["error"] = f"Failed to refresh switch {str(switch)}"
     finally:
         if acquired:
             try:
@@ -138,14 +135,14 @@ def run_rack_refresh(rack_configuration_id, refresh_job_id):
             for switch in switches:
                 entries.append(
                     _refresh_single_switch(
-                        rack_configuration_id, switch, in_thread=False
+                        switch, in_thread=False
                     )
                 )
         else:
             with ThreadPoolExecutor(max_workers=max_parallel) as executor:
                 futures = [
                     executor.submit(
-                        _refresh_single_switch, rack_configuration_id, switch
+                        _refresh_single_switch, switch
                     )
                     for switch in switches
                 ]

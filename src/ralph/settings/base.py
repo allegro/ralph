@@ -457,7 +457,7 @@ RALPH_INTERNAL_SERVICES = {
 }
 
 # Switchport netmaker refresh tuning. MAX_PARALLEL bounds simultaneous backend
-# refreshes so the lock-less switchApp/Ansible backend is not overloaded.
+# refreshes so the lock-less switchApp backend is not overloaded.
 SWITCHPORT_REFRESH_MAX_PARALLEL = int(
     os.environ.get("SWITCHPORT_REFRESH_MAX_PARALLEL", 4)
 )

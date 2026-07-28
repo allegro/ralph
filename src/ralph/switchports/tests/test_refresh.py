@@ -48,7 +48,6 @@ class RefreshValidationTestCase(TestCase):
 
         # Port 0/0/10 should find server1
         result = BackendValidationResult.objects.get(
-            rack_configuration=self.rack_config,
             switch=self.switch,
             port_label="0/0/10",
         )
@@ -58,7 +57,6 @@ class RefreshValidationTestCase(TestCase):
 
         # Port 0/0/11 has no remote - PORT_NOT_FOUND
         result_empty = BackendValidationResult.objects.get(
-            rack_configuration=self.rack_config,
             switch=self.switch,
             port_label="0/0/11",
         )
@@ -68,7 +66,6 @@ class RefreshValidationTestCase(TestCase):
     def test_refresh_skips_switch_with_backend_validation_disabled(self, MockBackend):
         # Stale result that should be cleaned up once validation is disabled
         BackendValidationResult.objects.create(
-            rack_configuration=self.rack_config,
             switch=self.switch,
             port_label="0/0/10",
             status=ValidationStatus.ASSET_FOUND,
@@ -96,7 +93,6 @@ class RefreshValidationTestCase(TestCase):
 
         self.assertEqual(summary["switch_not_found"], 1)
         result = BackendValidationResult.objects.get(
-            rack_configuration=self.rack_config,
             switch=self.switch,
             port_label="__switch__",
         )
@@ -106,7 +102,6 @@ class RefreshValidationTestCase(TestCase):
     def test_refresh_replaces_old_results(self, MockBackend):
         # Create old result
         BackendValidationResult.objects.create(
-            rack_configuration=self.rack_config,
             switch=self.switch,
             port_label="0/0/99",
             status=ValidationStatus.ASSET_FOUND,

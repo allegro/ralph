@@ -24,15 +24,10 @@ class BackendValidationResult(TimeStampMixin, models.Model):
     of a given switch port.
     """
 
-    rack_configuration = models.ForeignKey(
-        "RackConfiguration",
-        on_delete=models.CASCADE,
-        related_name="validation_results",
-    )
     switch = models.ForeignKey(
         DataCenterAsset,
         on_delete=models.CASCADE,
-        related_name="+",
+        related_name="validation_results",
     )
     port_label = models.CharField(
         max_length=255,
@@ -80,7 +75,7 @@ class BackendValidationResult(TimeStampMixin, models.Model):
     )
 
     class Meta:
-        unique_together = ("rack_configuration", "switch", "port_label")
+        unique_together = ("switch", "port_label")
 
     def __str__(self):
         return f"Validation {self.switch.hostname}:{self.port_label} -> {self.status}"

@@ -412,7 +412,7 @@ class CloudHostAdmin(
             [
                 f"Cores: {obj.cloudflavor.cores}",
                 f"RAM size: {obj.cloudflavor.memory}MiB",
-                f"Disk size: {obj.cloudflavor.disk or 0 / 1024}GiB",
+                f"Disk size: {(obj.cloudflavor.disk or 0) / 1024}GiB",
             ]
         )
         return '<a title="{}" href="{}">{}</a>'.format(

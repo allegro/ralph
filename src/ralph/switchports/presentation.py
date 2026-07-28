@@ -7,7 +7,9 @@ expandable raw JSON) in exactly the same way.
 
 import json
 
-from ralph.switchports.models import ValidationStatus
+from openstack.baremetal.v1.node import ValidationResult
+
+from ralph.switchports.models import ValidationStatus, BackendValidationResult
 
 
 def format_speed(speed):
@@ -30,7 +32,7 @@ def status_symbol(status):
     }.get((status or "").lower(), "?")
 
 
-def _attach_port_metrics(data, vr):
+def _attach_port_metrics(data: dict, vr: BackendValidationResult):
     """Attach the shared link/admin/speed badges and raw JSON to a cell dict."""
     data["status"] = vr.status
     data["oper_status"] = vr.oper_status
@@ -48,7 +50,7 @@ def _attach_port_metrics(data, vr):
     return data
 
 
-def build_validation_context(vr, expected_asset_id=None):
+def build_validation_context(vr: BackendValidationResult, expected_asset_id=None) -> dict:
     """Build the template context dict for a single BackendValidationResult.
 
     ``expected_asset_id`` is the id of the asset we expect netmaker to report on

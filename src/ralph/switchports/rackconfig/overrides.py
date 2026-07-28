@@ -5,8 +5,11 @@ server in the rack. An override lets one server point its column port at a
 different switch. These helpers answer "which switch does this cell really use"
 and keep the override rows in sync when the grid is saved.
 """
-
-from ralph.switchports.models import RackSwitchConfigurationOverride
+from ralph.data_center.models import DataCenterAsset
+from ralph.switchports.models import (
+    RackSwitchConfigurationOverride,
+    RackSwitchConfiguration,
+)
 
 
 def build_override_map(switch_configs) -> dict:
@@ -25,12 +28,12 @@ def build_override_map(switch_configs) -> dict:
     return override_map
 
 
-def effective_switch(sc, asset_id, override_map):
+def effective_switch(sc: RackSwitchConfiguration, asset_id: int, override_map: dict[tuple[int, int], DataCenterAsset]) -> DataCenterAsset:
     """The switch an asset connects to for a column (override or default)."""
     return override_map.get((asset_id, sc.id)) or sc.switch
 
 
-def sync_override(sc, asset, target_switch, override_value) -> None:
+def sync_override(sc, asset: DataCenterAsset, target_switch: DataCenterAsset, override_value) -> None:
     """Create, update or drop the per-server override for a cell.
 
     An override is only kept when the user supplied one *and* it actually

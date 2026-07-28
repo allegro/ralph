@@ -74,12 +74,12 @@ class RunRackRefreshTaskTestCase(TestCase):
         self.assertEqual(backend.refresh_switch.call_count, 2)
         self.assertTrue(
             BackendValidationResult.objects.filter(
-                rack_configuration=self.rack_config, switch=self.switch_a
+                switch=self.switch_a
             ).exists()
         )
         self.assertTrue(
             BackendValidationResult.objects.filter(
-                rack_configuration=self.rack_config, switch=self.switch_b
+                switch=self.switch_b
             ).exists()
         )
 

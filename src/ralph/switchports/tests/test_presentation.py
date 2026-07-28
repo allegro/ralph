@@ -22,7 +22,6 @@ class BuildValidationContextTestCase(TestCase):
 
     def _make_vr(self, **kwargs):
         defaults = dict(
-            rack_configuration=self.rack_config,
             switch=self.switch,
             port_label="0/0/10",
             status=ValidationStatus.ASSET_FOUND,

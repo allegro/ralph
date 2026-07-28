@@ -15,8 +15,12 @@ from ralph.switchports.models import (
     RackConfiguration,
     ValidationStatus,
 )
+from ralph.switchports.netmaker import SwitchDTO
 from ralph.switchports.netmaker.asset_matching import cross_validate, extract_asset
-from ralph.switchports.netmaker.backend import NetmakerSwitchportBackend
+from ralph.switchports.netmaker.backend import (
+    NetmakerSwitchportBackend,
+    SwitchportSyncBackend,
+)
 from ralph.switchports.netmaker.lldp import RemoteAsset
 from ralph.switchports.sync.port_sync import sync_switch_ports
 from ralph.switchports.sync.switches import (
@@ -47,13 +51,8 @@ def refresh_validation_for_rack(
         "skipped_switches": 0,
     }
 
-    # Drop stale results for switches that are no longer validated.
     stale_switch_ids = disabled_only_switch_ids(rack_configuration)
     if stale_switch_ids:
-        BackendValidationResult.objects.filter(
-            rack_configuration=rack_configuration,
-            switch_id__in=stale_switch_ids,
-        ).delete()
         summary["skipped_switches"] = len(stale_switch_ids)
 
     for switch in iter_rack_switches(rack_configuration):
@@ -66,14 +65,13 @@ def refresh_validation_for_rack(
                     switch.hostname,
                     exc_info=True,
                 )
-        rebuild_validation_for_switch(backend, rack_configuration, switch, summary)
+        rebuild_validation_for_switch(backend, switch, summary)
 
     return summary
 
 
 def rebuild_validation_for_switch(
-    backend,
-    rack_configuration: RackConfiguration,
+    backend: SwitchportSyncBackend,
     switch: DataCenterAsset,
     summary: dict,
 ) -> None:
@@ -94,11 +92,9 @@ def rebuild_validation_for_switch(
         )
         # Mark this switch as not found in the backend.
         BackendValidationResult.objects.filter(
-            rack_configuration=rack_configuration,
             switch=switch,
         ).delete()
         BackendValidationResult.objects.create(
-            rack_configuration=rack_configuration,
             switch=switch,
             port_label=SWITCH_SENTINEL_LABEL,
             status=ValidationStatus.SWITCH_NOT_FOUND,
@@ -121,19 +117,25 @@ def rebuild_validation_for_switch(
 
     # Delete old results for this switch and rebuild
     BackendValidationResult.objects.filter(
-        rack_configuration=rack_configuration,
         switch=switch,
     ).delete()
 
+    results_to_create = _backend_validation_results_to_create(switch, switch_dto)
+    if results_to_create:
+        BackendValidationResult.objects.bulk_create(results_to_create)
+        summary["ports_processed"] += len(results_to_create)
+
+
+def _backend_validation_results_to_create(switch: DataCenterAsset, switch_dto: SwitchDTO) -> list[BackendValidationResult]:
     results_to_create = []
     for interface in switch_dto.ports:
         port_label = interface.name
         remote = RemoteAsset.from_interface_dto(interface)
         asset_from_name, asset_from_desc, asset_from_mac = extract_asset(remote)
 
-        if is_consistent := cross_validate(
+        if (is_consistent := cross_validate(
             asset_from_name, asset_from_desc, asset_from_mac
-        ):
+        )) is not None:
             if not is_consistent:
                 resolved_asset = asset_from_name or asset_from_desc or asset_from_mac
                 status = ValidationStatus.ASSET_CONFLICT
@@ -154,7 +156,6 @@ def rebuild_validation_for_switch(
 
         results_to_create.append(
             BackendValidationResult(
-                rack_configuration=rack_configuration,
                 switch=switch,
                 port_label=port_label,
                 status=status,
@@ -168,7 +169,4 @@ def rebuild_validation_for_switch(
                 raw_data=interface.model_dump(mode="json"),
             )
         )
-
-    if results_to_create:
-        BackendValidationResult.objects.bulk_create(results_to_create)
-        summary["ports_processed"] += len(results_to_create)
+    return results_to_create

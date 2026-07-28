@@ -115,6 +115,8 @@ class GridTestCase(TestCase):
                 "typed_value": "30",
                 "typed_override": "",
                 "owner_hostname": "srv2.example.com",
+                "owner_barcode": "2135554",
+                "owner_sn": "1234566213",
                 "switch_hostname": self.switch_eth1.hostname,
                 "switch_port_label": "0/0/30",
             }
@@ -137,7 +139,7 @@ class GridTestCase(TestCase):
         self.assertEqual(len(conflict_cells), 1)
         cell = conflict_cells[0]
         self.assertEqual(cell["value"], "30")
-        self.assertEqual(cell["conflict_owner"], "srv2.example.com")
+        self.assertEqual(cell["conflict_owner"], "2135554")
         self.assertEqual(
             cell["force_field_name"],
             f"force_{self.server1.id}_{self.sc_eth1.id}",

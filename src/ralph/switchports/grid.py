@@ -6,6 +6,9 @@ renders the result. Each function owns one lookup, and the per-cell edge cases
 (override switch, SWITCH_NOT_FOUND sentinel, PORT_NOT_FOUND fallback, display
 label stripping) are assembled in ``build_grid_rows``.
 """
+from typing import Iterable
+
+from openstack.baremetal.v1.node import ValidationResult
 
 from ralph.data_center.models import DataCenterAsset
 from ralph.switchports.constants import (
@@ -19,13 +22,15 @@ from ralph.switchports.models import (
     Port,
     RackConfiguration,
     ValidationStatus,
+    RackSwitchConfiguration,
 )
 from ralph.switchports.presentation import build_validation_context
 from ralph.switchports.rackconfig.overrides import effective_switch
 from ralph.switchports.rackconfig.port_labels import to_display
+from ralph.switchports.sync import iter_rack_switches
 
 
-def get_rack_assets(rack):
+def get_rack_assets(rack) -> Iterable[DataCenterAsset]:
     """All DataCenterAssets in this rack, ordered like the grid renders them."""
     return (
         DataCenterAsset.objects.filter(rack=rack)
@@ -34,7 +39,7 @@ def get_rack_assets(rack):
     )
 
 
-def get_switch_configs(rack_configuration: RackConfiguration):
+def get_switch_configs(rack_configuration: RackConfiguration) -> Iterable[RackSwitchConfiguration]:
     """All RackSwitchConfigurations (columns) for this rack, ordered by label."""
     return rack_configuration.switches.select_related("switch").order_by("label")
 
@@ -99,8 +104,9 @@ def build_validation_map(rack_configuration: RackConfiguration) -> tuple[dict, d
     carries the per-switch sentinel status (e.g. SWITCH_NOT_FOUND) for switches
     that reported one.
     """
+    switches = iter_rack_switches(rack_configuration)
     results = BackendValidationResult.objects.filter(
-        rack_configuration=rack_configuration,
+        switch__in=switches
     ).select_related("remote_asset")
 
     validation_map = {}
@@ -142,11 +148,11 @@ def build_client_validation(switch_configs, validation_map, switch_status) -> di
 
 
 def _cell_validation(
-    sc,
-    effective_switch_obj,
-    switch_port_label,
-    asset_id,
-    validation_map,
+    sc: RackSwitchConfiguration,
+    effective_switch_obj: DataCenterAsset,
+    switch_port_label: str,
+    asset_id: int,
+    validation_map: dict[tuple[int, str], BackendValidationResult],
     switch_status,
     has_validation,
 ):
@@ -162,7 +168,7 @@ def _cell_validation(
             "css_class": "validation-error",
             "label": "SWITCH N/F",
         }
-    vr = validation_map.get((effective_switch_obj.id, switch_port_label))
+    vr: BackendValidationResult | None = validation_map.get((effective_switch_obj.id, switch_port_label))
     if vr is not None:
         return build_validation_context(vr, expected_asset_id=asset_id)
     if has_validation:
@@ -175,7 +181,7 @@ def _cell_validation(
 
 
 def build_grid_rows(
-    assets,
+    assets: Iterable[DataCenterAsset],
     switch_configs,
     override_map,
     connection_map,
@@ -218,7 +224,7 @@ def build_grid_rows(
                     "override_field_name": grid_override_field(asset.id, sc.id),
                     "force_field_name": grid_force_field(asset.id, sc.id),
                     "override_value": (
-                        override_switch.barcode or override_switch.hostname
+                        (override_switch.barcode or override_switch.hostname)
                         if override_switch
                         else ""
                     ),
@@ -233,10 +239,21 @@ def build_grid_rows(
                         switch_status,
                         has_validation,
                     ),
+                    "port_label_proposal": _propose_port(asset, effective_switch_obj),
                 }
             )
         rows.append({"asset": asset, "cells": cells})
     return rows
+
+
+def _propose_port(
+    asset: DataCenterAsset,
+    switch: DataCenterAsset
+) -> str | None:
+    port_proposals = BackendValidationResult.objects.filter(switch=switch, remote_asset=asset)
+    if port_proposals:
+        return " ".join([p.port_label for p in port_proposals])
+    return None
 
 
 def _conflict_cell(asset, sc, conflict) -> dict:
@@ -250,7 +267,7 @@ def _conflict_cell(asset, sc, conflict) -> dict:
         "override_value": conflict["typed_override"],
         "is_override": bool(conflict["typed_override"]),
         "is_conflict": True,
-        "conflict_owner": conflict["owner_hostname"],
+        "conflict_owner": conflict["owner_barcode"],
         "conflict_switch": conflict["switch_hostname"],
         "conflict_port": conflict["switch_port_label"],
         "validation": None,

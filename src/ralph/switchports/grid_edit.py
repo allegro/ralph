@@ -72,6 +72,8 @@ def apply_cell_edit(asset, sc, edit: CellEdit, connection_map, dc) -> CellResult
                     "typed_value": new_value,
                     "typed_override": override_value,
                     "owner_hostname": owner.hostname,
+                    "owner_barcode": owner.barcode,
+                    "owner_sn": owner.sn,
                     "switch_hostname": target_switch.hostname,
                     "switch_port_label": new_label,
                 }

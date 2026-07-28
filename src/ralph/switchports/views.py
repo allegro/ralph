@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.db import transaction
 from django.http import HttpResponseRedirect, JsonResponse
 from django.utils.functional import cached_property
+from django.utils.translation import gettext_lazy as _
 
 from ralph.admin.views.extra import RalphDetailView
 from ralph.lib.external_services import InternalService
@@ -26,6 +27,7 @@ from ralph.switchports.models import (
 )
 from ralph.switchports.rackconfig.overrides import build_override_map
 from ralph.switchports.rackconfig.switch_resolver import rack_data_center
+from ralph.switchports.sync import iter_rack_switches
 
 logger = logging.getLogger(__name__)
 
@@ -97,15 +99,22 @@ class RackSwitchportGridView(RalphDetailView):
         # Get last refresh time
         last_refresh = None
         if has_validation:
-            last_result = (
-                BackendValidationResult.objects.filter(
-                    rack_configuration=self.rack_configuration
+            switches = iter_rack_switches(self.rack_configuration)
+            last_refresh_dict = {}
+            for switch in switches:
+                last_result = (
+                    BackendValidationResult.objects.filter(
+                        switch=switch
+                    )
+                    .order_by("-modified")
+                    .first()
                 )
-                .order_by("-modified")
-                .first()
-            )
-            if last_result:
-                last_refresh = last_result.modified
+                if last_result:
+                    last_refresh_dict[switch.barcode] = last_result.modified.strftime('%d/%m/%y %H:%M')
+                else:
+                    last_refresh_dict[switch.barcode] = _("Never")
+            if last_refresh_dict:
+                last_refresh = ", ".join({f"{k} => {v}" for k,v in last_refresh_dict.items()})
 
         context["switch_configs"] = switch_configs
         context["switch_status"] = switch_status

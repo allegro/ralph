@@ -67,7 +67,7 @@
                         <input type="text"
                                name="{{ cell.field_name }}"
                                value="{{ cell.value }}"
-                               size="3"
+                               size="6"
                                placeholder="&mdash;"
                                autocomplete="off"
                                class="port-input"
@@ -103,6 +103,8 @@
                     {% include "switchports/_netmaker_cell.html" with validation=cell.validation %}
                     {% elif cell.value and has_validation %}
                     <span class="validation-nodata">&mdash;</span>
+                    {% elif cell.port_label_proposal %}
+                      <span onclick="setCell('{{ cell.field_name }}', '{{ cell.port_label_proposal }}')" class="validation-proposal"><a class="validation-proposal" title="Click to accept">{{  cell.port_label_proposal }}</a>  </span>
                     {% endif %}
                 </td>
                 {% endif %}
@@ -134,6 +136,7 @@
         <li>{% trans "Arrow shows the state:" %} <span class="nm-badge nm-stat nm-up">&#x2191;</span> {% trans "up," %} <span class="nm-badge nm-stat nm-down">&#x2193;</span> {% trans "down," %} <span class="nm-badge nm-stat nm-unknown">?</span> {% trans "unknown." %}</li>
         <li><span class="nm-badge nm-speed">10G</span> {% trans "Interface speed. Hover for exact Mbps." %}</li>
         <li>{% trans "Click the &#x25B8; triangle on a netmaker cell to expand the full backend data (JSON)." %}</li>
+        <li>{% trans "If the server port is not connected, but netmaker found given asset it will suggest port to connect to. Click the grayed-out port number accept the suggestion." %}</li>
     </ul>
 </div>
 
@@ -321,7 +324,7 @@
         width: 96px;
     }
     .switchport-grid-table .col-port .port-input {
-        width: 46px;
+        width: 66px;
         text-align: center;
         border: 1px solid #cfd6db;
         border-radius: 4px;
@@ -582,6 +585,11 @@
         setTimeout(poll, 2000);
     }
 })();
+
+function setCell(field, label){
+  document.getElementsByName(field)[0].value = label;
+}
+
 </script>
 
 {% endblock %}
