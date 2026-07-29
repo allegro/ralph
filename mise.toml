@@ -67,8 +67,16 @@ description = "Stop and remove containers"
 run = "podman compose -f docker/docker-compose-dev.yml -p ralph build"
 description = "Rebuild images"
 
+[tasks.frontend]
+run = [
+  "npm install",
+  "node node_modules/.bin/gulp",
+]
+description = "Install JS deps and build static vendor assets"
+alias = ["static", "js"]
+
 [tasks.init]
-depends = ["db"]
+depends = ["db", "frontend"]
 depends_post = ["init_transitions"]
 run = [
   "cp -n src/ralph/settings/local.template src/ralph/settings/local.py || true",
@@ -89,6 +97,12 @@ depends = ["db"]
 run = "uv run ralph runserver"
 alias = ["s", "default"]
 description = "Run local server"
+
+[tasks.worker]
+depends = ["db"]
+env = { OBJC_DISABLE_INITIALIZE_FORK_SAFETY = "YES" }  # necessary for Mac OS
+run = "uv run ralph rqworker --worker-class=ralph.lib.external_services.worker.RalphSimpleWorker ralph_async_transitions ralph_switchports"
+description = "Run the RQ worker"
 
 [tasks.requirements]
 run = [
@@ -126,7 +140,7 @@ depends = ["db", "clean"]
 run = [
     "uv run --group test contrib/dhcp_agent/test.py",
   """uv run --group test coverage run $(command -v test_ralph) \
-    test ralph.admin ralph.access_cards ralph.accounts ralph.accessories ralph.assets ralph.attachments ralph.back_office ralph.configuration_management ralph.dashboards ralph.data_center ralph.dhcp ralph.deployment ralph.licences ralph.domains ralph.trade_marks ralph.sim_cards ralph.supports ralph.security ralph.lib.foundation ralph.lib.table ralph.networks ralph.data_importer ralph.dc_view ralph.reports ralph.virtual ralph.operations ralph.lib.external_services ralph.lib.transitions ralph.lib.permissions ralph.lib.custom_fields ralph.lib.hooks ralph.notifications ralph.ssl_certificates ralph.lib.mixins ralph.tests ralph.lib.custom_fields.tests ralph.lib.permissions.tests ralph.lib.polymorphic.tests ralph.lib.mixins.tests \
+    test ralph.admin ralph.access_cards ralph.accounts ralph.accessories ralph.assets ralph.attachments ralph.back_office ralph.configuration_management ralph.dashboards ralph.data_center ralph.dhcp ralph.deployment ralph.licences ralph.domains ralph.trade_marks ralph.sim_cards ralph.supports ralph.security ralph.lib.foundation ralph.lib.table ralph.networks ralph.data_importer ralph.dc_view ralph.reports ralph.virtual ralph.operations ralph.lib.external_services ralph.lib.transitions ralph.lib.permissions ralph.lib.custom_fields ralph.lib.hooks ralph.notifications ralph.ssl_certificates ralph.lib.mixins ralph.tests ralph.lib.custom_fields.tests ralph.lib.permissions.tests ralph.lib.polymorphic.tests ralph.lib.mixins.tests ralph.switchports.tests \
     --keepdb --parallel auto """,
   "uv run --group test coverage report",
 ]

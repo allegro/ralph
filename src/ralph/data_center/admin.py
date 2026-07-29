@@ -47,7 +47,6 @@ from ralph.data_center.models.components import DiskShare, DiskShareMount
 from ralph.data_center.models.hosts import DCHost
 from ralph.data_center.models.physical import (
     Accessory,
-    Connection,
     DataCenter,
     DataCenterAsset,
     Rack,
@@ -61,7 +60,7 @@ from ralph.data_center.models.virtual import (
     ClusterType,
     Database,
 )
-from ralph.data_center.views import RelationsView
+from ralph.data_center.views import PortsView, RelationsView
 from ralph.data_importer import resources
 from ralph.deployment.mixins import ActiveDeploymentMessageMixin
 from ralph.lib.custom_fields.admin import CustomFieldValueAdminMixin
@@ -73,6 +72,7 @@ from ralph.networks.forms import SimpleNetworkWithManagementIPForm
 from ralph.networks.views import NetworkWithTerminatorsView
 from ralph.operations.views import OperationViewReadOnlyForExisiting
 from ralph.supports.models import BaseObjectsSupport
+from ralph.switchports.views import RackConfigurationView, RackSwitchportGridView
 
 
 def generate_list_filter_with_common_fields(prefix=None, postfix=None):
@@ -349,6 +349,10 @@ class DataCenterAssetRelationsView(RelationsView):
     url = "datacenterasset_relations"
 
 
+class DataCenterAssetPortsView(PortsView):
+    pass
+
+
 @register(DataCenterAsset)
 class DataCenterAssetAdmin(
     ActiveDeploymentMessageMixin,
@@ -372,6 +376,7 @@ class DataCenterAssetAdmin(
         DataCenterAssetLicence,
         DataCenterAssetSupport,
         DataCenterAssetOperation,
+        DataCenterAssetPortsView,
     ]
     form = DataCenterAssetForm
     if settings.ENABLE_DNSAAS_INTEGRATION:
@@ -691,6 +696,7 @@ class RackAdmin(RalphAdmin):
             .select_related("server_room__data_center", "rack_module")
         )
 
+    change_views = [RackConfigurationView, RackSwitchportGridView]
     exclude = ["accessories"]
     list_display = [
         "name",
@@ -698,7 +704,7 @@ class RackAdmin(RalphAdmin):
         "data_center_name",
         "reverse_ordering",
         "rack_module",
-        "active"
+        "active",
     ]
     list_filter = ["server_room__data_center"]  # TODO use fk field in filter
     search_fields = ["name"]
@@ -746,11 +752,6 @@ class RackAccessoryAdmin(RalphAdmin):
 @register(Database)
 class DatabaseAdmin(RalphAdmin):
     pass
-
-
-@register(Connection)
-class ConnectionAdmin(RalphAdmin):
-    resource_classes = [resources.ConnectionResource]
 
 
 @register(DiskShare)

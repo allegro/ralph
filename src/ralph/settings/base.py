@@ -181,6 +181,7 @@ INSTALLED_APPS = (
     "ralph.lib.hooks",
     "ralph.notifications",
     "ralph.ssl_certificates",
+    "ralph.switchports",
     "rest_framework",
     "rest_framework.authtoken",
     "djmoney",
@@ -429,6 +430,9 @@ RALPH_QUEUES = {
     "ralph_async_transitions": {
         "DEFAULT_TIMEOUT": 3600,
     },
+    "ralph_switchports": {
+        "DEFAULT_TIMEOUT": 1800,
+    },
 }
 for queue_name, options in RALPH_QUEUES.items():
     RQ_QUEUES[queue_name] = ChainMap(RQ_QUEUES["default"], options)
@@ -445,8 +449,26 @@ RALPH_INTERNAL_SERVICES = {
     "ASYNC_TRANSITIONS": {
         "queue_name": "ralph_async_transitions",
         "method": "ralph.lib.transitions.async.run_async_transition",
-    }
+    },
+    "SWITCHPORTS_REFRESH": {
+        "queue_name": "ralph_switchports",
+        "method": "ralph.switchports.sync.tasks.run_rack_refresh",
+    },
 }
+
+# Switchport netmaker refresh tuning. MAX_PARALLEL bounds simultaneous backend
+# refreshes so the lock-less switchApp backend is not overloaded.
+SWITCHPORT_REFRESH_MAX_PARALLEL = int(
+    os.environ.get("SWITCHPORT_REFRESH_MAX_PARALLEL", 4)
+)
+SWITCHPORT_REFRESH_LOCK_TIMEOUT = int(
+    os.environ.get("SWITCHPORT_REFRESH_LOCK_TIMEOUT", 300)
+)
+SWITCHPORT_REFRESH_LOCK_BLOCKING_TIMEOUT = int(
+    os.environ.get("SWITCHPORT_REFRESH_LOCK_BLOCKING_TIMEOUT", 120)
+)
+NETMAKER_HOST = os.getenv("NETMAKER_HOST")
+NETMAKER_TOKEN = os.getenv("NETMAKER_TOKEN")
 
 # =============================================================================
 # DC view

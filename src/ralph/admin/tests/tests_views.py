@@ -97,6 +97,8 @@ FACTORY_MAP = {
     "ralph.supports.models.BaseObjectsSupport": "ralph.supports.tests.factories.BaseObjectsSupportFactory",  # noqa
     "ralph.supports.models.Support": "ralph.supports.tests.factories.SupportFactory",  # noqa
     "ralph.supports.models.SupportType": "ralph.supports.tests.factories.SupportTypeFactory",  # noqa
+    "ralph.switchports.models.connections.Port": "ralph.switchports.tests.factories.PortFactory",  # noqa
+    "ralph.switchports.models.rack_config.RackSwitchConfigurationOverride": "ralph.switchports.tests.factories.RackSwitchConfigurationOverrideFactory",
     "ralph.trade_marks.models.TradeMark": "ralph.trade_marks.tests.factories.TradeMarkFactory",  # noqa
     "ralph.trade_marks.models.TradeMarksLinkedDomains": "ralph.trade_marks.tests.factories.TradeMarksLinkedDomainsFactory",  # noqa
     "ralph.trade_marks.models.UtilityModel": "ralph.trade_marks.tests.factories.UtilityModelFactory",  # noqa
@@ -130,6 +132,8 @@ EXCLUDE_MODELS = [
     "ralph.lib.custom_fields.models.CustomField",
     "ralph.lib.transitions.models.TransitionModel",
     "ralph.networks.models.networks.DiscoveryQueue",
+    "ralph.switchports.models.rack_config.RackSwitchConfigurationOverride",
+    "ralph.switchports.models.validation.SwitchportRefreshJob",
     "ralph.tests.models.Bar",
     "ralph.tests.models.Car",
     "ralph.tests.models.Car2",

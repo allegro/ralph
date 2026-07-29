@@ -46,9 +46,3 @@ class RackOrientation(Choices):
     bottom = _("bottom")
     left = _("left")
     right = _("right")
-
-
-class ConnectionType(Choices):
-    _ = Choices.Choice
-
-    network = _("network connection")

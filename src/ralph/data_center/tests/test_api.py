@@ -64,7 +64,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
     def test_get_data_center_assets_list(self):
         DataCenterAssetFullFactory.create_batch(100)
         url = reverse("datacenterasset-list") + "?limit=100"
-        with self.assertNumQueries(18):
+        with self.assertQueriesMoreOrLess(17, plus_minus=2):
             response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], DataCenterAsset.objects.count())

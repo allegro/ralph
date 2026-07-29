@@ -114,6 +114,7 @@ sitetrees = [
                         _("Preboot configuration"), "deployment", "PrebootConfiguration"
                     ),
                     section(_("Preboot files"), "deployment", "PrebootFile"),
+                    section(_("Switchports"), "switchports", "Port"),
                 ],
             ),
             ralph_item(

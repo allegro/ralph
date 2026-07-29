@@ -311,7 +311,7 @@ class DataCenterAssetResource(ResourceWithPrice, RalphModelResource):
             "ethernet_set__ipaddress",
             "parent__ethernet_set__ipaddress",
         )
-        exclude = ("content_type", "asset_ptr", "baseobject_ptr", "connections")
+        exclude = ("content_type", "asset_ptr", "baseobject_ptr")
 
     def dehydrate_depreciation_rate(self, dc_asset):
         return str(dc_asset.depreciation_rate)
@@ -345,22 +345,6 @@ class DataCenterAssetResource(ResourceWithPrice, RalphModelResource):
             return str(self._get_management_ip(dc_asset.parent))
         except ValueError:
             return None
-
-
-class ConnectionResource(RalphModelResource):
-    outbound = fields.Field(
-        column_name="outbound",
-        attribute="outbound",
-        widget=ImportedForeignKeyWidget(physical.DataCenterAsset),
-    )
-    inbound = fields.Field(
-        column_name="outbound",
-        attribute="outbound",
-        widget=ImportedForeignKeyWidget(physical.DataCenterAsset),
-    )
-
-    class Meta:
-        model = physical.Connection
 
 
 class LicenceResource(ResourceWithPrice, RalphModelResource):

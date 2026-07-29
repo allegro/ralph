@@ -28,7 +28,6 @@ from ralph.assets.utils import DNSaaSPublisherMixin, move_parents_models
 from ralph.back_office.helpers import dc_asset_to_bo_asset_status_converter
 from ralph.back_office.models import BackOfficeAsset, Warehouse
 from ralph.data_center.models.choices import (
-    ConnectionType,
     DataCenterAssetStatus,
     Orientation,
     RackOrientation,
@@ -557,11 +556,6 @@ class DataCenterAsset(
         max_length=256,
         verbose_name=_("BIOS version"),
     )
-    connections = models.ManyToManyField(
-        "self",
-        through="Connection",
-        symmetrical=False,
-    )
     source = models.PositiveIntegerField(
         blank=True,
         choices=AssetSource(),
@@ -903,28 +897,6 @@ class DataCenterAsset(
                 ethernet.ipaddress.hostname = env.issue_next_free_hostname()
                 ethernet.ipaddress.save()
                 ethernet.save()
-
-
-class Connection(AdminAbsoluteUrlMixin, models.Model):
-    outbound = models.ForeignKey(
-        "DataCenterAsset",
-        verbose_name=_("connected to device"),
-        on_delete=models.PROTECT,
-        related_name="outbound_connections",
-    )
-    inbound = models.ForeignKey(
-        "DataCenterAsset",
-        verbose_name=_("connected device"),
-        on_delete=models.PROTECT,
-        related_name="inbound_connections",
-    )
-    # TODO: discuss
-    connection_type = models.PositiveIntegerField(
-        verbose_name=_("connection type"), choices=ConnectionType()
-    )
-
-    def __str__(self):
-        return "%s -> %s (%s)" % (self.outbound, self.inbound, self.connection_type)
 
 
 post_commit(publish_host_update, DataCenterAsset)
