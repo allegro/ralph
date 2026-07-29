@@ -1,3 +1,42 @@
+ralph (20260729.1) jammy; urgency=medium
+
+  * Switchport init
+  * Switchport init2
+  * Switchports scratchpad
+  * Switchports demo
+  * Graph switchports
+  * Add experimental connection graph generation script
+  * Switchports draft
+  * WIP - Switchports
+  * Fix js build, add to mise run init
+  * Switchports - backend validation
+  * Refactor switchports. Handle edge cases
+  * Format
+  * Attempt fix test
+  * Second attempt
+  * Fix tests
+  * Fix test fields model
+  * Add max_length constraint
+  * Remove db index
+  * Make migrations
+  * Upgrade mysql
+  * Build reqs
+  * Pin problematic deps
+  * Migrate TextField to CharField
+  * Squash migrations
+  * Pin pillow
+  * Ping deps in attempt to fix build
+  * Pin python-ldap
+  * Pin python-ldap 2
+  * Netmaker settings
+  * Remove unnecessary commands
+  * Reuse backend validation in different racks (remove rack_configuration field from BackendValidationResult). Fix bugs. UX improvements for rack grid view
+  * Reformat
+  * Fix tests to follow rack_configuration field removal
+  * Remove unused html file
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Wed, 29 Jul 2026 10:18:42 +0000
+
 ralph (20260609.1) jammy; urgency=medium
 
   [ Paweł Szulc ]
