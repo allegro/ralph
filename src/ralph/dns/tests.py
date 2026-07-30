@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime, timedelta
 from unittest.mock import patch
 
 from django.db import transaction
 from django.test import override_settings, TestCase, TransactionTestCase
+from oauthlib.oauth2.rfc6749.errors import CustomOAuth2Error
 
 from ralph.assets.tests.factories import ConfigurationClassFactory, EthernetFactory
 from ralph.data_center.models import BaseObjectCluster, DataCenterAsset
@@ -13,6 +15,63 @@ from ralph.dns.views import add_errors, DNSaaSIntegrationNotEnabledError, DNSVie
 from ralph.networks.tests.factories import IPAddressFactory
 from ralph.virtual.models import VirtualServer
 from ralph.virtual.tests.factories import VirtualServerFactory
+
+
+@override_settings(
+    OAUTH_CLIENT_ID="ralph",
+    OAUTH_SECRET="secret",
+    OAUTH_TOKEN_URL="https://oauth.example.com/token",
+)
+class TestOAuthToken(TestCase):
+    def setUp(self):
+        DNSaaS._oauth_tokens.clear()
+
+    def tearDown(self):
+        DNSaaS._oauth_tokens.clear()
+
+    @patch("ralph.dns.dnsaas.OAuth2Session")
+    def test_reuses_token_between_clients_until_it_expires(self, oauth_session_mock):
+        oauth_session_mock.return_value.fetch_token.return_value = {
+            "access_token": "token",
+            "expires_in": 3600,
+        }
+
+        first_client = DNSaaS()
+        second_client = DNSaaS()
+
+        oauth_session_mock.return_value.fetch_token.assert_called_once()
+        self.assertEqual(first_client.session.headers["Authorization"], "Bearer token")
+        self.assertEqual(second_client.session.headers["Authorization"], "Bearer token")
+
+    @patch("ralph.dns.dnsaas.OAuth2Session")
+    def test_fetches_new_token_when_cached_token_has_expired(self, oauth_session_mock):
+        oauth_session_mock.return_value.fetch_token.side_effect = [
+            {"access_token": "old-token", "expires_in": 3600},
+            {"access_token": "new-token", "expires_in": 3600},
+        ]
+        first_client = DNSaaS()
+        cached_token = next(iter(DNSaaS._oauth_tokens.values()))
+        cached_token["expiration"] = datetime.now() - timedelta(seconds=1)
+
+        second_client = DNSaaS()
+
+        self.assertEqual(
+            first_client.session.headers["Authorization"], "Bearer old-token"
+        )
+        self.assertEqual(
+            second_client.session.headers["Authorization"], "Bearer new-token"
+        )
+        self.assertEqual(oauth_session_mock.return_value.fetch_token.call_count, 2)
+
+    @patch("ralph.dns.dnsaas.OAuth2Session")
+    def test_preserves_oauth_error_when_fetching_token_fails(self, oauth_session_mock):
+        oauth_error = CustomOAuth2Error(description="rate limited")
+        oauth_session_mock.return_value.fetch_token.side_effect = oauth_error
+
+        with self.assertRaises(CustomOAuth2Error) as raised:
+            DNSaaS()
+
+        self.assertIs(raised.exception, oauth_error)
 
 
 class TestGetDnsRecords(TestCase):
