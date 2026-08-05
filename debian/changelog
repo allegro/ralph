@@ -1,3 +1,16 @@
+ralph (20260805.1) jammy; urgency=medium
+
+  [ Paweł Szulc ]
+  * Filter asset category by parent
+
+  [ Aleksander Wieckowski ]
+  * Add oauth token caching to DNAAS client
+
+  [ Paweł Szulc ]
+  * Add JSON metdata field
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Wed, 05 Aug 2026 12:41:44 +0000
+
 ralph (20260729.1) jammy; urgency=medium
 
   * Switchport init
