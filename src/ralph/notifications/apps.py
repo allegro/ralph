@@ -8,7 +8,7 @@ from ralph.signals import post_commit
 
 class NotificationConfig(RalphAppConfig):
     name = "ralph.notifications"
-    verbose_name = "Notifiaction"
+    verbose_name = "Notification"
     default = True
 
     def ready(self):
