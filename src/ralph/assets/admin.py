@@ -295,6 +295,7 @@ class AssetModelAdmin(CustomFieldValueAdminMixin, RalphAdmin):
 class CategoryAdmin(RalphMPTTAdmin):
     search_fields = ["name"]
     list_display = ["name", "code"]
+    list_filter = ["parent"]
     resource_classes = [resources.CategoryResource]
 
     def get_actions(self, request):
