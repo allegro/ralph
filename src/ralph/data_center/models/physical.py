@@ -568,6 +568,13 @@ class DataCenterAsset(
         null=True, blank=True, db_index=True
     )
     production_use_date = models.DateField(null=True, blank=True, db_index=True)
+    metadata = models.JSONField(
+        blank=True,
+        null=True,
+        default=None,
+        verbose_name=_("metadata"),
+        help_text=_("Additional JSON data for this asset."),
+    )
 
     autocomplete_tooltip_fields = [
         "rack",

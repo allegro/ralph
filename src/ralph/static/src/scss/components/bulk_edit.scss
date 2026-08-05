@@ -18,6 +18,10 @@
             width:100px;
         }
     }
+    textarea {
+      min-width: 150px;
+      height: 60px;
+    }
     .bulk-edit-fill {
         position: absolute;
         display: none;
@@ -27,6 +31,12 @@
         background: #DEFADB;
     }
     td {
-        padding-right:10px;
+      padding-right: 15px;
+    }
+    td:last-child {
+      padding-right: 25px;
+    }
+    td:last-child .bulk-edit-fill {
+      right: 10px;  /* so it doesn't overlap with scrollbar */
     }
 }

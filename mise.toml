@@ -71,6 +71,7 @@ description = "Rebuild images"
 run = [
   "npm install",
   "node node_modules/.bin/gulp",
+  "yes yes | uv run ralph collectstatic",
 ]
 description = "Install JS deps and build static vendor assets"
 alias = ["static", "js"]

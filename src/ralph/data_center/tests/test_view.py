@@ -39,6 +39,14 @@ class DataCenterAssetViewTest(ClientMixin, TestCase):
                 reverse("admin:data_center_datacenterasset_changelist"),
             )
 
+    def test_change_form_contains_collapsed_metadata_fieldset(self):
+        self.login_as_user()
+        asset = DataCenterAssetFactory(metadata={"cord": "compute"})
+        response = self.client.get(asset.get_absolute_url())
+
+        self.assertContains(response, 'id="id_metadata"')
+        self.assertContains(response, "Metadata")
+
 
 class DCHostViewTest(ClientMixin, RalphAPITestCase):
     def setUp(self):

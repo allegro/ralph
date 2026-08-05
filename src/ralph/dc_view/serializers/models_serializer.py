@@ -112,6 +112,7 @@ class DataCenterAssetSerializer(DataCenterAssetSerializerBase):
             "orientation",
             "service",
             "remarks",
+            "metadata",
             "url",
         )
 
