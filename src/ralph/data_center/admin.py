@@ -423,6 +423,7 @@ class DataCenterAssetAdmin(
         "depreciation_rate",
         "order_no",
         "remarks",
+        "metadata",
         "property_of",
     ]
     bulk_edit_no_fillable = ["barcode", "sn"]
@@ -495,7 +496,7 @@ class DataCenterAssetAdmin(
     _invoice_report_name = "invoice-data-center-asset"
     readonly_fields = ["get_created_date", "go_to_visualization"]
 
-    fieldsets = (
+    fieldsets = [
         (
             _("Basic info"),
             {
@@ -512,6 +513,7 @@ class DataCenterAssetAdmin(
                     "property_of",
                     "firmware_version",
                     "bios_version",
+                    "metadata",
                 )
             },
         ),
@@ -564,7 +566,7 @@ class DataCenterAssetAdmin(
                 )
             },
         ),
-    )
+    ]
 
     def assign_mgmt_hostname(self, *args, **kwargs):
         return assign_management_hostname_and_ip(self, *args, **kwargs)

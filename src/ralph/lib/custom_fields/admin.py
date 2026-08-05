@@ -147,7 +147,7 @@ class CustomFieldValueAdminMixin(object):
         get_formsets_args = [request]
         if change:
             get_formsets_args.append(obj)
-        for FormSet, inline in self.get_formsets_with_inlines(*get_formsets_args):  # noqa: E501
+        for FormSet, inline in self.get_formsets_with_inlines(*get_formsets_args):
             prefix = FormSet.get_default_prefix()
             prefixes[prefix] = prefixes.get(prefix, 0) + 1
             if prefixes[prefix] != 1 or not prefix:

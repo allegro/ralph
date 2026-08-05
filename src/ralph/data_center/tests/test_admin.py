@@ -208,6 +208,16 @@ class DataCenterAssetAdminTest(TransactionTestCase):
         self.assertIn("hostname", response.context["form"].errors)
         self.assertTrue(DataCenterAsset.objects.get(id=self.dca.id).hostname)
 
+    def test_metadata_can_be_updated_from_admin(self):
+        self._update_dca({"metadata": '{"some-config": {"key": "value"}}'})
+
+        self.dca.refresh_from_db()
+        self.assertEqual(self.dca.metadata, {"some-config": {"key": "value"}})
+
+    def test_metadata_is_available_in_bulk_edit(self):
+        admin = DataCenterAssetAdmin(DataCenterAsset, admin_site=AdminSite())
+        self.assertIn("metadata", admin.bulk_edit_list)
+
 
 class DataCenterAssetAdminAssignManagementHostnameTest(TransactionTestCase):
     def setUp(self):
