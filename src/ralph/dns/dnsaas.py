@@ -3,6 +3,7 @@ import json
 import logging
 from datetime import datetime, timedelta
 from functools import wraps
+from threading import Lock
 from typing import List, Optional, Tuple, Union
 from urllib.parse import parse_qs, urlencode, urljoin, urlsplit
 
@@ -41,6 +42,9 @@ def renew_token_when_unauthorized(func):
 
 
 class DNSaaS:
+    _oauth_tokens = {}
+    _oauth_token_lock = Lock()
+
     def __init__(self, headers: dict = None):
         self.session = requests.Session()
         _headers = {
@@ -52,25 +56,39 @@ class DNSaaS:
             _headers.update(headers)
         self.session.headers.update(_headers)
 
-    def _get_oauth_token(self):
+    def _get_oauth_token(self, force_refresh=False):
         client_id = settings.OAUTH_CLIENT_ID
         secret = settings.OAUTH_SECRET
         token_url = settings.OAUTH_TOKEN_URL
-        client = BackendApplicationClient(client_id=client_id)
-        oauth = OAuth2Session(client=client)
-        try:
-            token = oauth.fetch_token(
-                token_url=token_url, client_id=client_id, client_secret=secret
-            )
-        except CustomOAuth2Error as e:
-            logger.error(str(e))
+        cache_key = (token_url, client_id)
 
-        expire_in = token.get("expires_in")
-        self.token_expiration = datetime.now() + timedelta(0, expire_in - 60)
-        return token.get("access_token")
+        with self._oauth_token_lock:
+            now = datetime.now()
+            cached_token = self._oauth_tokens.get(cache_key)
+            if not force_refresh and cached_token and now < cached_token["expiration"]:
+                self.token_expiration = cached_token["expiration"]
+                return cached_token["access_token"]
+
+            client = BackendApplicationClient(client_id=client_id)
+            oauth = OAuth2Session(client=client)
+            try:
+                token = oauth.fetch_token(
+                    token_url=token_url, client_id=client_id, client_secret=secret
+                )
+            except CustomOAuth2Error:
+                logger.exception("Fetching an OAuth token for DNSaaS failed")
+                raise
+
+            expires_in = token.get("expires_in")
+            self.token_expiration = now + timedelta(seconds=max(expires_in - 60, 0))
+            self._oauth_tokens[cache_key] = {
+                "access_token": token.get("access_token"),
+                "expiration": self.token_expiration,
+            }
+            return token.get("access_token")
 
     def _update_oauth_token(self):
-        token = self._get_oauth_token()
+        token = self._get_oauth_token(force_refresh=True)
         self.session.headers["Authorization"] = "Bearer {}".format(token)
 
     def _verify_oauth_token_validity(self):
