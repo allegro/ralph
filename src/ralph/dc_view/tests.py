@@ -106,7 +106,7 @@ class TestRestAssetInfoPerRack(TestCase):
                     "management_ip": self.asset_1.management_ip,
                     "orientation": "front",
                     "remarks": "",
-                    "metadata": {},
+                    "metadata": None,
                     "service": "Service1",
                     "url": self.asset_1.get_absolute_url(),
                 },

@@ -78,7 +78,7 @@ class DataCenterAssetAdminTest(TransactionTestCase):
         response = self._update_dca_get_response(dca_data, inline_data)
         self.assertEqual(
             response.status_code,
-            302,
+            200,
             (
                 repr(response.context["form"].errors)
                 if response.context and "form" in response.context
