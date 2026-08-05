@@ -8,8 +8,6 @@ annotated-types==0.7.0
     # via pydantic
 appdirs==1.4.4
     # via openstacksdk
-argparse==1.4.0
-    # via python-novaclient
 asgiref==3.12.1
     # via
     #   django
@@ -29,7 +27,6 @@ babel==2.11.0
     #   ralph (pyproject.toml)
     #   debtcollector
     #   py-moneyed
-    #   python-novaclient
     #   sphinx
 certifi==2026.7.22
     # via requests
@@ -326,7 +323,7 @@ polars-runtime-32==1.43.0
     # via polars
 positional==1.0.1
     # via ralph (pyproject.toml)
-prettytable==0.7.2
+prettytable==1.0.1
     # via
     #   ralph (pyproject.toml)
     #   cliff
@@ -389,7 +386,7 @@ python-ldap==3.4.4
     # via
     #   ralph (pyproject.toml)
     #   django-auth-ldap
-python-novaclient==3.2.0
+python-novaclient==18.13.0
     # via ralph (pyproject.toml)
 python3-openid==3.2.0
     # via social-auth-core
@@ -426,7 +423,6 @@ requests==2.32.4
     #   pyhermes
     #   python-ironicclient
     #   python-keystoneclient
-    #   python-novaclient
     #   requests-oauthlib
     #   social-auth-core
     #   sphinx
@@ -461,12 +457,11 @@ setuptools==65.7.0
     #   django-plainpasswordhasher
     #   markdown
     #   pbr
+    #   prettytable
 shellingham==1.5.4
     # via typer
 simplejson==3.8.2
-    # via
-    #   ralph (pyproject.toml)
-    #   python-novaclient
+    # via ralph (pyproject.toml)
 six==1.16.0
     # via
     #   ralph (pyproject.toml)
@@ -474,7 +469,6 @@ six==1.16.0
     #   faker
     #   pyhermes
     #   python-dateutil
-    #   python-novaclient
 snowballstemmer==3.1.1
     # via sphinx
 social-auth-app-django==5.4.3
@@ -514,6 +508,7 @@ stevedore==5.8.0
     #   oslo-config
     #   python-ironicclient
     #   python-keystoneclient
+    #   python-novaclient
 tablib==3.5.0
     # via django-import-export
 tblib==3.2.2
@@ -574,6 +569,7 @@ urwid-readline==0.15.1
 wcwidth==0.8.2
     # via
     #   cmd2
+    #   prettytable
     #   prompt-toolkit
     #   urwid
 werkzeug==0.16.1
