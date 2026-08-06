@@ -352,7 +352,8 @@ class TestOpenstackSync(RalphTestCase):
         "ralph.lib.openstack.client.RalphOpenstackClient._get_nova_client_connection"
     )
     @mock.patch("ralph.lib.openstack.client.RalphOpenstackClient._get_keystone_client")
-    def test_non_default_provider(self, get_kc, get_nc):
+    @mock.patch("ralph.lib.openstack.client.RalphOpenstackClient._get_glance_client")
+    def test_non_default_provider(self, get_gc, get_kc, get_nc):
         tenants = [
             os.site["tenant_name"]
             for os in self.openstack_client._get_instances_from_settings()

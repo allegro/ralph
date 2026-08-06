@@ -6,15 +6,15 @@ You will need to install ``pip install -r requirements/prod_ldap.txt``.
 Then add LDAP as an authentication backend in your local settings:
 
 ```python3
-  AUTHENTICATION_BACKENDS = (
-      'django_auth_ldap.backend.LDAPBackend',
-      'django.contrib.auth.backends.ModelBackend',
-  )
-  LOGGING['loggers']['django_auth_ldap'] = {
-      'handlers': ['file'],
-      'propagate': True,
-      'level': 'DEBUG',
-  }
+AUTHENTICATION_BACKENDS = (
+    "django_auth_ldap.backend.LDAPBackend",
+    "django.contrib.auth.backends.ModelBackend",
+)
+LOGGING["loggers"]["django_auth_ldap"] = {
+    "handlers": ["file"],
+    "propagate": True,
+    "level": "DEBUG",
+}
 ```
 
 You will need to configure the LDAP connection as well as mapping remote users
@@ -25,26 +25,29 @@ For example, connecting to an Active Directory service might look like this:
 ```python3
 import ldap
 from django_auth_ldap.config import LDAPSearch, GroupOfNamesType
+
 AUTH_LDAP_SERVER_URI = "ldap://activedirectory.domain:389"
 AUTH_LDAP_BIND_DN = "secret"
 AUTH_LDAP_BIND_PASSWORD = "secret"
 AUTH_LDAP_PROTOCOL_VERSION = 3
 AUTH_LDAP_USER_USERNAME_ATTR = "sAMAccountName"
 AUTH_LDAP_USER_SEARCH_BASE = "DC=allegrogroup,DC=internal"
-AUTH_LDAP_USER_SEARCH_FILTER = '(&(objectClass=*)({0}=%(user)s))'.format(
-  AUTH_LDAP_USER_USERNAME_ATTR)
-AUTH_LDAP_USER_SEARCH = LDAPSearch(AUTH_LDAP_USER_SEARCH_BASE,
-  ldap.SCOPE_SUBTREE, AUTH_LDAP_USER_SEARCH_FILTER)
+AUTH_LDAP_USER_SEARCH_FILTER = "(&(objectClass=*)({0}=%(user)s))".format(
+    AUTH_LDAP_USER_USERNAME_ATTR
+)
+AUTH_LDAP_USER_SEARCH = LDAPSearch(
+    AUTH_LDAP_USER_SEARCH_BASE, ldap.SCOPE_SUBTREE, AUTH_LDAP_USER_SEARCH_FILTER
+)
 AUTH_LDAP_USER_ATTR_MAP = {
-  "first_name": "givenName",
-  "last_name": "sn",
-  "email": "mail",
-  "company": "company",
-  "manager": "manager",
-  "department": "department",
-  "employee_id": "employeeID",
-  "location": "officeName",
-  "country": "ISO-country-code",
+    "first_name": "givenName",
+    "last_name": "sn",
+    "email": "mail",
+    "company": "company",
+    "manager": "manager",
+    "department": "department",
+    "employee_id": "employeeID",
+    "location": "officeName",
+    "country": "ISO-country-code",
 }
 ```
 
@@ -75,18 +78,20 @@ do are:
  * declare mapping.
 
 ```python3
-from ralph.account.ldap import MappedGroupOfNamesType
+from ralph.accounts.ldap_helpers import MappedGroupOfNamesType
+
 AUTH_LDAP_GROUP_MAPPING = {
-  'CN=_gr_ralph,OU=Other,DC=mygroups,DC=domain': "staff",
-  'CN=_gr_ralph_assets_buyer,OU=Other,DC=mygroups,DC=domain': "assets-buyer",
-  'CN=_gr_ralph_assets_helper,OU=Other,DC=mygroups,DC=domain': "assets-helper",
-  'CN=_gr_ralph_assets_staff,OU=Other,DC=mygroups,DC=domain': "assets-staff",
-  'CN=_gr_ralph_admin,OU=Other,DC=mygroups,DC=domain': "superuser",
+    "CN=_gr_ralph,OU=Other,DC=mygroups,DC=domain": "staff",
+    "CN=_gr_ralph_assets_buyer,OU=Other,DC=mygroups,DC=domain": "assets-buyer",
+    "CN=_gr_ralph_assets_helper,OU=Other,DC=mygroups,DC=domain": "assets-helper",
+    "CN=_gr_ralph_assets_staff,OU=Other,DC=mygroups,DC=domain": "assets-staff",
+    "CN=_gr_ralph_admin,OU=Other,DC=mygroups,DC=domain": "superuser",
 }
 AUTH_LDAP_MIRROR_GROUPS = True
 AUTH_LDAP_GROUP_TYPE = MappedGroupOfNamesType(name_attr="cn")
-AUTH_LDAP_GROUP_SEARCH = LDAPSearch("DC=organization,DC=internal",
-    ldap.SCOPE_SUBTREE, '(objectClass=group)')
+AUTH_LDAP_GROUP_SEARCH = LDAPSearch(
+    "DC=organization,DC=internal", ldap.SCOPE_SUBTREE, "(objectClass=group)"
+)
 ```
 
 If you nest one LDAP group in another and want to use such (parent) group
@@ -94,7 +99,7 @@ in Ralph, you have to define this mapping in ``AUTH_LDAP_NESTED_GROUPS`` and set
 
 ```python3
 AUTH_LDAP_NESTED_GROUPS = {
-  'CN=_gr_ralph_users,OU=Other,DC=mygroups,DC=domain': "staff",  # _gr_ralph_users contains other LDAP groups inside
+    "CN=_gr_ralph_users,OU=Other,DC=mygroups,DC=domain": "staff",  # _gr_ralph_users contains other LDAP groups inside
 }
 AUTH_LDAP_QUERY_PAGE_SIZE = 500  # Note that LDAP default page size limit is 1000
 ```
@@ -103,9 +108,13 @@ Note: For OpenDJ implementation ``AUTH_LDAP_GROUP_MAPPING`` is not obligatory. `
 
 ```python3
 from django_auth_ldap.config import GroupOfUniqueNamesType
+
 AUTH_LDAP_GROUP_TYPE = GroupOfUniqueNamesType()
-AUTH_LDAP_GROUP_SEARCH = LDAPSearch("DC=organization,DC=internal",
-  ldap.SCOPE_SUBTREE, '(structuralObjectClass=groupOfUniqueNames)')
+AUTH_LDAP_GROUP_SEARCH = LDAPSearch(
+    "DC=organization,DC=internal",
+    ldap.SCOPE_SUBTREE,
+    "(structuralObjectClass=groupOfUniqueNames)",
+)
 ```
 
 If you want to define ldap groups with names identical to ralph roles, you
@@ -118,9 +127,11 @@ in :ref:`groups`.
 You can define users filter, if you don't want to import all users to ralph:
 
 ```python3
-AUTH_LDAP_USER_FILTER = '(|(memberOf=CN=_gr_ralph_group1,OU=something,'\
-    'DC=mygroup,DC=domain)(memberOf=CN=_gr_ralph_group2,OU=something else,'\
-    'DC=mygroups,DC=domain))'
+AUTH_LDAP_USER_FILTER = (
+    "(|(memberOf=CN=_gr_ralph_group1,OU=something,"
+    "DC=mygroup,DC=domain)(memberOf=CN=_gr_ralph_group2,OU=something else,"
+    "DC=mygroups,DC=domain))"
+)
 ```
 
 In case of OpenDJ please use ``isMemberOf`` instead of ``memberOf``.
