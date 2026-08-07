@@ -55,6 +55,7 @@ cryptography==49.0.0
     # via
     #   django-cryptography-django5
     #   openstacksdk
+    #   pyopenssl
     #   social-auth-core
 ddt==1.7.2
     # via ralph (pyproject.toml:test)
@@ -201,11 +202,15 @@ jinja2==3.1.6
 jmespath==1.1.0
     # via openstacksdk
 jsonpatch==1.33
-    # via openstacksdk
+    # via
+    #   openstacksdk
+    #   warlock
 jsonpointer==3.1.1
     # via jsonpatch
 jsonschema==4.26.0
-    # via python-ironicclient
+    # via
+    #   python-ironicclient
+    #   warlock
 jsonschema-specifications==2025.9.1
     # via jsonschema
 keystoneauth1==5.8.1
@@ -213,6 +218,7 @@ keystoneauth1==5.8.1
     #   ralph (pyproject.toml)
     #   openstacksdk
     #   osc-lib
+    #   python-glanceclient
     #   python-ironicclient
     #   python-keystoneclient
     #   python-novaclient
@@ -274,6 +280,7 @@ oslo-i18n==6.5.1
     #   osc-lib
     #   oslo-config
     #   oslo-utils
+    #   python-glanceclient
     #   python-keystoneclient
     #   python-novaclient
 oslo-serialization==5.7.0
@@ -286,6 +293,7 @@ oslo-utils==8.2.0
     #   ralph (pyproject.toml)
     #   osc-lib
     #   oslo-serialization
+    #   python-glanceclient
     #   python-ironicclient
     #   python-keystoneclient
     #   python-novaclient
@@ -308,6 +316,7 @@ pbr==6.1.1
     #   oslo-i18n
     #   oslo-utils
     #   positional
+    #   python-glanceclient
     #   python-ironicclient
     #   python-keystoneclient
     #   python-novaclient
@@ -327,6 +336,7 @@ prettytable==1.0.1
     # via
     #   ralph (pyproject.toml)
     #   cliff
+    #   python-glanceclient
     #   python-novaclient
 prometheus-client==0.25.0
     # via django-prometheus
@@ -370,6 +380,8 @@ pyhermes==0.6.0
     # via ralph (pyproject.toml)
 pyjwt==2.13.0
     # via social-auth-core
+pyopenssl==26.4.0
+    # via python-glanceclient
 pyparsing==3.3.2
     # via oslo-utils
 pyperclip==1.11.0
@@ -378,6 +390,8 @@ python-dateutil==2.9.0
     # via
     #   ralph (pyproject.toml)
     #   faker
+python-glanceclient==4.12.0
+    # via ralph (pyproject.toml)
 python-ironicclient==5.12.0
     # via ralph (pyproject.toml)
 python-keystoneclient==5.6.0
@@ -421,6 +435,7 @@ requests==2.32.4
     #   osc-lib
     #   oslo-config
     #   pyhermes
+    #   python-glanceclient
     #   python-ironicclient
     #   python-keystoneclient
     #   requests-oauthlib
@@ -547,6 +562,7 @@ typing-extensions==4.16.0
     #   pydantic
     #   pydantic-core
     #   pyjwt
+    #   pyopenssl
     #   referencing
     #   typing-inspection
     #   urwid
@@ -566,6 +582,8 @@ urwid==4.0.5
     #   urwid-readline
 urwid-readline==0.15.1
     # via pudb
+warlock==2.1.0
+    # via python-glanceclient
 wcwidth==0.8.2
     # via
     #   cmd2
@@ -578,3 +596,4 @@ wrapt==1.10.6
     # via
     #   ralph (pyproject.toml)
     #   debtcollector
+    #   python-glanceclient

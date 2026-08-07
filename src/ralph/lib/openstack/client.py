@@ -19,11 +19,18 @@ except ImportError:
 
 try:
     from novaclient import client as novac
-    from novaclient.exceptions import NotFound
 
     nova_client_exists = True
 except ImportError:
     nova_client_exists = False
+
+try:
+    from glanceclient import Client as GlanceClient
+    from glanceclient.exc import HTTPNotFound as ImageNotFound
+
+    glance_client_exists = True
+except ImportError:
+    glance_client_exists = False
 
 
 try:
@@ -78,10 +85,14 @@ class RalphOpenstackClient:
         if not keystone_client_exists:
             logger.error("keystoneclient module is not installed")
             raise ImportError("No module named keystoneclient")
+        if not glance_client_exists:
+            logger.error("glanceclient module is not installed")
+            raise ImportError("No module named glanceclient")
 
         self.session = self._get_keystone_session(site)
         self.nova_client = self._get_nova_client_connection(site)
         self.keystone_client = self._get_keystone_client(site)
+        self.glance_client = self._get_glance_client(site)
         self.site = site
 
     def _get_nova_client_connection(self, site):
@@ -111,6 +122,9 @@ class RalphOpenstackClient:
             )
         return client
 
+    def _get_glance_client(self, site):
+        return GlanceClient("2", session=self.session)
+
     @staticmethod
     def _get_keystone_session(site):
         auth = ks_v3_identity.Password(
@@ -126,15 +140,15 @@ class RalphOpenstackClient:
     @lru_cache()
     def _get_images(self):
         logger.info("Fetching images")
-        return {img.id: img.__dict__ for img in self.nova_client.images.list()}
+        return {img["id"]: img for img in self.glance_client.images.list()}
 
     def get_image_name(self, image_id):
         try:
             return self._get_images()[image_id]["name"]
         except KeyError:
             try:
-                return self.nova_client.images.get(image_id).name
-            except NotFound:
+                return self.glance_client.images.get(image_id)["name"]
+            except ImageNotFound:
                 return ""
 
     def get_flavors_list(self):

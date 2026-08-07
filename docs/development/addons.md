@@ -86,8 +86,8 @@ from ralph.back_office.models import Warehouse
 
 
 class ExtraView(RalphDetailView):
-    name = 'extra_list'
-    label = 'Extra Detail View'
+    name = "extra_list"
+    label = "Extra Detail View"
 
 
 @register(Warehouse)
@@ -108,8 +108,8 @@ from ralph.back_office.models import Warehouse
 
 @register_extra_view(Warehouse, register_extra_view.CHANGE)
 class ExtraView(RalphDetailView):
-    name = 'extra_details'
-    label = 'Extra Detail View'
+    name = "extra_details"
+    label = "Extra Detail View"
 ```
 
 ## Override methods (hooks)
@@ -196,7 +196,7 @@ To use `ChoicesFilter` you need to specify one additional param: `choices_list`,
 ```python3
 class ServerRoom(models.Model):
     data_center = models.ForeignKey(DataCenter, verbose_name=_("data center"))
-    data_center._filter_title = _('data center')
+    data_center._filter_title = _("data center")
 ```
 
 If `_filter_title` is attached to field, filter will display the entered name on list, rather than getting it from the model's field.

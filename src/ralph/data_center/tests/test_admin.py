@@ -76,10 +76,7 @@ class DataCenterAssetAdminTest(TransactionTestCase):
 
     def _update_dca(self, dca_data=None, inline_data=None):
         response = self._update_dca_get_response(dca_data, inline_data)
-        self.assertIn(
-            response.status_code,
-            (200, 302)
-        )
+        self.assertIn(response.status_code, (200, 302))
 
     def _prepare_inline_data(self, d):
         return {

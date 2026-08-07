@@ -1712,6 +1712,19 @@ wheels = [
 ]
 
 [[package]]
+name = "pyopenssl"
+version = "26.4.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cryptography" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/3f/e8/7325d258199b159eb2c03fe32107533e2832e70e63f4fb88a6aa00023201/pyopenssl-26.4.0.tar.gz", hash = "sha256:28dfcce0162b9211413e26dfbfdf1d24317fbeba18fc93c12400a1856b2a0bc7", size = 182046, upload-time = "2026-08-01T19:50:50.512Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/51/ad/2cf6d3fa2fae5c79e1ed9960c0d42badd0f94d81dd12b50604cdc839e648/pyopenssl-26.4.0-py3-none-any.whl", hash = "sha256:f0eb0cb2d581d3ad2b9c489468485e7f2ab6727d08401bcf9d824c3caddf3c1c", size = 56026, upload-time = "2026-08-01T19:50:48.94Z" },
+]
+
+[[package]]
 name = "pyparsing"
 version = "3.3.2"
 source = { registry = "https://pypi.org/simple" }
@@ -1748,6 +1761,26 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/d9/77/bd458a2e387e98f71de86dcc2ca2cab64489736004c80bc12b70da8b5488/python-dateutil-2.9.0.tar.gz", hash = "sha256:78e73e19c63f5b20ffa567001531680d939dc042bf7850431877645523c66709", size = 342990, upload-time = "2024-03-01T03:52:54.963Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/13/7f/98d6f9ca8b731506c85785bbb8806c01f5966a4df6d68c0d1cf3b16967e1/python_dateutil-2.9.0-py2.py3-none-any.whl", hash = "sha256:cbf2f1da5e6083ac2fbfd4da39a25f34312230110440f424a14c7558bb85d82e", size = 230495, upload-time = "2024-03-01T03:52:51.479Z" },
+]
+
+[[package]]
+name = "python-glanceclient"
+version = "4.12.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "keystoneauth1" },
+    { name = "oslo-i18n" },
+    { name = "oslo-utils" },
+    { name = "pbr" },
+    { name = "prettytable" },
+    { name = "pyopenssl" },
+    { name = "requests" },
+    { name = "warlock" },
+    { name = "wrapt" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ed/32/35d09ba5bfa88180627a6c835caaa883653056f31e7e5da015804af50d1e/python_glanceclient-4.12.0.tar.gz", hash = "sha256:390556573c8736409adaa3c8ba800e0d9fc1b12e2fb6d6939b8dfe999468f50f", size = 205137, upload-time = "2026-05-19T09:27:20.967Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f1/b0/f31a7601ededdfae51db135a17a234d680d094885bec56705eeb4f433af6/python_glanceclient-4.12.0-py3-none-any.whl", hash = "sha256:37741ff42edc0b9f083c3b87392416963d2ad0797b8149dc06ab671a522dbd67", size = 202240, upload-time = "2026-05-19T09:27:19.393Z" },
 ]
 
 [[package]]
@@ -1927,6 +1960,7 @@ dependencies = [
     { name = "pydantic" },
     { name = "pyhermes" },
     { name = "python-dateutil" },
+    { name = "python-glanceclient" },
     { name = "python-ironicclient" },
     { name = "python-keystoneclient" },
     { name = "python-ldap" },
@@ -2032,6 +2066,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.13.4" },
     { name = "pyhermes", specifier = "~=0.6.0" },
     { name = "python-dateutil", specifier = "==2.9.0" },
+    { name = "python-glanceclient" },
     { name = "python-ironicclient", specifier = "==5.12.0" },
     { name = "python-keystoneclient", specifier = "==5.6.0" },
     { name = "python-ldap", specifier = "==3.4.4" },
@@ -2627,6 +2662,19 @@ dependencies = [
     { name = "urwid" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/ad/70/be318554495555eba7d8ff6e489f6f74ddb225b24086ba4af62a82e723fd/urwid_readline-0.15.1.tar.gz", hash = "sha256:9301444b86d58f7d26388506b704f142cefd193888488b4070d3a0fdfcfc0f84", size = 9007, upload-time = "2024-09-22T17:51:55.144Z" }
+
+[[package]]
+name = "warlock"
+version = "2.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "jsonpatch" },
+    { name = "jsonschema" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/29/c2/3ba4daeddd47f1cfdbc703048cbee27bcbc50535261a2bbe36412565f3c9/warlock-2.1.0.tar.gz", hash = "sha256:82319ba017341e7fcdc81efc2be9dd2f8237a0da07c71476b5425651b317b1c9", size = 8041, upload-time = "2025-05-30T17:16:34.993Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/53/4b/8b3a3ae43afd4f7e4eebd86b53924d5271f84857ca38161ca502d0891caa/warlock-2.1.0-py3-none-any.whl", hash = "sha256:55cb5ad3399083724f1bfbfef4234a11fbacfc78bf2b9c4d0c18b6e203cf78fe", size = 10280, upload-time = "2025-05-30T17:16:33.601Z" },
+]
 
 [[package]]
 name = "watchdog"
