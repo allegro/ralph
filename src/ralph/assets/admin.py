@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from django.db.models import Count
+from django.db.models import Count, IntegerField, OuterRef, Subquery
+from django.db.models.functions import Coalesce
 from django.forms import BaseInlineFormSet
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
@@ -294,9 +295,34 @@ class AssetModelAdmin(CustomFieldValueAdminMixin, RalphAdmin):
 @register(Category)
 class CategoryAdmin(RalphMPTTAdmin):
     search_fields = ["name"]
-    list_display = ["name", "code"]
+    list_display = ["name", "code", "count"]
     list_filter = ["parent"]
     resource_classes = [resources.CategoryResource]
+
+    def get_queryset(self, request):
+        assets_count = (
+            Asset.objects.filter(
+                model__category__tree_id=OuterRef("tree_id"),
+                model__category__lft__gte=OuterRef("lft"),
+                model__category__rght__lte=OuterRef("rght"),
+            )
+            .order_by()
+            .values("model__category__tree_id")
+            .annotate(count=Count("pk"))
+            .values("count")
+        )
+        return super().get_queryset(request).annotate(
+            count=Coalesce(
+                Subquery(assets_count, output_field=IntegerField()),
+                0,
+            )
+        )
+
+    def count(self, instance):
+        return instance.count
+
+    count.short_description = _("Assets count")
+    count.admin_order_field = "count"
 
     def get_actions(self, request):
         return []
