@@ -70,17 +70,13 @@ class TestOpenstackSync(RalphTestCase):
         self.ralph_client = RalphClient(
             "openstack", self.ironic_serial_number_param, self.ralph_serial_number_param
         )
-        self.openstack_client = RalphOpenStackInfrastructureClient(
-            self.cloud_provider.name
-        )
+        self.openstack_client = RalphOpenStackInfrastructureClient(self.cloud_provider.name)
 
     def test_check_get_ralph_data(self):
         ralph_projects = self.ralph_client.get_ralph_servers_data(
             self.ralph_client.get_ralph_projects()
         )
-        self.assertEqual(
-            ralph_projects["project_id1"]["name"], self.cloud_project_1.name
-        )
+        self.assertEqual(ralph_projects["project_id1"]["name"], self.cloud_project_1.name)
         self.assertIn("host_id1", ralph_projects["project_id1"]["servers"].keys())
 
     def test_check_process_servers(self):
@@ -93,9 +89,7 @@ class TestOpenstackSync(RalphTestCase):
         )
         for host_id, test_host in OPENSTACK_INSTANCES.items():
             if test_host["status"] == "DELETED":
-                self.assertRaises(
-                    ObjectDoesNotExist, CloudHost.objects.get, host_id=host_id
-                )
+                self.assertRaises(ObjectDoesNotExist, CloudHost.objects.get, host_id=host_id)
                 continue
             host = CloudHost.objects.get(host_id=host_id)
             ips = host.ip_addresses
@@ -109,9 +103,7 @@ class TestOpenstackSync(RalphTestCase):
             # check the creation date only for new hosts
             if host_id.find("_os_") != -1:
                 self.assertEqual(
-                    datetime.strptime(
-                        test_host["created"], self.ralph_client.DATETIME_FORMAT
-                    ),
+                    datetime.strptime(test_host["created"], self.ralph_client.DATETIME_FORMAT),
                     host.created,
                 )
 
@@ -149,9 +141,7 @@ class TestOpenstackSync(RalphTestCase):
             self.assertEqual(self.cloud_provider, ralph_project.cloudprovider)
             for host_id, host in OPENSTACK_DATA[project_id]["servers"].items():
                 if host["status"] == "DELETED":
-                    self.assertRaises(
-                        ObjectDoesNotExist, CloudHost.objects.get, host_id=host_id
-                    )
+                    self.assertRaises(ObjectDoesNotExist, CloudHost.objects.get, host_id=host_id)
                     continue
                 ralph_host = CloudHost.objects.get(host_id=host_id)
                 ips = ralph_host.ip_addresses
@@ -227,9 +217,7 @@ class TestOpenstackSync(RalphTestCase):
 
     def test_cleanup_doesnt_remove_cloud_projects_with_children(self):
         project = CloudProjectFactory(project_id="im_not_here")
-        CloudHostFactory(
-            host_id="host_id123", parent=project, cloudflavor=self.cloud_flavor[1]
-        )
+        CloudHostFactory(host_id="host_id123", parent=project, cloudflavor=self.cloud_flavor[1])
         ralph_projects = self.ralph_client.get_ralph_servers_data(
             self.ralph_client.get_ralph_projects()
         )
@@ -348,15 +336,12 @@ class TestOpenstackSync(RalphTestCase):
             },
         ]
     )
-    @mock.patch(
-        "ralph.lib.openstack.client.RalphOpenstackClient._get_nova_client_connection"
-    )
+    @mock.patch("ralph.lib.openstack.client.RalphOpenstackClient._get_nova_client_connection")
     @mock.patch("ralph.lib.openstack.client.RalphOpenstackClient._get_keystone_client")
     @mock.patch("ralph.lib.openstack.client.RalphOpenstackClient._get_glance_client")
     def test_non_default_provider(self, get_gc, get_kc, get_nc):
         tenants = [
-            os.site["tenant_name"]
-            for os in self.openstack_client._get_instances_from_settings()
+            os.site["tenant_name"] for os in self.openstack_client._get_instances_from_settings()
         ]
         self.assertCountEqual(tenants, ["admin", "admin2"])
 
@@ -370,8 +355,7 @@ class TestOpenstackSync(RalphTestCase):
         )
         self.assertTrue(CloudProvider.objects.filter(name="my-own-openstack").exists())
         tenants = [
-            os.site["tenant_name"]
-            for os in new_openstack_client._get_instances_from_settings()
+            os.site["tenant_name"] for os in new_openstack_client._get_instances_from_settings()
         ]
         self.assertCountEqual(tenants, ["admin3"])
 
@@ -386,13 +370,12 @@ class TestOpenstackSync(RalphTestCase):
             for i in range(num_assets)
         ]
         hosts = [
-            CloudHostFactory(host_id="fake-instance-uuid-{}".format(i))
-            for i in range(num_assets)
+            CloudHostFactory(host_id="fake-instance-uuid-{}".format(i)) for i in range(num_assets)
         ]
 
         nodes = [
             FakeIronicNode(serial_number=asset.sn, instance_uuid=host.host_id)
-            for asset, host in zip(assets, hosts)
+            for asset, host in zip(assets, hosts, strict=True)
         ]
 
         self.ralph_client._match_nodes_to_hosts(nodes)
@@ -452,9 +435,7 @@ class TestOpenstackSync(RalphTestCase):
 
     def test_match_cloud_hosts_asset_not_found(self):
         asset_model = DataCenterAssetModelFactory()
-        DataCenterAsset.objects.create(
-            hostname="hostname-1", model=asset_model, sn="FOO"
-        )
+        DataCenterAsset.objects.create(hostname="hostname-1", model=asset_model, sn="FOO")
 
         host = CloudHostFactory(host_id="buz")
         node = FakeIronicNode(serial_number="BAR", instance_uuid=host.host_id)
@@ -519,12 +500,8 @@ class TestOpenstackSync(RalphTestCase):
 
     def test_get_ralph_servers_data(self):
         ralph_projects = self.ralph_client.get_ralph_projects()
-        ralph_projects_with_servers = self.ralph_client.get_ralph_servers_data(
-            ralph_projects
-        )
+        ralph_projects_with_servers = self.ralph_client.get_ralph_servers_data(ralph_projects)
         self.assertIn(
             self.host.host_id,
-            ralph_projects_with_servers[self.cloud_project_1.project_id][
-                "servers"
-            ].keys(),
+            ralph_projects_with_servers[self.cloud_project_1.project_id]["servers"].keys(),
         )

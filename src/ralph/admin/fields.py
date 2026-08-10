@@ -50,8 +50,8 @@ class IntegerMultilineField(MultilineField):
         result = super().to_python(value)
         try:
             return [int(i) for i in result]
-        except ValueError:
-            raise ValidationError(_("Enter a valid number."))
+        except ValueError as e:
+            raise ValidationError(_("Enter a valid number.")) from e
 
 
 class MultivalueFormMixin(object):
@@ -85,9 +85,9 @@ class MultivalueFormMixin(object):
         if len(items_count_per_multi) > 1:
             for field in self.multivalue_fields:
                 if field in cleaned_data:
-                    msg = _(
-                        ("Fields: %(fields)s - require the same number of items")
-                    ) % {"fields": ", ".join(self.multivalue_fields)}
+                    msg = _(("Fields: %(fields)s - require the same number of items")) % {
+                        "fields": ", ".join(self.multivalue_fields)
+                    }
                     self.errors.setdefault(field, []).append(msg)
 
     def any_in_multivalues_validator(self, data):
@@ -102,7 +102,7 @@ class MultivalueFormMixin(object):
                 for field_name in self.one_of_mulitvalue_required
                 if field_name in self.cleaned_data
             ]
-            for multivalues_row in zip(*rows_of_required):
+            for multivalues_row in zip(*rows_of_required, strict=False):
                 yield multivalues_row
 
         if self.one_of_mulitvalue_required:
@@ -145,9 +145,7 @@ class MultivalueFormMixin(object):
             if field.allow_duplicates:
                 continue
             try:
-                self.check_field_uniqueness(
-                    self.model, field_name, data.get(field_name, [])
-                )
+                self.check_field_uniqueness(self.model, field_name, data.get(field_name, []))
             except forms.ValidationError as error:
                 self._errors.setdefault(field_name, [])
                 self._errors[field_name] += error.messages
@@ -166,7 +164,7 @@ class MultivalueFormMixin(object):
             data[field] = value + [""] * (max_length - len(value))  # None?
         # remove empty lines
         while True:
-            rows = list(zip(*[data[f] for f in self.multivalue_fields]))
+            rows = list(zip(*[data[f] for f in self.multivalue_fields], strict=False))
             if len(rows) == 0:
                 break
             if not any(rows[-1]):

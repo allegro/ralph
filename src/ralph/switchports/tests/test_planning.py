@@ -12,9 +12,7 @@ class SwitchPortOwnerTestCase(TestCase):
         self.server_b = DataCenterAssetFactory(hostname="srv-b.local")
 
     def _connect(self, switch_label, server, server_label="eth1"):
-        switch_port = Port.objects.create(
-            label=switch_label, data_center_asset=self.switch
-        )
+        switch_port = Port.objects.create(label=switch_label, data_center_asset=self.switch)
         server_port = Port.objects.create(label=server_label, data_center_asset=server)
         conn = Connection.objects.create()
         ConnectionMember.objects.create(connection=conn, port=switch_port)

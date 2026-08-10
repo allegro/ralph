@@ -44,9 +44,7 @@ class AttachmentForm(RequestModelForm):
                 object_id=self._parent_object.pk,
                 attachment__md5=md5,
             ).exists():
-                AttachmentItem.objects.attach(
-                    self._parent_object.pk, content_type, [attachment]
-                )
+                AttachmentItem.objects.attach(self._parent_object.pk, content_type, [attachment])
             elif not obj.pk:
                 # if another file with existing MD5 is uploaded for the same
                 # object, show warninig message

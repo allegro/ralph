@@ -45,9 +45,7 @@ class CustomFieldsAPITests(RalphAPITestCase):
                 "default_value": "zxcvbn",
                 "url": self.get_full_url(url),
                 "type": CustomFieldTypes.CHOICE.desc,
-                "ui_url": self.get_full_url(
-                    self.custom_field_choices.get_absolute_url()
-                ),
+                "ui_url": self.get_full_url(self.custom_field_choices.get_absolute_url()),
             },
         )
 
@@ -77,8 +75,6 @@ class CustomFieldsAPITests(RalphAPITestCase):
         response = self.client.patch(url, data=data, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.custom_field_choices.refresh_from_db()
-        self.assertEqual(
-            self.custom_field_choices._get_choices(), ["9999", "aaaa", "xxx"]
-        )
+        self.assertEqual(self.custom_field_choices._get_choices(), ["9999", "aaaa", "xxx"])
         self.assertEqual(self.custom_field_choices.default_value, "aaaa")
         self.assertEqual(self.custom_field_choices.name, "new name for choices")

@@ -37,9 +37,7 @@ def view_permission_dispatch(func):
             if request.user.has_perm(perm_name):
                 return func(self, request, *args, **kwargs)
         logger.info(
-            "{} permission not set for user {}".format(
-                self.permision_codename, request.user
-            )
+            "{} permission not set for user {}".format(self.permision_codename, request.user)
         )
         return HttpResponseForbidden()
 
@@ -57,7 +55,7 @@ class PermissionViewMetaClass(type):
         attrs["permision_codename"] = codename
         new_class = super().__new__(cls, name, bases, attrs)
         dispatch = getattr(new_class, "dispatch", None)
-        setattr(new_class, "dispatch", view_permission_dispatch(dispatch))
+        new_class.dispatch = view_permission_dispatch(dispatch)
         _permission_views.append((new_class, codename))
         return new_class
 
@@ -85,9 +83,9 @@ def get_orphaned_extra_view_permissions():
     Useful for identifying permissions that may need manual cleanup.
     """
     current_codenames = _get_registered_codenames()
-    return Permission.objects.filter(
-        codename__startswith=EXTRA_VIEW_PERMISSION_PREFIX
-    ).exclude(codename__in=current_codenames)
+    return Permission.objects.filter(codename__startswith=EXTRA_VIEW_PERMISSION_PREFIX).exclude(
+        codename__in=current_codenames
+    )
 
 
 def update_extra_view_permissions(sender, **kwargs):
@@ -107,9 +105,9 @@ def update_extra_view_permissions(sender, **kwargs):
     admin_classes = _get_admin_view_mapping()
 
     old_permission_ids = set(
-        Permission.objects.filter(
-            codename__startswith=EXTRA_VIEW_PERMISSION_PREFIX
-        ).values_list("id", flat=True)
+        Permission.objects.filter(codename__startswith=EXTRA_VIEW_PERMISSION_PREFIX).values_list(
+            "id", flat=True
+        )
     )
 
     current_permission_ids = []
@@ -143,9 +141,9 @@ def update_extra_view_permissions(sender, **kwargs):
     # Identify orphaned permissions (not deleting them)
     orphaned_permission_ids = old_permission_ids - set(current_permission_ids)
     if orphaned_permission_ids:
-        orphaned_codenames = Permission.objects.filter(
-            id__in=orphaned_permission_ids
-        ).values_list("codename", flat=True)
+        orphaned_codenames = Permission.objects.filter(id__in=orphaned_permission_ids).values_list(
+            "codename", flat=True
+        )
         logger.warning(
             "Found %d orphaned permission(s): %s. "
             "Run 'cleanup_extra_view_permissions' to remove them.",

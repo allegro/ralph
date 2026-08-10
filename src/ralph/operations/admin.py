@@ -87,9 +87,7 @@ class ServiceEnvironmentAndConfigurationPathMixin(object):
         objects = Counter(
             [str(getattr(base_object, field)) for base_object in obj.base_objects.all()]
         )
-        return "<br>".join(
-            ["{}: {}".format(name, count) for name, count in objects.most_common()]
-        )
+        return "<br>".join(["{}: {}".format(name, count) for name, count in objects.most_common()])
 
     @mark_safe
     def get_services(self, obj):
@@ -121,9 +119,7 @@ class ServiceEnvironmentAndConfigurationPathMixin(object):
 
 
 @register(Operation)
-class OperationAdmin(
-    AttachmentsMixin, ServiceEnvironmentAndConfigurationPathMixin, RalphAdmin
-):
+class OperationAdmin(AttachmentsMixin, ServiceEnvironmentAndConfigurationPathMixin, RalphAdmin):
     search_fields = ["title", "description", "ticket_id"]
     list_filter = [
         "type",
@@ -201,9 +197,7 @@ class ProblemAdmin(OperationAdmin):
 
 @register(Failure)
 class FailureAdmin(OperationAdmin):
-    list_filter = OperationAdmin.list_filter + [
-        "base_objects__asset__model__manufacturer"
-    ]
+    list_filter = OperationAdmin.list_filter + ["base_objects__asset__model__manufacturer"]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

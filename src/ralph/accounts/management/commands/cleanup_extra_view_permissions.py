@@ -52,22 +52,18 @@ class Command(PermissionBaseCommand):
             orphaned = orphaned.exclude(codename__in=exclude)
 
         if not orphaned.exists():
-            self.stdout.write(
-                self.style.SUCCESS("No orphaned extra view permissions found.")
-            )
+            self.stdout.write(self.style.SUCCESS("No orphaned extra view permissions found."))
             return
 
         # Display orphaned permissions in table format
         count = orphaned.count()
-        self.stdout.write(
-            self.style.WARNING(f"\nFound {count} orphaned permission(s):\n")
-        )
+        self.stdout.write(self.style.WARNING(f"\nFound {count} orphaned permission(s):\n"))
 
         headers = ["codename", "content_type", "groups"]
         rows = []
         style_map = {}
 
-        for idx, perm in enumerate(orphaned):
+        for _, perm in enumerate(orphaned):
             groups = get_permission_groups(perm)
             groups_str = ", ".join(groups) or "(none)"
             rows.append([perm.codename, str(perm.content_type), groups_str])
@@ -75,16 +71,12 @@ class Command(PermissionBaseCommand):
         self.print_table(headers, rows, style_map)
 
         if dry_run:
-            self.stdout.write(
-                self.style.NOTICE("\nDry run - no permissions were deleted.")
-            )
+            self.stdout.write(self.style.NOTICE("\nDry run - no permissions were deleted."))
             return
 
         if not force:
             self.stdout.write(
-                self.style.WARNING(
-                    "\nWARNING: Deleting will remove permissions from all groups!"
-                )
+                self.style.WARNING("\nWARNING: Deleting will remove permissions from all groups!")
             )
             confirm = input("Are you sure you want to delete? [y/N]: ")
             if confirm.lower() != "y":
@@ -93,9 +85,5 @@ class Command(PermissionBaseCommand):
 
         deleted_count, _ = orphaned.delete()
 
-        self.stdout.write(
-            self.style.SUCCESS(f"Deleted {deleted_count} orphaned permission(s).")
-        )
-        logger.info(
-            "Deleted %d orphaned permission(s) via management command.", deleted_count
-        )
+        self.stdout.write(self.style.SUCCESS(f"Deleted {deleted_count} orphaned permission(s)."))
+        logger.info("Deleted %d orphaned permission(s) via management command.", deleted_count)

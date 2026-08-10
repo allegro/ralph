@@ -59,8 +59,6 @@ def _safe_load_datetime(event_data, field):
 
     try:
         datetime_str = event_data["issue"]["fields"][field]
-        return (
-            parse_datetime(datetime_str).astimezone(timezone.utc).replace(tzinfo=None)
-        )
+        return parse_datetime(datetime_str).astimezone(timezone.utc).replace(tzinfo=None)
     except:  # noqa
         return None

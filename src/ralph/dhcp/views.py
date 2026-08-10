@@ -76,9 +76,7 @@ class DHCPConfigMixin(object):
             )
 
         if dc_names:
-            found, not_found = self.check_objects_existence_by_names(
-                DataCenter, dc_names
-            )
+            found, not_found = self.check_objects_existence_by_names(DataCenter, dc_names)
             if not_found:
                 return HttpResponseNotFound(
                     "DC: {} doesn't exists.".format(", ".join(not_found)),
@@ -87,9 +85,7 @@ class DHCPConfigMixin(object):
 
             environments = NetworkEnvironment.objects.filter(data_center__in=found)
         elif env_names:
-            found, not_found = self.check_objects_existence_by_names(
-                NetworkEnvironment, env_names
-            )
+            found, not_found = self.check_objects_existence_by_names(NetworkEnvironment, env_names)
             if not_found:
                 return HttpResponseNotFound(
                     "ENV: {} doesn't exists.".format(", ".join(not_found)),
@@ -109,9 +105,7 @@ class DHCPSyncView(APIView):
         ip = get_client_ip(request)
         logger.info("Sync request DHCP server with IP: %s", ip)
         if not DHCPServer.update_last_synchronized(ip):
-            return HttpResponseNotFound(
-                "DHCP server doesn't exist.", content_type="text/plain"
-            )
+            return HttpResponseNotFound("DHCP server doesn't exist.", content_type="text/plain")
         return HttpResponse("OK", content_type="text/plain")
 
 
@@ -135,9 +129,7 @@ class DHCPEntriesView(DHCPConfigMixin, LastModifiedMixin, TemplateView, APIView)
             last_modified_date(DHCPEntry.objects, filter_dict={"network__in": networks})
         )
         last_items.append(
-            last_modified_date(
-                Ethernet.objects, filter_dict={"ipaddress__network__in": networks}
-            )
+            last_modified_date(Ethernet.objects, filter_dict={"ipaddress__network__in": networks})
         )
         last_items.append(
             last_modified_date(IPAddress.objects, filter_dict={"network__in": networks})
@@ -185,9 +177,7 @@ class DHCPNetworksView(DHCPConfigMixin, LastModifiedMixin, TemplateView, APIView
         last_items = []
         last_items.append(last_modified_date(networks))
         last_items.append(
-            last_modified_date(
-                NetworkEnvironment.objects, filter_dict={"network__in": networks}
-            )
+            last_modified_date(NetworkEnvironment.objects, filter_dict={"network__in": networks})
         )
         last_items.append(
             last_modified_date(
@@ -213,9 +203,7 @@ class DHCPNetworksView(DHCPConfigMixin, LastModifiedMixin, TemplateView, APIView
             .prefetch_related(
                 Prefetch(
                     "dns_servers_group__server_group_order__dns_server",
-                    queryset=DNSServer.objects.all().order_by(
-                        "server_group_order__order"
-                    ),
+                    queryset=DNSServer.objects.all().order_by("server_group_order__order"),
                 )
             )
         )

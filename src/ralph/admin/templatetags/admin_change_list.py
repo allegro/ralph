@@ -21,6 +21,4 @@ def admin_paginator_number(cl, i):
     elif i == cl.page_num:
         return format_html('<li class="current"><a href="#">{}</a></li> ', i)
     else:
-        return format_html(
-            '<li><a href="{}">{}</a></li> ', cl.get_query_string({PAGE_VAR: i}), i
-        )
+        return format_html('<li><a href="{}">{}</a></li> ', cl.get_query_string({PAGE_VAR: i}), i)

@@ -19,15 +19,11 @@ from ralph.lib.permissions.tests.models import (
 class TestUserPermissions(TestCase):
     def setUp(self):
         self.user1 = get_user_model().objects.create(username="user1")
-        self.superuser = get_user_model().objects.create(
-            username="superuser", is_superuser=True
-        )
+        self.superuser = get_user_model().objects.create(username="superuser", is_superuser=True)
 
     def test_is_author(self):
         result = is_author(self.user1)
-        self.assertEqual(
-            str(result), "(AND: ('author', {u}))".format(u=repr(self.user1))
-        )
+        self.assertEqual(str(result), "(AND: ('author', {u}))".format(u=repr(self.user1)))
 
     def test_is_author_and_collaborator(self):
         result = (is_author & is_collabolator)(self.user1)
@@ -58,14 +54,10 @@ class TestUserPermissions(TestCase):
         self.assertEqual(str(result), "(AND: )")
 
     def test_is_author_or_collaborator_when_superuser_and_skip_superuser_rights(self):  # noqa
-        result = (is_author | is_collabolator)(
-            self.superuser, skip_superuser_rights=True
-        )
+        result = (is_author | is_collabolator)(self.superuser, skip_superuser_rights=True)
         self.assertEqual(
             str(result),
-            "(OR: ('author', {u}), ('collaborators', {u}))".format(
-                u=repr(self.superuser)
-            ),
+            "(OR: ('author', {u}), ('collaborators', {u}))".format(u=repr(self.superuser)),
         )
 
 
@@ -108,9 +100,7 @@ class TestPermissionsPerObject(PermissionsTestMixin, TestCase):
         (LongArticle, "user2", 0),
     )
     def test_get_objects_for_user(self, article_cls, username, count):
-        self.assertEqual(
-            article_cls._get_objects_for_user(getattr(self, username)).count(), count
-        )
+        self.assertEqual(article_cls._get_objects_for_user(getattr(self, username)).count(), count)
 
     def test_get_object_for_superuser(self):
         self.assertEqual(

@@ -126,11 +126,7 @@ def get_m2m(parent_model, model):
     # need to check on both sides (m2m field will be defined only in one of the
     # models)
     for rel in parent_model._meta.get_fields(include_hidden=True):
-        if (
-            rel.many_to_many
-            and rel.auto_created
-            and issubclass(rel.related_model, model)
-        ):
+        if rel.many_to_many and rel.auto_created and issubclass(rel.related_model, model):
             return rel.field
 
     for rel in parent_model._meta.many_to_many:
@@ -147,9 +143,7 @@ def get_foreign_key_for_m2m(parent_model, m2m):
         m2m: ManyToManyField relation instance
     """
     for field in m2m.remote_field.through._meta.fields:
-        if isinstance(field, ForeignKey) and issubclass(
-            parent_model, field.remote_field.model
-        ):
+        if isinstance(field, ForeignKey) and issubclass(parent_model, field.remote_field.model):
             return field
 
 
@@ -281,9 +275,7 @@ class InlineM2MAdminMixin(object):
                             "deleting the following protected related objects: "
                             "%(related_objects)s"
                         )
-                        raise ValidationError(
-                            msg, code="deleting_protected", params=params
-                        )
+                        raise ValidationError(msg, code="deleting_protected", params=params)
 
             def is_valid(self):
                 result = super(DeleteProtectedModelForm, self).is_valid()
@@ -292,9 +284,7 @@ class InlineM2MAdminMixin(object):
 
         defaults["form"] = DeleteProtectedModelForm
 
-        if defaults["fields"] is None and not modelform_defines_fields(
-            defaults["form"]
-        ):
+        if defaults["fields"] is None and not modelform_defines_fields(defaults["form"]):
             defaults["fields"] = forms.ALL_FIELDS
 
         # THE ONLY DIFFERENCE HERE COMPARING TO ORIGINAL \/

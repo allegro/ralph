@@ -36,9 +36,7 @@ class ObjectCustomFieldsViewSet(viewsets.ModelViewSet):
         """
         info = {
             "content_type_id": ContentType.objects.get_for_model(self.related_model).id,
-            self.related_model_lookup_field: (
-                self.kwargs[self.related_model_url_field]
-            ),
+            self.related_model_lookup_field: (self.kwargs[self.related_model_url_field]),
         }
         return info
 
@@ -51,8 +49,8 @@ class ObjectCustomFieldsViewSet(viewsets.ModelViewSet):
     def _dynamically_refresh_related_model(self):
         if not self.related_model:
             return
-        # Because of poor database design we have to resort to tricks like that to make it work with polymorphic models
-        #
+        # Because of poor database design we have to resort to tricks like that
+        # to make it work with polymorphic models
         try:
             if self.related_model.__name__ == "BaseObject":
                 obj = self.related_model._default_manager.get(

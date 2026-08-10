@@ -25,9 +25,7 @@ def validate_is_management(forms):
 
     count_management_ip = is_management.count(True)
     if is_management and count_management_ip > 1:
-        raise ValidationError(
-            ("Only one management IP address can be assigned to this asset")
-        )
+        raise ValidationError(("Only one management IP address can be assigned to this asset"))
 
 
 class EthernetLockDeleteForm(forms.ModelForm):
@@ -96,9 +94,7 @@ class SimpleNetworkForm(EthernetLockDeleteForm):
     """
 
     hostname = CharFormFieldWithAutoStrip(label="Hostname", required=False)
-    address = forms.GenericIPAddressField(
-        label="IP address", required=False, protocol="IPv4"
-    )
+    address = forms.GenericIPAddressField(label="IP address", required=False, protocol="IPv4")
 
     ip_fields = ["hostname", "address"]
 
@@ -184,9 +180,7 @@ class SimpleNetworkForm(EthernetLockDeleteForm):
         """
         fields = ["mac", "address"]
         if not any([self.cleaned_data.get(field) for field in fields]):
-            raise ValidationError(
-                _("At least one of {} is required".format(", ".join(fields)))
-            )
+            raise ValidationError(_("At least one of {} is required".format(", ".join(fields))))
 
     def _validate_ip_fields(self):
         """
@@ -210,9 +204,7 @@ class SimpleNetworkForm(EthernetLockDeleteForm):
     def save(self, commit=True):
         obj = super().save(commit=True)
         ip_values = {
-            key: value
-            for key, value in self.cleaned_data.items()
-            if key in self.ip_fields
+            key: value for key, value in self.cleaned_data.items() if key in self.ip_fields
         }
         if self.ip:
             self.ip.__dict__.update(ip_values)

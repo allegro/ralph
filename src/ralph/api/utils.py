@@ -24,9 +24,7 @@ class QuerysetRelatedMixin(object):
 
     def __init__(self, *args, **kwargs):
         self.select_related = kwargs.pop("select_related", self.select_related) or []
-        self.prefetch_related = (
-            kwargs.pop("prefetch_related", self.prefetch_related) or []
-        )
+        self.prefetch_related = kwargs.pop("prefetch_related", self.prefetch_related) or []
         if getattr(self, "queryset", None) is not None:
             admin_site = ralph_site._registry.get(self.queryset.model)
             if (
@@ -59,12 +57,8 @@ class PolymorphicViewSetMixin(QuerysetRelatedMixin):
         polymorphic_prefetch_related = {}
         for model, view in self._viewsets_registry.items():
             if model in queryset.model._polymorphic_descendants:
-                polymorphic_select_related[model._meta.object_name] = (
-                    view.select_related
-                )
-                polymorphic_prefetch_related[model._meta.object_name] = (
-                    view.prefetch_related
-                )
+                polymorphic_select_related[model._meta.object_name] = view.select_related
+                polymorphic_prefetch_related[model._meta.object_name] = view.prefetch_related
         return queryset.polymorphic_select_related(
             **polymorphic_select_related
         ).polymorphic_prefetch_related(**polymorphic_prefetch_related)
@@ -76,13 +70,9 @@ class PolymorphicViewSetMixin(QuerysetRelatedMixin):
         # for many objects, `PolymorphicListSerializer` is used underneath
         if not kwargs.get("many"):
             try:
-                serializer_class = serializer_class._serializers_registry[
-                    args[0].__class__
-                ]
+                serializer_class = serializer_class._serializers_registry[args[0].__class__]
             except KeyError:
-                logger.warning(
-                    "Dedicated serializer not found for %s", args[0].__class__
-                )
+                logger.warning("Dedicated serializer not found for %s", args[0].__class__)
         return serializer_class(*args, **kwargs)
 
 

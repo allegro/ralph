@@ -38,9 +38,7 @@ class BaseObjectLicenceTest(ClientMixin, TestCase):
             "custom_fields-customfieldvalue-content_type-object_id-MAX_NUM_FORMS": 1000,
         }
 
-        response = self.client.post(
-            reverse("admin:licences_licence_add"), data=data, follow=True
-        )
+        response = self.client.post(reverse("admin:licences_licence_add"), data=data, follow=True)
         new_licence = Licence.objects.get(niw="111")
 
         self.assertEqual(response.status_code, 200)
@@ -91,6 +89,4 @@ class BaseObjectLicenceTest(ClientMixin, TestCase):
             data=data,
             follow=True,
         )
-        self.assertContains(
-            response, "Asset region is in a different region than licence."
-        )
+        self.assertContains(response, "Asset region is in a different region than licence.")

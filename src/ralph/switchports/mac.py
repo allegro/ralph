@@ -36,9 +36,7 @@ def previous_mac(mac: str) -> str:
     """
     try:
         mac_bytes = bytes.fromhex(mac.replace(":", ""))
-        previous_mac_bytes = (int.from_bytes(mac_bytes, byteorder="big") - 1) % (
-            1 << 48
-        )
+        previous_mac_bytes = (int.from_bytes(mac_bytes, byteorder="big") - 1) % (1 << 48)
         previous_mac_str = ":".join(
             f"{(previous_mac_bytes >> (i * 8)) & 0xFF:02X}" for i in reversed(range(6))
         )

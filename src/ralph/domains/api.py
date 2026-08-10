@@ -71,9 +71,7 @@ class DomainCategoryViewSet(RalphAPIViewSet):
 
 
 router.register(r"domains", DomainViewSet)
-router.register(
-    r"domain-provider-additional-services", DomainProviderAdditionalServicesViewSet
-)
+router.register(r"domain-provider-additional-services", DomainProviderAdditionalServicesViewSet)
 router.register(r"dns-provider", DNSProviderViewSet)
 router.register(r"domain-category", DomainCategoryViewSet)
 urlpatterns = []

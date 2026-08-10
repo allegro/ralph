@@ -127,9 +127,7 @@ class HostnameGeneratorTests(RalphTestCase):
 
     def test_validate_imei(self):
         bo_asset_failed = BackOfficeAssetFactory(imei="failed", imei2="failed")
-        bo_asset = BackOfficeAssetFactory(
-            imei="990000862471854", imei2="990000862471854"
-        )
+        bo_asset = BackOfficeAssetFactory(imei="990000862471854", imei2="990000862471854")
 
         self.assertFalse(bo_asset_failed.validate_imei(bo_asset_failed.imei))
         self.assertTrue(bo_asset.validate_imei(bo_asset.imei))
@@ -147,14 +145,10 @@ class TestBackOfficeAsset(RalphTestCase):
         cls.category = CategoryFactory(code="PC")
         cls.category_without_code = CategoryFactory()
         cls.model = BackOfficeAssetModelFactory(category=cls.category)
-        cls.model_without_code = BackOfficeAssetModelFactory(
-            category=cls.category_without_code
-        )
+        cls.model_without_code = BackOfficeAssetModelFactory(category=cls.category_without_code)
 
     def setUp(self):
-        with override_settings(
-            ASSET_BUYOUT_CATEGORY_TO_MONTHS={str(self.category.pk): 48}
-        ):
+        with override_settings(ASSET_BUYOUT_CATEGORY_TO_MONTHS={str(self.category.pk): 48}):
             super().setUp()
             AssetLastHostname.objects.create(prefix="POLPC", counter=1000)
             self.bo_asset = BackOfficeAssetFactory(
@@ -186,9 +180,7 @@ class TestBackOfficeAsset(RalphTestCase):
                 depreciation_end_date=datetime(2015, 1, 11).date(),
                 depreciation_rate=50,
             )
-            self.category_parent = CategoryFactory(
-                code="Mob1", default_depreciation_rate=30
-            )
+            self.category_parent = CategoryFactory(code="Mob1", default_depreciation_rate=30)
             self.category_2 = CategoryFactory(code="Mob2", default_depreciation_rate=25)
             self.category_3 = CategoryFactory(
                 code="Mob3", parent=self.category_parent, default_depreciation_rate=0
@@ -221,9 +213,7 @@ class TestBackOfficeAsset(RalphTestCase):
         self.assertEqual(self.bo_asset.hostname, "USPC00001")
 
     def test_try_assign_hostname_category_without_code(self):
-        bo_asset_2 = BackOfficeAssetFactory(
-            model=self.model_without_code, hostname="abcd"
-        )
+        bo_asset_2 = BackOfficeAssetFactory(model=self.model_without_code, hostname="abcd")
         bo_asset_2._try_assign_hostname(commit=True)
         self.assertEqual(bo_asset_2.hostname, "abcd")
 
@@ -274,9 +264,9 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
         self.request = RequestFactory().get("/assets/")
         self.request.user = self.user_pl
         # ugly hack from https://code.djangoproject.com/ticket/17971
-        setattr(self.request, "session", "session")
+        self.request.session = "session"
         messages = FallbackStorage(self.request)
-        setattr(self.request, "_messages", messages)
+        self.request._messages = messages
 
     def test_convert_to_data_center_asset(self):
         bo_asset = BackOfficeAssetFactory()
@@ -304,9 +294,7 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
         self.assertEqual(dc_asset.hostname, hostname)
 
     def test_convert_to_data_center_asset_preserves_status_name(self):
-        bo_asset = BackOfficeAssetFactory(
-            status=BackOfficeAssetStatus.from_name("damaged")
-        )
+        bo_asset = BackOfficeAssetFactory(status=BackOfficeAssetStatus.from_name("damaged"))
         transition = Transition.objects.create(
             name="transition",
             model=TransitionModel.get_for_field(bo_asset, "status"),
@@ -333,9 +321,7 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
         target_status_id = DataCenterAssetStatus.from_name(
             "new"  # status name common for dc_asset and bo_asset
         ).id
-        bo_asset = BackOfficeAssetFactory(
-            status=BackOfficeAssetStatus.from_name("damaged")
-        )
+        bo_asset = BackOfficeAssetFactory(status=BackOfficeAssetStatus.from_name("damaged"))
         transition = Transition.objects.create(
             name="transition",
             model=TransitionModel.get_for_field(bo_asset, "status"),
@@ -362,9 +348,7 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
         target_status_id = DataCenterAssetStatus.from_id(
             settings.CONVERT_TO_DATACENTER_ASSET_DEFAULT_STATUS_ID
         ).id
-        bo_asset = BackOfficeAssetFactory(
-            status=BackOfficeAssetStatus.from_name("damaged")
-        )
+        bo_asset = BackOfficeAssetFactory(status=BackOfficeAssetStatus.from_name("damaged"))
         transition = Transition.objects.create(
             name="transition",
             model=TransitionModel.get_for_field(bo_asset, "status"),
@@ -550,9 +534,7 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
         report_template = ReportTemplateFactory(template__data=REPORT_TEMPLATE)
         user = UserFactory()
         instances = [
-            BackOfficeAssetFactory(
-                user=UserFactory(first_name="James", last_name="Bond")
-            )
+            BackOfficeAssetFactory(user=UserFactory(first_name="James", last_name="Bond"))
         ]
         context = BackOfficeAsset._get_report_context(instances)
         attachment = generate_report(
@@ -593,13 +575,9 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
             uploaded_by=self.user_pl,
         )
 
-        bo_asset.send_attachments_to_user(
-            self.user_pl, transition.id, attachments=[attachment]
-        )
+        bo_asset.send_attachments_to_user(self.user_pl, transition.id, attachments=[attachment])
 
-        mock_get_hook.assert_called_once_with(
-            "back_office.transition_action.email_context"
-        )
+        mock_get_hook.assert_called_once_with("back_office.transition_action.email_context")
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].from_email, "foo@bar.pl")
 
@@ -682,9 +660,7 @@ class BackOfficeAssetFormTest(TransitionTestCase, ClientMixin):
         self.assertEqual(resp.status_code, 200)
         self.assertIn("hostname", resp.context["adminform"].form.fields)
         self.assertTrue(
-            resp.context["adminform"]
-            .form.fields["hostname"]
-            .widget.attrs.get("readonly")
+            resp.context["adminform"].form.fields["hostname"].widget.attrs.get("readonly")
         )
 
     def test_model_asset_type_back_office_shall_pass(self):

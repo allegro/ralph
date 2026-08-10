@@ -34,33 +34,23 @@ def mirror_groups(self):
     # the only difference comparing to original django_auth_ldap:
     if getattr(settings, "AUTH_LDAP_KEEP_NON_LDAP_GROUPS", False):
         # list of groups names mapped from LDAP
-        LDAP_GROUPS_NAMES = list(
-            getattr(settings, "AUTH_LDAP_GROUP_MAPPING", {}).values()
-        ) + list(getattr(settings, "AUTH_LDAP_NESTED_GROUPS", {}).values())
+        LDAP_GROUPS_NAMES = list(getattr(settings, "AUTH_LDAP_GROUP_MAPPING", {}).values()) + list(
+            getattr(settings, "AUTH_LDAP_NESTED_GROUPS", {}).values()
+        )
         # include groups not mapped from LDAP into target groups names
         non_ad_groups = list(
-            self._user.groups.exclude(name__in=LDAP_GROUPS_NAMES).values_list(
-                "name", flat=True
-            )
+            self._user.groups.exclude(name__in=LDAP_GROUPS_NAMES).values_list("name", flat=True)
         )
         target_group_names = frozenset(list(target_group_names) + non_ad_groups)
-    logger.info(
-        "Target groups for user {}: {}".format(
-            self._user, ", ".join(target_group_names)
-        )
-    )
-    current_group_names = frozenset(
-        self._user.groups.values_list("name", flat=True).iterator()
-    )
+    logger.info("Target groups for user {}: {}".format(self._user, ", ".join(target_group_names)))
+    current_group_names = frozenset(self._user.groups.values_list("name", flat=True).iterator())
     if target_group_names != current_group_names:
         logger.info(
             "Modifying user groups: current = {}, target = {}".format(
                 ", ".join(current_group_names), ", ".join(target_group_names)
             )
         )
-        existing_groups = list(
-            Group.objects.filter(name__in=target_group_names).iterator()
-        )
+        existing_groups = list(Group.objects.filter(name__in=target_group_names).iterator())
         existing_group_names = frozenset(group.name for group in existing_groups)
 
         new_groups = [

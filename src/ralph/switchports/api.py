@@ -35,13 +35,9 @@ class ConnectionSerializer(RalphAPISerializer):
 
 
 class ConnectionViewSet(RalphAPIViewSet):
-    queryset = Connection.objects.all().prefetch_related(
-        "members__port__data_center_asset"
-    )
+    queryset = Connection.objects.all().prefetch_related("members__port__data_center_asset")
     serializer_class = ConnectionSerializer
-    extended_filter_fields = {
-        "hostname": ["members__port__data_center_asset__hostname"]
-    }
+    extended_filter_fields = {"hostname": ["members__port__data_center_asset__hostname"]}
 
 
 router.register(r"ports", PortViewSet)

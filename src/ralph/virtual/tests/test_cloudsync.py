@@ -46,9 +46,7 @@ class TestCloudSyncRouter(RalphAPITestCase):
         self.assertEqual(404, resp.status_code)
 
     def test_404_processor_not_set(self):
-        cloud_provider = CloudProviderFactory(
-            cloud_sync_enabled=True, cloud_sync_driver=None
-        )
+        cloud_provider = CloudProviderFactory(cloud_sync_enabled=True, cloud_sync_driver=None)
 
         url = reverse("cloud-sync-router", args=(cloud_provider.id,))
         resp = self.client.post(url, {}, format="json")

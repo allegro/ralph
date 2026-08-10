@@ -65,9 +65,7 @@ class DataImporterFieldsTestCase(TestCase):
 
         # Add and remove
         with self.assertNumQueries(4):
-            field.save(
-                self.licence, {"users": ",".join([i.username for i in self.users])}
-            )
+            field.save(self.licence, {"users": ",".join([i.username for i in self.users])})
 
         self.assertEqual(self.licence.users.all().count(), 4)
 
@@ -80,17 +78,13 @@ class DataImporterFieldsTestCase(TestCase):
 
         # Remove
         with self.assertNumQueries(3):
-            field.save(
-                self.licence, {"users": ",".join([i.username for i in users[:4]])}
-            )
+            field.save(self.licence, {"users": ",".join([i.username for i in users[:4]])})
 
         self.assertEqual(self.licence.users.all().count(), 4)
 
         # Update
         with self.assertNumQueries(2):
-            field.save(
-                self.licence, {"users": ",".join([i.username for i in users[:4]])}
-            )
+            field.save(self.licence, {"users": ",".join([i.username for i in users[:4]])})
 
         self.assertEqual(self.licence.users.all().count(), 4)
 

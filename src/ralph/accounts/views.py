@@ -170,9 +170,7 @@ AcceptAssetsForCurrentUserMixin = (
 )
 
 
-class CurrentUserInfoView(
-    AcceptAssetsForCurrentUserMixin, UserInfoMixin, RalphBaseTemplateView
-):
+class CurrentUserInfoView(AcceptAssetsForCurrentUserMixin, UserInfoMixin, RalphBaseTemplateView):
     template_name = "ralphuser/my_equipment.html"
 
     def get_context_data(self, **kwargs):

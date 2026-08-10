@@ -130,9 +130,7 @@ def get_user_test_equipment_to_accept_tile_data(user):
 
 def get_available_space_in_data_centers(data_centers):
     available = (
-        Rack.objects.filter(
-            server_room__data_center__in=data_centers, require_position=True
-        )
+        Rack.objects.filter(server_room__data_center__in=data_centers, require_position=True)
         .values_list("server_room__data_center__name")
         .annotate(s=Sum("max_u_height"))
     )
@@ -181,9 +179,7 @@ def dc_capacity(context, data_centers=None, size="big"):
         )
         results.append(
             {
-                "url": "{}#/dc/{}".format(
-                    reverse("dc_view"), data_centers_mapper[name]
-                ),
+                "url": "{}#/dc/{}".format(reverse("dc_view"), data_centers_mapper[name]),
                 "tooltip": tooltip,
                 "size": size,
                 "color": next(color),
@@ -218,9 +214,7 @@ def ralph_summary(context):
                 "count": model.objects.count(),
                 "class": slugify(meta.model_name),
                 "icon": "icon",
-                "url": reverse(
-                    "admin:{}_{}_changelist".format(meta.app_label, meta.model_name)
-                ),
+                "url": reverse("admin:{}_{}_changelist".format(meta.app_label, meta.model_name)),
             }
         )
     results.append(get_user_equipment_tile_data(user=user))
@@ -230,27 +224,19 @@ def ralph_summary(context):
     accept_for_simcard_tile_data = get_user_simcard_to_accept_tile_data(user=user)  # noqa
     if accept_for_simcard_tile_data:
         results.append(accept_for_simcard_tile_data)
-    accept_for_access_card_tile_data = get_user_access_card_to_accept_tile_data(
-        user=user
-    )  # noqa
+    accept_for_access_card_tile_data = get_user_access_card_to_accept_tile_data(user=user)  # noqa
     if accept_for_access_card_tile_data:
         results.append(accept_for_access_card_tile_data)
     accept_for_loan_tile_data = get_user_equipment_to_accept_loan_tile_data(user=user)  # noqa
     if accept_for_loan_tile_data:
         results.append(accept_for_loan_tile_data)
-    accept_for_return_tile_data = get_user_equipment_to_accept_return_tile_data(
-        user=user
-    )  # noqa
+    accept_for_return_tile_data = get_user_equipment_to_accept_return_tile_data(user=user)  # noqa
     if accept_for_return_tile_data:
         results.append(accept_for_return_tile_data)
-    accept_for_team_asset_tile_data = get_user_team_equipment_to_accept_tile_data(
-        user=user
-    )  # noqa
+    accept_for_team_asset_tile_data = get_user_team_equipment_to_accept_tile_data(user=user)  # noqa
     if accept_for_team_asset_tile_data:
         results.append(accept_for_team_asset_tile_data)
-    accept_for_test_asset_tile_data = get_user_test_equipment_to_accept_tile_data(
-        user=user
-    )  # noqa
+    accept_for_test_asset_tile_data = get_user_test_equipment_to_accept_tile_data(user=user)  # noqa
     if accept_for_test_asset_tile_data:
         results.append(accept_for_test_asset_tile_data)
 

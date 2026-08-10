@@ -261,10 +261,7 @@ class NetworkInlineTestCase(RalphTestCase):
         data.update(self._prepare_inline_data(inline_data))
         response = self.client.post(self.obj1.get_absolute_url(), data)
         self.assertEqual(response.status_code, 200)
-        msg = (
-            "Address is required when one of hostname, is_management, "
-            "dhcp_expose is filled"
-        )
+        msg = "Address is required when one of hostname, is_management, dhcp_expose is filled"
         self.assertTrue(any([msg in err for err in response.context_data["errors"]]))
 
 
@@ -529,9 +526,7 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
             "Address {} already exist.".format(self.ip1.address),
         ]
         for msg in error_messages:
-            self.assertTrue(
-                any([msg in err for err in response.context_data["errors"]])
-            )
+            self.assertTrue(any([msg in err for err in response.context_data["errors"]]))
 
     def test_dhcp_expose_without_mac_for_new_record_should_not_pass(self):
         self.ip1.dhcp_expose = True

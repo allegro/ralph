@@ -17,12 +17,8 @@ class ApplyCellEditTestCase(TestCase):
     def setUp(self):
         self.rack = RackFactory(name="TestRack-CellEdit")
         self.switch_eth1 = DataCenterAssetFactory(hostname="ce.sw.eth1.local")
-        self.server1 = DataCenterAssetFactory(
-            hostname="ce-srv1.local", rack=self.rack, position=1
-        )
-        self.server2 = DataCenterAssetFactory(
-            hostname="ce-srv2.local", rack=self.rack, position=2
-        )
+        self.server1 = DataCenterAssetFactory(hostname="ce-srv1.local", rack=self.rack, position=1)
+        self.server2 = DataCenterAssetFactory(hostname="ce-srv2.local", rack=self.rack, position=2)
         self.rack_config, _ = RackConfiguration.objects.get_or_create(rack=self.rack)
         self.sc_eth1 = RackSwitchConfiguration.objects.create(
             rack_configuration=self.rack_config,
@@ -53,9 +49,7 @@ class ApplyCellEditTestCase(TestCase):
         self.assertEqual(result.created, 1)
         self.assertIsNone(result.conflict)
         self.assertTrue(
-            Port.objects.filter(
-                label="0/0/30", data_center_asset=self.switch_eth1
-            ).exists()
+            Port.objects.filter(label="0/0/30", data_center_asset=self.switch_eth1).exists()
         )
 
     def test_conflict_is_deferred_and_nothing_changes(self):
@@ -85,9 +79,7 @@ class ApplyCellEditTestCase(TestCase):
         self.assertIsNone(result.conflict)
         # The old connection is gone, server1 now owns 0/0/30.
         self.assertFalse(Connection.objects.filter(id=conn.id).exists())
-        switch_port = Port.objects.get(
-            label="0/0/30", data_center_asset=self.switch_eth1
-        )
+        switch_port = Port.objects.get(label="0/0/30", data_center_asset=self.switch_eth1)
         member = switch_port.connectionmember
         peers = {m.port.data_center_asset_id for m in member.connection.members.all()}
         self.assertIn(self.server1.id, peers)
@@ -103,9 +95,7 @@ class ApplyCellEditTestCase(TestCase):
         self.assertIsNone(result.conflict)
         # eth1 now points at 0/0/30, old 0/0/20 connection is gone.
         eth1 = Port.objects.get(label="eth1", data_center_asset=self.server1)
-        peer_labels = {
-            m.port.label for m in eth1.connectionmember.connection.members.all()
-        }
+        peer_labels = {m.port.label for m in eth1.connectionmember.connection.members.all()}
         self.assertIn("0/0/30", peer_labels)
 
     def test_clearing_cell_disconnects(self):
@@ -126,9 +116,7 @@ class ApplyCellEditTestCase(TestCase):
         self.assertIsNone(result.conflict)
 
     def test_unknown_override_switch_is_error(self):
-        result = self._apply(
-            self.server1, new_value="30", override_value="does-not-exist"
-        )
+        result = self._apply(self.server1, new_value="30", override_value="does-not-exist")
         self.assertIsNotNone(result.error)
         self.assertIn("unknown switch", result.error)
 
@@ -143,6 +131,4 @@ class ApplyCellEditTestCase(TestCase):
                 switch=alt,
             ).exists()
         )
-        self.assertTrue(
-            Port.objects.filter(label="0/0/7", data_center_asset=alt).exists()
-        )
+        self.assertTrue(Port.objects.filter(label="0/0/7", data_center_asset=alt).exists())

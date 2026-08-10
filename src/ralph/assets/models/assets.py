@@ -27,9 +27,7 @@ from ralph.lib.permissions.models import PermByFieldMixin, PermissionsBase
 logger = logging.getLogger(__name__)
 
 
-class AssetHolder(
-    AdminAbsoluteUrlMixin, NamedMixin.NonUnique, TimeStampMixin, models.Model
-):
+class AssetHolder(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, TimeStampMixin, models.Model):
     pass
 
 
@@ -45,9 +43,7 @@ class Environment(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Mode
     pass
 
 
-class Service(
-    PermByFieldMixin, AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model
-):
+class Service(PermByFieldMixin, AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
     # Fixme: let's do service catalog replacement from that
     _allow_in_dashboard = True
 
@@ -156,9 +152,7 @@ class AssetModel(
         verbose_name=_("type"),
         choices=ObjectModelType(),
     )
-    manufacturer = models.ForeignKey(
-        Manufacturer, on_delete=models.PROTECT, blank=True, null=True
-    )
+    manufacturer = models.ForeignKey(Manufacturer, on_delete=models.PROTECT, blank=True, null=True)
     category = TreeForeignKey(
         "Category", null=True, related_name="models", on_delete=models.CASCADE
     )
@@ -325,9 +319,7 @@ class BudgetInfo(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model
 
 
 class Asset(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
-    model = models.ForeignKey(
-        AssetModel, related_name="assets", on_delete=models.PROTECT
-    )
+    model = models.ForeignKey(AssetModel, related_name="assets", on_delete=models.PROTECT)
     # TODO: unify hostname for DCA, VirtualServer, Cluster and CloudHost
     # (use another model?)
     hostname = NullableCharFieldWithAutoStrip(
@@ -453,11 +445,7 @@ class Asset(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
         Returns:
             Buyout date
         """
-        if (
-            not self.model
-            or not self.model.category
-            or not self.model.category.show_buyout_date
-        ):
+        if not self.model or not self.model.category or not self.model.category.show_buyout_date:
             return None
 
         category = self.model.category  # type: Category
@@ -468,9 +456,7 @@ class Asset(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
             return None
 
     def get_depreciation_months(self):
-        return int(
-            (1 / (self.depreciation_rate / 100) * 12) if self.depreciation_rate else 0
-        )
+        return int((1 / (self.depreciation_rate / 100) * 12) if self.depreciation_rate else 0)
 
     def is_depreciated(self, date=None):
         date = date or datetime.date.today()

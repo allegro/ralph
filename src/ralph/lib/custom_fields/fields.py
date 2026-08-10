@@ -53,9 +53,7 @@ class CustomFieldsWithInheritanceRelation(GenericRelation):
         setattr(
             cls,
             self.name,
-            ReverseGenericRelatedObjectsWithInheritanceDescriptor(
-                self, self.for_concrete_model
-            ),
+            ReverseGenericRelatedObjectsWithInheritanceDescriptor(self, self.for_concrete_model),
         )
 
 
@@ -131,14 +129,10 @@ class CustomFieldValueQuerySet(models.QuerySet):
     def values(self, *fields):
         # TODO: handle values and values_list (need to overwrite `iterator`
         # using prioritizing)
-        raise NotImplementedError(
-            "CustomField queryset does not support values queryset"
-        )
+        raise NotImplementedError("CustomField queryset does not support values queryset")
 
     def values_list(self, *fields):
-        raise NotImplementedError(
-            "CustomField queryset does not support values list queryset"
-        )
+        raise NotImplementedError("CustomField queryset does not support values list queryset")
 
 
 class RelModel:
@@ -167,9 +161,7 @@ class ReverseGenericRelatedObjectsWithInheritanceDescriptor:
         rel_model = RelModel(model=self.field.remote_field.model, field=self.field)
         # difference here comparing to Django!
         superclass = rel_model.model.inherited_objects.__class__
-        RelatedManager = create_generic_related_manager_with_inheritance(
-            superclass, rel_model
-        )
+        RelatedManager = create_generic_related_manager_with_inheritance(superclass, rel_model)
 
         manager = RelatedManager(
             instance=instance,
@@ -199,9 +191,7 @@ def create_generic_related_manager_with_inheritance(superclass, rel):  # noqa: C
             self.core_filters = {}
             # construct inheritance filters based on
             # `custom_fields_inheritance` defined on model
-            self.inheritance_filters = [
-                self._get_inheritance_filters_for_single_instance()
-            ]
+            self.inheritance_filters = [self._get_inheritance_filters_for_single_instance()]
 
         def _get_inheritance_filters_for_single_instance(self):
             """
@@ -209,7 +199,7 @@ def create_generic_related_manager_with_inheritance(superclass, rel):  # noqa: C
             single instance.
 
             Final format of queryset will look similar to:
-            (Q(content_type_id=X) & Q(object_id=Y)) | (Q(content_type_id=A) & Q(object_id=B)) | ...  # noqa
+            (Q(content_type_id=X) & Q(object_id=Y)) | (Q(content_type_id=A) & Q(object_id=B)) | ...
             """
             inheritance_filters = [
                 # custom field of instance
@@ -221,9 +211,7 @@ def create_generic_related_manager_with_inheritance(superclass, rel):  # noqa: C
             # for each related field (foreign key), add it's content_type
             # and object_id to queryset filter
             for field_path in self.instance.custom_fields_inheritance:
-                content_type = _get_content_type_from_field_path(
-                    self.instance, field_path
-                )
+                content_type = _get_content_type_from_field_path(self.instance, field_path)
                 value = getattr_dunder(self.instance, field_path)
                 # filter only if related field has some value
                 if value:
@@ -273,9 +261,7 @@ def create_generic_related_manager_with_inheritance(superclass, rel):  # noqa: C
             # process each dependent field from `custom_fields_inheritance`
             for field_path in self.instance.custom_fields_inheritance:
                 # assume that field is foreign key
-                content_type = _get_content_type_from_field_path(
-                    self.instance, field_path
-                )
+                content_type = _get_content_type_from_field_path(self.instance, field_path)
                 content_types.add(content_type)
                 # for each instance, get value of this dependent field
                 for instance in instances:
@@ -312,9 +298,7 @@ def create_generic_related_manager_with_inheritance(superclass, rel):  # noqa: C
             # mapping from content_type and object_id to `CustomFieldValue`s
             rel_obj_cache = defaultdict(list)
             for rel_obj in qs:
-                rel_obj_cache[(rel_obj.content_type_id, rel_obj.object_id)].append(
-                    rel_obj
-                )
+                rel_obj_cache[(rel_obj.content_type_id, rel_obj.object_id)].append(rel_obj)
 
             # for each instance reconstruct it's CustomFieldValues
             # using `instances_cfs` mapping (from instance pk to content_type

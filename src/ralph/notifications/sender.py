@@ -40,17 +40,13 @@ def send_notification_for_model(instance):
                 "object": instance,
                 "user": get_current_user(),
                 "settings": settings,
-                "object_url": urljoin(
-                    settings.RALPH_HOST_URL, instance.get_absolute_url()
-                ),
+                "object_url": urljoin(settings.RALPH_HOST_URL, instance.get_absolute_url()),
             }
             html_content = render_to_string("notifications/html/message.html", context)
             text_content = render_to_string("notifications/txt/message.txt", context)
             subject = "Device has been assigned to Service: {} ({})".format(
                 new_service_env.service, instance
             )
-            msg = EmailMultiAlternatives(
-                subject, text_content, settings.EMAIL_FROM, list(emails)
-            )
+            msg = EmailMultiAlternatives(subject, text_content, settings.EMAIL_FROM, list(emails))
             msg.attach_alternative(html_content, "text/html")
             msg.send()

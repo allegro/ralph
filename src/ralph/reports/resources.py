@@ -54,9 +54,7 @@ class DataCenterAssetTextResource(ModelResource):
     rack_orientation = ReadonlyField(
         attribute="rack__orientation", widget=ChoiceWidget(choice=RackOrientation)
     )
-    orientation = ReadonlyField(
-        attribute="orientation", widget=ChoiceWidget(choice=Orientation)
-    )
+    orientation = ReadonlyField(attribute="orientation", widget=ChoiceWidget(choice=Orientation))
     model = ReadonlyField(attribute="model__name")
     management_ip = ReadonlyField(attribute="management_ip")
     ip = ReadonlyField(attribute="ip")

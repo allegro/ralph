@@ -497,15 +497,11 @@ class _BaseDeploymentTransitionTestCase(object):
             format="json",
         )
         self.assertEqual(response.status_code, 400)
-        self.assertIn(
-            '"{}" is not a valid choice.'.format(eth), response.data["ethernet"]
-        )
+        self.assertIn('"{}" is not a valid choice.'.format(eth), response.data["ethernet"])
 
     def test_create_dhcp_entries_through_api_with_occupied_ip(self):
         self._prepare_create_dhcp_entries_transition()
-        IPAddressFactory(
-            address="10.20.30.40", ethernet__base_object=DataCenterAssetFactory()
-        )
+        IPAddressFactory(address="10.20.30.40", ethernet__base_object=DataCenterAssetFactory())
         response = self.api_client.post(
             reverse(
                 "transitions-view",
@@ -565,15 +561,11 @@ class _BaseDeploymentTransitionTestCase(object):
             },
         )
         self.assertEqual(response.status_code, 200)
-        self.assertIn(
-            "create_dhcp_entries__ethernet", response.context_data["form"].errors
-        )
+        self.assertIn("create_dhcp_entries__ethernet", response.context_data["form"].errors)
 
     def test_create_dhcp_entries_through_gui_with_occupied_ip(self):
         self._prepare_create_dhcp_entries_transition()
-        IPAddressFactory(
-            address="10.20.30.40", ethernet__base_object=DataCenterAssetFactory()
-        )
+        IPAddressFactory(address="10.20.30.40", ethernet__base_object=DataCenterAssetFactory())
         response = self.gui_client.post(
             reverse(
                 self.transition_url_name,

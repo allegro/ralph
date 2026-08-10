@@ -25,9 +25,7 @@ class NullableCharFormField(NullableFormFieldMixin, forms.CharField):
     pass
 
 
-class NullableGenericIPAddressFormField(
-    NullableFormFieldMixin, forms.GenericIPAddressField
-):
+class NullableGenericIPAddressFormField(NullableFormFieldMixin, forms.GenericIPAddressField):
     pass
 
 
@@ -73,9 +71,7 @@ class NUMPFieldMixIn(object):
         fields_to_ignore = kwargs.pop("fields_to_ignore", None)
         super(NUMPFieldMixIn, self).__init__(*args, **kwargs)
         self.fields_to_ignore = (
-            fields_to_ignore
-            if (fields_to_ignore is not None)
-            else ("help_text", "verbose_name")
+            fields_to_ignore if (fields_to_ignore is not None) else ("help_text", "verbose_name")
         )
 
     def deconstruct(self):
@@ -126,9 +122,7 @@ def NUMP(base_field, fields_to_ignore=("help_text", "verbose_name")):
     return klass(*args, **kwargs)
 
 
-class NullableGenericIPAddressField(
-    NullableCharFieldMixin, models.GenericIPAddressField
-):
+class NullableGenericIPAddressField(NullableCharFieldMixin, models.GenericIPAddressField):
     _formfield_class = NullableGenericIPAddressFormField
 
 
@@ -253,9 +247,7 @@ class BaseObjectForeignKey(models.ForeignKey):
 class TagWidget(forms.TextInput):
     def render(self, name, value, attrs=None, renderer=None):
         if value is not None and not isinstance(value, str):
-            value = ", ".join(
-                sorted([(t if "," not in t else '"%s"' % t) for t in value])
-            )
+            value = ", ".join(sorted([(t if "," not in t else '"%s"' % t) for t in value]))
         if attrs is None:
             attrs = {}
         attrs["class"] = "vTextField"

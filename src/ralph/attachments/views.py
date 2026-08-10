@@ -85,9 +85,7 @@ class ServeAttachment(View):
         obj = get_object_or_404(Attachment, id=id, original_filename=filename)
         fd = open(obj.file.path, "rb")
         response = FileResponse(fd, content_type=obj.mime_type)
-        response["Content-Disposition"] = 'attachment; filename="{}"'.format(
-            obj.original_filename
-        )  # noqa
+        response["Content-Disposition"] = 'attachment; filename="{}"'.format(obj.original_filename)  # noqa
         http_modified = http_date(time.mktime(obj.modified.timetuple()))
         response["Last-Modified"] = http_modified
         return response

@@ -118,9 +118,7 @@ class Command(BaseCommand):
                 except IOError:
                     continue
                 try:
-                    cert = x509.load_pem_x509_certificate(
-                        pem_data.encode(), default_backend()
-                    )
+                    cert = x509.load_pem_x509_certificate(pem_data.encode(), default_backend())
                 except ValueError:
                     self.stderr.write("{}/{} is not valid\n".format(root, filename))
                     continue

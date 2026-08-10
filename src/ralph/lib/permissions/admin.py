@@ -28,18 +28,13 @@ class PermissionPerFieldAdminMixin(object):
             self.model._meta.get_field(field_name)
         except FieldDoesNotExist:
             perm_field = getattr(
-                (
-                    getattr(self, field_name, None)
-                    or getattr(self.model, field_name, None)
-                ),
+                (getattr(self, field_name, None) or getattr(self.model, field_name, None)),
                 "_permission_field",
                 None,
             )
             if perm_field:
                 logger.debug(
-                    "Checking permission for field {} instead of {}".format(
-                        perm_field, field_name
-                    )
+                    "Checking permission for field {} instead of {}".format(perm_field, field_name)
                 )
                 field_name = perm_field
             else:
@@ -73,9 +68,7 @@ class PermissionPerFieldAdminMixin(object):
 
         can_view = self.model.allowed_fields(request.user, "view")
         can_change = self.model.allowed_fields(request.user, "change")
-        return list(
-            (can_view - can_change) | set(super().get_readonly_fields(request, obj))
-        )
+        return list((can_view - can_change) | set(super().get_readonly_fields(request, obj)))
 
     def get_form(self, request, obj=None, **kwargs):
         """Return form with fields which user have access."""
@@ -122,9 +115,7 @@ class PermissionsPerObjectFormMixin(RequestFormMixin):
                     if not obj.has_permission_to_object(self._user):
                         self.add_error(
                             field_name,
-                            ValidationError(
-                                "You don't have permissions to select this value"
-                            ),
+                            ValidationError("You don't have permissions to select this value"),
                         )
 
     def clean(self):
@@ -148,14 +139,14 @@ class PermissionPerObjectAdminMixin(object):
         return obj_permission
 
     def has_change_permission(self, request, obj=None):
-        return super().has_change_permission(
+        return super().has_change_permission(request, obj) and self._check_obj_permission(
             request, obj
-        ) and self._check_obj_permission(request, obj)
+        )
 
     def has_delete_permission(self, request, obj=None):
-        return super().has_delete_permission(
+        return super().has_delete_permission(request, obj) and self._check_obj_permission(
             request, obj
-        ) and self._check_obj_permission(request, obj)
+        )
 
     def get_queryset(self, request):
         """

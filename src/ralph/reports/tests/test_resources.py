@@ -57,15 +57,9 @@ class TestEmailReports(RalphTestCase):
             rack = RackFactory()
             for position in range(1, 6):
                 model = DataCenterAssetModelFactory(has_parent=True)
-                asset = DataCenterAssetFactory(
-                    rack=rack, position=position, model=model
-                )
+                asset = DataCenterAssetFactory(rack=rack, position=position, model=model)
                 ethernets = EthernetFactory.create_batch(2, base_object=asset)
-                IPAddressFactory(
-                    base_object=asset, is_management=False, ethernet=ethernets[0]
-                )
-                IPAddressFactory(
-                    base_object=asset, is_management=True, ethernet=ethernets[1]
-                )
+                IPAddressFactory(base_object=asset, is_management=False, ethernet=ethernets[0])
+                IPAddressFactory(base_object=asset, is_management=True, ethernet=ethernets[1])
         with self.assertNumQueries(103):
             DataCenterAssetTextResource().export()

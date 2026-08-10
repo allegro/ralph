@@ -79,29 +79,19 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         self.assertEqual(len(response.data["ethernet"]), 4)
         self.assertIn(
             self.ip.address,
-            [
-                eth["ipaddress"]["address"]
-                for eth in response.data["ethernet"]
-                if eth["ipaddress"]
-            ],
+            [eth["ipaddress"]["address"] for eth in response.data["ethernet"] if eth["ipaddress"]],
         )
         self.assertEqual(len(response.data["memory"]), 2)
         self.assertEqual(response.data["memory"][0]["speed"], 1600)
         self.assertEqual(response.data["memory"][0]["size"], 8192)
-        self.assertEqual(
-            response.data["business_owners"][0]["username"], self.user1.username
-        )
-        self.assertEqual(
-            response.data["technical_owners"][0]["username"], self.user2.username
-        )
+        self.assertEqual(response.data["business_owners"][0]["username"], self.user1.username)
+        self.assertEqual(response.data["technical_owners"][0]["username"], self.user2.username)
 
     def test_get_data_center_asset_details_related_hosts(self):
         dc_asset_3 = DataCenterAssetFullFactory()
         cloud_host = CloudHostFactory(hypervisor=dc_asset_3)
         virtual_server = VirtualServerFactory(parent=dc_asset_3)
-        virtual_server_2 = VirtualServerFactory(
-            parent=dc_asset_3, hostname="random_test_hostname"
-        )
+        virtual_server_2 = VirtualServerFactory(parent=dc_asset_3, hostname="random_test_hostname")
         dc_asset_4 = DataCenterAssetFullFactory(parent=dc_asset_3)
         url = reverse("datacenterasset-detail", args=(dc_asset_3.id,))
         response = self.client.get(url, format="json")
@@ -129,42 +119,28 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         dc_asset_5 = DataCenterAssetFullFactory()
         cloud_host = CloudHostFactory(hypervisor=dc_asset_5)
         virtual_server = VirtualServerFactory(parent=dc_asset_5)
-        virtual_server_2 = VirtualServerFactory(
-            parent=dc_asset_5, hostname="random_test_hostname"
-        )
+        virtual_server_2 = VirtualServerFactory(parent=dc_asset_5, hostname="random_test_hostname")
         dc_asset_6 = DataCenterAssetFullFactory(parent=dc_asset_5)
         url = f"{reverse('datacenterasset-list')}?hostname={dc_asset_5.hostname}"
         response = self.client.get(url, format="json")
         self.assertEqual(len(response.data["results"]), 1)
-        self.assertEqual(
-            len(response.data["results"][0]["related_hosts"]["cloud_hosts"]), 1
-        )
-        self.assertEqual(
-            len(response.data["results"][0]["related_hosts"]["virtual_servers"]), 2
-        )
+        self.assertEqual(len(response.data["results"][0]["related_hosts"]["cloud_hosts"]), 1)
+        self.assertEqual(len(response.data["results"][0]["related_hosts"]["virtual_servers"]), 2)
         self.assertIn(
-            response.data["results"][0]["related_hosts"]["virtual_servers"][0][
-                "hostname"
-            ],
+            response.data["results"][0]["related_hosts"]["virtual_servers"][0]["hostname"],
             (virtual_server.hostname, virtual_server_2.hostname),
         )
         self.assertIn(
-            response.data["results"][0]["related_hosts"]["virtual_servers"][1][
-                "hostname"
-            ],
+            response.data["results"][0]["related_hosts"]["virtual_servers"][1]["hostname"],
             (virtual_server.hostname, virtual_server_2.hostname),
         )
         self.assertEqual(
             response.data["results"][0]["related_hosts"]["cloud_hosts"][0]["hostname"],
             cloud_host.hostname,
         )
+        self.assertEqual(len(response.data["results"][0]["related_hosts"]["physical_servers"]), 1)
         self.assertEqual(
-            len(response.data["results"][0]["related_hosts"]["physical_servers"]), 1
-        )
-        self.assertEqual(
-            response.data["results"][0]["related_hosts"]["physical_servers"][0][
-                "hostname"
-            ],
+            response.data["results"][0]["related_hosts"]["physical_servers"][0]["hostname"],
             dc_asset_6.hostname,
         )
 
@@ -394,8 +370,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         self.assertEqual(DataCenterAsset.objects.count(), 3)
 
         url = (
-            reverse("datacenterasset-list")
-            + f"?status__ne={DataCenterAssetStatus.liquidated.id}"
+            reverse("datacenterasset-list") + f"?status__ne={DataCenterAssetStatus.liquidated.id}"
         )
         response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -427,8 +402,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         ]
         url = "{}?{}".format(
             reverse("datacenterasset-detail", args=(self.dc_asset.id,)),
-            "fields=hostname,service_env,configuration_path,"
-            "configuration_variables,ipaddresses",
+            "fields=hostname,service_env,configuration_path,configuration_variables,ipaddresses",
         )
         response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -444,8 +418,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
 
         url_base = reverse("datacenterasset-list") + "?limit=100"
         url_fields = url_base + (
-            "&fields=hostname,service_env,configuration_path,"
-            "configuration_variables,ipaddresses"
+            "&fields=hostname,service_env,configuration_path,configuration_variables,ipaddresses"
         )
 
         with CaptureQueriesContext(connections["default"]) as baseline:
@@ -459,8 +432,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         self.assertLessEqual(
             len(filtered),
             len(baseline),
-            "?fields= used %d queries, baseline used %d"
-            % (len(filtered), len(baseline)),
+            "?fields= used %d queries, baseline used %d" % (len(filtered), len(baseline)),
         )
 
 
@@ -470,9 +442,7 @@ class RackAPITests(RalphAPITestCase):
         self.server_room = ServerRoomFactory()
         self.accessory = AccessoryFactory()
         self.rack = RackFactory(server_room=self.server_room)
-        self.rack_accessory = RackAccessoryFactory(
-            accessory=self.accessory, rack=self.rack
-        )
+        self.rack_accessory = RackAccessoryFactory(accessory=self.accessory, rack=self.rack)
 
     def test_get_rack_list(self):
         url = reverse("rack-list")
@@ -544,9 +514,7 @@ class RackAccessoryAPITests(RalphAPITestCase):
         self.server_room = ServerRoomFactory()
         self.accessory = AccessoryFactory()
         self.rack = RackFactory(server_room=self.server_room)
-        self.rack_accessory = RackAccessoryFactory(
-            accessory=self.accessory, rack=self.rack
-        )
+        self.rack_accessory = RackAccessoryFactory(accessory=self.accessory, rack=self.rack)
 
     def test_get_rack_accessory_list(self):
         url = reverse("rackaccessory-list")
@@ -680,12 +648,8 @@ class ClusterAPITests(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["name"], self.cluster_1.name)
         self.assertEqual(response.data["hostname"], self.cluster_1.hostname)
-        self.assertEqual(
-            response.data["business_owners"][0]["username"], self.user1.username
-        )
-        self.assertEqual(
-            response.data["technical_owners"][0]["username"], self.user2.username
-        )
+        self.assertEqual(response.data["business_owners"][0]["username"], self.user1.username)
+        self.assertEqual(response.data["technical_owners"][0]["username"], self.user2.username)
         self.assertEqual(len(response.data["base_objects"]), 2)
         self.assertCountEqual(
             response.data["base_objects"],
@@ -712,9 +676,7 @@ class ClusterAPITests(RalphAPITestCase):
                 },
             ],
         )
-        self.assertEqual(
-            response.data["ethernet"][0]["ipaddress"]["address"], "10.20.30.40"
-        )
+        self.assertEqual(response.data["ethernet"][0]["ipaddress"]["address"], "10.20.30.40")
         self.assertTrue(response.data["ethernet"][0]["ipaddress"]["is_management"])
         self.assertEqual(response.data["ipaddresses"], ["10.20.30.40"])
         self.assertEqual(

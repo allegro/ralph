@@ -34,9 +34,7 @@ urlpatterns = [
         views.LicenceRelationsReport.as_view(),
         name="licence-relations",
     ),
-    re_path(
-        r"^failures_report/?$", views.FailureReport.as_view(), name="failures-report"
-    ),
+    re_path(r"^failures_report/?$", views.FailureReport.as_view(), name="failures-report"),
     re_path(
         r"^supports_report/?$",
         views.AssetSupportsReport.as_view(),

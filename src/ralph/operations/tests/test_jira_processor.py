@@ -8,24 +8,18 @@ from ralph.tests import RalphTestCase
 
 class JiraProcessorTestCase(RalphTestCase):
     def setUp(self):
-        with open(
-            path.join(path.dirname(__file__), "sample_jira_event.json"), "r"
-        ) as f:
+        with open(path.join(path.dirname(__file__), "sample_jira_event.json"), "r") as f:
             self.jira_event = json.load(f)
 
     def test_get_assignee_username(self):
-        self.assertEqual(
-            "username.fortytwo", jira.get_assignee_username(self.jira_event)
-        )
+        self.assertEqual("username.fortytwo", jira.get_assignee_username(self.jira_event))
 
     def test_get_assignee_username_no_assignee_returns_none(self):
         self.jira_event["issue"]["fields"]["assignee"] = None
         self.assertIsNone(jira.get_assignee_username(self.jira_event))
 
     def test_get_reporter_username(self):
-        self.assertEqual(
-            "username.fourtwenty", jira.get_reporter_username(self.jira_event)
-        )
+        self.assertEqual("username.fourtwenty", jira.get_reporter_username(self.jira_event))
 
     def test_get_reporter_username_no_reporter_returns_none(self):
         self.jira_event["issue"]["fields"]["reporter"] = None
@@ -49,9 +43,7 @@ class JiraProcessorTestCase(RalphTestCase):
         )
 
     def test_get_resolution_datetime(self):
-        self.jira_event["issue"]["fields"]["resolutiondate"] = (
-            "2017-03-20T14:10:40.000+0100"
-        )
+        self.jira_event["issue"]["fields"]["resolutiondate"] = "2017-03-20T14:10:40.000+0100"
 
         self.assertEqual(
             datetime(2017, 3, 20, 13, 10, 40, 0),

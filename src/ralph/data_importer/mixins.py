@@ -47,9 +47,7 @@ class ImportForeignKeyMeta(type):
                     through_field=field.widget.through_field,
                 )
             elif isinstance(field.widget, widgets.ManyToManyWidget):
-                field_params["widget"] = ExportManyToManyStrWidget(
-                    model=field.widget.model
-                )
+                field_params["widget"] = ExportManyToManyStrWidget(model=field.widget.model)
             else:
                 continue
             new_field = fields.Field(**field_params)
@@ -62,9 +60,7 @@ class ImportForeignKeyMeta(type):
                 "_exclude_in_select_related"
             ]:
                 if hasattr(field, extra_param_name):
-                    setattr(
-                        new_field, extra_param_name, getattr(field, extra_param_name)
-                    )
+                    setattr(new_field, extra_param_name, getattr(field, extra_param_name))
             update_fields.append((field_name, new_field))
         export_class.fields = OrderedDict(update_fields)
         new_class.export_class = export_class
@@ -80,9 +76,7 @@ class ImportForeignKeyMixin:
         if remove_id:
             row["id"] = None
 
-        return super(ImportForeignKeyMixin, self).get_or_init_instance(
-            instance_loader, row
-        )
+        return super(ImportForeignKeyMixin, self).get_or_init_instance(instance_loader, row)
 
     def after_save_instance(self, instance, row, **kwargs):
         if not kwargs.get("dry_run", False) and self.old_object_pk:

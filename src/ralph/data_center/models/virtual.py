@@ -30,10 +30,7 @@ class Database(AdminAbsoluteUrlMixin, BaseObject):
 class ClusterType(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
     show_master_summary = models.BooleanField(
         default=False,
-        help_text=_(
-            "show master information on cluster page, ex. hostname, model, "
-            "location etc."
-        ),
+        help_text=_("show master information on cluster page, ex. hostname, model, location etc."),
     )
 
 

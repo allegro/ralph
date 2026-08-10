@@ -12,9 +12,7 @@ from django.db.backends.base.schema import _related_non_m2m_objects
 logger = logging.getLogger(__name__)
 
 
-def baseobject_migration(
-    apps, schema_editor, app_name, model_name, rewrite_fields=None
-):
+def baseobject_migration(apps, schema_editor, app_name, model_name, rewrite_fields=None):
     """
     Handle ids (duplication) for new BaseObject inherited model.
 
@@ -44,9 +42,7 @@ def baseobject_migration(
         max_id = max(max_id, base_object.id)
 
     # increase ID of each object by
-    Model._default_manager.update(
-        baseobject_ptr_id=models.F("baseobject_ptr_id") + max_id
-    )
+    Model._default_manager.update(baseobject_ptr_id=models.F("baseobject_ptr_id") + max_id)
 
     for obj in Model._default_manager.order_by("baseobject_ptr_id"):
         # use update instead of model save to call it directly in SQL without
@@ -78,9 +74,7 @@ def baseobject_migration(
                 )
             )
             relation_mapping = defaultdict(list)
-            for related_object in related_model._default_manager.values_list(
-                "pk", relation_field
-            ):
+            for related_object in related_model._default_manager.values_list("pk", relation_field):
                 relation_mapping[related_object[1]].append(related_object[0])
             for old_id, new_id in id_mapping.items():
                 related_model._default_manager.filter(
@@ -129,9 +123,7 @@ class DropAndCreateForeignKey(ContextDecorator):
     def __enter__(self):
         # copy from django.db.backends.base.schema.BaseDatabaseSchemaEditor._alter_field  # noqa
         # drop any FK pointing to old_field
-        for _old_rel, new_rel in _related_non_m2m_objects(
-            self.old_field, self.new_field
-        ):
+        for _old_rel, new_rel in _related_non_m2m_objects(self.old_field, self.new_field):
             rel_fk_names = self.schema_editor._constraint_names(
                 new_rel.related_model, [new_rel.field.column], foreign_key=True
             )
@@ -150,9 +142,7 @@ class DropAndCreateForeignKey(ContextDecorator):
             if not rel.many_to_many:
                 logger.debug("Recreating FK to {}".format(rel.field))
                 self.schema_editor.execute(
-                    self.schema_editor._create_fk_sql(
-                        rel.related_model, rel.field, "_fk"
-                    )
+                    self.schema_editor._create_fk_sql(rel.related_model, rel.field, "_fk")
                 )
 
 

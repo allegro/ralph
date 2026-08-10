@@ -28,9 +28,7 @@ def _safe_load_user(username):
 
     model = get_user_model()
 
-    user, _ = model.objects.get_or_create(
-        username=username, defaults={"is_active": False}
-    )
+    user, _ = model.objects.get_or_create(username=username, defaults={"is_active": False})
 
     return user
 
@@ -78,9 +76,7 @@ def record_operation(
 
     # NOTE(romcheg): Changes of an unknown type should not be recorded.
     if operation_type is None:
-        logger.warning(
-            "Not recording operation with the unknown type: %s.", operation_name
-        )
+        logger.warning("Not recording operation with the unknown type: %s.", operation_name)
         return
 
     operation, _ = Operation.objects.update_or_create(
@@ -128,7 +124,6 @@ def receive_chm_event(event_data):
         logger.warning(e.message)
     except Exception as e:
         logger.exception(
-            "Encountered an unexpected failure while handling a change "
-            "management event.",
+            "Encountered an unexpected failure while handling a change management event.",
             exc_info=e,
         )

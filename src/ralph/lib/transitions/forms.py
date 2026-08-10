@@ -71,9 +71,7 @@ class TransitionForm(forms.ModelForm):
                 content_type=self._transition_model_instance.content_type
             )
         ]
-        self.fields["actions"].widget = forms.CheckboxSelectMultiple(
-            choices=actions_choices
-        )
+        self.fields["actions"].widget = forms.CheckboxSelectMultiple(choices=actions_choices)
         self.fields["actions"].required = False
         self.fields["template_name"] = forms.ChoiceField(
             choices=(("", _("Default")),), required=False
@@ -102,21 +100,17 @@ class TransitionForm(forms.ModelForm):
             any_async_action |= action.is_async
 
         if one_action and len(actions_items) > 1:
-            msg = _(
-                ("You have chosen action: %(name)s can only be selected for transition")
-            ) % {"name": one_action_name}
+            msg = _(("You have chosen action: %(name)s can only be selected for transition")) % {
+                "name": one_action_name
+            }
             self.add_error("actions", msg)
         # check async options
         if any_async_action and not cleaned_data["run_asynchronously"]:
             cleaned_data["run_asynchronously"] = True
-        if cleaned_data["run_asynchronously"] and not cleaned_data.get(
-            "async_service_name"
-        ):
+        if cleaned_data["run_asynchronously"] and not cleaned_data.get("async_service_name"):
             msg = _("Please provide async service name for asynchronous transition")
             if any_async_action:
-                msg = "{}{}".format(
-                    msg, _(" (At least one of chosen actions is asynchronous)")
-                )
+                msg = "{}{}".format(msg, _(" (At least one of chosen actions is asynchronous)"))
             self.add_error("async_service_name", msg)
 
         return cleaned_data

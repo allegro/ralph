@@ -196,8 +196,7 @@ class AutocompleteList(SuggestView):
             for value in QUERY_REGEX.split(query):
                 if value:
                     query_filters = [
-                        Q(**{"{}__icontains".format(field): value})
-                        for field in search_fields
+                        Q(**{"{}__icontains".format(field): value}) for field in search_fields
                     ]
                     if query_filters:
                         queryset = queryset.filter(reduce(operator.or_, query_filters))
@@ -218,9 +217,7 @@ class AutocompleteList(SuggestView):
         if not search_fields:
             return []
 
-        queryset = getattr(
-            model, "get_autocomplete_queryset", model._default_manager.all
-        )()
+        queryset = getattr(model, "get_autocomplete_queryset", model._default_manager.all)()
         if issubclass(model, PermissionsForObjectMixin):
             queryset = model._get_objects_for_user(self.request.user, queryset)
         queryset = self.get_query_filters(queryset, value, search_fields)

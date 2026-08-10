@@ -55,9 +55,7 @@ class Command(BaseCommand):
         model_manufacturer=DEFAULT_MODEL_MANUFACTURER,
         is_blade=False,
     ):
-        category, _ = Category.objects.get_or_create(
-            name=model_category, allow_deployment=True
-        )
+        category, _ = Category.objects.get_or_create(name=model_category, allow_deployment=True)
         manufacturer, _ = Manufacturer.objects.get_or_create(name=model_manufacturer)
         AssetModel.objects.get_or_create(
             name=model_name,

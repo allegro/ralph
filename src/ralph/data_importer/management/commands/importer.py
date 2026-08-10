@@ -90,9 +90,7 @@ class Command(BaseCommand):
         for path in glob.glob(os.path.join(options.get("source"), "*.csv")):
             base_name = os.path.basename(path)
             file_name = os.path.splitext(base_name)[0].split("_")
-            file_list.append(
-                {"model": file_name[1], "path": path, "sort": int(file_name[0])}
-            )
+            file_list.append({"model": file_name[1], "path": path, "sort": int(file_name[0])})
         file_list = sorted(file_list, key=lambda x: x["sort"])
         for item in file_list:
             logger.info("Import to model: {}".format(item["model"]))
@@ -119,9 +117,7 @@ class Command(BaseCommand):
         csv.register_dialect("RalphImporter", delimiter=str(options["delimiter"]))
         settings.REMOVE_ID_FROM_IMPORT = options.get("skipid")
         self.stdout.write(
-            "Import {} resource from {}".format(
-                options.get("model_name"), options.get("source")
-            )
+            "Import {} resource from {}".format(options.get("model_name"), options.get("source"))
         )
         with open(options.get("source")) as csv_file:
             reader_kwargs = {}
@@ -132,13 +128,9 @@ class Command(BaseCommand):
             before_import = model_resource._meta.model.objects.count()
             dataset = tablib.Dataset(*csv_body, headers=headers)
             objs_delete = [
-                obj.get("id", None)
-                for obj in dataset.dict
-                if int(obj.get("deleted", 0)) == 1
+                obj.get("id", None) for obj in dataset.dict if int(obj.get("deleted", 0)) == 1
             ]
-            result = model_resource.import_data(
-                dataset, dry_run=False, raise_errors=True
-            )
+            result = model_resource.import_data(dataset, dry_run=False, raise_errors=True)
             if result.has_errors():
                 for idx, row in enumerate(result.rows):
                     for error in row.errors:
@@ -155,9 +147,7 @@ class Command(BaseCommand):
                         break
             after_import_count = model_resource._meta.model.objects.count()
 
-            self.stderr.write(
-                "Imported records: {}".format(after_import_count - before_import)
-            )
+            self.stderr.write("Imported records: {}".format(after_import_count - before_import))
             if len(csv_body) - after_import_count - before_import >= 0:
                 self.stderr.write(
                     "Skipped records: {}".format(

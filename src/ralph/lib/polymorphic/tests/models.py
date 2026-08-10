@@ -41,6 +41,4 @@ class PolymorphicModelTest2(PolymorphicModelBaseTest):
 
 class SomeM2MModel(models.Model):
     name = models.CharField(max_length=50)
-    polymorphics = PolymorphicManyToManyField(
-        PolymorphicModelBaseTest, related_name="some_m2m"
-    )
+    polymorphics = PolymorphicManyToManyField(PolymorphicModelBaseTest, related_name="some_m2m")

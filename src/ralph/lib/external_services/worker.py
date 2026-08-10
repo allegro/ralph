@@ -16,7 +16,8 @@ class _CloseObsoleteConnectionsMixin:
         Solution below fixes this bug by closing connections before and after
         each job on worker and forcing Django to open a new one.
 
-        This comes in pair with `CONN_MAX_AGE` settings (https://docs.djangoproject.com/en/1.8/ref/settings/#std:setting-CONN_MAX_AGE).  # noqa
+        This comes in pair with `CONN_MAX_AGE` settings
+        (https://docs.djangoproject.com/en/1.8/ref/settings/#std:setting-CONN_MAX_AGE)
         To properly handle closing connection when using persistent connections
         to the database, it's value should be lower than wait timeout of the
         database server.
@@ -25,7 +26,7 @@ class _CloseObsoleteConnectionsMixin:
         * https://github.com/translate/pootle/issues/4094
         * http://dev.mysql.com/doc/refman/5.7/en/gone-away.html
         * https://dev.mysql.com/doc/refman/5.7/en/error-lost-connection.html
-        * http://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_wait_timeout  # noqa
+        * http://dev.mysql.com/doc/refman/5.7/en/server-system-variables.html#sysvar_wait_timeout
         """
         connection.close_if_unusable_or_obsolete()
         result = super().perform_job(*args, **kwargs)
@@ -39,7 +40,7 @@ class RalphWorker(_CloseObsoleteConnectionsMixin, Worker):
 
     Use it in management command using `--worker-class` param, for example:
     ```
-    ralph rqworker --worker-class=ralph.lib.external_services.worker.RalphWorker default  # noqa
+    ralph rqworker --worker-class=ralph.lib.external_services.worker.RalphWorker default
     ```
     """
 
@@ -54,6 +55,6 @@ class RalphSimpleWorker(_CloseObsoleteConnectionsMixin, SimpleWorker):
     ``+[... initialize] may have been in progress in another thread when
     fork() was called``.
     ```
-    ralph rqworker --worker-class=ralph.lib.external_services.worker.RalphSimpleWorker ralph_switchports  # noqa
+    ralph rqworker --worker-class=ralph.lib.external_services.worker.RalphSimpleWorker ralph_switchports
     ```
-    """
+    """  # noqa

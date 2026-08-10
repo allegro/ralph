@@ -30,14 +30,10 @@ default_params = {
 @ddt
 class DHCPAgentTest(LiveServerTestCase):
     def setUp(self):
-        self.user = get_user_model().objects.create_superuser(
-            "test", "test@test.test", "test"
-        )
+        self.user = get_user_model().objects.create_superuser("test", "test@test.test", "test")
         self.default_params = default_params.copy()
         proto, host = self.live_server_url.split("://")
-        self.default_params.update(
-            {"proto": proto, "host": host, "key": self.user.auth_token.key}
-        )
+        self.default_params.update({"proto": proto, "host": host, "key": self.user.auth_token.key})
 
     @unpack
     @data(
@@ -75,9 +71,7 @@ class DHCPAgentTest(LiveServerTestCase):
         DataCenterFactory()
         dhcp_server = DHCPServer.objects.create(ip="127.0.0.1", last_synchronized=None)
         with Cache("/tmp/") as cache:
-            manager = DHCPConfigManager(
-                logger=logger, cache=cache, **self.default_params
-            )
+            manager = DHCPConfigManager(logger=logger, cache=cache, **self.default_params)
             manager._send_sync_confirmation()
         dhcp_server.refresh_from_db()
         self.assertTrue(dhcp_server.last_synchronized)

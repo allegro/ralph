@@ -83,9 +83,7 @@ class SimpleNetworkTest(RalphTestCase):
         Network.objects.get(pk=self.net1.pk)
         count = (
             Network.objects.filter(id=self.net1.id)
-            .annotate(
-                subnetworks_count=(CastToInteger(F("rght")) - CastToInteger(F("lft")))
-            )
+            .annotate(subnetworks_count=(CastToInteger(F("rght")) - CastToInteger(F("lft"))))
             .values_list("subnetworks_count", flat=True)[0]
         )
         self.assertTrue(count)
@@ -238,9 +236,7 @@ class NetworkTest(RalphTestCase):
                 return False
             return str(ip) in records
 
-        patcher = patch(
-            "ralph.networks.models.networks.is_in_dnsaas", is_in_dnsaas_mocked
-        )
+        patcher = patch("ralph.networks.models.networks.is_in_dnsaas", is_in_dnsaas_mocked)
         net = Network.objects.create(
             address=network_addr,
             reserved_from_beginning=0,
@@ -413,20 +409,14 @@ class NetworkEnvironmentTest(RalphTestCase):
             hostname_template_counter_length=6,
             use_hostname_counter=False,
         )
-        self.assertEqual(
-            network_env.next_hostname_without_model_counter(), "test.000001.ralph.pl"
-        )
+        self.assertEqual(network_env.next_hostname_without_model_counter(), "test.000001.ralph.pl")
         for i in ["000009", "000001", "000008", "000007", "000050", "000044"]:
             DataCenterAssetFactory(hostname="".join([prefix, i, postfix]))
-        self.assertEqual(
-            network_env.next_hostname_without_model_counter(), "test.000051.ralph.pl"
-        )
+        self.assertEqual(network_env.next_hostname_without_model_counter(), "test.000051.ralph.pl")
         for i in ["000019", "000011", "000098", "000053", "000444"]:
             VirtualServerFactory(hostname="".join([prefix, i, postfix]))
 
-        self.assertEqual(
-            network_env.next_hostname_without_model_counter(), "test.000445.ralph.pl"
-        )
+        self.assertEqual(network_env.next_hostname_without_model_counter(), "test.000445.ralph.pl")
 
     def test_use_hostname_counter_updates_last_hostname_counter(self):
         prefix = "test."
@@ -490,9 +480,7 @@ class IPAddressTest(RalphTestCase):
         self.ip.dhcp_expose = True
         self.ip.save()
         self.ip.hostname = None
-        with self.assertRaises(
-            ValidationError, msg="Cannot expose in DHCP without hostname"
-        ):
+        with self.assertRaises(ValidationError, msg="Cannot expose in DHCP without hostname"):
             self.ip.clean()
 
     def test_clear_mac_address_without_dhcp_exposition_should_pass(self):
@@ -505,18 +493,14 @@ class IPAddressTest(RalphTestCase):
         self.ip.ethernet.mac = None
         self.ip.ethernet.save()
         self.ip.dhcp_expose = True
-        with self.assertRaises(
-            ValidationError, msg="Cannot expose in DHCP without MAC address"
-        ):
+        with self.assertRaises(ValidationError, msg="Cannot expose in DHCP without MAC address"):
             self.ip.clean()
 
     def test_detach_ethernet_with_dhcp_exposition_should_not_pass(self):  # noqa
         self.ip.ethernet = None
         self.ip.save()
         self.ip.dhcp_expose = True
-        with self.assertRaises(
-            ValidationError, msg="Cannot expose in DHCP without MAC address"
-        ):
+        with self.assertRaises(ValidationError, msg="Cannot expose in DHCP without MAC address"):
             self.ip.clean()
 
     def test_change_hostname_with_dhcp_exposition_should_not_pass(self):  # noqa
@@ -532,9 +516,7 @@ class IPAddressTest(RalphTestCase):
         self.ip.dhcp_expose = True
         self.ip.save()
         self.ip.address = "127.0.0.2"
-        with self.assertRaises(
-            ValidationError, msg="Cannot change address when exposing in DHCP"
-        ):
+        with self.assertRaises(ValidationError, msg="Cannot change address when exposing in DHCP"):
             self.ip.clean()
 
     def test_change_ethernet_with_dhcp_exposition_should_not_pass(self):  # noqa
@@ -632,12 +614,8 @@ class TestNetworkClassFilter(RalphTestCase):
 
         self.factory = RequestFactory()
         self.request = self.factory.get("/")
-        self.private_network = NetworkFactory(
-            name="private_network", address="10.0.0.0/8"
-        )
-        self.public_network = NetworkFactory(
-            name="public_network", address="5.0.0.0/21"
-        )
+        self.private_network = NetworkFactory(name="private_network", address="10.0.0.0/8")
+        self.public_network = NetworkFactory(name="public_network", address="5.0.0.0/21")
 
     def test_finds_private_nets_when_param_private(self):
         filter_ = NetworkClassFilter(

@@ -37,15 +37,11 @@ class InterfaceDTO(BaseModel):
     uplink: bool = Field(False, description="Whether this is an uplink interface")
     status: InterfaceStatus = Field(..., description="Operational status")
     admin_status: InterfaceStatus = Field(..., description="Administrative status")
-    interface_mode: InterfaceMode = Field(
-        ..., description="Interface mode (access/trunk)"
-    )
+    interface_mode: InterfaceMode = Field(..., description="Interface mode (access/trunk)")
     remote_name: str = Field(..., description="LLDP remote system name")
     remote_id: str | None = Field(None, description="LLDP remote chassis ID (MAC)")
     remote_port: str | None = Field(None, description="LLDP remote port identifier")
-    vlans: list[Vlan] = Field(
-        default_factory=list, description="List of assigned VLANs"
-    )
+    vlans: list[Vlan] = Field(default_factory=list, description="List of assigned VLANs")
     native_vlan: Vlan | None = Field(None, description="Native VLAN ID")
     mtu: str = Field(..., description="Maximum transmission unit")
 
@@ -66,8 +62,4 @@ class SwitchDTO(BaseModel):
 
     @property
     def manufacturer_name(self) -> str | None:
-        return (
-            self.acs_device_type.split("#")[-1].title()
-            if self.acs_device_type
-            else None
-        )
+        return self.acs_device_type.split("#")[-1].title() if self.acs_device_type else None

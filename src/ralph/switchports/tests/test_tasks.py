@@ -44,9 +44,7 @@ class RunRackRefreshTaskTestCase(TestCase):
         )
 
     def _switch_dto(self, hostname):
-        return make_switch_dto(
-            1, [make_interface("0/0/1", remote_name="")], hostname=hostname
-        )
+        return make_switch_dto(1, [make_interface("0/0/1", remote_name="")], hostname=hostname)
 
     @patch("ralph.switchports.sync.tasks.django_rq.get_connection")
     @patch("ralph.switchports.sync.tasks.NetmakerSwitchportBackend")
@@ -54,9 +52,7 @@ class RunRackRefreshTaskTestCase(TestCase):
         mock_conn.return_value = _FakeRedis()
         backend = MockBackend.return_value
         backend.refresh_switch.return_value = {"success": True}
-        backend.get_switchports.side_effect = lambda hostname, **kw: self._switch_dto(
-            hostname
-        )
+        backend.get_switchports.side_effect = lambda hostname, **kw: self._switch_dto(hostname)
 
         job = SwitchportRefreshJob.objects.create(
             rack_configuration=self.rack_config,
@@ -72,12 +68,8 @@ class RunRackRefreshTaskTestCase(TestCase):
         self.assertIsNotNone(job.finished_at)
         # backend refresh triggered per switch, ports pulled into Ralph
         self.assertEqual(backend.refresh_switch.call_count, 2)
-        self.assertTrue(
-            BackendValidationResult.objects.filter(switch=self.switch_a).exists()
-        )
-        self.assertTrue(
-            BackendValidationResult.objects.filter(switch=self.switch_b).exists()
-        )
+        self.assertTrue(BackendValidationResult.objects.filter(switch=self.switch_a).exists())
+        self.assertTrue(BackendValidationResult.objects.filter(switch=self.switch_b).exists())
 
     @patch("ralph.switchports.sync.tasks.django_rq.get_connection")
     @patch("ralph.switchports.sync.tasks.NetmakerSwitchportBackend")

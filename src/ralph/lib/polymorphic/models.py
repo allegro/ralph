@@ -76,16 +76,12 @@ class PolymorphicQuerySet(models.QuerySet):
             ids = {obj.id for obj in objects_of_type}  # type: set[int]
             model_query = model.objects.filter(pk__in=ids)
             model_query = self._add_select_related_to_subquery(model_query)
-            model_query = self._add_polymorphic_select_related_to_subquery(
-                model_query, model_name
-            )
+            model_query = self._add_polymorphic_select_related_to_subquery(model_query, model_name)
             model_query = self._add_polymorphic_prefetch_related_to_subquery(
                 model_query, model_name
             )
             model_query = self._add_polymorphic_filter_to_subquery(model_query)
-            model_query = model_query.annotate(
-                *self._annotate_args, **self._annotate_kwargs
-            )
+            model_query = model_query.annotate(*self._annotate_args, **self._annotate_kwargs)
             model_query = self._add_extra_to_subquery(model_query)
 
             for obj in model_query:
@@ -111,17 +107,13 @@ class PolymorphicQuerySet(models.QuerySet):
         self, query: QuerySet, model_name: str
     ) -> QuerySet:
         if self._polymorphic_prefetch_related.get(model_name):
-            return query.prefetch_related(
-                *self._polymorphic_prefetch_related[model_name]
-            )
+            return query.prefetch_related(*self._polymorphic_prefetch_related[model_name])
         else:
             return query
 
     def _add_polymorphic_filter_to_subquery(self, query: QuerySet) -> QuerySet:
         try:
-            return query.filter(
-                *self._polymorphic_filter_args, **self._polymorphic_filter_kwargs
-            )
+            return query.filter(*self._polymorphic_filter_args, **self._polymorphic_filter_kwargs)
         except exceptions.FieldError:
             # This is expected
             # if a model doesn't have a field we don't want any object of that type
@@ -129,12 +121,7 @@ class PolymorphicQuerySet(models.QuerySet):
 
     def _add_extra_to_subquery(self, query: QuerySet) -> QuerySet:
         query = query.extra(*self._extra_args, **self._extra_kwargs)
-        if (
-            self._annotate_args
-            or self._annotate_kwargs
-            or self._extra_args
-            or self._extra_kwargs
-        ):
+        if self._annotate_args or self._annotate_kwargs or self._extra_args or self._extra_kwargs:
             for select_key, select_db_field in self._iterate_extra_prefetches():
                 through_table_name, column_name = [
                     s.strip("`").strip('"') for s in select_db_field.split(".")
@@ -209,7 +196,9 @@ class PolymorphicQuerySet(models.QuerySet):
                     back_column = field.column
                     our_table = field.related_model._meta.db_table
             if our_table and back_column and remote_table:
-                condition_local = f"{q}{our_table}{q}.{q}id{q} = {q}{through_table_name}{q}.{q}{back_column}{q}"
+                condition_local = (
+                    f"{q}{our_table}{q}.{q}id{q} = {q}{through_table_name}{q}.{q}{back_column}{q}"
+                )
                 condition_remote = (
                     f"{q}{remote_table}{q}.{q}id{q}"
                     f" = {q}{through_table_name}{q}.{q}{target_column_name}{q}"
@@ -328,9 +317,7 @@ class PolymorphicBase(models.base.ModelBase):
             if new_class._meta.proxy:
                 continue
             try:
-                if (
-                    new_class._meta.model_name == "vip"
-                ):  # TODO remove after vip deletion
+                if new_class._meta.model_name == "vip":  # TODO remove after vip deletion
                     continue
                 polymorphic_class._polymorphic_descendants.append(new_class)
             except AttributeError:
@@ -350,9 +337,7 @@ class Polymorphic(models.Model):
                 pass
     """
 
-    content_type = models.ForeignKey(
-        ContentType, blank=True, null=True, on_delete=models.CASCADE
-    )
+    content_type = models.ForeignKey(ContentType, blank=True, null=True, on_delete=models.CASCADE)
 
     polymorphic_objects = PolymorphicQuerySet.as_manager()
     objects = models.Manager()

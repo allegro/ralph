@@ -147,9 +147,7 @@ class Attachment(TimeStampMixin, models.Model):
         as original name.
         """
         if not self.pk:
-            self.original_filename = self._safe_filename(
-                self.original_filename or self.file.name
-            )
+            self.original_filename = self._safe_filename(self.original_filename or self.file.name)
         self.md5 = self.get_md5_sum(self.file)
         super().save(*args, **kwargs)
 
@@ -174,9 +172,7 @@ class AttachmentItem(models.Model):
     model we can add one attachment and link with many content types.
     """
 
-    attachment = models.ForeignKey(
-        Attachment, related_name="items", on_delete=models.CASCADE
-    )
+    attachment = models.ForeignKey(Attachment, related_name="items", on_delete=models.CASCADE)
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = fields.GenericForeignKey("content_type", "object_id")
@@ -184,6 +180,4 @@ class AttachmentItem(models.Model):
     objects = AttachmentItemManager()
 
     def __str__(self):
-        return "{} {}: {}".format(
-            self.attachment.mime_type, self.content_type, self.object_id
-        )
+        return "{} {}: {}".format(self.attachment.mime_type, self.content_type, self.object_id)

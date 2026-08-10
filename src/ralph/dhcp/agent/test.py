@@ -97,9 +97,7 @@ class TestDHCPConfigManager(unittest.TestCase):
         mock.headers.get.return_value = ""
         mocked_urlopen.return_value = mock
         with Cache("/tmp/") as cache:
-            dhcp_manager = DHCPConfigManager(
-                cache=cache, logger=logger, **default_params
-            )
+            dhcp_manager = DHCPConfigManager(cache=cache, logger=logger, **default_params)
             dhcp_manager.download_and_apply_configuration()
 
 

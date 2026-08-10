@@ -34,9 +34,7 @@ class LicenceUserSerializer(RalphAPISerializer):
         fields = "__all__"
 
 
-class BaseObjectLicenceSerializer(
-    ReversionHistoryAPISerializerMixin, RalphAPISerializer
-):
+class BaseObjectLicenceSerializer(ReversionHistoryAPISerializerMixin, RalphAPISerializer):
     class Meta:
         model = BaseObjectLicence
         fields = "__all__"

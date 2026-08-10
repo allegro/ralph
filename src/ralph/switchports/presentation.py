@@ -43,15 +43,11 @@ def _attach_port_metrics(data: dict, vr: BackendValidationResult):
     data["remote_id"] = vr.raw_data.get("remote_id")
     data["desc"] = vr.raw_data.get("desc")
     if vr.raw_data:
-        data["raw_json"] = json.dumps(
-            vr.raw_data, indent=2, ensure_ascii=False, sort_keys=True
-        )
+        data["raw_json"] = json.dumps(vr.raw_data, indent=2, ensure_ascii=False, sort_keys=True)
     return data
 
 
-def build_validation_context(
-    vr: BackendValidationResult, expected_asset_id=None
-) -> dict:
+def build_validation_context(vr: BackendValidationResult, expected_asset_id=None) -> dict:
     """Build the template context dict for a single BackendValidationResult.
 
     ``expected_asset_id`` is the id of the asset we expect netmaker to report on
@@ -69,18 +65,14 @@ def build_validation_context(
         )
         data = {
             "css_class": "validation-ok" if match else "validation-mismatch",
-            "label": vr.remote_asset.hostname
-            if vr.remote_asset
-            else vr.remote_hostname,
+            "label": vr.remote_asset.hostname if vr.remote_asset else vr.remote_hostname,
             "remote_asset": vr.remote_asset,
             "match": match,
         }
     elif vr.status == ValidationStatus.ASSET_CONFLICT:
         data = {
             "css_class": "validation-error",
-            "label": (
-                f"CONFLICT ({vr.remote_hostname})" if vr.remote_hostname else "CONFLICT"
-            ),
+            "label": (f"CONFLICT ({vr.remote_hostname})" if vr.remote_hostname else "CONFLICT"),
             "remote_asset": vr.remote_asset,
         }
     elif vr.status == ValidationStatus.PORT_NOT_FOUND:

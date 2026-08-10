@@ -68,9 +68,7 @@ class GridTestCase(TestCase):
     def test_build_connection_map_finds_existing_connections(self):
         # Connect server1:eth1 <-> switch_eth1:0/0/20
         asset_port = Port.objects.create(label="eth1", data_center_asset=self.server1)
-        switch_port = Port.objects.create(
-            label="0/0/20", data_center_asset=self.switch_eth1
-        )
+        switch_port = Port.objects.create(label="0/0/20", data_center_asset=self.switch_eth1)
         conn = Connection.objects.create()
         ConnectionMember.objects.create(connection=conn, port=asset_port)
         ConnectionMember.objects.create(connection=conn, port=switch_port)
@@ -133,9 +131,7 @@ class GridTestCase(TestCase):
             conflicts=conflicts,
         )
 
-        conflict_cells = [
-            cell for row in rows for cell in row["cells"] if cell.get("is_conflict")
-        ]
+        conflict_cells = [cell for row in rows for cell in row["cells"] if cell.get("is_conflict")]
         self.assertEqual(len(conflict_cells), 1)
         cell = conflict_cells[0]
         self.assertEqual(cell["value"], "30")
@@ -149,9 +145,7 @@ class GridTestCase(TestCase):
     def test_grid_shows_existing_port_number(self):
         # Connect server1:eth1 <-> switch_eth1:0/0/42
         asset_port = Port.objects.create(label="eth1", data_center_asset=self.server1)
-        switch_port = Port.objects.create(
-            label="0/0/42", data_center_asset=self.switch_eth1
-        )
+        switch_port = Port.objects.create(label="0/0/42", data_center_asset=self.switch_eth1)
         conn = Connection.objects.create()
         ConnectionMember.objects.create(connection=conn, port=asset_port)
         ConnectionMember.objects.create(connection=conn, port=switch_port)
@@ -167,9 +161,7 @@ class GridTestCase(TestCase):
     def test_nonstandard_port_label_passes_through(self):
         """Port labels like '1/0/5' are not stripped."""
         asset_port = Port.objects.create(label="eth2", data_center_asset=self.server1)
-        switch_port = Port.objects.create(
-            label="1/0/5", data_center_asset=self.switch_eth2
-        )
+        switch_port = Port.objects.create(label="1/0/5", data_center_asset=self.switch_eth2)
         conn = Connection.objects.create()
         ConnectionMember.objects.create(connection=conn, port=asset_port)
         ConnectionMember.objects.create(connection=conn, port=switch_port)

@@ -13,7 +13,7 @@ from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, NamedMixin, TimeStamp
 def verbose_names(**kwargs):
     def wrap(cls):
         for field, value in kwargs.items():
-            setattr(cls._meta.get_field(field), "verbose_name", value)
+            cls._meta.get_field(field).verbose_name = value
         return cls
 
     return wrap
@@ -23,9 +23,7 @@ def upload_dir(filename, instance):
     return get_file_path(filename, instance, default_dir="trade_marks")
 
 
-class ProviderAdditionalMarking(
-    AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model
-):
+class ProviderAdditionalMarking(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
     """
     This class is needed for additional_marking checkbox field.
     Additional_marking field is for additional services from
@@ -106,9 +104,7 @@ class IntellectualPropertyBase(models.Model):
         ProviderAdditionalMarking,
         blank=True,
     )
-    holder = models.ForeignKey(
-        AssetHolder, blank=True, null=True, on_delete=models.CASCADE
-    )
+    holder = models.ForeignKey(AssetHolder, blank=True, null=True, on_delete=models.CASCADE)
     status = models.PositiveIntegerField(
         choices=TradeMarkStatus(), default=TradeMarkStatus.registered.id
     )
@@ -122,9 +118,7 @@ class IntellectualPropertyBase(models.Model):
     )
 
     def __str__(self):
-        return "{}, {}, {} expires {}.".format(
-            self.name, self.number, self.classes, self.valid_to
-        )
+        return "{}, {}, {} expires {}.".format(self.name, self.number, self.classes, self.valid_to)
 
     class Meta:
         abstract = True
@@ -162,9 +156,7 @@ class TradeMark(IntellectualPropertyBase, AdminAbsoluteUrlMixin, BaseObject):
 
 class TradeMarksLinkedDomains(models.Model):
     trade_mark = models.ForeignKey(TradeMark, on_delete=models.CASCADE)
-    domain = models.ForeignKey(
-        Domain, related_name="trade_mark", on_delete=models.CASCADE
-    )
+    domain = models.ForeignKey(Domain, related_name="trade_mark", on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ("trade_mark", "domain")
@@ -294,9 +286,7 @@ class UtilityModelAdditionalCountry(models.Model):
 
 class UtilityModelLinkedDomains(models.Model):
     utility_model = models.ForeignKey(UtilityModel, on_delete=models.CASCADE)
-    domain = models.ForeignKey(
-        Domain, related_name="utility_model", on_delete=models.CASCADE
-    )
+    domain = models.ForeignKey(Domain, related_name="utility_model", on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ("utility_model", "domain")

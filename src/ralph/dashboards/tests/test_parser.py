@@ -89,9 +89,7 @@ class GraphModelTest(TestCase):
 
         rack_orientations = []
         for orientation, count in test_data.items():
-            rack_orientations.extend(
-                RackFactory.create_batch(count, orientation=orientation)
-            )
+            rack_orientations.extend(RackFactory.create_batch(count, orientation=orientation))
 
         graph = GraphFactory(
             model=ContentType.objects.get_for_model(Rack),
@@ -112,16 +110,12 @@ class GraphModelTest(TestCase):
                     "filters": {"orientation": orientation},
                 }
             )
-            graph_filter = ByGraphFilter(
-                None, {"graph-query": encoded_params}, Rack, None
-            )
+            graph_filter = ByGraphFilter(None, {"graph-query": encoded_params}, Rack, None)
             qs = graph_filter.queryset(None, Rack.objects.all())
 
             self.assertEqual(len(qs), count)
 
-        encoded_params = encode_params(
-            {"pk": graph.pk, "filters": {"orientation": None}}
-        )
+        encoded_params = encode_params({"pk": graph.pk, "filters": {"orientation": None}})
         graph_filter = ByGraphFilter(None, {"graph-query": encoded_params}, Rack, None)
         qs = graph_filter.queryset(None, Rack.objects.all())
 
@@ -284,9 +278,7 @@ class LabelGroupingTest(TestCase):
         service_env = ServiceEnvironmentFactory(service__name="sample-service")
         for is_deprecated in [True, False]:
             for _ in range(3):
-                DataCenterAssetFactory(
-                    service_env=service_env, force_depreciation=is_deprecated
-                )
+                DataCenterAssetFactory(service_env=service_env, force_depreciation=is_deprecated)
 
         graph = GraphFactory(
             aggregate_type=AggregateType.aggregate_ratio.id,
@@ -300,9 +292,7 @@ class LabelGroupingTest(TestCase):
         )
 
         qs = graph.build_queryset()
-        self.assertEqual(
-            qs.get(), {"series": 50, "service_env__service__name": "sample-service"}
-        )
+        self.assertEqual(qs.get(), {"series": 50, "service_env__service__name": "sample-service"})
 
     def test_duplicates_works_when_used_in_series_value(self):
         DataCenterAssetLicenceFactory(licence=LicenceFactory(valid_thru="2015-01-01"))

@@ -119,9 +119,7 @@ def files(request, file_type, deployment_id):
     preboot = _get_preboot(deployment_id)
     file_url = preboot.get_file_url(file_type)
     if file_url is None:
-        logger.warning(
-            "File %s for deployment %s doesn't exist", file_type, deployment_id
-        )
+        logger.warning("File %s for deployment %s doesn't exist", file_type, deployment_id)
         raise Http404
     return HttpResponseRedirect(file_url)
 

@@ -425,9 +425,7 @@ class RalphAdminImportExportMixin(ImportExportModelAdmin):
         # if it is "exporter" request, try to use `_export_queryset_manager`
         # manager defined in admin
         if hasattr(request, "_is_export") and self._export_queryset_manager:
-            logger.info(
-                "Using {} manager for export".format(self._export_queryset_manager)
-            )
+            logger.info("Using {} manager for export".format(self._export_queryset_manager))
             return getattr(self.model, self._export_queryset_manager).all()
         return super().get_queryset(request)
 
@@ -486,9 +484,7 @@ class RalphStackedInline(RalphInlineMixin, RalphAutocompleteMixin, admin.Stacked
     pass
 
 
-class RalphGenericTabularInline(
-    RalphInlineMixin, RalphAutocompleteMixin, GenericTabularInline
-):
+class RalphGenericTabularInline(RalphInlineMixin, RalphAutocompleteMixin, GenericTabularInline):
     pass
 
 
@@ -530,16 +526,12 @@ class BulkEditChangeListMixin(object):
                 bulk_list_display = [
                     field
                     for field in self.bulk_edit_list
-                    if self.model.has_access_to_field(
-                        field, request.user, action="view"
-                    )
+                    if self.model.has_access_to_field(field, request.user, action="view")
                 ]
                 bulk_list_edit = [
                     field
                     for field in bulk_list_display
-                    if self.model.has_access_to_field(
-                        field, request.user, action="change"
-                    )
+                    if self.model.has_access_to_field(field, request.user, action="change")
                 ]
             # overwrite displayed fields in bulk-edit mode
             list_display = bulk_list_display.copy()

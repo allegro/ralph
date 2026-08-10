@@ -29,13 +29,12 @@ if os.environ.get("USE_REDIS_CACHE"):
             "BACKEND": "django_redis.cache.RedisCache",
             "LOCATION": os.environ.get(
                 "REDIS_CACHE_LOCATION",
-                f"redis://{REDIS_CLUSTER_NAME}/{os.environ.get('REDIS_CACHE_DB', REDIS_CONNECTION['DB'])}",
+                f"redis://{REDIS_CLUSTER_NAME}/"
+                f"{os.environ.get('REDIS_CACHE_DB', REDIS_CONNECTION['DB'])}",
             ),
             "OPTIONS": {
                 "DB": os.environ.get("REDIS_CACHE_DB", REDIS_CONNECTION["DB"]),
-                "PASSWORD": os.environ.get(
-                    "REDIS_CACHE_PASSWORD", REDIS_CONNECTION["PASSWORD"]
-                ),
+                "PASSWORD": os.environ.get("REDIS_CACHE_PASSWORD", REDIS_CONNECTION["PASSWORD"]),
                 "PARSER_CLASS": os.environ.get(
                     "REDIS_CACHE_PARSER", "redis.connection.HiredisParser"
                 ),
@@ -60,9 +59,7 @@ if bool_from_env("COLLECT_METRICS"):
     STATSD_PORT = os.environ.get("STATSD_PORT")
     STATSD_PREFIX = os.environ.get("STATSD_PREFIX")
     STATSD_MAXUDPSIZE = int(os.environ.get("STATSD_MAXUDPSIZE", 512))
-    MIDDLEWARE = (
-        "ralph.lib.metrics.middlewares.RequestMetricsMiddleware",
-    ) + MIDDLEWARE
+    MIDDLEWARE = ("ralph.lib.metrics.middlewares.RequestMetricsMiddleware",) + MIDDLEWARE
 
     ALLOW_PUSH_GRAPHS_DATA_TO_STATSD = bool_from_env("ALLOW_PUSH_GRAPHS_DATA_TO_STATSD")
     if ALLOW_PUSH_GRAPHS_DATA_TO_STATSD:
@@ -71,10 +68,6 @@ if bool_from_env("COLLECT_METRICS"):
 if bool_from_env("PROMETHEUS_METRICS_ENABLED", True):
     PROMETHEUS_METRICS_ENABLED = True
     PROMETHEUS_EXPORT_MIGRATIONS = False
-    MIDDLEWARE = (
-        "django_prometheus.middleware.PrometheusBeforeMiddleware",
-    ) + MIDDLEWARE
-    MIDDLEWARE = MIDDLEWARE + (
-        "django_prometheus.middleware.PrometheusAfterMiddleware",
-    )
+    MIDDLEWARE = ("django_prometheus.middleware.PrometheusBeforeMiddleware",) + MIDDLEWARE
+    MIDDLEWARE = MIDDLEWARE + ("django_prometheus.middleware.PrometheusAfterMiddleware",)
     INSTALLED_APPS += ("django_prometheus",)

@@ -36,9 +36,7 @@ class ModelVisualizationLayout(Choices):
     na = _("N/A")
     layout_1x2 = _("1 row x 2 columns").extra(css_class="rows-1 cols-2")
     layout_2x8 = _("2 rows x 8 columns").extra(css_class="rows-2 cols-8")
-    layout_2x8AB = _("2 rows x 16 columns (A/B)").extra(
-        css_class="rows-2 cols-8 half-slots"
-    )
+    layout_2x8AB = _("2 rows x 16 columns (A/B)").extra(css_class="rows-2 cols-8 half-slots")
     layout_4x2 = _("4 rows x 2 columns").extra(css_class="rows-4 cols-2")
     layout_2x4 = _("2 rows x 4 columns").extra(css_class="rows-2 cols-4")
     layout_2x2 = _("2 rows x 2 columns").extra(css_class="rows-2 cols-2")

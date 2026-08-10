@@ -40,9 +40,7 @@ class DataCenterAssetAdminTest(TransactionTestCase):
         self.dca = DataCenterAssetFactory(
             hostname="ralph1.allegro.pl", rack=RackFactory(), position=1
         )
-        self.custom_fields_inline_prefix = (
-            "custom_fields-customfieldvalue-content_type-object_id-"  # noqa
-        )
+        self.custom_fields_inline_prefix = "custom_fields-customfieldvalue-content_type-object_id-"  # noqa
         self.custom_field_str = CustomField.objects.create(
             name="test_str", type=CustomFieldTypes.STRING, default_value="xyz"
         )
@@ -79,10 +77,7 @@ class DataCenterAssetAdminTest(TransactionTestCase):
         self.assertIn(response.status_code, (200, 302))
 
     def _prepare_inline_data(self, d):
-        return {
-            "{}{}".format(self.custom_fields_inline_prefix, k): v
-            for (k, v) in d.items()
-        }
+        return {"{}{}".format(self.custom_fields_inline_prefix, k): v for (k, v) in d.items()}
 
     def test_if_mail_notification_is_send_when_dca_is_updated_through_gui(self):
         old_service = ServiceFactory(name="test")
@@ -92,9 +87,7 @@ class DataCenterAssetAdminTest(TransactionTestCase):
         old_service_env = ServiceEnvironmentFactory(service=old_service)
         new_service_env = ServiceEnvironmentFactory(service=new_service)
         # update without triggering signals
-        DataCenterAsset.objects.filter(pk=self.dca.pk).update(
-            service_env=old_service_env
-        )
+        DataCenterAsset.objects.filter(pk=self.dca.pk).update(service_env=old_service_env)
 
         data_custom_fields = {
             "TOTAL_FORMS": 3,
@@ -108,9 +101,7 @@ class DataCenterAssetAdminTest(TransactionTestCase):
 
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(
-            "Device has been assigned to Service: {} ({})".format(
-                new_service, self.dca
-            ),
+            "Device has been assigned to Service: {} ({})".format(new_service, self.dca),
             mail.outbox[0].subject,
         )
         self.assertCountEqual(mail.outbox[0].to, ["test1@test.pl", "test2@test.pl"])
@@ -126,9 +117,7 @@ class DataCenterAssetAdminTest(TransactionTestCase):
             value="sample_value",
         )
         new_service = ServiceFactory(name="service1", uid="sc-44444")
-        new_service_env = ServiceEnvironmentFactory(
-            service=new_service, environment__name="dev"
-        )
+        new_service_env = ServiceEnvironmentFactory(service=new_service, environment__name="dev")
 
         data_custom_fields = {
             "TOTAL_FORMS": 3,
@@ -220,9 +209,7 @@ class DataCenterAssetAdminAssignManagementHostnameTest(TransactionTestCase):
         self.assertEqual(result, True)
         self.factory = RequestFactory()
 
-        dc = DataCenterFactory(
-            management_hostname_suffix="dc1.test", management_ip_prefix="12.34"
-        )
+        dc = DataCenterFactory(management_hostname_suffix="dc1.test", management_ip_prefix="12.34")
         room = ServerRoomFactory(data_center=dc)
         rack = RackFactory(name="Rack 123", server_room=room)
         self.dca = DataCenterAssetFullFactory(  # type: DataCenterAsset
@@ -241,17 +228,15 @@ class DataCenterAssetAdminAssignManagementHostnameTest(TransactionTestCase):
             },
         )
         request.user = self.user
-        setattr(request, "session", "session")
+        request.session = "session"
         messages = FallbackStorage(request)
-        setattr(request, "_messages", messages)
+        request._messages = messages
         return request
 
     def test_superuser_can_assign_mgmt_hostname_and_ip(self):
         admin = DataCenterAssetAdmin(DataCenterAsset, admin_site=AdminSite())
         request = self.build_request(self.dca)
-        admin.assign_mgmt_hostname(
-            request, DataCenterAsset.objects.filter(pk=self.dca.id)
-        )
+        admin.assign_mgmt_hostname(request, DataCenterAsset.objects.filter(pk=self.dca.id))
         self.assertEqual(self.dca.management_hostname, "rack123-18u-mgmt.dc1.test")
         self.assertEqual(self.dca.management_ip, "12.34.213.218")
 
@@ -262,12 +247,8 @@ class DataCenterAssetAdminAssignManagementHostnameTest(TransactionTestCase):
         self.dca.management_ip = "10.15.20.25"
         self.dca.save()
         request = self.build_request(self.dca)
-        admin.assign_mgmt_hostname(
-            request, DataCenterAsset.objects.filter(pk=self.dca.id)
-        )
-        self.assertEqual(
-            self.dca.management_hostname, "rack123-18u-bay33-mgmt.dc1.test"
-        )
+        admin.assign_mgmt_hostname(request, DataCenterAsset.objects.filter(pk=self.dca.id))
+        self.assertEqual(self.dca.management_hostname, "rack123-18u-bay33-mgmt.dc1.test")
         self.assertEqual(self.dca.management_ip, "10.15.20.25")
 
     def test_cant_assign_mgmt_hostname_for_server_blade_if_no_ip(self):
@@ -275,9 +256,7 @@ class DataCenterAssetAdminAssignManagementHostnameTest(TransactionTestCase):
         self.dca.slot_no = 33
         self.dca.save()
         request = self.build_request(self.dca)
-        admin.assign_mgmt_hostname(
-            request, DataCenterAsset.objects.filter(pk=self.dca.id)
-        )
+        admin.assign_mgmt_hostname(request, DataCenterAsset.objects.filter(pk=self.dca.id))
         self.assertEqual(self.dca.management_hostname, "")
         self.assertEqual(self.dca.management_ip, "")
 
@@ -390,9 +369,7 @@ class CombineRacksIntoModuleTest(TransactionTestCase):
     def test_combine_racks_fails_if_different_data_centers(self):
         from ralph.data_center.models.physical import RackModule
 
-        other_server_room = ServerRoomFactory(
-            data_center=DataCenterFactory(name="Other DC")
-        )
+        other_server_room = ServerRoomFactory(data_center=DataCenterFactory(name="Other DC"))
         rack_other_dc = RackFactory(name="Rack 99", server_room=other_server_room)
         response = self._perform_action([self.rack1, rack_other_dc])
         self.assertEqual(response.status_code, 200)

@@ -63,9 +63,7 @@ def _update_service_environments(service, environments):
     for env_id in to_add:
         ServiceEnvironment.objects.create(service=service, environment_id=env_id)
     for env_id in to_delete:
-        service_env = ServiceEnvironment.objects.get(
-            service=service, environment_id=env_id
-        )
+        service_env = ServiceEnvironment.objects.get(service=service, environment_id=env_id)
         if BaseObject.objects.filter(service_env=service_env).exists():
             logger.error(
                 "Can not delete service environment - it has assigned some base objects",  # noqa: E501
@@ -83,16 +81,12 @@ def _update_service_environments(service, environments):
 
 def _update_area(service, area_name):
     if not service.business_segment or service.business_segment.name != area_name:
-        service.business_segment = BusinessSegment.objects.get_or_create(
-            name=area_name
-        )[0]
+        service.business_segment = BusinessSegment.objects.get_or_create(name=area_name)[0]
 
 
 def _update_profit_center(service, profit_center_name):
     if not service.profit_center or service.profit_center.name != profit_center_name:
-        service.profit_center = ProfitCenter.objects.get_or_create(
-            name=profit_center_name
-        )[0]
+        service.profit_center = ProfitCenter.objects.get_or_create(name=profit_center_name)[0]
 
 
 class ServiceActionType(str, Enum):
@@ -138,8 +132,8 @@ def update_service_handler(service_data):
             "service_uid": service_uid,
             "service_type": service_type,
         }
-    except:  # noqa
-        raise BadRequest("Incorrect data format")
+    except Exception as e:  # noqa
+        raise BadRequest("Incorrect data format") from e
 
     match action_type:
         case ServiceActionType.CREATE:
@@ -201,9 +195,7 @@ def update_service_handler(service_data):
             service.save()
 
         logger.info(
-            "Synced service `{}` with UID `{}`.".format(
-                service_data["name"], service_data["uid"]
-            ),
+            "Synced service `{}` with UID `{}`.".format(service_data["name"], service_data["uid"]),
             extra=log_extra,
         )
 
@@ -213,9 +205,7 @@ def delete_service_handler(service_data):
     Set service active to False if service deleted.
     """
     try:
-        service_envs = ServiceEnvironment.objects.filter(
-            service__uid=service_data["uid"]
-        )
+        service_envs = ServiceEnvironment.objects.filter(service__uid=service_data["uid"])
         if BaseObject.objects.filter(service_env__in=service_envs).exists():
             logger.error(
                 "Can not delete service - it has assigned some base objects",

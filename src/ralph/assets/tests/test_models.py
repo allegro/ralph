@@ -61,7 +61,5 @@ class EthernetTest(RalphTestCase):
         self.ip1.dhcp_expose = True
         self.ip1.save()
         self.ip1.ethernet.mac = "11:12:13:14:15:16"
-        with self.assertRaises(
-            ValidationError, msg="Cannot change MAC when exposing in DHCP"
-        ):
+        with self.assertRaises(ValidationError, msg="Cannot change MAC when exposing in DHCP"):
             self.ip1.ethernet.clean()

@@ -86,9 +86,7 @@ class AsyncTransitionsTest(TransitionTestCaseMixin, TransactionTestCase):
             # check if shared params and history kwargs are properly stored
             # during rescheduling
             self.assertEqual(job.params["shared_params"][async_order.pk]["counter"], 5)
-            self.assertEqual(
-                job.params["history_kwargs"][async_order.pk]["hist_counter"], 5
-            )
+            self.assertEqual(job.params["history_kwargs"][async_order.pk]["hist_counter"], 5)
             # check history entries
             th = TransitionsHistory.objects.get(object_id=async_order.id)
             self.assertEqual(th.kwargs, {"hist_counter": 5})
@@ -139,9 +137,7 @@ class AsyncTransitionsTest(TransitionTestCaseMixin, TransactionTestCase):
             self.assertEqual(async_order.name, "def")
             # check if shared params and history kwargs are properly stored
             # during freezing
-            self.assertEqual(
-                job.params["shared_params"][async_order.pk]["test"], "freezing"
-            )
+            self.assertEqual(job.params["shared_params"][async_order.pk]["test"], "freezing")
             # check history entries
             th = TransitionsHistory.objects.get(object_id=async_order.id)
             self.assertCountEqual(

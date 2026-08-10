@@ -14,7 +14,8 @@ class ConnectionStrategy(metaclass=abc.ABCMeta):
     def connect(self, port1: Port, port2: Port) -> tuple[Connection, bool]:
         """
         Create a connection between two ports.
-        Returns a tuple of the created Connection and a boolean indicating whether any new connections were created
+        Returns a tuple of the created Connection and a boolean indicating
+        whether any new connections were created
         """
         raise NotImplementedError("Subclasses must implement this method.")
 
@@ -70,7 +71,8 @@ class NondestructiveConnectionStrategy(ConnectionStrategy):
                 return connections1[0], False
             elif connections1 or connections2:
                 raise ConnectionAlreadyExistsException(
-                    f"Cannot connect {port1} and {port2} because one or both ports are already connected to other ports."
+                    f"Cannot connect {port1} and {port2} because one or both ports"
+                    f" are already connected to other ports."
                 )
             else:
                 return _create_connection(port1, port2), True
@@ -78,11 +80,7 @@ class NondestructiveConnectionStrategy(ConnectionStrategy):
 
 def _lock_ports(*ports: Port) -> None:
     """Lock ports to prevent race conditions"""
-    list(
-        Port.objects.filter(id__in=[p.id for p in ports])
-        .order_by("id")
-        .select_for_update()
-    )
+    list(Port.objects.filter(id__in=[p.id for p in ports]).order_by("id").select_for_update())
 
 
 def _create_connection(port1: Port, port2: Port) -> Connection:
@@ -100,7 +98,8 @@ def connect(
 ) -> tuple[Connection, bool]:
     """
     Create a connection between two ports.
-    Returns a tuple of the created Connection and a boolean indicating whether any new connections were created
+    Returns a tuple of the created Connection and a boolean indicating
+    whether any new connections were created
     """
     return strategy.connect(port1, port2)
 

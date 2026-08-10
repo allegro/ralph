@@ -48,9 +48,7 @@ class _BaseTestDeploymentActionsTestCase(object):
     @mock.patch("ralph.deployment.deployment.DNSaaS._get_oauth_token")
     @mock.patch("ralph.deployment.deployment.DNSaaS.get_dns_records")
     @mock.patch("ralph.deployment.deployment.DNSaaS.delete_dns_record")
-    def test_clean_dns(
-        self, delete_dns_record_mock, get_dns_records_mock, _get_oauth_token_mock
-    ):
+    def test_clean_dns(self, delete_dns_record_mock, get_dns_records_mock, _get_oauth_token_mock):
         IPAddressFactory(address="10.20.30.41")
         IPAddressFactory(ethernet__base_object=self.instance, is_management=True)
         IPAddressFactory(
@@ -81,9 +79,7 @@ class _BaseTestDeploymentActionsTestCase(object):
     @override_settings(ENABLE_DNSAAS_INTEGRATION=True)
     @mock.patch("ralph.deployment.deployment.DNSaaS._get_oauth_token")
     @mock.patch("ralph.deployment.deployment.DNSaaS.get_dns_records")
-    def test_clean_dns_with_too_much_ips(
-        self, get_dns_records_mock, _get_oauth_token_mock
-    ):
+    def test_clean_dns_with_too_much_ips(self, get_dns_records_mock, _get_oauth_token_mock):
         IPAddressFactory(
             ethernet__base_object=self.instance,
             ethernet__mac=None,
@@ -109,9 +105,7 @@ class _BaseTestDeploymentActionsTestCase(object):
             address="192.169.58.0/24",
             network_environment=NetworkEnvironmentFactory(),
         )
-        ip = IPAddress.objects.create(
-            address="192.169.58.1", status=IPAddressStatus.reserved
-        )
+        ip = IPAddress.objects.create(address="192.169.58.1", status=IPAddressStatus.reserved)
         DHCPServer.objects.create(
             ip="10.0.0.1",
             network_environment=net.network_environment,
@@ -127,9 +121,7 @@ class _BaseTestDeploymentActionsTestCase(object):
 
     def test_clean_ipaddresses(self):
         ip = IPAddressFactory(ethernet__base_object=self.instance)
-        ip_mgmt = IPAddressFactory(
-            ethernet__base_object=self.instance, is_management=True
-        )
+        ip_mgmt = IPAddressFactory(ethernet__base_object=self.instance, is_management=True)
         ip_without_eth = IPAddressFactory(
             ethernet__base_object=self.instance,
             ethernet__mac=None,
@@ -196,9 +188,7 @@ class _BaseTestDeploymentActionsTestCase(object):
             shared_params={"hostnames": {self.instance.pk: ""}},
         )
         self.assertEqual(self.instance.hostname, "s12345.mydc.net")
-        self.assertEqual(
-            history, {self.instance.pk: {"hostname": "{}".format("s12345.mydc.net")}}
-        )
+        self.assertEqual(history, {self.instance.pk: {"hostname": "{}".format("s12345.mydc.net")}})
 
     def test_remove_entry_from_dhcp(self):
         history = {self.instance.pk: {}}
@@ -216,11 +206,7 @@ class _BaseTestDeploymentActionsTestCase(object):
         self.assertFalse(ip.dhcp_expose)
         self.assertEqual(
             history,
-            {
-                self.instance.pk: {
-                    "DHCP entry": "10.20.30.40 (s1234.mydc.net) / AA:BB:CC:DD:EE:FF"
-                }
-            },
+            {self.instance.pk: {"DHCP entry": "10.20.30.40 (s1234.mydc.net) / AA:BB:CC:DD:EE:FF"}},
         )
 
     @override_settings(ENABLE_DNSAAS_INTEGRATION=True)
@@ -231,9 +217,7 @@ class _BaseTestDeploymentActionsTestCase(object):
         _get_oauth_token_mock.return_value = "token"
         history = {self.instance.pk: {"ip": "10.20.30.40"}}
         self.instance.hostname = "s12345.mydc.net"
-        self.instance.__class__.create_dns_entries(
-            [self.instance], history_kwargs=history
-        )
+        self.instance.__class__.create_dns_entries([self.instance], history_kwargs=history)
         _post.assert_called_once_with(
             "https://dnsaas.mydc.net/api/records/",
             {
@@ -291,9 +275,7 @@ class _BaseTestDeploymentActionsTestCase(object):
         )
 
 
-class DataCenterAssetDeploymentActionsTestCase(
-    _BaseTestDeploymentActionsTestCase, TestCase
-):
+class DataCenterAssetDeploymentActionsTestCase(_BaseTestDeploymentActionsTestCase, TestCase):
     def setUp(self):
         self.instance = DataCenterAssetFactory()
 
@@ -303,9 +285,7 @@ class DataCenterAssetDeploymentActionsTestCase(
         self.instance.save()
 
 
-class VirtualServerDeploymentActionsTestCase(
-    _BaseTestDeploymentActionsTestCase, TestCase
-):
+class VirtualServerDeploymentActionsTestCase(_BaseTestDeploymentActionsTestCase, TestCase):
     def setUp(self):
         self.instance = VirtualServerFactory()
 
@@ -320,9 +300,7 @@ class AutocompleteFunctionsTestCase(TestCase):
     @unpack
     @data(([],), ([DataCenterAssetFactory, DataCenterAssetFactory],))
     def test_autocomplete_service_env_should_return_false(self, factories):
-        self.assertFalse(
-            autocomplete_service_env([], [factory() for factory in factories])
-        )
+        self.assertFalse(autocomplete_service_env([], [factory() for factory in factories]))
 
     def test_autocomplete_service_env_should_return_pk(self):
         asset = DataCenterAssetFactory(service_env=ServiceEnvironmentFactory())

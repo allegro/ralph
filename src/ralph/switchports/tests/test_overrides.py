@@ -20,9 +20,7 @@ class SwitchOverrideTestCase(TestCase):
     def setUp(self):
         self.rack = RackFactory(name="TestRack-Override")
         self.switch_eth1 = DataCenterAssetFactory(hostname="ovr.sw.eth1.local")
-        self.switch_alt = DataCenterAssetFactory(
-            hostname="ovr.sw.alt.local", barcode="ALT-BC-1"
-        )
+        self.switch_alt = DataCenterAssetFactory(hostname="ovr.sw.alt.local", barcode="ALT-BC-1")
         self.server1 = DataCenterAssetFactory(
             hostname="ovr-srv1.example.com", rack=self.rack, position=1
         )
@@ -60,9 +58,7 @@ class SwitchOverrideTestCase(TestCase):
             switch=self.switch_alt,
         )
         asset_port = Port.objects.create(label="eth1", data_center_asset=self.server1)
-        switch_port = Port.objects.create(
-            label="0/0/7", data_center_asset=self.switch_alt
-        )
+        switch_port = Port.objects.create(label="0/0/7", data_center_asset=self.switch_alt)
         conn = Connection.objects.create()
         ConnectionMember.objects.create(connection=conn, port=asset_port)
         ConnectionMember.objects.create(connection=conn, port=switch_port)
@@ -97,9 +93,7 @@ class SwitchOverrideTestCase(TestCase):
             remote_hostname="ovr-srv1.example.com",
         )
         validation_map, switch_status = grid.build_validation_map(self.rack_config)
-        client = grid.build_client_validation(
-            switch_configs, validation_map, switch_status
-        )
+        client = grid.build_client_validation(switch_configs, validation_map, switch_status)
         self.assertIn(str(self.sc_eth1.id), client)
         self.assertIn("0/0/5", client[str(self.sc_eth1.id)]["ports"])
 
@@ -108,7 +102,5 @@ class SwitchOverrideTestCase(TestCase):
         self.sc_eth1.save()
         switch_configs = list(grid.get_switch_configs(self.rack_config))
         validation_map, switch_status = grid.build_validation_map(self.rack_config)
-        client = grid.build_client_validation(
-            switch_configs, validation_map, switch_status
-        )
+        client = grid.build_client_validation(switch_configs, validation_map, switch_status)
         self.assertNotIn(str(self.sc_eth1.id), client)

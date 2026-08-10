@@ -19,9 +19,7 @@ class LicenceAPITests(RalphAPITestCase):
         self.base_object = BackOfficeAssetFactory()
         self.base_object2 = BackOfficeAssetFactory(region=region_pl)
         LicenceUser.objects.create(licence=self.licence1, user=self.user1)
-        BaseObjectLicence.objects.create(
-            licence=self.licence2, base_object=self.base_object
-        )
+        BaseObjectLicence.objects.create(licence=self.licence2, base_object=self.base_object)
         self.service_env = ServiceEnvironmentFactory()
         self.licence4 = LicenceFactory(service_env=self.service_env)
 
@@ -37,20 +35,14 @@ class LicenceAPITests(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["number_bought"], self.licence1.number_bought)
         self.assertEqual(response.data["region"]["id"], self.licence1.region.id)
-        self.assertEqual(
-            response.data["manufacturer"]["id"], self.licence1.manufacturer.id
-        )
-        self.assertEqual(
-            response.data["licence_type"]["id"], self.licence1.licence_type.id
-        )
+        self.assertEqual(response.data["manufacturer"]["id"], self.licence1.manufacturer.id)
+        self.assertEqual(response.data["licence_type"]["id"], self.licence1.licence_type.id)
         self.assertEqual(response.data["software"]["id"], self.licence1.software.id)
         self.assertEqual(
             response.data["users"][0]["user"]["id"],
             self.user1.id,
         )
-        self.assertEqual(
-            response.data["depreciation_rate"], self.licence1.depreciation_rate
-        )
+        self.assertEqual(response.data["depreciation_rate"], self.licence1.depreciation_rate)
 
     def test_get_licence_with_service_env(self):
         url = reverse("licence-detail", args=(self.licence4.id,))
@@ -58,9 +50,7 @@ class LicenceAPITests(RalphAPITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["service_env"]["id"], self.service_env.id)
-        self.assertEqual(
-            response.data["service_env"]["service"], self.service_env.service.name
-        )
+        self.assertEqual(response.data["service_env"]["service"], self.service_env.service.name)
         self.assertEqual(
             response.data["service_env"]["environment"],
             self.service_env.environment.name,

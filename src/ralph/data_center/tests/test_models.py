@@ -33,9 +33,7 @@ from ralph.tests import RalphTestCase
 @ddt
 class DataCenterAssetTest(RalphTestCase):
     def setUp(self):
-        self.dc_asset = DataCenterAssetFactory(
-            status=DataCenterAssetStatus.liquidated.id
-        )
+        self.dc_asset = DataCenterAssetFactory(status=DataCenterAssetStatus.liquidated.id)
         self.dc_asset_2 = DataCenterAssetFactory(
             parent=self.dc_asset,
         )
@@ -63,9 +61,7 @@ class DataCenterAssetTest(RalphTestCase):
         self.assertEqual(bo_asset.hostname, hostname)
 
     def test_convert_to_backoffice_asset_preserves_status_name(self):
-        dc_asset = DataCenterAssetFactory(
-            status=DataCenterAssetStatus.from_name("damaged")
-        )
+        dc_asset = DataCenterAssetFactory(status=DataCenterAssetStatus.from_name("damaged"))
         transition = Transition.objects.create(
             name="transition",
             model=TransitionModel.get_for_field(dc_asset, "status"),
@@ -89,9 +85,7 @@ class DataCenterAssetTest(RalphTestCase):
         target_status_id = BackOfficeAssetStatus.from_name(
             "new"  # status name common for dc_asset and bo_asset
         ).id
-        dc_asset = DataCenterAssetFactory(
-            status=DataCenterAssetStatus.from_name("damaged")
-        )
+        dc_asset = DataCenterAssetFactory(status=DataCenterAssetStatus.from_name("damaged"))
         transition = Transition.objects.create(
             name="transition",
             model=TransitionModel.get_for_field(dc_asset, "status"),
@@ -115,9 +109,7 @@ class DataCenterAssetTest(RalphTestCase):
         target_status_id = BackOfficeAssetStatus.from_id(
             settings.CONVERT_TO_BACKOFFICE_ASSET_DEFAULT_STATUS_ID
         ).id
-        dc_asset = DataCenterAssetFactory(
-            status=DataCenterAssetStatus.from_name("pre_liquidated")
-        )
+        dc_asset = DataCenterAssetFactory(status=DataCenterAssetStatus.from_name("pre_liquidated"))
         transition = Transition.objects.create(
             name="transition",
             model=TransitionModel.get_for_field(dc_asset, "status"),
@@ -262,9 +254,7 @@ class DataCenterAssetTest(RalphTestCase):
         (10, 10),
         (10, 100),
     )
-    def test_should_pass_when_position_in_rack_is_correct(
-        self, position, rack_max_height
-    ):
+    def test_should_pass_when_position_in_rack_is_correct(self, position, rack_max_height):
         self.dc_asset.position = position
         self.dc_asset.rack = RackFactory(max_u_height=rack_max_height)
         self.dc_asset._validate_position_in_rack()
@@ -373,26 +363,18 @@ class DataCenterAssetTest(RalphTestCase):
     # =========================================================================
     def test_get_next_free_hostname(self):
         self._prepare_rack(self.dc_asset, "192.168.1.11", "192.168.1.0/24")
-        self.assertEqual(
-            self.dc_asset.get_next_free_hostname(), "server_10001.mydc.net"
-        )
+        self.assertEqual(self.dc_asset.get_next_free_hostname(), "server_10001.mydc.net")
         # running it again shouldn't change next hostname
-        self.assertEqual(
-            self.dc_asset.get_next_free_hostname(), "server_10001.mydc.net"
-        )
+        self.assertEqual(self.dc_asset.get_next_free_hostname(), "server_10001.mydc.net")
 
     def test_get_next_free_hostname_without_network_env(self):
         self.assertEqual(self.dc_asset.get_next_free_hostname(), "")
 
     def test_issue_next_free_hostname(self):
         self._prepare_rack(self.dc_asset, "192.168.1.11", "192.168.1.0/24")
-        self.assertEqual(
-            self.dc_asset.issue_next_free_hostname(), "server_10001.mydc.net"
-        )
+        self.assertEqual(self.dc_asset.issue_next_free_hostname(), "server_10001.mydc.net")
         # running it again should change next hostname
-        self.assertEqual(
-            self.dc_asset.issue_next_free_hostname(), "server_10002.mydc.net"
-        )
+        self.assertEqual(self.dc_asset.issue_next_free_hostname(), "server_10002.mydc.net")
 
     def test_issue_next_free_hostname_without_network_env(self):
         self.assertEqual(self.dc_asset.issue_next_free_hostname(), "")
@@ -404,9 +386,7 @@ class DataCenterAssetTest(RalphTestCase):
         self._prepare_rack(self.dc_asset, "192.168.1.1", "192.168.1.0/24")
         self.net3 = NetworkFactory(address="192.168.3.0/24")
 
-        self.assertCountEqual(
-            self.dc_asset._get_available_networks(), [self.net, self.net2]
-        )
+        self.assertCountEqual(self.dc_asset._get_available_networks(), [self.net, self.net2])
 
     def test_get_available_networks_is_broadcasted_in_dhcp(self):
         self._prepare_rack(self.dc_asset, "192.168.1.1", "192.168.1.0/24")

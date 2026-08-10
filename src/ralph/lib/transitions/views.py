@@ -38,9 +38,7 @@ from ralph.lib.transitions.models import (
 def collect_actions(obj, transition):
     names = transition.actions.values_list("name", flat=True).all()
     actions = [getattr(obj, name) for name in names]
-    return_attachment = [
-        getattr(action, "return_attachment", False) for action in actions
-    ]
+    return_attachment = [getattr(action, "return_attachment", False) for action in actions]
     return actions, any(return_attachment)
 
 
@@ -138,9 +136,7 @@ class TransitionViewMixin(NonAtomicView, object):
             )
         ):
             return HttpResponseForbidden()
-        self.actions, self.return_attachment = collect_actions(
-            self.obj, self.transition
-        )
+        self.actions, self.return_attachment = collect_actions(self.obj, self.transition)
         if not len(self.form_fields_from_actions):
             return self.run_and_redirect(request, *args, **kwargs)
         return super().dispatch(request, *args, **kwargs)

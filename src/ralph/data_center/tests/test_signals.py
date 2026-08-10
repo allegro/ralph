@@ -34,7 +34,7 @@ class TestPublishing(TestCase):
 
     def test_sending_data_doesnt_raise_json_error(self):
         for obj_name in ["cloud_host", "dc_asset", "virtual_server"]:
-            json.dumps(_get_host_data(self.dc_asset))
+            json.dumps(_get_host_data(getattr(self, obj_name)))
 
     def test_sending_data_includes_only_selected_fields(self):
         data = _get_host_data(self.dc_asset)

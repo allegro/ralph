@@ -48,9 +48,7 @@ class TestServiceBasedVisibilityScopeVisibility(APITestCase):
         self.visibility_scope.services.set([self.service_in_visibility_scope])
 
         self.service_env_outside_visibility_scope = ServiceEnvironmentFactory()
-        self.service_outside_visibility_scope = (
-            self.service_env_outside_visibility_scope.service
-        )
+        self.service_outside_visibility_scope = self.service_env_outside_visibility_scope.service
 
         self.user_outside_visibility_scope = get_user_model().objects.create(
             username="user1", is_staff=True, is_active=True
@@ -70,9 +68,7 @@ class TestServiceBasedVisibilityScopeVisibility(APITestCase):
         self.visibility_scope.users.set([self.user_in_visibility_scope])
 
 
-class TestDataCenterAssetVisibilityInVisibilityScope(
-    TestServiceBasedVisibilityScopeVisibility
-):
+class TestDataCenterAssetVisibilityInVisibilityScope(TestServiceBasedVisibilityScopeVisibility):
     def setUp(self):
         super().setUp()
         self.hw_in_visibility_scope = DataCenterAssetFactory(

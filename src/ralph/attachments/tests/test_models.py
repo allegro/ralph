@@ -29,8 +29,6 @@ class AttachmentTest(AttachmentsTestCase):
             file_path = os.path.join(tmp_dir_name, "łóźć.pdf")
             with open(file_path, "w+") as f:
                 f.write("content")
-            attachment = Attachment.objects.create_from_file_path(
-                file_path, UserFactory()
-            )
+            attachment = Attachment.objects.create_from_file_path(file_path, UserFactory())
             attachment.save()
             self.assertEqual(attachment.original_filename, "lozc.pdf")

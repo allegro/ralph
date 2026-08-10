@@ -384,9 +384,9 @@ class AdminFiltersTestCase(TestCase):
     def test_incorrect_value_related(self):
         request = RequestFactory().get("/")
         # ugly hack from https://code.djangoproject.com/ticket/17971
-        setattr(request, "session", "session")
+        request.session = "session"
         messages = FallbackStorage(request)
-        setattr(request, "_messages", messages)
+        request._messages = messages
 
         related_filter = RelatedAutocompleteFieldListFilter(
             field=Car._meta.get_field("manufacturer"),

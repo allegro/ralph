@@ -116,9 +116,7 @@ class SIMCard(
         validators=[
             MinLengthValidator(1),
             MaxLengthValidator(16),
-            RegexValidator(
-                regex=r"^\+\d+$", message="Phone number must have +2920181234 format."
-            ),
+            RegexValidator(regex=r"^\+\d+$", message="Phone number must have +2920181234 format."),
         ],
     )
     warehouse = models.ForeignKey(Warehouse, on_delete=models.PROTECT)
@@ -179,9 +177,7 @@ class SIMCard(
         form_fields={
             "accept": {
                 "field": forms.BooleanField(
-                    label=_(
-                        "I have read and fully understand and accept the agreement."
-                    )
+                    label=_("I have read and fully understand and accept the agreement.")
                 )
             },
         }
@@ -283,9 +279,7 @@ class SIMCard(
     @transition_action(run_after=["loan_report", "return_report"])
     def unassign_owner(cls, instances, **kwargs):
         for instance in instances:
-            kwargs["history_kwargs"][instance.pk]["affected_owner"] = str(
-                instance.owner
-            )
+            kwargs["history_kwargs"][instance.pk]["affected_owner"] = str(instance.owner)
             instance.owner = None
 
     @classmethod
@@ -311,9 +305,7 @@ class SIMCard(
     @transition_action()
     def quarantine_date(cls, instances, **kwargs):
         for instance in instances:
-            instance.quarantine_until = datetime.date.today() + datetime.timedelta(
-                days=90
-            )  # noqa
+            instance.quarantine_until = datetime.date.today() + datetime.timedelta(days=90)  # noqa
 
     @classmethod
     @transition_action(

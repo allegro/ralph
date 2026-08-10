@@ -12,9 +12,7 @@ class ChangesReceiverTestCase(RalphTestCase):
     fixtures = ["operation_types", "operation_statuses"]
 
     def setUp(self):
-        with open(
-            path.join(path.dirname(__file__), "sample_jira_event.json"), "r"
-        ) as f:
+        with open(path.join(path.dirname(__file__), "sample_jira_event.json"), "r") as f:
             self.jira_event = json.load(f)
 
     def test_new_event_records_operation(self):

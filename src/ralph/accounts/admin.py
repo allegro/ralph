@@ -71,15 +71,11 @@ class EditPermissionsFormMixin(object):
                 queryset = queryset.exclude(
                     content_type__app_label=app_label, content_type__model=model_name
                 )
-        queryset = queryset.select_related("content_type").order_by(
-            "content_type__model"
-        )
+        queryset = queryset.select_related("content_type").order_by("content_type__model")
         return queryset
 
 
-class RalphUserChangeForm(
-    EditPermissionsFormMixin, RalphAdminFormMixin, UserAdmin.form
-):
+class RalphUserChangeForm(EditPermissionsFormMixin, RalphAdminFormMixin, UserAdmin.form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         field = self.fields.get("user_permissions", None)
@@ -114,9 +110,7 @@ class AssetList(Table):
         if licences:
             result = [
                 '<a href="{}">{}</a><br />'.format(
-                    reverse(
-                        "admin:licences_licence_change", args=(licence.licence.pk,)
-                    ),
+                    reverse("admin:licences_licence_change", args=(licence.licence.pk,)),
                     licence.licence,
                 )
                 for licence in licences
@@ -171,9 +165,7 @@ class AssetList(Table):
         return ""
 
     def confirm_ownership(self, item):
-        has_inv_tag = any(
-            [n.startswith(settings.INVENTORY_TAG) for n in item.tags.names()]
-        )
+        has_inv_tag = any([n.startswith(settings.INVENTORY_TAG) for n in item.tags.names()])
         if not (item.warehouse.stocktaking_enabled or item.region.stocktaking_enabled):
             return ""
         elif settings.INVENTORY_TAG_MISSING in item.tags.names():
@@ -346,9 +338,7 @@ class RalphUserAdmin(UserAdmin, RalphAdmin):
             if not self.has_change_permission(request, obj=user):
                 self.message_user(
                     request,
-                    _("You don't have permission to deactivate user {}.").format(
-                        user.username
-                    ),
+                    _("You don't have permission to deactivate user {}.").format(user.username),
                     level="error",
                 )
                 continue
@@ -393,14 +383,9 @@ class RalphGroupAdmin(EditPermissionsFormMixin, GroupAdmin, RalphAdmin):
 
     @cached_property
     def _ldap_groups(self):
-        groups = {
-            v: k for (k, v) in getattr(settings, "AUTH_LDAP_GROUP_MAPPING", {}).items()
-        }
+        groups = {v: k for (k, v) in getattr(settings, "AUTH_LDAP_GROUP_MAPPING", {}).items()}
         groups.update(
-            {
-                v: k
-                for (k, v) in getattr(settings, "AUTH_LDAP_NESTED_GROUPS", {}).items()
-            }
+            {v: k for (k, v) in getattr(settings, "AUTH_LDAP_NESTED_GROUPS", {}).items()}
         )
         return groups
 

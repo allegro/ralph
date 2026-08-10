@@ -23,9 +23,9 @@ def build_override_map(switch_configs) -> dict:
         rack_switch_configuration_id__in=sc_ids
     ).select_related("switch")
     for override in overrides:
-        override_map[
-            (override.data_center_asset_id, override.rack_switch_configuration_id)
-        ] = override.switch
+        override_map[(override.data_center_asset_id, override.rack_switch_configuration_id)] = (
+            override.switch
+        )
     return override_map
 
 

@@ -175,9 +175,7 @@ class DateListFilter(BaseCustomFilter):
         if any(self.value()):
             date = self.value()
             try:
-                date_start = datetime.strptime(
-                    date[0], get_format("DATE_INPUT_FORMATS")[0]
-                )
+                date_start = datetime.strptime(date[0], get_format("DATE_INPUT_FORMATS")[0])
                 queryset = queryset.filter(
                     **{
                         "{}__gte".format(self.field_path): date_start,
@@ -187,9 +185,7 @@ class DateListFilter(BaseCustomFilter):
                 pass
 
             try:
-                date_end = datetime.strptime(
-                    date[1], get_format("DATE_INPUT_FORMATS")[0]
-                )
+                date_end = datetime.strptime(date[1], get_format("DATE_INPUT_FORMATS")[0])
                 queryset = queryset.filter(
                     **{
                         "{}__lte".format(self.field_path): date_end,
@@ -220,13 +216,9 @@ class NumberListFilter(DateListFilter):
         if any(self.value()):
             value = self.value()
             if value[0]:
-                queryset = queryset.filter(
-                    **{"{}__gte".format(self.field_path): value[0]}
-                )
+                queryset = queryset.filter(**{"{}__gte".format(self.field_path): value[0]})
             if value[1]:
-                queryset = queryset.filter(
-                    **{"{}__lte".format(self.field_path): value[1]}
-                )
+                queryset = queryset.filter(**{"{}__lte".format(self.field_path): value[1]})
         return queryset
 
     def choices(self, cl):
@@ -338,9 +330,9 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
                 q_param |= Q(**{self.field_path: id_})
         try:
             queryset = queryset.filter(q_param)
-        except ValueError:
+        except ValueError as e:
             _add_incorrect_value_message(request, self.title)
-            raise IncorrectLookupParameters()
+            raise IncorrectLookupParameters() from e
         # distinct for m2m
         return queryset.distinct()
 
@@ -381,9 +373,7 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
             )
             + "?prepend-empty=true",
             "multi": True,
-            "detailsurl": reverse(
-                "admin:{}_{}_autocomplete_details".format(*model_options)
-            ),
+            "detailsurl": reverse("admin:{}_{}_autocomplete_details".format(*model_options)),
         }
         return (
             {
@@ -425,16 +415,12 @@ class TreeRelatedFieldListFilter(RelatedFieldListFilter):
         if self.value():
             try:
                 root = self.field.remote_field.model.objects.get(pk=self.value())
-            except self.field.remote_field.model.DoesNotExist:
+            except self.field.remote_field.model.DoesNotExist as e:
                 _add_incorrect_value_message(request, self.title)
-                raise IncorrectLookupParameters()
+                raise IncorrectLookupParameters() from e
             else:
                 queryset = queryset.filter(
-                    **{
-                        self.field_path + "__in": root.get_descendants(
-                            include_self=True
-                        )
-                    }
+                    **{self.field_path + "__in": root.get_descendants(include_self=True)}
                 )
         return queryset
 
@@ -448,9 +434,9 @@ class TreeRelatedAutocompleteFilterWithDescendants(RelatedAutocompleteFieldListF
     def _get_descendants(self, request, root_id):
         try:
             root = self.field.remote_field.model.objects.get(pk=root_id)
-        except self.field.remote_field.model.DoesNotExist:
+        except self.field.remote_field.model.DoesNotExist as e:
             _add_incorrect_value_message(request, self.title)
-            raise IncorrectLookupParameters()
+            raise IncorrectLookupParameters() from e
         return root.get_descendants(include_self=True)
 
     def queryset(self, request, queryset):
@@ -465,21 +451,16 @@ class TreeRelatedAutocompleteFilterWithDescendants(RelatedAutocompleteFieldListF
                 q_param |= Q(**{"{}__isnull".format(self.field_path): True})
             else:
                 q_param |= Q(
-                    **{
-                        "{}__in".format(self.field_path): self._get_descendants(
-                            request, id_
-                        )
-                    }
+                    **{"{}__in".format(self.field_path): self._get_descendants(request, id_)}
                 )
         try:
             queryset = queryset.filter(q_param)
-        except ValueError:
+        except ValueError as e:
             messages.warning(
                 request,
-                _('Incorrect value in "%(field_name)s" filter')
-                % {"field_name": self.title},
+                _('Incorrect value in "%(field_name)s" filter') % {"field_name": self.title},
             )
-            raise IncorrectLookupParameters()
+            raise IncorrectLookupParameters() from e
         return queryset
 
 
@@ -501,13 +482,11 @@ class IPFilter(SimpleListFilter):
         if self.value():
             try:
                 ipaddress.ip_address(self.value())
-            except ValueError:
+            except ValueError as e:
                 _add_incorrect_value_message(request, self.title)
-                raise IncorrectLookupParameters()
+                raise IncorrectLookupParameters() from e
             else:
-                queryset = queryset.filter(
-                    ethernet_set__ipaddress__address=self.value()
-                )
+                queryset = queryset.filter(ethernet_set__ipaddress__address=self.value())
         return queryset
 
 
@@ -526,9 +505,9 @@ class MacAddressFilter(SimpleListFilter):
 
         try:
             value = MACAddressField.normalize(value)
-        except ValueError:
+        except ValueError as e:
             _add_incorrect_value_message(request, self.title)
-            raise IncorrectLookupParameters()
+            raise IncorrectLookupParameters() from e
         queryset = queryset.filter(ethernet_set__mac=value)
 
         return queryset
@@ -615,17 +594,12 @@ def register_custom_filters():
         ),
         (lambda f: isinstance(f, (models.DateField)), DateListFilter),
         (
-            lambda f: isinstance(
-                f, (models.CharField, models.TextField, models.IntegerField)
-            ),
+            lambda f: isinstance(f, (models.CharField, models.TextField, models.IntegerField)),
             TextListFilter,
         ),
         (lambda f: isinstance(f, TreeForeignKey), TreeRelatedFieldListFilter),
         (
-            lambda f: (
-                isinstance(f, models.ForeignKey)
-                and not getattr(f, "_autocomplete", True)
-            ),
+            lambda f: isinstance(f, models.ForeignKey) and not getattr(f, "_autocomplete", True),
             RelatedFieldListFilter,
         ),
         (

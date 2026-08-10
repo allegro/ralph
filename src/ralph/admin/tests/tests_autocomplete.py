@@ -40,17 +40,13 @@ class AutocompleteSplitWordTest(TestCase):
     def test_not_or(self):
         autocomplete_list = AutocompleteList()
         autocomplete_list.model = Region
-        result = autocomplete_list.get_query_filters(
-            Region.objects.all(), "pl", ["name"]
-        )
+        result = autocomplete_list.get_query_filters(Region.objects.all(), "pl", ["name"])
         self.assertEqual(list(result), [self.region])
 
     def test_not_or_empty(self):
         autocomplete_list = AutocompleteList()
         autocomplete_list.model = Region
-        result = autocomplete_list.get_query_filters(
-            Region.objects.all(), "pl de", ["name"]
-        )
+        result = autocomplete_list.get_query_filters(Region.objects.all(), "pl de", ["name"])
         self.assertEqual(len(result), 0)
 
     def test_autocomplete_endpoint_required_auth(self):

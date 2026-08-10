@@ -28,6 +28,6 @@ class Command(BaseCommand):
         for graph in graphs:
             graph_data = graph.get_data()
             graph_name = normalize(graph.name)
-            for label, value in zip(graph_data["labels"], graph_data["series"]):
+            for label, value in zip(graph_data["labels"], graph_data["series"], strict=False):
                 path = ".".join((graph_name, normalize(label)))
                 statsd.gauge(path, value)

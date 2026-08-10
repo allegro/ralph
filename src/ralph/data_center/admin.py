@@ -125,10 +125,7 @@ class DCHostHostnameFilter(SimpleListFilter):
             "ethernet_set__ipaddress__hostname",
         ]
         # TODO: simple if hostname would be in one model
-        queries = [
-            Q(**{"{}__icontains".format(field): self.value().strip()})
-            for field in fields
-        ]
+        queries = [Q(**{"{}__icontains".format(field): self.value().strip()}) for field in fields]
         return queryset.filter(reduce(operator.or_, queries)).distinct()
 
     def lookups(self, request, model_admin):
@@ -224,9 +221,7 @@ class ClusterAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     inlines = [ClusterBaseObjectInline, ClusterNetworkInline]
 
     def get_queryset(self, request):
-        return (
-            super().get_queryset(request).filter(visibility_scope_filter(request.user))
-        )
+        return super().get_queryset(request).filter(visibility_scope_filter(request.user))
 
     def get_fieldsets(self, request, obj=None):
         """
@@ -325,9 +320,7 @@ class DataCenterAssetChangeList(RalphChangeList):
             "position",
         ]
 
-        ordering = super(DataCenterAssetChangeList, self).get_ordering(
-            request, queryset
-        )
+        ordering = super(DataCenterAssetChangeList, self).get_ordering(request, queryset)
 
         params = self.params
         if ORDER_VAR in params:
@@ -464,9 +457,7 @@ class DataCenterAssetAdmin(
         TagsListFilter,
         "fibrechannelcard_set__wwn",
     ]
-    list_filter = generate_list_filter_with_common_fields(
-        list_filter_prefix, list_filter_postfix
-    )
+    list_filter = generate_list_filter_with_common_fields(list_filter_prefix, list_filter_postfix)
     date_hierarchy = "created"
     list_select_related = [
         "model",
@@ -574,9 +565,7 @@ class DataCenterAssetAdmin(
     assign_mgmt_hostname.short_description = "Assign management hostname and IP"
 
     def get_queryset(self, request):
-        return (
-            super().get_queryset(request).filter(visibility_scope_filter(request.user))
-        )
+        return super().get_queryset(request).filter(visibility_scope_filter(request.user))
 
     def get_export_queryset(self, request):
         qs = (
@@ -602,10 +591,7 @@ class DataCenterAssetAdmin(
             {"field": "sn", "allow_duplicates": False},
             {"field": "barcode", "allow_duplicates": False},
         ]
-        return (
-            getattr(settings, "MULTIADD_DATA_CENTER_ASSET_FIELDS", None)
-            or multiadd_fields
-        )
+        return getattr(settings, "MULTIADD_DATA_CENTER_ASSET_FIELDS", None) or multiadd_fields
 
     @mark_safe
     def go_to_visualization(self, obj):
@@ -670,10 +656,7 @@ class RackAccessoryInline(RalphTabularInline):
 class RackModuleAdmin(RalphAdmin):
     def get_queryset(self, request):
         return (
-            super()
-            .get_queryset(request)
-            .prefetch_related("racks")
-            .select_related("data_center")
+            super().get_queryset(request).prefetch_related("racks").select_related("data_center")
         )
 
     list_display = [
@@ -693,9 +676,7 @@ class RackModuleAdmin(RalphAdmin):
 class RackAdmin(RalphAdmin):
     def get_queryset(self, request):
         return (
-            super()
-            .get_queryset(request)
-            .select_related("server_room__data_center", "rack_module")
+            super().get_queryset(request).select_related("server_room__data_center", "rack_module")
         )
 
     change_views = [RackConfigurationView, RackSwitchportGridView]
@@ -732,9 +713,7 @@ class RackAdmin(RalphAdmin):
             kwargs["queryset"] = ServerRoom.objects.select_related(
                 "data_center",
             )
-        return super(RackAdmin, self).formfield_for_foreignkey(
-            db_field, request, **kwargs
-        )
+        return super(RackAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
     def combine(self, *args, **kwargs):
         return combine_racks_into_module(self, *args, **kwargs)
@@ -800,9 +779,7 @@ class DCHostAdmin(RalphAdmin):
             DCHostTypeListFilter,
         )
     ]
-    list_filter = generate_list_filter_with_common_fields(
-        list_filter_prefix, list_filter_postfix
-    )
+    list_filter = generate_list_filter_with_common_fields(list_filter_prefix, list_filter_postfix)
 
     list_select_related = [
         "content_type",

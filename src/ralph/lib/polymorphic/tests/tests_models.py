@@ -17,19 +17,15 @@ class PolymorphicTestCase(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.sth_related = SomethingRelated.objects.create(name="Rel1")
-        cls.pol_1 = PolymorphicModelTest.objects.create(
-            name="Pol1", sth_related=cls.sth_related
-        )
-        cls.pol_2 = PolymorphicModelTest.objects.create(
-            name="Pol2", sth_related=cls.sth_related
-        )
+        cls.pol_1 = PolymorphicModelTest.objects.create(name="Pol1", sth_related=cls.sth_related)
+        cls.pol_2 = PolymorphicModelTest.objects.create(name="Pol2", sth_related=cls.sth_related)
         cls.pol_3 = PolymorphicModelTest2.objects.create(
             name="Pol3",
             another_related=cls.sth_related,
         )
 
     def test_polymorphic_metaclass(self):
-        self.assertIn(Polymorphic, list(getattr(self.pol_1, "_polymorphic_models")))
+        self.assertIn(Polymorphic, list(self.pol_1._polymorphic_models))
 
     def test_content_type_save(self):
         self.assertEqual(
@@ -73,11 +69,9 @@ class PolymorphicTestCase(TestCase):
             # select PolymorphicModelBaseTest
             # select PolymorphicModelTest
             # select PolymorphicModelTest2
-            for item in (
-                PolymorphicModelBaseTest.polymorphic_objects.polymorphic_select_related(  # noqa
-                    PolymorphicModelTest=["sth_related"],
-                    PolymorphicModelTest2=["sth_related", "another_related"],
-                )
+            for item in PolymorphicModelBaseTest.polymorphic_objects.polymorphic_select_related(
+                PolymorphicModelTest=["sth_related"],
+                PolymorphicModelTest2=["sth_related", "another_related"],
             ):
                 # just get related attribute to force fetching it from DB
                 item.sth_related
@@ -105,9 +99,7 @@ class PolymorphicTestCase(TestCase):
             # 4) PolymorphicModelTest2 based on 3)
             result = {
                 sm.name: sm
-                for sm in SomeM2MModel.objects.prefetch_related(
-                    "polymorphics"
-                ).order_by("name")
+                for sm in SomeM2MModel.objects.prefetch_related("polymorphics").order_by("name")
             }
             self.assertSetEqual(
                 {obj.id for obj in result["abc"].polymorphics.all()},
@@ -134,12 +126,8 @@ class PolymorphicTestCaseNew(TestCase):
         cls.sth_related = SomethingRelated.objects.create(name="Rel1")
         cls.sth_related2 = SomethingRelated.objects.create(name="Rel2")
         cls.sth_related3 = SomethingRelated.objects.create(name="Rel3")
-        cls.pol_1 = PolymorphicModelTest.objects.create(
-            name="Pol1", sth_related=cls.sth_related
-        )
-        cls.pol_2 = PolymorphicModelTest.objects.create(
-            name="Pol2", sth_related=cls.sth_related2
-        )
+        cls.pol_1 = PolymorphicModelTest.objects.create(name="Pol1", sth_related=cls.sth_related)
+        cls.pol_2 = PolymorphicModelTest.objects.create(name="Pol2", sth_related=cls.sth_related2)
         cls.pol_3 = PolymorphicModelTest2.objects.create(
             name="Pol3",
             another_related=cls.sth_related3,
@@ -147,7 +135,8 @@ class PolymorphicTestCaseNew(TestCase):
 
     def test_polymorphics_objects_without_prefetch(self):
         """
-        Iterate over objects then for each find related object resulting in N + 1 (+NUM_OF_TYPES) queries
+        Iterate over objects then for each find related object resulting in
+        N + 1 (+NUM_OF_TYPES) queries
         DON'T DO IT IN PRODUCTION CODE!
         """
         with self.assertNumQueries(6):
@@ -186,7 +175,7 @@ class PolymorphicTestCaseNew(TestCase):
         with self.assertNumQueries(5):
             o1, o2, o3 = [
                 obj
-                for obj in PolymorphicModelBaseTest.polymorphic_objects.polymorphic_prefetch_related(
+                for obj in PolymorphicModelBaseTest.polymorphic_objects.polymorphic_prefetch_related(  # noqa
                     PolymorphicModelTest=["sth_related"],
                     PolymorphicModelTest2=["another_related"],
                 ).all()
@@ -220,9 +209,7 @@ class PolymorphicTestCaseNew(TestCase):
         m2.polymorphics.set([z2, z3, z4])
 
         with self.assertNumQueries(5):
-            m1_, m2_ = SomeM2MModel.objects.prefetch_related(
-                "polymorphics__sth_related"
-            ).all()
+            m1_, m2_ = SomeM2MModel.objects.prefetch_related("polymorphics__sth_related").all()
             z1_, z2_, z3_ = [o for o in m1_.polymorphics.all()]
             self.assertListEqual([z1_.id, z2_.id, z3_.id], [z1.id, z2.id, z3.id])
             z2_, z3_, z4_ = [o for o in m2_.polymorphics.all()]

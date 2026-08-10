@@ -25,9 +25,7 @@ class Command(BaseCommand):
             help="Format of the resulting report file",
         )
 
-        parser.add_argument(
-            "--recipient-email", type=str, help="Recipient's email address"
-        )
+        parser.add_argument("--recipient-email", type=str, help="Recipient's email address")
 
         parser.add_argument("--sender-email", type=str, help="Sender's email address")
 
@@ -86,9 +84,7 @@ def send_email_with_attachment(
     attachment_filename,
     attachment_mimetype,
 ):
-    email = EmailMessage(
-        subject=subject, body=body, from_email=sender_email, to=[recipient_email]
-    )
+    email = EmailMessage(subject=subject, body=body, from_email=sender_email, to=[recipient_email])
     email.attach(
         content=attachment_content,
         filename=attachment_filename,

@@ -38,9 +38,7 @@ class LdapSyncTest(TestCase):
         ldap_dict = {"sn": [too_long_surname]}
         default_django_surname_length = 150
         _truncate("sn", "last_name", ldap_dict)
-        self.assertEqual(
-            ldap_dict["sn"], [too_long_surname[:default_django_surname_length]]
-        )
+        self.assertEqual(ldap_dict["sn"], [too_long_surname[:default_django_surname_length]])
 
     def test_short_surname_stays_unmodified(self):
         short_surname = "short-surname"
@@ -110,9 +108,7 @@ class RalphUserAPITests(RalphAPITestCase):
         self.assertEqual(response.data["first_name"], self.user1.first_name)
         self.assertEqual(response.data["last_name"], self.user1.last_name)
         self.assertEqual(response.data["regions"][0]["id"], region.id)
-        self.assertEqual(
-            response.data["assets_as_owner"][0]["id"], bo_asset_as_owner.id
-        )
+        self.assertEqual(response.data["assets_as_owner"][0]["id"], bo_asset_as_owner.id)
         self.assertEqual(response.data["assets_as_user"][0]["id"], bo_asset_as_user.id)
         self.assertEqual(response.data["licences"][0]["licence"]["id"], licence.id)
 
@@ -221,9 +217,7 @@ class RalphUserAdminTests(TestCase, ClientMixin):
     def test_change_permission_is_required_to_change_user_password(self):
         def make_request():
             url = reverse("admin:auth_user_password_change", args=(self.admin.pk,))
-            return self.client.post(
-                url, {"password1": new_password, "password2": new_password}
-            )
+            return self.client.post(url, {"password1": new_password, "password2": new_password})
 
         new_password = "password123"
         perm = Permission.objects.get(codename="view_ralphuser")
@@ -254,9 +248,7 @@ class RalphUserRegionTests(TestCase):
         multi_region_group = Group.objects.create(name="Multi region group")
         user = factories.UserFactory()
 
-        with override_settings(
-            DEFAULT_REGIONS_FOR_GROUP={"Multi region group": ["PL", "CZ"]}
-        ):
+        with override_settings(DEFAULT_REGIONS_FOR_GROUP={"Multi region group": ["PL", "CZ"]}):
             assign_user_to_group(user, multi_region_group)  # noqa
 
         self.assertIn(region_cz, user.regions.all())
@@ -271,9 +263,7 @@ class RalphUserRegionTests(TestCase):
 
         self.assertEqual(user.regions.all().count(), 0)
 
-        with override_settings(
-            DEFAULT_REGIONS_FOR_GROUP={"Multi region group": ["PL", "CZ"]}
-        ):
+        with override_settings(DEFAULT_REGIONS_FOR_GROUP={"Multi region group": ["PL", "CZ"]}):
             assign_user_to_group(user, multi_region_group)  # noqa
 
         self.assertIn(region_cz, user.regions.all())

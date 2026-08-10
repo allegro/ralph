@@ -54,8 +54,7 @@ def apply_cell_edit(asset, sc, edit: CellEdit, connection_map, dc) -> CellResult
         target_switch = resolve_switch(override_value, dc)
         if target_switch is None:
             return CellResult(
-                error=f"{asset.hostname} / {sc.label}: "
-                f"unknown switch '{override_value}'"
+                error=f"{asset.hostname} / {sc.label}: unknown switch '{override_value}'"
             )
     else:
         target_switch = sc.switch

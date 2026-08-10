@@ -24,9 +24,7 @@ class register_extra_view(object):  # noqa
     def __call__(self, view):
         admin_model = ralph_site._registry[self.target_model]
         if not issubclass(view, RalphExtraViewMixin):
-            raise ValueError(
-                "The view must be inherited from RalphDetailView or RalphListView"
-            )
+            raise ValueError("The view must be inherited from RalphDetailView or RalphListView")
         if view._type not in VIEW_TYPES:
             raise ValueError(
                 "The view._type must be a one of defined choices ({}).".format(

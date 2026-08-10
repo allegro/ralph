@@ -152,9 +152,7 @@ class ReportDetail(RalphTemplateView):
                     self.dc,
                 ),
                 "cache_key": (
-                    self.asset_type
-                    + (str(self.dc.id) if self.dc else "all")
-                    + self.slug
+                    self.asset_type + (str(self.dc.id) if self.dc else "all") + self.slug
                 ),
                 "modes": self.modes,
                 "mode": self.asset_type,
@@ -475,17 +473,13 @@ class AssetSupportsReport(BaseRelationsReport):
             headers = self.dc_headers
             select_related = self.dc_select_related
             queryset = queryset.filter(
-                baseobject__content_type=ContentType.objects.get_for_model(
-                    DataCenterAsset
-                )
+                baseobject__content_type=ContentType.objects.get_for_model(DataCenterAsset)
             )
         elif model._meta.object_name == "BackOfficeAsset":
             headers = self.bo_headers
             select_related = self.bo_select_related
             queryset = queryset.filter(
-                baseobject__content_type=ContentType.objects.get_for_model(
-                    BackOfficeAsset
-                )
+                baseobject__content_type=ContentType.objects.get_for_model(BackOfficeAsset)
             )
 
         yield headers + self.extra_headers
@@ -600,9 +594,7 @@ class LicenceRelationsReport(BaseRelationsReport):
         yield headers
 
         queryset = queryset.select_related("software").prefetch_related(
-            Prefetch(
-                "licenceuser_set", queryset=LicenceUser.objects.select_related("user")
-            ),
+            Prefetch("licenceuser_set", queryset=LicenceUser.objects.select_related("user")),
             Prefetch(
                 "baseobjectlicence_set",
                 queryset=BaseObjectLicence.objects.select_related(*asset_related),
@@ -610,10 +602,7 @@ class LicenceRelationsReport(BaseRelationsReport):
         )
 
         for licence in queryset:
-            row = [
-                smart_str(getattr_dunder(licence, column))
-                for column in self.licences_headers
-            ]
+            row = [smart_str(getattr_dunder(licence, column)) for column in self.licences_headers]
             base_row = row
 
             row = row + fill_empty_assets + fill_empty_licences + [""]
@@ -655,9 +644,7 @@ class FailureReport(ReportWithoutAllModeDetail, ReportDetail):
             Failure.base_objects.through.objects.filter(
                 baseobject__in=queryset.all(), operation__type__in=operation_types
             )
-            .values(
-                "baseobject__asset__model__manufacturer__name", "operation__type__name"
-            )
+            .values("baseobject__asset__model__manufacturer__name", "operation__type__name")
             .annotate(
                 count=Count("id"),
             )

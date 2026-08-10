@@ -18,9 +18,7 @@ from ralph.lib.transitions.models import (
 
 class TransitionModelFactory(DjangoModelFactory):
     content_type = Sequence(
-        lambda n: ContentType.objects.get_for_model(
-            [BackOfficeAsset, DataCenterAsset][n % 2]
-        )
+        lambda n: ContentType.objects.get_for_model([BackOfficeAsset, DataCenterAsset][n % 2])
     )
     field_name = "status"
 
@@ -44,9 +42,7 @@ class TransitionFactory(DjangoModelFactory):
 
 class TransitionJobFactory(DjangoModelFactory):
     content_type = Sequence(
-        lambda n: ContentType.objects.get_for_model(
-            [BackOfficeAsset, DataCenterAsset][n % 2]
-        )
+        lambda n: ContentType.objects.get_for_model([BackOfficeAsset, DataCenterAsset][n % 2])
     )
     object_id = Sequence(
         lambda n: [BackOfficeAssetFactory, DataCenterAssetFullFactory][n % 2]().id
@@ -59,9 +55,7 @@ class TransitionJobFactory(DjangoModelFactory):
 
 class TransitionsHistoryFactory(DjangoModelFactory):
     content_type = Sequence(
-        lambda n: ContentType.objects.get_for_model(
-            [BackOfficeAsset, DataCenterAsset][n % 2]
-        )
+        lambda n: ContentType.objects.get_for_model([BackOfficeAsset, DataCenterAsset][n % 2])
     )
     transition_name = FuzzyText(length=10)
     source = "new"

@@ -45,9 +45,7 @@ class OpenstackModelsTestCase(RalphAPITestCase):
         self.service_env = []
         for i in range(0, 2):
             self.service_env.append(
-                ServiceEnvironmentFactory(
-                    service=self.services[i], environment=self.envs[i]
-                )
+                ServiceEnvironmentFactory(service=self.services[i], environment=self.envs[i])
             )
         self.service_env[0].service.business_owners.set([self.user1])
         self.service_env[0].service.technical_owners.set([self.user2])
@@ -123,22 +121,14 @@ class OpenstackModelsTestCase(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["host_id"], self.cloud_host.host_id)
         self.assertEqual(response.data["hostname"], self.cloud_host.hostname)
-        self.assertEqual(
-            response.data["service_env"]["id"], self.cloud_host.service_env.id
-        )
+        self.assertEqual(response.data["service_env"]["id"], self.cloud_host.service_env.id)
         self.assertEqual(response.data["parent"]["name"], self.cloud_project.name)
         self.assertEqual(response.data["cloudflavor"]["cores"], self.cloud_flavor.cores)
-        self.assertEqual(
-            response.data["cloudflavor"]["memory"], self.cloud_flavor.memory
-        )
+        self.assertEqual(response.data["cloudflavor"]["memory"], self.cloud_flavor.memory)
         self.assertEqual(response.data["cloudflavor"]["disk"], self.cloud_flavor.disk)
         self.assertEqual(response.data["cloudflavor"]["name"], self.cloud_flavor.name)
-        self.assertEqual(
-            response.data["business_owners"][0]["username"], self.user1.username
-        )
-        self.assertEqual(
-            response.data["technical_owners"][0]["username"], self.user2.username
-        )
+        self.assertEqual(response.data["business_owners"][0]["username"], self.user1.username)
+        self.assertEqual(response.data["technical_owners"][0]["username"], self.user2.username)
 
     def test_filter_cloudhost_by_service_uid(self):
         cloud_host = CloudHostFactory()
@@ -155,9 +145,7 @@ class OpenstackModelsTestCase(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["id"], self.cloud_project.id)
         self.assertEqual(response.data["name"], self.cloud_project.name)
-        self.assertEqual(
-            response.data["service_env"]["id"], self.cloud_project.service_env.id
-        )
+        self.assertEqual(response.data["service_env"]["id"], self.cloud_project.service_env.id)
 
     def test_get_cloudprovider_detail(self):
         url = reverse("cloudprovider-detail", args=(self.cloud_provider.id,))
@@ -317,9 +305,7 @@ class OpenstackModelsTestCase(RalphAPITestCase):
 
         # then
         self.assertEqual(resp.status_code, status.HTTP_409_CONFLICT)
-        self.assertIn(
-            "Cloud flavor is in use and hence is not deletable.", resp.data["detail"]
-        )
+        self.assertIn("Cloud flavor is in use and hence is not deletable.", resp.data["detail"])
         self.assertTrue(CloudFlavor.objects.filter(pk=cloud_flavor.pk).exists())
 
     def test_unused_cloud_flavor_can_be_deleted(self):
@@ -360,9 +346,7 @@ class OpenstackModelsTestCase(RalphAPITestCase):
 
         # then
         self.assertEqual(resp.status_code, status.HTTP_409_CONFLICT)
-        self.assertIn(
-            "Cloud provider is in use and hence is not deletable.", resp.data["detail"]
-        )
+        self.assertIn("Cloud provider is in use and hence is not deletable.", resp.data["detail"])
         self.assertTrue(CloudProvider.objects.filter(pk=cloud_provider.pk).exists())
 
     def test_empty_cloud_provider_can_be_deleted(self):
@@ -449,8 +433,7 @@ class OpenstackModelsTestCase(RalphAPITestCase):
         self.assertLessEqual(
             len(filtered),
             len(baseline),
-            "?fields= used %d queries, baseline used %d"
-            % (len(filtered), len(baseline)),
+            "?fields= used %d queries, baseline used %d" % (len(filtered), len(baseline)),
         )
 
 
@@ -470,9 +453,7 @@ class VirtualServerAPITestCase(RalphAPITestCase):
         self.virtual_server.service_env.service.technical_owners.set([self.user2])
         self.virtual_server.service_env.save()
         self.virtual_server2 = VirtualServerFullFactory()
-        self.ip = IPAddressFactory(
-            ethernet=EthernetFactory(base_object=self.virtual_server2)
-        )
+        self.ip = IPAddressFactory(ethernet=EthernetFactory(base_object=self.virtual_server2))
 
     def test_get_virtual_server_list(self):
         VirtualServerFullFactory.create_batch(20)
@@ -489,22 +470,14 @@ class VirtualServerAPITestCase(RalphAPITestCase):
         self.assertEqual(response.data["hostname"], self.virtual_server.hostname)
         self.assertEqual(len(response.data["ethernet"]), 2)
         self.assertCountEqual(
-            [
-                eth["ipaddress"]["address"]
-                for eth in response.data["ethernet"]
-                if eth["ipaddress"]
-            ],
+            [eth["ipaddress"]["address"] for eth in response.data["ethernet"] if eth["ipaddress"]],
             self.virtual_server.ipaddresses.values_list("address", flat=True),
         )
         self.assertEqual(len(response.data["memory"]), 2)
         self.assertEqual(response.data["memory"][0]["speed"], 1600)
         self.assertEqual(response.data["memory"][0]["size"], 8192)
-        self.assertEqual(
-            response.data["business_owners"][0]["username"], self.user1.username
-        )
-        self.assertEqual(
-            response.data["technical_owners"][0]["username"], self.user2.username
-        )
+        self.assertEqual(response.data["business_owners"][0]["username"], self.user1.username)
+        self.assertEqual(response.data["technical_owners"][0]["username"], self.user2.username)
 
     def test_create_virtual_server(self):
         virtual_server_count = VirtualServer.objects.count()
@@ -549,13 +522,8 @@ class VirtualServerAPITestCase(RalphAPITestCase):
         self.assertEqual(self.virtual_server.hostname, "s111111.local")
 
     def test_add_custom_field_to_virtual_server(self):
-        cf = CustomFieldFactory(
-            name="test str", type=CustomFieldTypes.STRING, default_value="xyz"
-        )
-        url = (
-            reverse("virtualserver-detail", args=(self.virtual_server.id,))
-            + "customfields/"
-        )
+        cf = CustomFieldFactory(name="test str", type=CustomFieldTypes.STRING, default_value="xyz")
+        url = reverse("virtualserver-detail", args=(self.virtual_server.id,)) + "customfields/"
         data = {
             "custom_field": cf.id,
             "value": "new_value",
@@ -685,6 +653,5 @@ class VirtualServerAPITestCase(RalphAPITestCase):
         self.assertLessEqual(
             len(filtered),
             len(baseline),
-            "?fields= used %d queries, baseline used %d"
-            % (len(filtered), len(baseline)),
+            "?fields= used %d queries, baseline used %d" % (len(filtered), len(baseline)),
         )

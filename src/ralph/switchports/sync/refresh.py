@@ -136,9 +136,7 @@ def _backend_validation_results_to_create(
         asset_from_name, asset_from_desc, asset_from_mac = extract_asset(remote)
 
         if (
-            is_consistent := cross_validate(
-                asset_from_name, asset_from_desc, asset_from_mac
-            )
+            is_consistent := cross_validate(asset_from_name, asset_from_desc, asset_from_mac)
         ) is not None:
             if not is_consistent:
                 resolved_asset = asset_from_name or asset_from_desc or asset_from_mac
@@ -153,9 +151,7 @@ def _backend_validation_results_to_create(
             status = ValidationStatus.PORT_NOT_FOUND
 
         remote_hostname = (
-            remote.remote_hostname_from_remote_name
-            or remote.remote_hostname_from_desc
-            or ""
+            remote.remote_hostname_from_remote_name or remote.remote_hostname_from_desc or ""
         )
 
         results_to_create.append(
@@ -166,9 +162,7 @@ def _backend_validation_results_to_create(
                 remote_asset=resolved_asset,
                 remote_hostname=remote_hostname,
                 oper_status=interface.status.value if interface.status else "",
-                admin_status=(
-                    interface.admin_status.value if interface.admin_status else ""
-                ),
+                admin_status=(interface.admin_status.value if interface.admin_status else ""),
                 speed=interface.speed,
                 raw_data=interface.model_dump(mode="json"),
             )

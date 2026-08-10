@@ -14,9 +14,7 @@ class TestChecks(TransitionTestCase):
     def test_transition_templates_should_be_a_list_or_tuple(self):
         errors = check_transition_templates("template")
         expected_errors = [
-            Error(
-                "TRANSITION_TEMPLATES must be a list or a tuple", id="transitions.E001"
-            )
+            Error("TRANSITION_TEMPLATES must be a list or a tuple", id="transitions.E001")
         ]
         self.assertEqual(expected_errors, errors)
 
@@ -43,8 +41,7 @@ class TestChecks(TransitionTestCase):
         errors = check_transition_templates(None)
         expected_errors = [
             Error(
-                "Template foo/bar.html for test transition is defined only"
-                " in transition",
+                "Template foo/bar.html for test transition is defined only in transition",
                 hint="Change your TRANSITION_TEMPLATES settings by adding "
                 '(foo/bar.html, "Your template name") and '
                 "then edit test transition",

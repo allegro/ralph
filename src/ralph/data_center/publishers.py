@@ -32,9 +32,7 @@ def _get_host_data(instance):
     return data
 
 
-@pyhermes.publisher(
-    topic=settings.HERMES_HOST_UPDATE_TOPIC_NAME or "", auto_publish_result=False
-)
+@pyhermes.publisher(topic=settings.HERMES_HOST_UPDATE_TOPIC_NAME or "", auto_publish_result=False)
 def publish_host_update(instance):
     """
     Publish information about DC Host updates using DCHost API serializer.
@@ -63,8 +61,6 @@ def publish_host_update_from_related_model(instance, field_path):
     from ralph.data_center.models import DCHost
 
     updated_instances = DCHost.objects.filter(**{field_path: instance})
-    logger.info(
-        "Publishing host update for {} instances".format(updated_instances.count())
-    )
+    logger.info("Publishing host update for {} instances".format(updated_instances.count()))
     for instance in updated_instances:
         publish_host_update(instance)

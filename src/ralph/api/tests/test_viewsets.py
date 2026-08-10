@@ -64,7 +64,7 @@ class TestRalphViewset(RalphTestCase):
             serializer_class.serializer_related_field, relations.PrimaryKeyRelatedField
         )
 
-    def test_get_serializer_class_should_return_defined_when_not_safe_request_and_save_serializer_class_defined(
+    def test_get_serializer_class_should_return_defined_when_not_safe_request_and_save_serializer_class_defined(  # noqa
         self,
     ):  # noqa
         request = self.request_factory.patch("/")
@@ -83,6 +83,4 @@ class TestRalphViewset(RalphTestCase):
 class TestAdminSearchFieldsMixin(RalphTestCase):
     def test_get_filter_fields_from_admin(self):
         cvs = CarViewSet()
-        self.assertEqual(
-            cvs.filter_fields, ["manufacturer__name", "name", "foos__bar", "year"]
-        )
+        self.assertEqual(cvs.filter_fields, ["manufacturer__name", "name", "foos__bar", "year"])

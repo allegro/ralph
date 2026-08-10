@@ -62,9 +62,7 @@ class PortAdmin(RalphAdmin):
 
     def connect(self, request, queryset):
         if queryset.count() != 2:
-            self.message_user(
-                request, "Please select exactly 2 ports to connect.", level="error"
-            )
+            self.message_user(request, "Please select exactly 2 ports to connect.", level="error")
             return
         try:
             connections.connect(*queryset[:])

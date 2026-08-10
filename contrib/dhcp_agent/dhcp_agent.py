@@ -124,8 +124,7 @@ def _get_cmd_parser():
         type="choice",
         choices=DHCPConfigManager.DHCP_SECTIONS,
         action="append",
-        help="Choose what part of config you want to upgrade. "
-        "[Default: all; Options: {}]".format(
+        help="Choose what part of config you want to upgrade. [Default: all; Options: {}]".format(
             ", ".join(DHCPConfigManager.DHCP_SECTIONS)
         ),  # noqa
     )
@@ -145,9 +144,7 @@ def _get_cmd_parser():
         "--dhcp-config-networks",
         help="Path to the DHCP networks configuration file.",
     )
-    parser.add_option(
-        "-p", "--proto", type="choice", choices=PROTOS, default=PROTO_HTTPS
-    )
+    parser.add_option("-p", "--proto", type="choice", choices=PROTOS, default=PROTO_HTTPS)
     parser.add_option(
         "-e",
         "--net-env",
@@ -194,9 +191,7 @@ def _setup_logging(filename, verbose=False):
             filename, maxBytes=(log_size * (1 << 20)), backupCount=5
         )
     fmt = logging.Formatter(
-        "[%(asctime)-12s.%(msecs)03d] "
-        "%(levelname)-8s %(filename)s:%(lineno)d  "
-        "%(message)s",
+        "[%(asctime)-12s.%(msecs)03d] %(levelname)-8s %(filename)s:%(lineno)d  %(message)s",
         "%Y-%m-%d %H:%M:%S",
     )
     handler.setFormatter(fmt)
@@ -211,9 +206,7 @@ def _remove_application_lock(lockfile, logger):
 
 
 def _set_script_lock(logger):
-    lockfile = "{}.lock".format(
-        os.path.join(tempfile.gettempdir(), os.path.split(sys.argv[0])[1])
-    )
+    lockfile = "{}.lock".format(os.path.join(tempfile.gettempdir(), os.path.split(sys.argv[0])[1]))
     f = os.open(lockfile, os.O_TRUNC | os.O_CREAT | os.O_RDWR)
     try:
         fcntl.lockf(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -250,9 +243,7 @@ def _check_params(params, error_callback):
     diff = required_params - {k for k, v in params.items() if v}
     if diff:
         error_callback(
-            "ERROR: {} are required.".format(
-                ", ".join(["--{}".format(d) for d in diff])
-            )
+            "ERROR: {} are required.".format(", ".join(["--{}".format(d) for d in diff]))
         )
         return False
 
@@ -343,9 +334,7 @@ class DHCPConfigManager(object):
         headers = {}
         last = self.cache.get(prefix=CACHE_LAST_MODIFIED_PREFIX, key=url)
         if last:
-            self.logger.info(
-                "Using If-Modified-Since with value {} for url {}".format(last, url)
-            )
+            self.logger.info("Using If-Modified-Since with value {} for url {}".format(last, url))
             headers["If-Modified-Since"] = last
         else:
             self.logger.info("Last modified not found in cache for url {}".format(url))
@@ -376,21 +365,15 @@ class DHCPConfigManager(object):
                     e.fp.read().decode(),
                 )
             else:
-                self.logger.info(
-                    "Server return status 304 NOT MODIFIED. Nothing to do."
-                )
+                self.logger.info("Server return status 304 NOT MODIFIED. Nothing to do.")
             return False
         else:
             configuration = response.read()
             last_modified = response.headers.get("Last-Modified")
             self.logger.info(
-                "Storing Last-Modified for url {} with value {}".format(
-                    url, last_modified
-                )
+                "Storing Last-Modified for url {} with value {}".format(url, last_modified)
             )
-            self.cache.set(
-                prefix=CACHE_LAST_MODIFIED_PREFIX, key=url, value=last_modified
-            )
+            self.cache.set(prefix=CACHE_LAST_MODIFIED_PREFIX, key=url, value=last_modified)
         return configuration
 
     def _send_sync_confirmation(self):
@@ -431,14 +414,10 @@ class DHCPConfigManager(object):
         try:
             with open_file_or_stdout_to_writing(path_to_config) as f:
                 f.write(str(config))
-                self.logger.info(
-                    "Configuration written to {}".format(path_to_config or "stdout")
-                )
+                self.logger.info("Configuration written to {}".format(path_to_config or "stdout"))
             return True
         except IOError as e:
-            self.logger.error(
-                "Could not write new DHCP configuration. Error message: %s", e
-            )
+            self.logger.error("Could not write new DHCP configuration. Error message: %s", e)
             return False
 
     def _restart_dhcp_server(self):
@@ -457,9 +436,7 @@ class DHCPConfigManager(object):
         proc.wait()
         restart_successful = proc.returncode == 0
         if restart_successful:
-            self.logger.info(
-                "Service {} successfully restarted.".format(self.dhcp_service_name)
-            )
+            self.logger.info("Service {} successfully restarted.".format(self.dhcp_service_name))
         else:
             self.logger.error("Failed to restart service %s.", self.dhcp_service_name)
         return restart_successful

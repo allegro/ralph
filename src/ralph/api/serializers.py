@@ -71,9 +71,7 @@ class DeclaredFieldsMetaclass(serializers.SerializerMetaclass):
             and not getattr(attrs.get("Meta"), "_skip_tags_field", False)
         ):
             attrs["tags"] = TagListSerializerField(required=False)
-            attrs["prefetch_related"] = list(attrs.get("prefetch_related", [])) + [
-                "tags"
-            ]
+            attrs["prefetch_related"] = list(attrs.get("prefetch_related", [])) + ["tags"]
 
         if model and issubclass(model, AdminAbsoluteUrlMixin):
             attrs["ui_url"] = AbsoluteUrlField()
@@ -128,9 +126,7 @@ class RalphAPISerializerMixin(
         included in `rest_framework.serializers.HyperlinkedModelSerializer`
         by default).
         """
-        return [model_info.pk.name] + super().get_default_field_names(
-            declared_fields, model_info
-        )
+        return [model_info.pk.name] + super().get_default_field_names(declared_fields, model_info)
 
     def get_fields(self, *args, **kwargs):
         """
@@ -151,20 +147,14 @@ class RalphAPISerializerMixin(
             del fields[api_settings.URL_FIELD_NAME]
 
         request = self.context.get("request")
-        is_root = self.parent is None or isinstance(
-            self.parent, serializers.ListSerializer
-        )
+        is_root = self.parent is None or isinstance(self.parent, serializers.ListSerializer)
         if request and is_root:
             requested = getattr(request, "query_params", {}).get("fields")
             if requested:
-                allowed = set(
-                    name.strip() for name in requested.split(",") if name.strip()
-                )
-                fields = {
-                    name: field for name, field in fields.items() if name in allowed
-                }
+                allowed = set(name.strip() for name in requested.split(",") if name.strip())
+                fields = {name: field for name, field in fields.items() if name in allowed}
 
-        for field_name, field in fields.items():
+        for field in fields.values():
             if not field.parent:
                 field.parent = self
         return fields
@@ -178,9 +168,7 @@ class RalphAPISerializerMixin(
             field_name, info, model_class, nested_depth
         )
         if issubclass(field_class, serializers.BaseSerializer):
-            field_kwargs.setdefault("context", {})["request"] = self.context.get(
-                "request"
-            )
+            field_kwargs.setdefault("context", {})["request"] = self.context.get("request")
         return field_class, field_kwargs
 
     def build_nested_field(self, field_name, relation_info, nested_depth):
@@ -280,7 +268,7 @@ class RalphAPISaveSerializer(
         try:
             instance.clean()
         except DjangoValidationError as e:
-            raise self._django_validation_error_to_drf_validation_error(e)
+            raise self._django_validation_error_to_drf_validation_error(e) from e
         self._extra_instance_validation(instance)
 
     def _django_validation_error_to_drf_validation_error(self, exc):
@@ -313,9 +301,7 @@ class RalphAPISerializerMetaclass(DeclaredFieldsMetaclass):
         attrs["_serializers_registry"] = serializers_registry
         new_cls = super().__new__(cls, name, bases, attrs)
         meta = getattr(new_cls, "Meta", None)
-        if getattr(meta, "model", None) and not getattr(
-            meta, "exclude_from_registry", False
-        ):
+        if getattr(meta, "model", None) and not getattr(meta, "exclude_from_registry", False):
             serializers_registry[meta.model] = new_cls
         return new_cls
 

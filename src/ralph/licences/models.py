@@ -80,12 +80,8 @@ class LicencesUsedFreeManager(models.Manager):
             id_column=id_column,
         )
 
-        base_object_quantity_field = Licence.base_objects.through._meta.get_field(
-            "quantity"
-        )  # noqa
-        base_object_licence_field = Licence.base_objects.through._meta.get_field(
-            "licence"
-        )  # noqa
+        base_object_quantity_field = Licence.base_objects.through._meta.get_field("quantity")  # noqa
+        base_object_licence_field = Licence.base_objects.through._meta.get_field("licence")  # noqa
         base_object_count_query = _SELECT_USED_LICENCES_QUERY.format(
             assignment_table=Licence.base_objects.through._meta.db_table,
             quantity_column=base_object_quantity_field.db_column
@@ -128,11 +124,7 @@ class LicencesRelatedObjectsManager(models.Manager):
     """
 
     def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .prefetch_related(*LICENCES_RELATED_OBJECTS_PREFETCH_RELATED)
-        )
+        return super().get_queryset().prefetch_related(*LICENCES_RELATED_OBJECTS_PREFETCH_RELATED)
 
 
 class LicencesUsedFreeRelatedObjectsManager(
@@ -212,9 +204,7 @@ class Licence(Regionalizable, AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
         max_length=200,
         null=True,
         blank=True,
-        help_text=_(
-            "Any value to help your accounting department identify this licence"
-        ),
+        help_text=_("Any value to help your accounting department identify this licence"),
     )
     base_objects = models.ManyToManyField(
         BaseObject,
@@ -306,11 +296,7 @@ class Licence(Regionalizable, AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
         # filter by ids of licences which could be assigned (are not fully
         # used)
         return cls.objects_used_free.filter(
-            pk__in=[
-                licence.id
-                for licence in cls.objects_used_free.all()
-                if licence.free > 0
-            ]
+            pk__in=[licence.id for licence in cls.objects_used_free.all() if licence.free > 0]
         )
 
 
@@ -335,16 +321,12 @@ class BaseObjectLicence(models.Model):
         unique_together = ("licence", "base_object")
 
     def __str__(self):
-        return "{} of {} assigned to {}".format(
-            self.quantity, self.licence, self.base_object
-        )
+        return "{} of {} assigned to {}".format(self.quantity, self.licence, self.base_object)
 
     def clean(self):
         bo_asset = getattr_dunder(self.base_object, "asset__backofficeasset")
         if bo_asset and self.licence and self.licence.region_id != bo_asset.region_id:
-            raise ValidationError(
-                _("Asset region is in a different region than licence.")
-            )
+            raise ValidationError(_("Asset region is in a different region than licence."))
 
 
 class LicenceUser(models.Model):

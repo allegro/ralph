@@ -129,9 +129,7 @@ class Job(TimeStampMixin):
         """
         if self._params is None:
             self._params = self._restore_params(self._dumped_params)
-            logger.debug(
-                "{} restored into {}".format(self._dumped_params, self._params)
-            )
+            logger.debug("{} restored into {}".format(self._dumped_params, self._params))
         return self._params
 
     def _get_metric_name(self):

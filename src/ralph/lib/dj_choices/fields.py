@@ -121,9 +121,7 @@ class ChoiceField(six.with_metaclass(SubfieldBase, IntegerField)):
         return super(ChoiceField, self).get_prep_lookup(lookup_type, value)
 
     def validate(self, value, model_instance):
-        return super(ChoiceField, self).validate(
-            self.get_prep_value(value), model_instance
-        )
+        return super(ChoiceField, self).validate(self.get_prep_value(value), model_instance)
 
     def formfield(self, form_class=forms.CharField, **kwargs):
         """Has to be defined as a whole without doing super() because of
@@ -141,9 +139,7 @@ class ChoiceField(six.with_metaclass(SubfieldBase, IntegerField)):
                 defaults["initial"] = self.get_default()
         if self.choices:
             # Fields with choices get special treatment.
-            include_blank = self.blank or not (
-                self.has_default() or "initial" in kwargs
-            )
+            include_blank = self.blank or not (self.has_default() or "initial" in kwargs)
             defaults["choices"] = self.get_choices(include_blank=include_blank)
             defaults["coerce"] = self.from_python  # XXX: changed
             if self.null:

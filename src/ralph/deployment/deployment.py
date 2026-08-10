@@ -244,15 +244,9 @@ def check_if_deployment_is_available(instances, **kwargs):
     """
     errors = {}
     for instance in instances:
-        if (
-            isinstance(instance, DataCenterAsset)
-            and not instance.model.category.allow_deployment
-        ):
+        if isinstance(instance, DataCenterAsset) and not instance.model.category.allow_deployment:
             errors[instance] = _(
-                (
-                    "Deployment is not available for this asset"
-                    " with category: %(category)s."
-                )
+                ("Deployment is not available for this asset with category: %(category)s.")
                 % {"category": instance.model.category.name}
             )
     return errors
@@ -310,9 +304,7 @@ def clean_dns(cls, instances, **kwargs):
     # TODO: transaction?
     for instance in instances:
         ips = list(
-            instance.ipaddresses.exclude(is_management=True).values_list(
-                "address", flat=True
-            )
+            instance.ipaddresses.exclude(is_management=True).values_list("address", flat=True)
         )
         if not ips:
             logger.info("No IPs for %s - skipping cleaning DNS entries", instance)
@@ -320,9 +312,7 @@ def clean_dns(cls, instances, **kwargs):
         records = dnsaas.get_dns_records(ips)
         if len(records) > settings.DEPLOYMENT_MAX_DNS_ENTRIES_TO_CLEAN:
             raise Exception(
-                "Cannot clean {} entries for {} - clean it manually".format(
-                    len(records), instance
-                )
+                "Cannot clean {} entries for {} - clean it manually".format(len(records), instance)
             )
         for record in records:
             logger.warning(
@@ -457,9 +447,7 @@ def check_ipaddress_unique(instance, address):
         pass
     else:
         if ip.ethernet and ip.ethernet.base_object_id != instance.pk:
-            raise ValidationError(
-                "IP {} is already assigned to other object!".format(address)
-            )
+            raise ValidationError("IP {} is already assigned to other object!".format(address))
 
 
 def check_ip_from_defined_network(address):
@@ -654,9 +642,7 @@ def _create_dhcp_entries_for_many_instances(instances, ip_or_network):
         ethernet = (
             _get_non_mgmt_ethernets(instance).values_list("id", flat=True).first()
         )  # TODO: is first the best choice here?
-        yield _create_dhcp_entries_for_single_instance(
-            instance, ip_or_network, ethernet
-        )
+        yield _create_dhcp_entries_for_single_instance(instance, ip_or_network, ethernet)
 
 
 @deployment_action(

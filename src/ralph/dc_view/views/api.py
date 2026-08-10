@@ -27,9 +27,7 @@ class DCAssetsView(APIView):
         return RackSerializer(rack).data
 
     def _get_accessories(self, rack):
-        accessories = RackAccessory.objects.select_related("accessory").filter(
-            rack=rack
-        )
+        accessories = RackAccessory.objects.select_related("accessory").filter(rack=rack)
         return RackAccessorySerializer(accessories, many=True).data
 
     def _get_pdus(self, rack):

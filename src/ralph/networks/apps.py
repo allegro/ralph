@@ -9,10 +9,7 @@ class Networks(RalphAppConfig):
     default = True
 
     def ready(self):
-        if (
-            not settings.ENABLE_DNSAAS_INTEGRATION
-            or not settings.DNSAAS_AUTO_UPDATE_HOST_DNS
-        ):
+        if not settings.ENABLE_DNSAAS_INTEGRATION or not settings.DNSAAS_AUTO_UPDATE_HOST_DNS:
             return
         from ralph.networks.receivers import delete_dns_record, update_dns_record
 

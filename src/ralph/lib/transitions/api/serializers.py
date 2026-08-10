@@ -37,18 +37,14 @@ class TransitionSerializer(RalphAPISerializer):
         # It gets all possible values for the field and not all source values.
         # But I'm not sure fixing it won't break something else.
         choices = (
-            obj.model.content_type.model_class()
-            ._meta.get_field(obj.model.field_name)
-            .choices
+            obj.model.content_type.model_class()._meta.get_field(obj.model.field_name).choices
         )
 
         return [i[1] for i in choices]
 
     def get_target(self, obj):
         choices = (
-            obj.model.content_type.model_class()
-            ._meta.get_field(obj.model.field_name)
-            .choices
+            obj.model.content_type.model_class()._meta.get_field(obj.model.field_name).choices
         )
         if obj.target == str(TRANSITION_ORIGINAL_STATUS[0]):
             return TRANSITION_ORIGINAL_STATUS[1]

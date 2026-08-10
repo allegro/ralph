@@ -148,9 +148,7 @@ class SaveServiceSerializer(ReversionHistoryAPISerializerMixin, RalphAPISerializ
         # create ServiceEnv for new environments
         for environment in environments:
             if environment.id not in current_environments:
-                ServiceEnvironment.objects.create(
-                    service=instance, environment=environment
-                )
+                ServiceEnvironment.objects.create(service=instance, environment=environment)
 
     def create(self, validated_data):
         environments = validated_data.pop("environments", [])
@@ -199,12 +197,8 @@ class ServiceEnvironmentSerializer(
     RalphAPISerializer,
 ):
     __str__ = StrField(show_type=True)
-    business_owners = SimpleRalphUserSerializer(
-        many=True, source="service.business_owners"
-    )
-    technical_owners = SimpleRalphUserSerializer(
-        many=True, source="service.technical_owners"
-    )
+    business_owners = SimpleRalphUserSerializer(many=True, source="service.business_owners")
+    technical_owners = SimpleRalphUserSerializer(many=True, source="service.technical_owners")
 
     class Meta:
         model = ServiceEnvironment

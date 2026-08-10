@@ -57,16 +57,12 @@ class InvoiceReportMixin(object):
         Validate queryset items for equality of common fields in all items and
         check if all of the fields are filled.
         """
-        values_distinct = queryset.values(
-            *self._invoice_report_common_fields
-        ).distinct()
+        values_distinct = queryset.values(*self._invoice_report_common_fields).distinct()
         if values_distinct.count() != 1:
             raise ValidationError(self._get_non_unique_error(queryset))
         if not all(values_distinct[0].values()):
             raise ValidationError(
-                "None of {} can't be empty".format(
-                    ", ".join(self._invoice_report_common_fields)
-                )
+                "None of {} can't be empty".format(", ".join(self._invoice_report_common_fields))
             )
 
     def _get_non_unique_error(self, queryset):
@@ -79,9 +75,7 @@ class InvoiceReportMixin(object):
             if items.count() != 1:
                 if field == "invoice_date":
                     data = ", ".join(
-                        item[field].strftime("%Y-%m-%d")
-                        for item in items
-                        if item[field]
+                        item[field].strftime("%Y-%m-%d") for item in items if item[field]
                     )
                 else:
                     data = ", ".join(item[field] for item in items if item[field])
@@ -115,24 +109,18 @@ class InvoiceReportMixin(object):
         first_item = queryset[0]
         data = {
             "id": str(slugify(first_item.invoice_no)),
-            "property_of_id": (
-                first_item.property_of.id if first_item.property_of else None
-            ),
+            "property_of_id": (first_item.property_of.id if first_item.property_of else None),
             "model": queryset.model._meta.model_name,
             "base_info": {
                 "invoice_no": first_item.invoice_no,
                 "invoice_date": str(first_item.invoice_date),
                 "provider": first_item.provider,
-                "datetime": datetime.datetime.now().strftime(
-                    self._invoice_report_datetime_format
-                ),
+                "datetime": datetime.datetime.now().strftime(self._invoice_report_datetime_format),
                 "property_of": first_item.property_of.name,
             },
             "items": list(map(self._parse_item, queryset)),
             "sum_price": str(
-                queryset.aggregate(Sum(self._price_field)).get(
-                    "{}__sum".format(self._price_field)
-                )
+                queryset.aggregate(Sum(self._price_field)).get("{}__sum".format(self._price_field))
             ),
         }
         logger.info("Invoice report data: {}".format(data))
@@ -142,15 +130,9 @@ class InvoiceReportMixin(object):
         try:
             report = Report.objects.get(name=self._invoice_report_name)
             template = report.templates.filter(default=True).first()
-        except (Report.DoesNotExist, ReportTemplate.DoesNotExist):
-            raise ReportTemplateNotDefined(
-                "Template for invoice report is not defined!"
-            )
-        logger.info(
-            "Using report {} and template {}".format(
-                report.name, template.template.path
-            )
-        )
+        except (Report.DoesNotExist, ReportTemplate.DoesNotExist) as e:
+            raise ReportTemplateNotDefined("Template for invoice report is not defined!") from e
+        logger.info("Using report {} and template {}".format(report.name, template.template.path))
         template_content = ""
         with open(template.template.path, "rb") as f:
             template_content = f.read()
@@ -188,9 +170,7 @@ class InvoiceReportMixin(object):
             elif isinstance(val, Money):
                 val_currency = "{}_currency".format(self._price_field)
                 result[val_currency] = (
-                    str(val.currency)
-                    if val.currency
-                    else self._invoice_report_empty_value
+                    str(val.currency) if val.currency else self._invoice_report_empty_value
                 )
                 val = val.amount
             result[f] = str(val) if val else self._invoice_report_empty_value

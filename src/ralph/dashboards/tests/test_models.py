@@ -92,9 +92,7 @@ class GraphQuerysetForFilterTestCase(TestCase):
 
     def test_filtering_queryset_with_additional_filters(self):
         service_env_a = ServiceEnvironmentFactory(service__name="ServiceA")
-        DataCenterAssetFullFactory.create_batch(
-            2, service_env=service_env_a, invoice_no="12345"
-        )
+        DataCenterAssetFullFactory.create_batch(2, service_env=service_env_a, invoice_no="12345")
         DataCenterAssetFullFactory.create_batch(
             3,
             service_env=service_env_a,
@@ -124,9 +122,7 @@ class GraphQuerysetForFilterTestCase(TestCase):
         )
 
         dca_qs = DataCenterAsset.objects.all()
-        filtered_qs = graph.get_queryset_for_filter(
-            dca_qs, {"service__name": "ServiceA"}
-        )
+        filtered_qs = graph.get_queryset_for_filter(dca_qs, {"service__name": "ServiceA"})
         self.assertEqual(filtered_qs.count(), 2)
         self.assertEqual(
             list(filtered_qs.values_list("service_env__service__name", "invoice_no")),

@@ -110,9 +110,7 @@ sitetrees = [
                     section(_("Disk Shares"), "data_center", "DiskShare"),
                     section(_("Server Rooms"), "data_center", "ServerRoom"),
                     section(_("Preboots"), "deployment", "Preboot"),
-                    section(
-                        _("Preboot configuration"), "deployment", "PrebootConfiguration"
-                    ),
+                    section(_("Preboot configuration"), "deployment", "PrebootConfiguration"),
                     section(_("Preboot files"), "deployment", "PrebootFile"),
                     section(_("Switchports"), "switchports", "Port"),
                 ],
@@ -149,9 +147,7 @@ sitetrees = [
                 perms_mode_all=False,
                 children=[
                     section(_("Networks"), "networks", "network"),
-                    section(
-                        _("Network environments"), "networks", "networkenvironment"
-                    ),
+                    section(_("Network environments"), "networks", "networkenvironment"),
                     section(_("Network kind"), "networks", "networkkind"),
                     section(_("IP Addresses"), "networks", "ipaddress"),
                     section(_("DHCP Servers"), "dhcp", "DHCPServer"),
@@ -186,9 +182,7 @@ sitetrees = [
                     section(_("Owners"), "accounts", "RalphUser"),
                     section(_("DNS Providers"), "domains", "DNSProvider"),
                     section(_("Domain Categories"), "domains", "DomainCategory"),
-                    section(
-                        _("SSL Certificates"), "ssl_certificates", "SSLCertificate"
-                    ),
+                    section(_("SSL Certificates"), "ssl_certificates", "SSLCertificate"),
                 ],
             ),
             ralph_item(
@@ -216,9 +210,7 @@ sitetrees = [
                     ralph_item(
                         title=_("Category model status"),
                         url="category_model__status_report",
-                        access_by_perms=(
-                            "accounts.can_view_extra_categorymodelstatusreport"
-                        ),
+                        access_by_perms=("accounts.can_view_extra_categorymodelstatusreport"),
                     ),
                     ralph_item(
                         title=_("Manufacturer category model"),
@@ -235,16 +227,12 @@ sitetrees = [
                     ralph_item(
                         title=_("Asset - relations"),
                         url="asset-relations",
-                        access_by_perms=(
-                            "accounts.can_view_extra_assetrelationsreport"
-                        ),
+                        access_by_perms=("accounts.can_view_extra_assetrelationsreport"),
                     ),
                     ralph_item(
                         title=_("Licence - relations"),
                         url="licence-relations",
-                        access_by_perms=(
-                            "accounts.can_view_extra_licencerelationsreport"
-                        ),
+                        access_by_perms=("accounts.can_view_extra_licencerelationsreport"),
                     ),
                     ralph_item(
                         title=_("Assets - supports"),
@@ -299,9 +287,7 @@ sitetrees = [
                     section(_("Environment"), "assets", "Environment"),
                     section(_("Budget info"), "assets", "BudgetInfo"),
                     section(_("Service Environment"), "assets", "ServiceEnvironment"),
-                    section(
-                        _("Configuration modules"), "assets", "ConfigurationModule"
-                    ),
+                    section(_("Configuration modules"), "assets", "ConfigurationModule"),
                     section(_("Configuration classes"), "assets", "ConfigurationClass"),
                     section(_("Asset holder"), "assets", "AssetHolder"),
                     section(_("Users list"), "accounts", "RalphUser"),

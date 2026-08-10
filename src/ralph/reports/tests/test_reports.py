@@ -80,46 +80,32 @@ class TestReportCategoryTreeView(ClientMixin, RalphTestCase):
 
     def _create_assets(self):
         [
-            DataCenterAssetFactory(
-                **{"force_depreciation": False, "model": self.keyboard_model}
-            )
+            DataCenterAssetFactory(**{"force_depreciation": False, "model": self.keyboard_model})
             for _ in range(6)
         ]
         [
-            DataCenterAssetFactory(
-                **{"force_depreciation": False, "model": self.mouse_model}
-            )
+            DataCenterAssetFactory(**{"force_depreciation": False, "model": self.mouse_model})
             for _ in range(2)
         ]
         [
-            DataCenterAssetFactory(
-                **{"force_depreciation": False, "model": self.pendrive_model}
-            )
+            DataCenterAssetFactory(**{"force_depreciation": False, "model": self.pendrive_model})
             for _ in range(2)
         ]
 
         [
-            DataCenterAssetFactory(
-                **{"force_depreciation": False, "model": self.model_monitor}
-            )
+            DataCenterAssetFactory(**{"force_depreciation": False, "model": self.model_monitor})
             for _ in range(2)
         ]
         [
-            DataCenterAssetFactory(
-                **{"force_depreciation": False, "model": self.navigation_model}
-            )
+            DataCenterAssetFactory(**{"force_depreciation": False, "model": self.navigation_model})
             for _ in range(2)
         ]
         [
-            DataCenterAssetFactory(
-                **{"force_depreciation": False, "model": self.scanner_model}
-            )
+            DataCenterAssetFactory(**{"force_depreciation": False, "model": self.scanner_model})
             for _ in range(3)
         ]
         [
-            DataCenterAssetFactory(
-                **{"force_depreciation": False, "model": self.shredder_model}
-            )
+            DataCenterAssetFactory(**{"force_depreciation": False, "model": self.shredder_model})
             for _ in range(3)
         ]
 
@@ -338,9 +324,7 @@ class TestAssetsSupportsReport(RalphTestCase):
     def test_asset_relation(self):
         asset_supports = AssetSupportsReport()
         report_result = list(asset_supports.prepare(DataCenterAsset))
-        price_per_object = (
-            self.support.price.amount / self.support.baseobjectssupport_set.count()
-        )
+        price_per_object = self.support.price.amount / self.support.baseobjectssupport_set.count()
         result = [
             [
                 "baseobject__id",
@@ -432,8 +416,6 @@ class TestReportLanguage(RalphTestCase):
         ReportLanguage.objects.create(name="pl", default=True)
         lang_2 = ReportLanguage.objects.create(name="en", default=False)
 
-        with self.assertRaisesRegex(
-            ValidationError, ("Only one language can be default.")
-        ):
+        with self.assertRaisesRegex(ValidationError, ("Only one language can be default.")):
             lang_2.default = True
             lang_2.clean()

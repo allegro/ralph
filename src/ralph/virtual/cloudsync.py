@@ -38,9 +38,7 @@ def load_processors():
             try:
                 CLOUD_SYNC_DRIVERS[ep.name] = ep.resolve()
             except ImportError:
-                logger.error(
-                    "Could not import DC asset event processor from %s.", ep.module_name
-                )
+                logger.error("Could not import DC asset event processor from %s.", ep.module_name)
 
 
 @csrf_exempt

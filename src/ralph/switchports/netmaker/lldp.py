@@ -22,14 +22,10 @@ class RemoteAsset(BaseModel):
     @classmethod
     def from_interface_dto(cls, interface: InterfaceDTO) -> "RemoteAsset":
         return cls(
-            remote_hostname_from_remote_name=_get_from_remote_hostname_from_remote_name(
-                interface
-            ),
+            remote_hostname_from_remote_name=_get_from_remote_hostname_from_remote_name(interface),
             remote_hostname_from_desc=_get_remote_hostname_from_desc(interface),
             remote_mac_from_remote_id=_get_remote_mac(interface),
-            remote_interface_name_from_remote_port=_get_remote_interface_name(
-                interface
-            ),
+            remote_interface_name_from_remote_port=_get_remote_interface_name(interface),
         )
 
 

@@ -83,9 +83,7 @@ class PermissionsSelectWidget(forms.Widget):
         return mark_safe(
             '<a class="expand action-expand">Expand all</a>'
             '<ul class="accordion" data-multi="{}" data-accordion>{}</ul>'
-            "<input{} />".format(
-                name, self.render_options(choices, value), flatatt(final_attrs)
-            )
+            "<input{} />".format(name, self.render_options(choices, value), flatatt(final_attrs))
         )
 
     def render_all_option(self, slug):
@@ -117,14 +115,10 @@ class PermissionsSelectWidget(forms.Widget):
             items = list(group_choices)
             local_values = [item[0] for item in items]
             # int(str(v)) makes sure it works both with ModelChoiceIteratorValue and regular int
-            local_selected = set([int(str(v)) for v in local_values]) & set(
-                selected_choices or []
-            )
+            local_selected = set([int(str(v)) for v in local_values]) & set(selected_choices or [])
             slug = slugify(group_key)
             label = title(group_key)
-            logger.warning(
-                "%s: %d of %d", group_key, len(local_selected), len(local_values)
-            )
+            logger.warning("%s: %d of %d", group_key, len(local_selected), len(local_values))
             rendered_options += mark_safe(
                 """
                 <li class="accordion-navigation">
@@ -144,9 +138,7 @@ class PermissionsSelectWidget(forms.Widget):
                     all=self.render_all_option(slugify(group_key)),
                     items="<br />".join(
                         [
-                            self.render_option(
-                                local_selected, c[0], c[1].split(separator)[-1]
-                            )
+                            self.render_option(local_selected, c[0], c[1].split(separator)[-1])
                             for c in items
                         ]
                     ),
@@ -170,9 +162,7 @@ class AutocompleteWidget(forms.TextInput):
 
     @property
     def can_edit(self):
-        return self.admin_site._registry[self.rel_to].has_change_permission(
-            self.request
-        )
+        return self.admin_site._registry[self.rel_to].has_change_permission(self.request)
 
     @property
     def can_add(self):
@@ -204,9 +194,7 @@ class AutocompleteWidget(forms.TextInput):
     def get_prefetch_data(self, value):
         results = {}
         if value:
-            queryset = self.rel_to._default_manager.filter(
-                pk__in=value if self.multi else [value]
-            )
+            queryset = self.rel_to._default_manager.filter(pk__in=value if self.multi else [value])
             results = get_results(queryset, self.can_edit)
         return json.dumps(results)
 
@@ -241,9 +229,7 @@ class AutocompleteWidget(forms.TextInput):
             polymorphic_models = polymorphic_descendants
             limit_models = getattr(self.field, "limit_models", [])
             if limit_models:
-                polymorphic_models = [
-                    apps.get_model(*i.split(".")) for i in limit_models
-                ]
+                polymorphic_models = [apps.get_model(*i.split(".")) for i in limit_models]
 
             search_fields_tooltip = defaultdict(list)
             for related_model in polymorphic_models:

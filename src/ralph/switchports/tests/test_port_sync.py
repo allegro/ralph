@@ -49,9 +49,7 @@ class SyncSwitchPortsTestCase(TestCase):
         self.assertEqual(summary["switch_ports_created"], 2)
         self.assertEqual(
             set(
-                Port.objects.filter(data_center_asset=self.switch).values_list(
-                    "label", flat=True
-                )
+                Port.objects.filter(data_center_asset=self.switch).values_list("label", flat=True)
             ),
             {"0/0/10", "0/0/11"},
         )
@@ -71,9 +69,7 @@ class SyncSwitchPortsTestCase(TestCase):
         self.assertEqual(summary["switch_ports_deleted"], 1)
         self.assertEqual(
             set(
-                Port.objects.filter(data_center_asset=self.switch).values_list(
-                    "label", flat=True
-                )
+                Port.objects.filter(data_center_asset=self.switch).values_list("label", flat=True)
             ),
             {"0/0/10"},
         )

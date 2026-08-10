@@ -45,9 +45,7 @@ def check_transition_templates(transition_templates):
     excluded_templates = [""]
     if transition_templates:
         try:
-            excluded_templates.extend(
-                {template for template, _ in transition_templates}
-            )
+            excluded_templates.extend({template for template, _ in transition_templates})
         except ValueError:
             pass
     transitions_with_custom_templates = Transition.objects.exclude(
@@ -57,8 +55,7 @@ def check_transition_templates(transition_templates):
         for transition in transitions_with_custom_templates:
             errors.append(
                 Error(
-                    "Template {} for {} transition is "
-                    "defined only in transition".format(
+                    "Template {} for {} transition is defined only in transition".format(
                         transition.template_name, transition
                     ),
                     hint=(

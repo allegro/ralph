@@ -22,9 +22,7 @@ def switch_port_owner(
     connected to ``this_asset``.
     """
     try:
-        switch_port = Port.objects.get(
-            label=port_label, data_center_asset=target_switch
-        )
+        switch_port = Port.objects.get(label=port_label, data_center_asset=target_switch)
     except Port.DoesNotExist:
         return None
     member = getattr(switch_port, "connectionmember", None)

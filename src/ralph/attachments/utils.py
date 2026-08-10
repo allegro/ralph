@@ -3,9 +3,7 @@ from django.core.mail import EmailMessage
 from ralph.lib.transitions.models import Transition
 
 
-def send_transition_attachments_to_user(
-    requester, transition_id, context_func, **kwargs
-):
+def send_transition_attachments_to_user(requester, transition_id, context_func, **kwargs):
     if kwargs.get("attachments"):
         transition = Transition.objects.get(pk=transition_id)
         context = context_func(transition_name=transition.name)

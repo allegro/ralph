@@ -122,9 +122,7 @@ class TransitionAdminMixin(object):
         name = transition.name
 
         def transition_action_redirect(cls, request, queryset, transition):
-            base_url = reverse(
-                self.get_transition_bulk_url_name(), args=(transition.pk,)
-            )
+            base_url = reverse(self.get_transition_bulk_url_name(), args=(transition.pk,))
             ids = queryset.values_list("id", flat=True)
             back_url = request.META.get("HTTP_REFERER")
             select_url = urlencode(

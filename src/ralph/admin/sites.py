@@ -40,9 +40,7 @@ class RalphAdminSiteMixin(object):
                         view.as_view(),
                         {
                             "model": model,
-                            "views": getattr(
-                                model_admin, "{}_views".format(view._type), []
-                            ),
+                            "views": getattr(model_admin, "{}_views".format(view._type), []),
                         },
                         name=view.url_to_reverse,
                     ),
@@ -72,9 +70,7 @@ class RalphAdminSiteMixin(object):
 
         if extra_context is None:
             extra_context = {}
-        extra_context["data_centers"] = DataCenter.objects.filter(
-            show_on_dashboard=True
-        )
+        extra_context["data_centers"] = DataCenter.objects.filter(show_on_dashboard=True)
         return super().index(request, extra_context)
 
     def get_admin_instance_for_model(self, model_class):

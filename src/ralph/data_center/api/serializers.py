@@ -119,15 +119,11 @@ class RackModuleSerializer(RalphAPISerializer):
         fields = "__all__"
 
     def get_racks(self, obj):
-        return self._RackSerializer(
-            obj.racks.all(), many=True, context=self.context
-        ).data
+        return self._RackSerializer(obj.racks.all(), many=True, context=self.context).data
 
 
 class RackSerializer(RalphAPISerializer):
-    accessories = RackAccessorySerializer(
-        read_only=True, many=True, source="rackaccessory_set"
-    )
+    accessories = RackAccessorySerializer(read_only=True, many=True, source="rackaccessory_set")
 
     class Meta:
         model = Rack

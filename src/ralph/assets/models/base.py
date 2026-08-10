@@ -71,18 +71,14 @@ class BaseObject(
 
     @property
     def _str_with_type(self):
-        return "{}: {}".format(
-            ContentType.objects.get_for_id(self.content_type_id), str(self)
-        )
+        return "{}: {}".format(ContentType.objects.get_for_id(self.content_type_id), str(self))
 
     configuration_path = models.ForeignKey(
         "ConfigurationClass",
         null=True,
         blank=True,
         verbose_name=_("configuration path"),
-        help_text=_(
-            "path to configuration for this object, for example path to puppet class"
-        ),
+        help_text=_("path to configuration for this object, for example path to puppet class"),
         on_delete=models.PROTECT,
     )
 

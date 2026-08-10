@@ -46,9 +46,7 @@ class NetworkKind(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
         ordering = ("name",)
 
 
-class NetworkEnvironment(
-    AdminAbsoluteUrlMixin, TimeStampMixin, NamedMixin, models.Model
-):
+class NetworkEnvironment(AdminAbsoluteUrlMixin, TimeStampMixin, NamedMixin, models.Model):
     data_center = models.ForeignKey(
         "data_center.DataCenter",
         verbose_name=_("data center"),
@@ -523,9 +521,9 @@ class Network(
 
     def get_first_free_ip(self):
         used_ips = set(
-            IPAddress.objects.filter(
-                number__range=(self.min_ip, self.max_ip)
-            ).values_list("number", flat=True)
+            IPAddress.objects.filter(number__range=(self.min_ip, self.max_ip)).values_list(
+                "number", flat=True
+            )
         )
         # add one to omit network address
         min_ip = int(self.min_ip + 1 + self.reserved_from_beginning)
@@ -572,9 +570,7 @@ class IPAddressQuerySet(models.QuerySet):
         with transaction.atomic():
             eth = kwargs.pop("ethernet", None)
             if base_object and not eth:
-                eth = Ethernet.objects.create(
-                    base_object=base_object, mac=mac, label=label
-                )
+                eth = Ethernet.objects.create(base_object=base_object, mac=mac, label=label)
             ip = self.model(ethernet=eth, **kwargs)
             ip.save(force_insert=True)
         return ip
@@ -691,15 +687,11 @@ class IPAddress(
             (not self.ethernet_id or (self.ethernet and not self.ethernet.mac))  # noqa
             and self.dhcp_expose
         ):
-            raise ValidationError(
-                {"dhcp_expose": ("Cannot expose in DHCP without MAC address")}
-            )
+            raise ValidationError({"dhcp_expose": ("Cannot expose in DHCP without MAC address")})
 
     def _validate_expose_in_dhcp_and_hostname(self):
         if not self.hostname and self.dhcp_expose:
-            raise ValidationError(
-                {"hostname": ("Cannot expose in DHCP without hostname")}
-            )
+            raise ValidationError({"hostname": ("Cannot expose in DHCP without hostname")})
 
     def _validate_change_when_exposing_in_dhcp(self):
         """
@@ -777,9 +769,9 @@ class IPAddress(
         containing current network.
         """
         int_value = int(self.ip)
-        nets = Network.objects.filter(
-            min_ip__lte=int_value, max_ip__gte=int_value
-        ).order_by("-min_ip", "max_ip")
+        nets = Network.objects.filter(min_ip__lte=int_value, max_ip__gte=int_value).order_by(
+            "-min_ip", "max_ip"
+        )
         return nets
 
 

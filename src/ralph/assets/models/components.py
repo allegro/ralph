@@ -22,9 +22,7 @@ MAC_ERROR_MSG = "'%(value)s' is not a valid MAC address."
 mac_validator = RegexValidator(regex=MAC_RE, message=MAC_ERROR_MSG)
 
 
-class ComponentModel(
-    AdminAbsoluteUrlMixin, AutocompleteTooltipMixin, NamedMixin, models.Model
-):
+class ComponentModel(AdminAbsoluteUrlMixin, AutocompleteTooltipMixin, NamedMixin, models.Model):
     speed = models.PositiveIntegerField(
         verbose_name=_("speed (MHz)"),
         default=0,
@@ -112,9 +110,7 @@ class GenericComponent(Component):
 
 
 class Ethernet(Component):
-    label = NullableCharField(
-        verbose_name=_("label"), max_length=255, blank=True, null=True
-    )
+    label = NullableCharField(verbose_name=_("label"), max_length=255, blank=True, null=True)
     mac = MACAddressField(
         verbose_name=_("MAC address"),
         unique=True,
@@ -151,9 +147,7 @@ class Ethernet(Component):
 
         try:
             if not self.mac and self.ipaddress.dhcp_expose:
-                raise ValidationError(
-                    _("MAC cannot be empty if record is exposed in DHCP")
-                )
+                raise ValidationError(_("MAC cannot be empty if record is exposed in DHCP"))
         except IPAddress.DoesNotExist:
             pass
 
@@ -241,9 +235,7 @@ class Processor(Component):
         null=True,
         blank=True,
     )
-    cores = models.PositiveIntegerField(
-        verbose_name="physical cores", null=True, blank=True
-    )
+    cores = models.PositiveIntegerField(verbose_name="physical cores", null=True, blank=True)
     logical_cores = models.PositiveIntegerField(null=True, blank=True)
 
     class Meta:

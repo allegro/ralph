@@ -96,9 +96,7 @@ class DNSaaS:
             self._update_oauth_token()
 
     @staticmethod
-    def build_url(
-        resource_name: str, id: int = None, get_params: QueryParams = None
-    ) -> str:
+    def build_url(resource_name: str, id: int = None, get_params: QueryParams = None) -> str:
         """
         Return Url for DNSAAS endpoint
 
@@ -270,9 +268,7 @@ class DNSaaS:
             return response
         except Exception:
             logger.exception(
-                "Sending {} request to DNSaaS to {} failed.".format(
-                    request_method, url
-                ),
+                "Sending {} request to DNSaaS to {} failed.".format(request_method, url),
                 extra={"request_data": json.dumps(json_data)},
             )
             raise

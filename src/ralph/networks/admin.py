@@ -107,9 +107,7 @@ class NetworkRalphChangeList(RalphChangeList):
         """
         queryset = super().get_queryset(request)
         any_params = (
-            self.get_filters_params()
-            or self.params.get(SEARCH_VAR)
-            or self.params.get(ORDER_VAR)
+            self.get_filters_params() or self.params.get(SEARCH_VAR) or self.params.get(ORDER_VAR)
         )
         if any_params:
             self.model_admin.mptt_indent_field = 10
@@ -238,9 +236,7 @@ class NetworkAdmin(RalphMPTTAdmin):
         nodes_link = []
         for node in nodes:
             nodes_link.append(
-                '<a href="{}" target="blank">{}</a>'.format(
-                    node.get_absolute_url(), escape(node)
-                )
+                '<a href="{}" target="blank">{}</a>'.format(node.get_absolute_url(), escape(node))
             )
         return " <br /> ".join(nodes_link)
 
@@ -297,9 +293,7 @@ class NetworkAdmin(RalphMPTTAdmin):
         )
         return qs
 
-    def get_paginator(
-        self, request, queryset, per_page, orphans=0, allow_empty_first_page=True
-    ):
+    def get_paginator(self, request, queryset, per_page, orphans=0, allow_empty_first_page=True):
         # Return all count found records because we want
         # display the tree mptt correctly for all networks.
         per_page = queryset.count()
@@ -354,9 +348,7 @@ class IPAddressAdmin(ParentChangeMixin, RalphAdmin):
         nodes_link = []
         for node in nodes:
             nodes_link.append(
-                '<a href="{}" target="blank">{}</a>'.format(
-                    node.get_absolute_url(), escape(node)
-                )
+                '<a href="{}" target="blank">{}</a>'.format(node.get_absolute_url(), escape(node))
             )
         return " > ".join(nodes_link)
 

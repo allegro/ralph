@@ -111,10 +111,6 @@ class RefreshValidationTestCase(TestCase):
         refresh_validation_for_rack(self.rack_config)
 
         # Old result should be gone
-        self.assertFalse(
-            BackendValidationResult.objects.filter(port_label="0/0/99").exists()
-        )
+        self.assertFalse(BackendValidationResult.objects.filter(port_label="0/0/99").exists())
         # New result should exist
-        self.assertTrue(
-            BackendValidationResult.objects.filter(port_label="0/0/10").exists()
-        )
+        self.assertTrue(BackendValidationResult.objects.filter(port_label="0/0/10").exists())

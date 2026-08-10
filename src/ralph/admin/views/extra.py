@@ -28,17 +28,16 @@ class RalphExtraViewMixin(object):
     def dispatch(self, request, model, views, *args, **kwargs):
         self.model = model
         self.views = views
-        return super().dispatch(request, model=model, *args, **kwargs)
+        return super().dispatch(request, *args, model=model, **kwargs)
 
     @classmethod
     def post_register(cls, namespace, model):
         # make sure that single view is not processed more than once
         if getattr(cls, "namespace", None):
             raise ImproperlyConfigured(
-                (
-                    "Single view class ({}) cannot be attached to more than one "
-                    "admin site"
-                ).format(cls.__name__)
+                ("Single view class ({}) cannot be attached to more than one admin site").format(
+                    cls.__name__
+                )
             )
         cls.namespace = namespace
         cls.url_to_reverse = "{}_{}_{}".format(
@@ -48,16 +47,12 @@ class RalphExtraViewMixin(object):
 
     def get_name(self):
         if not self.name:
-            raise NotImplementedError(
-                "Please define name for {}".format(self.__class__)
-            )
+            raise NotImplementedError("Please define name for {}".format(self.__class__))
         return self.name
 
     def get_extra_view_base_template(self):
         if not self.extra_view_base_template:
-            raise NotImplementedError(
-                "Please define base template for {}".format(self.__class__)
-            )
+            raise NotImplementedError("Please define base template for {}".format(self.__class__))
         return self.extra_view_base_template
 
     def get_context_data(self, **kwargs):
@@ -94,9 +89,7 @@ class RalphListView(RalphExtraViewMixin, RalphTemplateView):
 
     @classmethod
     def get_url_pattern(cls, model):
-        return r"^{}/{}/{}/$".format(
-            model._meta.app_label, model._meta.model_name, cls.url_name
-        )
+        return r"^{}/{}/{}/$".format(model._meta.app_label, model._meta.model_name, cls.url_name)
 
 
 class AdminViewBase(type):
@@ -118,9 +111,7 @@ class AdminViewBase(type):
             if not base_admin_class or not issubclass(base_admin_class, RalphAdmin):
                 continue
             for field in admin_whitelist + ["change_form_template"]:
-                admin_attrs[field] = admin_attrs[field] or getattr(
-                    base_admin_class, field, None
-                )
+                admin_attrs[field] = admin_attrs[field] or getattr(base_admin_class, field, None)
         admin_attrs["fieldsets"] = admin_attrs["fieldsets"] or empty_fieldset
         new_class.admin_class = type("AdminView", (RalphAdmin,), admin_attrs)
         return new_class
@@ -131,9 +122,7 @@ PermissionAdminViewBase = type(
 )
 
 
-class RalphDetailView(
-    RalphExtraViewMixin, RalphTemplateView, metaclass=PermissionAdminViewBase
-):
+class RalphDetailView(RalphExtraViewMixin, RalphTemplateView, metaclass=PermissionAdminViewBase):
     _type = CHANGE
     extra_view_base_template = "admin/extra_views/base_change.html"
     summary_fields = None
@@ -173,13 +162,7 @@ class RalphDetailViewAdmin(RalphDetailView):
         self.views = kwargs["views"]
         extra_context = copy(super().get_context_data())
         extra_context["object"] = self.object
-        extra_context["transition_url_name"] = get_model_view_url_name(
-            model, "transition"
-        )
-        self.admin_class_instance = self.admin_class(
-            model, ralph_site, change_views=self.views
-        )
+        extra_context["transition_url_name"] = get_model_view_url_name(model, "transition")
+        self.admin_class_instance = self.admin_class(model, ralph_site, change_views=self.views)
         extra_context["media"] += self.admin_class_instance.media
-        return self.admin_class_instance.change_view(
-            request, pk, extra_context=extra_context
-        )
+        return self.admin_class_instance.change_view(request, pk, extra_context=extra_context)

@@ -26,7 +26,7 @@ class Command(BaseCommand):
             )
             gateway_address = ipaddress.ip_address(options.get("gateway"))
         except ValueError as e:
-            raise CommandError(e)
+            raise CommandError(e) from e
 
         self.create_network(
             network=network,
@@ -42,9 +42,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "-d", "--dc-name", default="dc1", dest="dc_name", help="Data center name."
         )
-        parser.add_argument(
-            "--dns1", default="10.0.0.11", dest="dns1", help="Primary DNS server."
-        )
+        parser.add_argument("--dns1", default="10.0.0.11", dest="dns1", help="Primary DNS server.")
         parser.add_argument(
             "--dns2", default="10.0.0.12", dest="dns2", help="Secondary DNS server."
         )
@@ -109,9 +107,7 @@ class Command(BaseCommand):
                 dns_server=dns, dns_server_group=dns_server_group, order=dns_order
             )
             dns_order += 10
-        gateway_address, _ = IPAddress.objects.get_or_create(
-            address=str(gateway_address)
-        )
+        gateway_address, _ = IPAddress.objects.get_or_create(address=str(gateway_address))
         network, _ = Network.objects.get_or_create(
             name=str(network),
             address=str(network),

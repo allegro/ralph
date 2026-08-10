@@ -62,9 +62,7 @@ def _generate_transition_history(
     """Return history object (without saving it) based on parameters."""
     field_value = getattr(instance, field, None)
     try:
-        target = (
-            instance._meta.get_field(field).choices.from_id(int(transition.target)).name
-        )
+        target = instance._meta.get_field(field).choices.from_id(int(transition.target)).name
     except ValueError:
         target = None
 
@@ -137,9 +135,7 @@ def _check_and_get_transition(obj, transition, field):
     """
 
     if obj.__class__ not in _transitions_fields.keys():
-        raise TransitionModelNotFoundError(
-            "Model {} not found in registry".format(obj.__class__)
-        )
+        raise TransitionModelNotFoundError("Model {} not found in registry".format(obj.__class__))
     if isinstance(transition, str):
         transition = Transition.objects.get(
             name=transition,
@@ -149,9 +145,7 @@ def _check_and_get_transition(obj, transition, field):
     return transition
 
 
-def _check_instances_for_transition(
-    instances, transition, requester, check_async_job=True
-):
+def _check_instances_for_transition(instances, transition, requester, check_async_job=True):
     """Check in respect of the instances source status.
 
     Args:
@@ -182,9 +176,7 @@ def _check_instances_for_transition(
                 content_type=ContentType.objects.get_for_model(instance),
                 status__in=JOB_NOT_ENDED_STATUSES,
             ).exists():
-                logger.warning(
-                    "Another async transition is already running for %s", instance
-                )
+                logger.warning("Another async transition is already running for %s", instance)
                 errors[instance].append(
                     "Another async transition for this object is already started"  # noqa
                 )
@@ -253,22 +245,16 @@ def _order_actions_by_requirements(actions, instance):
         yield actions_by_name[action]
 
 
-def run_transition(
-    instances, transition_obj_or_name, field, requester, data={}, **kwargs
-):
+def run_transition(instances, transition_obj_or_name, field, requester, data={}, **kwargs):
     """
     Main function to run transition (async or synchronous).
     """
     first_instance = instances[0]
-    transition = _check_and_get_transition(
-        first_instance, transition_obj_or_name, field
-    )
+    transition = _check_and_get_transition(first_instance, transition_obj_or_name, field)
     if transition.is_async:
         job_ids = []
         for instance in instances:
-            service_name = (
-                transition.async_service_name or DEFAULT_ASYNC_TRANSITION_SERVICE_NAME
-            )  # noqa
+            service_name = transition.async_service_name or DEFAULT_ASYNC_TRANSITION_SERVICE_NAME  # noqa
             job_id, job = TransitionJob.run(
                 service_name=service_name,
                 requester=requester,
@@ -304,9 +290,7 @@ def run_transition(
             statsd.incr(metric_name)
 
 
-def _prepare_action_data(
-    action, data, history_kwargs=None, shared_params=None, **kwargs
-):
+def _prepare_action_data(action, data, history_kwargs=None, shared_params=None, **kwargs):
     """
     Prepare data for single transition action
 
@@ -325,11 +309,7 @@ def _prepare_action_data(
     # `test__abc` is stored in and additional param `abc` will be passed to
     # this action
     defaults.update(
-        {
-            key.split("__")[1]: value
-            for key, value in data.items()
-            if key.startswith(action.name)
-        }
+        {key.split("__")[1]: value for key, value in data.items() if key.startswith(action.name)}
     )
     return defaults
 
@@ -384,26 +364,20 @@ def _post_transition_instance_processing(
 
 
 @transaction.atomic
-def run_field_transition(
-    instances, transition_obj_or_name, field, requester, data={}, **kwargs
-):
+def run_field_transition(instances, transition_obj_or_name, field, requester, data={}, **kwargs):
     """
     Execute all actions assigned to the selected transition.
     """
     first_instance = instances[0]
     _compare_instances_types(instances)
-    transition = _check_and_get_transition(
-        first_instance, transition_obj_or_name, field
-    )
+    transition = _check_and_get_transition(first_instance, transition_obj_or_name, field)
     _check_instances_for_transition(
         instances=instances, transition=transition, requester=requester
     )
     attachments = []
     history_kwargs = defaultdict(dict)
     shared_params = defaultdict(dict)
-    for action in _order_actions_by_requirements(
-        transition.actions.all(), first_instance
-    ):
+    for action in _order_actions_by_requirements(transition.actions.all(), first_instance):
         logger.info("Performing action {} in transition {}".format(action, transition))
         func = getattr(first_instance, action.name)
         kwargs["attachments"] = attachments
@@ -470,11 +444,7 @@ class TransitionWorkflowBase(ModelBase):
     """
 
     def __new__(cls, name, bases, attrs):
-        fields = [
-            key
-            for key, value in attrs.items()
-            if issubclass(type(value), TransitionField)
-        ]
+        fields = [key for key, value in attrs.items() if issubclass(type(value), TransitionField)]
         new_class = super().__new__(cls, name, bases, attrs)
         if fields:
             _transitions_fields[new_class] = fields
@@ -556,9 +526,7 @@ class Transition(models.Model):
 
     @property
     def is_async(self):
-        return self.run_asynchronously or any(
-            [func.is_async for func in self.get_pure_actions()]
-        )
+        return self.run_asynchronously or any([func.is_async for func in self.get_pure_actions()])
 
     @classmethod
     def transitions_for_model(cls, model, user=None):
@@ -632,9 +600,7 @@ class TransitionJob(Job):
     # char field to allow uids, not only ints
     object_id = models.CharField(max_length=200)
     obj = GenericForeignKey("content_type", "object_id")
-    transition = models.ForeignKey(
-        Transition, on_delete=models.CASCADE, related_name="jobs"
-    )
+    transition = models.ForeignKey(Transition, on_delete=models.CASCADE, related_name="jobs")
     # TODO: field?
 
     objects = JobQuerySet.as_manager()
@@ -747,9 +713,7 @@ def update_transitions_after_migrate(**kwargs):
                 )
                 action.content_type.add(content_type)
                 action_ids.add(action.id)
-        to_delete = Action.objects.filter(content_type=content_type).exclude(
-            id__in=action_ids
-        )
+        to_delete = Action.objects.filter(content_type=content_type).exclude(id__in=action_ids)
         logger.warning("Deleting actions: %s", list(to_delete))
         to_delete.delete()
 
@@ -770,7 +734,7 @@ def post_save_transition(sender, instance, **kwargs):
         except sender.DoesNotExist:  # raised ex. during fixtures loading
             pass
         else:
-            setattr(instance, "_old_permission_info", old.permission_info)
+            instance._old_permission_info = old.permission_info
 
 
 @receiver(post_save, sender=Transition)

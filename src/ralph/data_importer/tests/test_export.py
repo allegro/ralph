@@ -42,11 +42,7 @@ class SimulateAdminExportTestCase(TestCase):
         filters = filters or {}
         admin_class = ralph_site._registry[model]
         request = RequestFactory().get(
-            reverse(
-                "admin:{}_{}_export".format(
-                    model._meta.app_label, model._meta.model_name
-                )
-            ),
+            reverse("admin:{}_{}_export".format(model._meta.app_label, model._meta.model_name)),
             filters,
         )
         request.user = self.user
@@ -114,9 +110,7 @@ class DataCenterAssetExporterTestCase(SimulateAdminExportTestCase):
             self.data_center_assets_map[dca.id] = dca
 
     def test_data_center_asset_export_queries_count(self):
-        self._test_queries_count(
-            func=lambda: self._export(DataCenterAsset), max_queries=12
-        )
+        self._test_queries_count(func=lambda: self._export(DataCenterAsset), max_queries=12)
 
     def test_data_center_asset_export_filtered(self):
         self._init(10)
@@ -146,9 +140,7 @@ class DataCenterAssetExporterTestCaseWithParent(DataCenterAssetExporterTestCase)
         self.assertNotEqual(export_data.dict[0]["management_ip"], "")
 
     def test_data_center_asset_export_with_parent_queries_count(self):
-        self._test_queries_count(
-            func=lambda: self._export(DataCenterAsset), max_queries=12
-        )
+        self._test_queries_count(func=lambda: self._export(DataCenterAsset), max_queries=12)
 
     def test_data_center_asset_export_with_parent(self):
         self._init(10)
@@ -158,9 +150,7 @@ class DataCenterAssetExporterTestCaseWithParent(DataCenterAssetExporterTestCase)
         dca_0_parent = self.data_center_assets_map[int(dca_with_parent["parent"])]
         # check if parent management ip is properly exported
         self.assertNotEqual(dca_with_parent["parent_management_ip"], "")
-        self.assertEqual(
-            dca_with_parent["parent_str"], dca_0_parent.baseobject_ptr._str_with_type
-        )
+        self.assertEqual(dca_with_parent["parent_str"], dca_0_parent.baseobject_ptr._str_with_type)
 
 
 @ddt
@@ -178,12 +168,8 @@ class BaseObjectsSupportExporterTestCase(SimulateAdminExportTestCase):
         (Decimal("10000"), 1, Decimal("10000.00")),
         (Decimal("0.0"), 100, Decimal("0.00")),
     )
-    def test_get_content_type_for_model(
-        self, support_price, objects_count, expected_price
-    ):
+    def test_get_content_type_for_model(self, support_price, objects_count, expected_price):
         support = SupportFactory(price=support_price)
         BaseObjectsSupportFactory.create_batch(objects_count, support=support)
         export_data = self._export(BaseObjectsSupport)
-        self.assertEqual(
-            export_data.dict[0]["support__price_per_object"], str(expected_price)
-        )
+        self.assertEqual(export_data.dict[0]["support__price_per_object"], str(expected_price))

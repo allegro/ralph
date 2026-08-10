@@ -48,9 +48,7 @@ class OperationType(AdminAbsoluteUrlMixin, MPTTModel, NamedMixin, models.Model):
 
 
 class Operation(AdminAbsoluteUrlMixin, TaggableMixin, models.Model):
-    type = TreeForeignKey(
-        OperationType, verbose_name=_("type"), on_delete=models.CASCADE
-    )
+    type = TreeForeignKey(OperationType, verbose_name=_("type"), on_delete=models.CASCADE)
     _allow_in_dashboard = True
     title = models.CharField(
         max_length=350,

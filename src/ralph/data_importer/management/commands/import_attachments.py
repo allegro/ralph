@@ -57,9 +57,7 @@ class Command(BaseCommand):
             for line in dataset.dict:
                 model = MODELS_MAP.get(line.get("asset_type"))
                 try:
-                    obj = ImportedObjects.get_object_from_old_pk(
-                        model, line.get("asset")
-                    )
+                    obj = ImportedObjects.get_object_from_old_pk(model, line.get("asset"))
                 except ImportedObjectDoesNotExist:
                     logger.warning("Missing imported object for %s", line)
                     continue
@@ -84,8 +82,7 @@ class Command(BaseCommand):
                 history.transition_name = line.get("transition")
                 history.kwargs = json.loads(line.get("kwargs", {}))
                 actions = [
-                    i.replace("_", " ").capitalize()
-                    for i in line.get("actions").split(",")
+                    i.replace("_", " ").capitalize() for i in line.get("actions").split(",")
                 ]
                 history.actions = actions
                 history.object_id = obj.pk
@@ -131,9 +128,7 @@ class Command(BaseCommand):
                 model = MODELS_MAP.get(line.get("parent_type"), None)
                 if model:
                     try:
-                        obj = ImportedObjects.get_object_from_old_pk(
-                            model, line.get("parents")
-                        )
+                        obj = ImportedObjects.get_object_from_old_pk(model, line.get("parents"))
                     except ImportedObjectDoesNotExist:
                         logger.warning("Missing imported object for %s", line)
                         continue
@@ -144,16 +139,12 @@ class Command(BaseCommand):
                         )
                         try:
                             attachment = Attachment.objects.get(md5=line.get("md5"))
-                            content_type = ContentType.objects.get_for_model(
-                                obj._meta.model
-                            )
+                            content_type = ContentType.objects.get_for_model(obj._meta.model)
                             items = attachment.items.filter(
                                 object_id=obj.pk, content_type=content_type
                             )
                             if not items:
-                                AttachmentItem.objects.attach(
-                                    obj.pk, content_type, [attachment]
-                                )
+                                AttachmentItem.objects.attach(obj.pk, content_type, [attachment])
                             continue
                         except Attachment.DoesNotExist:
                             pass
@@ -178,7 +169,5 @@ class Command(BaseCommand):
                 self.stdout.write("Import Attachments from: {}".format(source_file))
                 self.save_attachments(out_path)
             if import_type == "transitionshistory" or import_type == "all":
-                self.stdout.write(
-                    "Import TransitionHistory from: {}".format(source_file)
-                )
+                self.stdout.write("Import TransitionHistory from: {}".format(source_file))
                 self.save_transition_history(out_path)

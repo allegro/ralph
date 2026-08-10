@@ -47,9 +47,7 @@ def _refresh_single_switch(switch, in_thread=True):
         "switch_not_found": 0,
         "ports_processed": 0,
     }
-    lock_timeout = getattr(
-        settings, "SWITCHPORT_REFRESH_LOCK_TIMEOUT", DEFAULT_LOCK_TIMEOUT
-    )
+    lock_timeout = getattr(settings, "SWITCHPORT_REFRESH_LOCK_TIMEOUT", DEFAULT_LOCK_TIMEOUT)
     blocking_timeout = getattr(
         settings,
         "SWITCHPORT_REFRESH_LOCK_BLOCKING_TIMEOUT",
@@ -89,9 +87,7 @@ def _refresh_single_switch(switch, in_thread=True):
             try:
                 lock.release()
             except Exception:
-                logger.warning(
-                    "Failed to release lock for %s", switch.hostname, exc_info=True
-                )
+                logger.warning("Failed to release lock for %s", switch.hostname, exc_info=True)
         # Threads get their own DB connection; close it to avoid leaks.
         if in_thread:
             db_connections.close_all()
@@ -121,9 +117,7 @@ def run_rack_refresh(rack_configuration_id, refresh_job_id):
         job.save(update_fields=["status", "error", "finished_at", "modified"])
         return
 
-    max_parallel = getattr(
-        settings, "SWITCHPORT_REFRESH_MAX_PARALLEL", DEFAULT_MAX_PARALLEL
-    )
+    max_parallel = getattr(settings, "SWITCHPORT_REFRESH_MAX_PARALLEL", DEFAULT_MAX_PARALLEL)
     entries = []
     if switches:
         if max_parallel <= 1:
@@ -134,26 +128,19 @@ def run_rack_refresh(rack_configuration_id, refresh_job_id):
                 entries.append(_refresh_single_switch(switch, in_thread=False))
         else:
             with ThreadPoolExecutor(max_workers=max_parallel) as executor:
-                futures = [
-                    executor.submit(_refresh_single_switch, switch)
-                    for switch in switches
-                ]
+                futures = [executor.submit(_refresh_single_switch, switch) for switch in switches]
                 for future in as_completed(futures):
                     entries.append(future.result())
 
     summary = {
         "switches": entries,
         "refreshed_switches": sum(1 for e in entries if e["status"] == "refreshed"),
-        "switch_not_found": sum(
-            1 for e in entries if e["status"] == "switch_not_found"
-        ),
+        "switch_not_found": sum(1 for e in entries if e["status"] == "switch_not_found"),
         "ports_processed": sum(e.get("ports_processed", 0) for e in entries),
         "errors": [e for e in entries if e["status"] in ("error", "locked")],
     }
 
     job.summary = summary
-    job.status = (
-        RefreshJobStatus.ERROR if summary["errors"] else RefreshJobStatus.SUCCESS
-    )
+    job.status = RefreshJobStatus.ERROR if summary["errors"] else RefreshJobStatus.SUCCESS
     job.finished_at = timezone.now()
     job.save(update_fields=["summary", "status", "finished_at", "modified"])

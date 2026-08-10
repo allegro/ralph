@@ -53,7 +53,7 @@ class AdminSearchFieldsMixin(object):
                         continue
                     f_name = f.parameter_name
                 filterset_fields.append(f_name)
-        setattr(self, "filterset_fields", filterset_fields)
+        self.filterset_fields = filterset_fields
 
 
 class RalphAPIViewSetMixin(QuerysetRelatedMixin, AdminSearchFieldsMixin):
@@ -91,9 +91,7 @@ class RalphAPIViewSetMixin(QuerysetRelatedMixin, AdminSearchFieldsMixin):
         if RalphPermission not in self.permission_classes:
             raise AttributeError("RalphPermission missing in permission_classes")
         if PermissionsForObjectFilter not in self.filter_backends:
-            raise AttributeError(
-                "PermissionsForObjectFilter missing in filter_backends"
-            )
+            raise AttributeError("PermissionsForObjectFilter missing in filter_backends")
 
     def get_serializer_class(self):
         """
