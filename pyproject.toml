@@ -106,7 +106,7 @@ dependencies = [
   "stevedore",
   "tblib>=3.1.0",
   "typing==3.6.6",
-  "wrapt==1.10.6",
+  "wrapt==1.10.6"
 ]
 dynamic = [
   "authors",
@@ -134,10 +134,8 @@ line-length = 99
 ignore = []
 select = ["E", "F"]
 
-
-[tools.ruff.format]
-line-ending = "auto"
-
 [tool.uv]
 default-groups = ["dev", "test"]
 
+[tools.ruff.format]
+line-ending = "auto"
