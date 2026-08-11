@@ -183,8 +183,9 @@ class RalphClient:
                     host.hypervisor = asset
                     host.save()
 
+    @staticmethod
     @lru_cache()
-    def _get_flavor_objects(self):
+    def _get_flavor_objects():
         return {fl.flavor_id: fl for fl in CloudFlavor.objects.all()}
 
     def _add_server(self, openstack_server, server_id, project_id):

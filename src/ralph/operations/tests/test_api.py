@@ -15,8 +15,9 @@ class OperationsAPITestCase(RalphAPITestCase):
         operation_title = "TEST OPERATION"
         operation_description = "TEST DESCRIPTION"
 
-        for i in range(num_operations):
-            OperationFactory(title=operation_title, description=operation_description)
+        OperationFactory.create_batch(
+            num_operations, title=operation_title, description=operation_description
+        )
 
         url = reverse("operation-list")
         response = self.client.get(url, format="json")

@@ -62,7 +62,7 @@ class TransitionForm(forms.ModelForm):
         )
         async_services = list(settings.RALPH_INTERNAL_SERVICES.keys())
         self.fields["async_service_name"] = forms.ChoiceField(
-            choices=((("", "-------"),) + tuple(zip(async_services, async_services))),
+            choices=((("", "-------"),) + ((s, s) for s in async_services)),
             required=False,
         )
         actions_choices = [
@@ -89,8 +89,7 @@ class TransitionForm(forms.ModelForm):
         one_action = False
         one_action_name = ""
         any_async_action = False
-        actions_items = actions.items()
-        for k, v in actions_items:
+        for v in actions.values():
             action = getattr(self.model, v.name)
             if getattr(action, "return_attachment", False):
                 attachment_counter += 1
@@ -99,7 +98,7 @@ class TransitionForm(forms.ModelForm):
                 one_action_name = getattr(action, "verbose_name", "")
             any_async_action |= action.is_async
 
-        if one_action and len(actions_items) > 1:
+        if one_action and len(actions) > 1:
             msg = _(("You have chosen action: %(name)s can only be selected for transition")) % {
                 "name": one_action_name
             }

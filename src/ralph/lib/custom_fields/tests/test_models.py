@@ -64,7 +64,7 @@ class CustomFieldModelsTestCase(TestCase):
         self.sm1.update_custom_field(name="test_str", value="new_value")
         self.sm1.update_custom_field(name="test_choices", value="qwerty")
         with self.assertNumQueries(1):
-            self.sm1.custom_fields_as_dict
+            self.sm1.custom_fields_as_dict  # noqa: B018
 
 
 class CustomFieldInheritanceModelsTestCase(TestCase):

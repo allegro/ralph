@@ -111,9 +111,9 @@ class ContainsIPAddressFilter(TextListFilter):
         for str_addr in re.split(SEARCH_OR_SEPARATORS_REGEX, self.value()):
             try:
                 address = int(ipaddress.ip_address(str_addr))
-            except ValueError:
+            except ValueError as e:
                 _add_incorrect_value_message(request, self.title)
-                raise IncorrectLookupParameters()
+                raise IncorrectLookupParameters() from e
 
             filter_query = filter_query | Q(min_ip__lte=address, max_ip__gte=address)
 

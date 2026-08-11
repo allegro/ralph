@@ -98,7 +98,7 @@ class NetworkInlineTestCase(RalphTestCase):
         self.assertEqual(eth.base_object.pk, self.obj1.pk)
         # ip should not be created
         with self.assertRaises(IPAddress.DoesNotExist):
-            eth.ipaddress
+            eth.ipaddress  # noqa: B018
 
     def test_adding_new_record_without_mac_should_pass(self):
         inline_data = {

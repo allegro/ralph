@@ -593,7 +593,9 @@ def create_dhcp_entries(cls, instances, ip_or_network, ethernet, **kwargs):
         kwargs["shared_params"]["ip_addresses"][instances[0].pk] = ip
     else:
         for instance, (ip, ethernet) in zip(
-            _create_dhcp_entries_for_many_instances(instances, ip_or_network), instances
+            _create_dhcp_entries_for_many_instances(instances, ip_or_network),
+            instances,
+            strict=True,
         ):
             _store_history(instance, ip, ethernet)
             kwargs["shared_params"]["ip_addresses"][instance.pk] = ip

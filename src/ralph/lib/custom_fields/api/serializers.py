@@ -94,7 +94,7 @@ class CustomFieldValueSaveSerializer(CustomFieldValueSerializerMixin, RalphAPISa
         try:
             instance.validate_unique()
         except DjangoValidationError as e:
-            raise self._django_validation_error_to_drf_validation_error(e)
+            raise self._django_validation_error_to_drf_validation_error(e) from e
 
 
 class CustomFieldValueSerializer(CustomFieldValueSerializerMixin, RalphAPISerializer):

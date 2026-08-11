@@ -117,7 +117,7 @@ class CustomFieldValueQuerySet(models.QuerySet):
             # set if to False to not fall into recursion when calling
             # `_prioritize_custom_field_values`
             self._prioritize = False
-            for cfv_id, cfv in _prioritize_custom_field_values(
+            for _cfv_id, cfv in _prioritize_custom_field_values(
                 self,
                 self._prioritize_model_or_instance,
                 ContentType.objects.get_for_model(self._prioritize_model_or_instance),

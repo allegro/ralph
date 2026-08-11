@@ -278,7 +278,9 @@ class Choices(six.with_metaclass(_ChoicesMeta, list)):
             if grouped:
                 import warnings
 
-                warnings.warn("Choices class called with grouped=True and no actual groups.")
+                warnings.warn(
+                    "Choices class called with grouped=True and no actual groups.", stacklevel=2
+                )
             for choice in self.__choices__:
                 if choice.name in filter or (unset in filter and isinstance(choice, Choice)):
                     self.append(item(choice))

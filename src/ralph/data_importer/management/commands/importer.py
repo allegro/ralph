@@ -138,7 +138,9 @@ class Command(BaseCommand):
                             [
                                 "line_number: {}".format(idx + 1),
                                 "error message: {}".format(error.error),
-                                "row data: {}".format(list(zip(headers, dataset[idx]))),
+                                "row data: {}".format(
+                                    list(zip(headers, dataset[idx], strict=True))
+                                ),
                                 "",
                             ]
                         )

@@ -35,7 +35,7 @@ class Command(BaseCommand):
             region = options.get("region")
             configuration_path = options.get("configuration_path")
         except ValueError as e:
-            raise CommandError(e)
+            raise CommandError(e) from e
 
         self._validate_network(parent_network, number_of_subnets)
         self._validate_configuration_path(configuration_path)

@@ -122,7 +122,7 @@ class PolymorphicQuerySet(models.QuerySet):
     def _add_extra_to_subquery(self, query: QuerySet) -> QuerySet:
         query = query.extra(*self._extra_args, **self._extra_kwargs)
         if self._annotate_args or self._annotate_kwargs or self._extra_args or self._extra_kwargs:
-            for select_key, select_db_field in self._iterate_extra_prefetches():
+            for _select_key, select_db_field in self._iterate_extra_prefetches():
                 through_table_name, column_name = [
                     s.strip("`").strip('"') for s in select_db_field.split(".")
                 ]

@@ -147,7 +147,7 @@ class Table(object):
                     if additional_data:
                         result.append(additional_data)
         if self.transpose:
-            result = list(zip(*result))
+            result = list(zip(*result, strict=True))
         return result
 
     def render(self, request=None):
@@ -191,4 +191,4 @@ class TableWithUrl(Table):
 
     def __init__(self, queryset, list_display, *args, **kwargs):
         self.url_field = kwargs.pop("url_field", None)
-        super().__init__(queryset=queryset, list_display=list_display, *args, **kwargs)
+        super().__init__(*args, queryset=queryset, list_display=list_display, **kwargs)

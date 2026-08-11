@@ -72,7 +72,7 @@ class Command(BaseCommand):
             checking = "sender-email"
             self.email_validator(options.get("sender_email", None))
         except ValidationError as e:
-            raise CommandError("{}: {}".format(checking, e.message))
+            raise CommandError("{}: {}".format(checking, e.message)) from e
 
 
 def send_email_with_attachment(

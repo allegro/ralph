@@ -6,7 +6,7 @@ class ReportNode(object):
     """The basic report node. It is simple object which store name, count,
     parent and children."""
 
-    def __init__(self, name, count=0, parent=None, children=[], link=None, **kwargs):
+    def __init__(self, name, count=0, parent=None, children=None, link=None, **kwargs):
         self.name = name
         self.count = count
         self.parent = parent

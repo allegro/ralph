@@ -114,7 +114,7 @@ class CustomField(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
             choices = self._get_choices()
             params.update(
                 {
-                    "choices": zip(choices, choices),
+                    "choices": zip(choices, choices, strict=True),
                 }
             )
         else:

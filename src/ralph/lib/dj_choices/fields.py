@@ -60,10 +60,10 @@ class ChoiceField(six.with_metaclass(SubfieldBase, IntegerField)):
             try:
                 if not issubclass(kwargs["choices"], Choices):
                     raise TypeError()
-            except TypeError:
+            except TypeError as e:
                 raise exceptions.ImproperlyConfigured(
                     "dj.choices class required as `choices` argument."
-                )
+                ) from e
         self.choice_class = kwargs["choices"]
         self.item_getter = kwargs.get("item", lambda x: (x.id,))
         kwargs["choices"] = self.choice_class(
@@ -84,10 +84,10 @@ class ChoiceField(six.with_metaclass(SubfieldBase, IntegerField)):
             return value
         try:
             return self.choice_class.from_id(value)
-        except (TypeError, ValueError):
+        except (TypeError, ValueError) as e:
             raise exceptions.ValidationError(
                 self.error_messages["invalid_choice"] % {"value": value}
-            )
+            ) from e
 
     # def from_db_value(self, value, expression, connection, context):
     def from_db_value(self, value, *_, **__):

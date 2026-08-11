@@ -108,7 +108,7 @@ class Command(BaseCommand):
                 )
             )
             return
-        for root, dirs, files in os.walk(certs_dir):
+        for root, _dirs, files in os.walk(certs_dir):
             for filename in fnmatch.filter(files, "*.crt"):
                 cert = None
                 pem_data = None

@@ -245,7 +245,7 @@ def _order_actions_by_requirements(actions, instance):
         yield actions_by_name[action]
 
 
-def run_transition(instances, transition_obj_or_name, field, requester, data={}, **kwargs):
+def run_transition(instances, transition_obj_or_name, field, requester, data=None, **kwargs):
     """
     Main function to run transition (async or synchronous).
     """
@@ -260,7 +260,7 @@ def run_transition(instances, transition_obj_or_name, field, requester, data={},
                 requester=requester,
                 obj=instance,
                 transition=transition,
-                data=data,
+                data=data if data is not None else {},
                 transition_id=transition.id,
                 **kwargs,
             )
@@ -273,7 +273,7 @@ def run_transition(instances, transition_obj_or_name, field, requester, data={},
                 instances=instances,
                 transition_obj_or_name=transition,
                 field=field,
-                data=data,
+                data=data if data is not None else {},
                 requester=requester,
                 transition_id=transition.id,
                 **kwargs,
@@ -364,7 +364,7 @@ def _post_transition_instance_processing(
 
 
 @transaction.atomic
-def run_field_transition(instances, transition_obj_or_name, field, requester, data={}, **kwargs):
+def run_field_transition(instances, transition_obj_or_name, field, requester, data=None, **kwargs):
     """
     Execute all actions assigned to the selected transition.
     """
@@ -383,7 +383,7 @@ def run_field_transition(instances, transition_obj_or_name, field, requester, da
         kwargs["attachments"] = attachments
         defaults = _prepare_action_data(
             action,
-            data,
+            data if data is not None else {},
             history_kwargs=history_kwargs,
             shared_params=shared_params,
             **kwargs,
@@ -405,7 +405,7 @@ def run_field_transition(instances, transition_obj_or_name, field, requester, da
         _post_transition_instance_processing(
             instance,
             transition,
-            data,
+            data if data is not None else {},
             history_kwargs=history_kwargs,
             requester=requester,
             attachments=attachments,

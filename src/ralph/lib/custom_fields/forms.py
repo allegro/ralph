@@ -83,7 +83,7 @@ class CustomFieldValueFormSet(BaseGenericInlineFormSet):
             )
         queryset = queryset.filter(query_filter)
 
-        super().__init__(queryset=queryset, *args, **kwargs)
+        super().__init__(*args, queryset=queryset, **kwargs)
 
     def _construct_form(self, i, **kwargs):
         form = super()._construct_form(i, request=self.request, **kwargs)

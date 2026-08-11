@@ -11,7 +11,7 @@ def network_validator(value):
     try:
         ipaddress.ip_network(value, strict=False)
     except ipaddress.NetmaskValueError as exc:
-        raise ValidationError(exc.message)
+        raise ValidationError(exc.message) from exc
 
 
 class IPNetwork(CharField):

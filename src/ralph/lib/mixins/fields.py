@@ -126,11 +126,15 @@ class NullableGenericIPAddressField(NullableCharFieldMixin, models.GenericIPAddr
     _formfield_class = NullableGenericIPAddressFormField
 
 
+TICKET_ID_HELP = _("External system ticket identifier")
+TICKET_ID_VERBOSE_NAME = _("ticket ID")
+
+
 class TicketIdField(NullableCharField):
     def __init__(
         self,
-        verbose_name=_("ticket ID"),
-        help_text=_("External system ticket identifier"),
+        verbose_name=TICKET_ID_VERBOSE_NAME,
+        help_text=TICKET_ID_HELP,
         null=True,
         blank=True,
         max_length=200,
@@ -138,12 +142,12 @@ class TicketIdField(NullableCharField):
         **kwargs,
     ):
         super().__init__(
+            *args,
             verbose_name=verbose_name,
             help_text=help_text,
             null=null,
             blank=blank,
             max_length=max_length,
-            *args,
             **kwargs,
         )
 
@@ -307,10 +311,10 @@ class MACAddressField(NullableCharField):
     def to_python(self, value):
         try:
             return self.normalize(value)
-        except ValueError:
+        except ValueError as e:
             raise ValidationError(
                 self.error_messages["invalid"] % {"value": value},
-            )
+            ) from e
 
     @classmethod
     def normalize(cls, value):
@@ -322,6 +326,6 @@ class MACAddressField(NullableCharField):
             return None
         try:
             mac = netaddr.EUI(value, version=48, dialect=cls.dialect)
-        except netaddr.AddrFormatError:
-            raise ValueError("Invalid MAC address: '{}'".format(value))
+        except netaddr.AddrFormatError as e:
+            raise ValueError("Invalid MAC address: '{}'".format(value)) from e
         return str(mac) or None

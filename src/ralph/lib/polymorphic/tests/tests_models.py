@@ -50,9 +50,9 @@ class PolymorphicTestCase(TestCase):
             for item in PolymorphicModelBaseTest.polymorphic_objects.all():
                 result.append(str(item))
                 # just get related attribute to force fetching it from DB
-                item.sth_related
+                item.sth_related  # noqa: B018
                 if isinstance(item, PolymorphicModelTest2):
-                    item.another_related
+                    item.another_related  # noqa: B018
 
         self.assertIn(
             "PolymorphicModelTest: {} ({})".format(self.pol_1.name, self.pol_1.pk),
@@ -74,9 +74,9 @@ class PolymorphicTestCase(TestCase):
                 PolymorphicModelTest2=["sth_related", "another_related"],
             ):
                 # just get related attribute to force fetching it from DB
-                item.sth_related
+                item.sth_related  # noqa: B018
                 if isinstance(item, PolymorphicModelTest2):
-                    item.another_related
+                    item.another_related  # noqa: B018
 
     def test_polymorphic_queryset_ordering(self):
         r = list(PolymorphicModelBaseTest.polymorphic_objects.order_by("-name"))

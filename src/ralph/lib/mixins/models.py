@@ -100,7 +100,7 @@ class ManagerOfManager(_TaggableManager):
 
 class TaggableManager(TaggableManagerOriginal):
     def __init__(self, *args, **kwargs):
-        super().__init__(manager=ManagerOfManager, *args, **kwargs)
+        super().__init__(*args, manager=ManagerOfManager, **kwargs)
         self.manager.name = "tags"
 
     def value_from_object(self, instance):

@@ -383,9 +383,9 @@ class Command(BaseCommand):
 
     def generate_support(self):
         self.stdout.write("Generating Supports")
-        for i in range(self.object_limit):
+        for _ in range(self.object_limit):
             # BaseObjectsSupportFactory automatically generates Support
-            for j in range(3):
+            for _ in range(3):
                 back_office_asset = BaseObjectsSupportFactory().baseobject
                 back_office_asset.owner = self.get_user()
                 back_office_asset.user = self.get_user()
@@ -393,8 +393,7 @@ class Command(BaseCommand):
 
     def generate_cloud_images(self):
         self.stdout.write("Generating Cloud Images")
-        for i in range(self.object_limit):
-            CloudImageFactory()
+        CloudImageFactory.create_batch(self.object_limit)
 
     def handle(self, *args, **options):
         apps = options.get("apps").split(",")

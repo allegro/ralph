@@ -135,7 +135,7 @@ class RalphOpenstackClient:
         )
         return ks_session.Session(auth=auth)
 
-    @lru_cache()
+    @lru_cache()  # noqa: B019
     def _get_images(self):
         logger.info("Fetching images")
         return {img["id"]: img for img in self.glance_client.images.list()}

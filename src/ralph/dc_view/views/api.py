@@ -17,8 +17,8 @@ class DCAssetsView(APIView):
     def get_object(self, pk):
         try:
             return Rack.objects.get(id=pk)
-        except Rack.DoesNotExist:
-            raise Http404
+        except Rack.DoesNotExist as e:
+            raise Http404 from e
 
     def _get_assets(self, rack):
         return DataCenterAssetSerializer(rack.get_root_assets(), many=True).data
@@ -64,8 +64,8 @@ class SRRacksAPIView(APIView):
     def get_object(self, pk):
         try:
             return ServerRoom.objects.get(id=pk)
-        except ServerRoom.DoesNotExist:
-            raise Http404
+        except ServerRoom.DoesNotExist as e:
+            raise Http404 from e
 
     def get(self, request, server_room_id, format=None):
         """

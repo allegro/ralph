@@ -30,7 +30,7 @@ class ChoiceFieldWithOtherOptionField(ChoiceField):
         choices = list(choices)
         if self.auto_other_choice:
             choices += [(OTHER, self.other_option_label)]
-        super().__init__(choices=choices, *args, **kwargs)
+        super().__init__(*args, choices=choices, **kwargs)
 
     def to_internal_value(self, data):
         if not isinstance(data, dict):

@@ -22,8 +22,8 @@ def next_mac(mac: str) -> str:
             f"{(next_mac_bytes >> (i * 8)) & 0xFF:02X}" for i in reversed(range(6))
         )
         return next_mac_str
-    except ValueError:
-        raise ValidationError(f"Invalid MAC address format: {mac}")
+    except ValueError as e:
+        raise ValidationError(f"Invalid MAC address format: {mac}") from e
 
 
 def previous_mac(mac: str) -> str:
@@ -41,5 +41,5 @@ def previous_mac(mac: str) -> str:
             f"{(previous_mac_bytes >> (i * 8)) & 0xFF:02X}" for i in reversed(range(6))
         )
         return previous_mac_str
-    except ValueError:
-        raise ValidationError(f"Invalid MAC address format: {mac}")
+    except ValueError as e:
+        raise ValidationError(f"Invalid MAC address format: {mac}") from e

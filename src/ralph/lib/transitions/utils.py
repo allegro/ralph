@@ -14,7 +14,7 @@ def _sort_graph_topologically(graph):
     """
     # calculate input degree (number of nodes pointing to particular node)
     indeg = {k: 0 for k in graph}
-    for node, edges in graph.items():
+    for _node, edges in graph.items():
         for edge in edges:
             indeg[edge] += 1
     # sort graph topologically

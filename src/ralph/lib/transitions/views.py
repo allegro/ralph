@@ -1,5 +1,4 @@
 from copy import deepcopy
-from itertools import repeat
 
 from django import forms
 from django.apps import apps
@@ -43,7 +42,7 @@ def collect_actions(obj, transition):
 
 
 def build_params_url_for_redirect(ids):
-    return urlencode(list(zip(repeat("select", len(ids)), ids)))
+    return urlencode([("select", id_) for id_ in ids])
 
 
 class NonAtomicView(object):
@@ -312,8 +311,8 @@ class AsyncBulkTransitionsAwaiterView(RalphTemplateView):
             jobs = list(TransitionJob.objects.filter(pk__in=job_ids))
             if len(jobs) != len(job_ids):
                 raise ValueError()
-        except ValueError:
-            raise Http404()  # ?
+        except ValueError as e:
+            raise Http404() from e
         else:
             context["jobs"] = jobs
             context["are_jobs_running"] = any([j.is_running for j in jobs])

@@ -17,7 +17,7 @@ class TableRenderTestCase(TestCase):
         Compare content of the rows (without checking row type (list vs tuple))
         """
         self.assertEqual(len(table1), len(table2))
-        for row1, row2 in zip(table1, table2):
+        for row1, row2 in zip(table1, table2, strict=True):
             self.assertSequenceEqual(row1, row2)
 
     def test_queryset_render(self):
