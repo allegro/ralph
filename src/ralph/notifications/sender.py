@@ -32,7 +32,7 @@ def send_notification_for_model(instance):
             owners.extend(list(getattr(old_service_env.service, field).all()))
             owners.extend(list(getattr(new_service_env.service, field).all()))
 
-        emails = set([owner.email for owner in owners if owner.email])
+        emails = {owner.email for owner in owners if owner.email}
         if emails:
             context = {
                 "old_service_env": old_service_env,

@@ -315,7 +315,7 @@ class AsyncBulkTransitionsAwaiterView(RalphTemplateView):
             raise Http404() from e
         else:
             context["jobs"] = jobs
-            context["are_jobs_running"] = any([j.is_running for j in jobs])
+            context["are_jobs_running"] = any(j.is_running for j in jobs)
             context["for_many_objects"] = True
         return context
 

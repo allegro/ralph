@@ -81,17 +81,17 @@ def record_operation(
 
     operation, _ = Operation.objects.update_or_create(
         ticket_id=ticket_id,
-        defaults=dict(
-            title=title,
-            description=description,
-            status=_safe_load_status(status_name),
-            type=operation_type,
-            assignee=_safe_load_user(assignee_username),
-            reporter=_safe_load_user(reporter_username),
-            created_date=created_date,
-            update_date=update_date,
-            resolved_date=resolution_date,
-        ),
+        defaults={
+            "title": title,
+            "description": description,
+            "status": _safe_load_status(status_name),
+            "type": operation_type,
+            "assignee": _safe_load_user(assignee_username),
+            "reporter": _safe_load_user(reporter_username),
+            "created_date": created_date,
+            "update_date": update_date,
+            "resolved_date": resolution_date,
+        },
     )
 
     if base_object_ids:

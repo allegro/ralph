@@ -357,7 +357,7 @@ class RalphClient:
                 modified = True
                 project.name = openstack_project_data["name"]
                 self._save_object(project, "Modify name")
-            if not all([tag in ralph_project["tags"] for tag in openstack_project_data["tags"]]):
+            if not all(tag in ralph_project["tags"] for tag in openstack_project_data["tags"]):
                 modified = True
                 for tag in openstack_project_data["tags"]:
                     project.tags.add(tag)

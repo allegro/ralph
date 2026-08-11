@@ -101,7 +101,7 @@ def combine_racks_into_module(modeladmin, request, queryset):
             request, "Select at least 2 racks to combine into a module", level="ERROR"
         )
         return
-    if any([rack.rack_module for rack in queryset.all()]):
+    if any(rack.rack_module for rack in queryset.all()):
         modeladmin.message_user(
             request, "Some of the racks are already part of a module", level="ERROR"
         )

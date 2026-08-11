@@ -30,11 +30,11 @@ class ImportForeignKeyMeta(type):
         for name, field in new_class.fields.items():
             update_fields.append((name, field))
             field_name = "{}_str".format(name)
-            field_params = dict(
-                column_name="{}_str".format(field.column_name),
-                attribute=field.attribute,
-                readonly=True,
-            )
+            field_params = {
+                "column_name": "{}_str".format(field.column_name),
+                "attribute": field.attribute,
+                "readonly": True,
+            }
             # skip str field if pointer implicitly
             if getattr(field, "_skip_str_field", False):
                 continue

@@ -1,6 +1,8 @@
 import operator
+from typing import Literal
 
 from django.contrib.auth.management import _get_all_permissions
+from django.contrib.auth.models import User
 from django.core import exceptions
 from django.db import DEFAULT_DB_ALIAS, models, router, transaction
 from django.db.models.base import ModelBase
@@ -128,7 +130,7 @@ class PermissionsBase(ModelBase):
             # new class
             apply_bases_permissions = False
             permissions = getattr(
-                new_class, "Permissions", type(str("Permissions"), (object,), dict())
+                new_class, "Permissions", type(str("Permissions"), (object,), {})
             )
         permissions.blacklist = cls._init_blacklist(cls, permissions, bases)
         permissions.has_access = cls._init_object_permissions(
@@ -214,7 +216,7 @@ class PermByFieldMixin(models.Model, metaclass=PermissionsBase):
         return perm
 
     @classmethod
-    def allowed_fields(cls, user, action="change"):
+    def allowed_fields(cls, user: User, action: Literal["change", "view"] = "change") -> set[str]:
         """
         Returns a list with the names of the fields to which the user has
         permission.
@@ -223,15 +225,7 @@ class PermByFieldMixin(models.Model, metaclass=PermissionsBase):
 
             >> user = User.objects.get(username='root')
             >> model.allowed_fields(user, 'change')
-            ['parent', 'remarks', 'service_env']
-
-        :param user: User object
-        :type user: django User object
-        :param action: permission action (change/view)
-        :type action: str
-
-        :return: List of field names
-        :rtype: list
+            {'parent', 'remarks', 'service_env'}
         """
         result = set()
         blacklist = cls._permissions.blacklist
@@ -303,7 +297,7 @@ def create_permissions(
 
     # This will hold the permissions we're looking for as
     # (content_type, (codename, name))
-    searched_perms = list()
+    searched_perms = []
     # The codenames and ctypes that should exist.
     ctypes = set()
     for klass in app_config.get_models():

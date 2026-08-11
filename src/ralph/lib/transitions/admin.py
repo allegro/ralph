@@ -56,7 +56,7 @@ class CurrentTransitionsView(RalphDetailView):
         jobs_ended = jobs.inactive()
         context["jobs_in_progress"] = jobs_in_progress
         context["jobs_ended"] = jobs_ended
-        context["are_jobs_running"] = any([j.is_running for j in jobs])
+        context["are_jobs_running"] = any(j.is_running for j in jobs)
         return context
 
 

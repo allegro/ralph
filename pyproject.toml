@@ -132,7 +132,7 @@ line-length = 99
 
 [tool.ruff.lint]
 ignore = []
-select = ["B", "E", "F"]
+select = ["B", "B9", "E", "F", "W"]
 
 [tool.uv]
 default-groups = ["dev", "test"]

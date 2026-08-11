@@ -32,7 +32,7 @@ from ralph.assets.models.configuration import ConfigurationClass, ConfigurationM
 
 def next_mac(n):
     mac = [0x00, 0x16, 0x3E, n >> 16 & 0xFF, n >> 8 & 0xFF, n & 0xFF]
-    return ":".join(map(lambda x: "%02x" % x, mac))
+    return ":".join(("%02x" % x for x in mac))
 
 
 def next_wwn(n):
@@ -46,7 +46,7 @@ def next_wwn(n):
     # n = 32 gives 'aabbccddee000020',
     # ...and so on.
     wwn = [0xAA, 0xBB, 0xCC, 0xDD, 0xEE, n >> 16 & 0xFF, n >> 8 & 0xFF, n & 0xFF]
-    return "".join(map(lambda x: "%02x" % x, wwn))
+    return "".join(("%02x" % x for x in wwn))
 
 
 class ComponentModelFactory(DjangoModelFactory):

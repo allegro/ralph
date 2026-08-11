@@ -27,10 +27,7 @@ class GraphForm(RalphAdminForm):
 
         data = sorted(choices, key=keyfunc)
         self.fields["model"] = forms.ChoiceField(
-            choices=(
-                (k.capitalize(), list(map(lambda x: (x.id, x), g)))
-                for k, g in groupby(data, keyfunc)
-            )
+            choices=((k.capitalize(), [(x.id, x) for x in g]) for k, g in groupby(data, keyfunc))
         )
 
         self.initial["params"] = json.dumps(

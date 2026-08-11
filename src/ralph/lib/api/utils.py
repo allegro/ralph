@@ -128,4 +128,4 @@ def renderer_classes_without_form(renderer_classes):
             else:
                 yield OnlyRawBrowsableAPIRenderer
 
-    return [rc for rc in _gen()]
+    return list(_gen())

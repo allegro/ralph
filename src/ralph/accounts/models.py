@@ -164,7 +164,7 @@ class RalphUser(PermByFieldMixin, AbstractUser, AdminAbsoluteUrlMixin, Autocompl
         )
 
     def has_any_perms(self, perms, obj=None):
-        return any([self.has_perm(p, obj=obj) for p in perms])
+        return any(self.has_perm(p, obj=obj) for p in perms)
 
     def save(self, *args, **kwargs):
         if isinstance(self.country, str):

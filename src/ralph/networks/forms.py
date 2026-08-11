@@ -179,7 +179,7 @@ class SimpleNetworkForm(EthernetLockDeleteForm):
         Validate if any of mac and address are filled.
         """
         fields = ["mac", "address"]
-        if not any([self.cleaned_data.get(field) for field in fields]):
+        if not any(self.cleaned_data.get(field) for field in fields):
             raise ValidationError(_("At least one of {} is required".format(", ".join(fields))))
 
     def _validate_ip_fields(self):
@@ -188,7 +188,7 @@ class SimpleNetworkForm(EthernetLockDeleteForm):
         """
         ip_fields_without_address = [f for f in self.ip_fields if f != "address"]
         if not self.cleaned_data.get("address") and any(
-            [self.cleaned_data.get(f) for f in ip_fields_without_address]
+            self.cleaned_data.get(f) for f in ip_fields_without_address
         ):
             raise ValidationError(
                 "Address is required when one of {} is filled".format(

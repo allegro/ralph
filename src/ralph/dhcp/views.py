@@ -59,7 +59,7 @@ class DHCPConfigMixin(object):
     @staticmethod
     def check_objects_existence_by_names(model_class, names):
         found = model_class.objects.filter(name__in=names)
-        not_found = set(names) - set([obj.name for obj in found])
+        not_found = set(names) - {obj.name for obj in found}
         return found, not_found
 
     def dispatch(self, request, *args, **kwargs):

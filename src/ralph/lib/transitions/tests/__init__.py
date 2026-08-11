@@ -43,7 +43,7 @@ class TransitionTestCaseMixin(object):
             actions = Action.objects.filter(**actions_query_kwargs)
         else:
             actions = Action.actions_for_model(model)
-        transition.actions.add(*[x for x in actions])
+        transition.actions.add(*list(actions))
         return transition_model, transition, actions
 
 

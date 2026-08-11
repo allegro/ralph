@@ -13,13 +13,13 @@ def _sort_graph_topologically(graph):
         generator of nodes in topoligical order
     """
     # calculate input degree (number of nodes pointing to particular node)
-    indeg = {k: 0 for k in graph}
+    indeg = dict.fromkeys(graph, 0)
     for _node, edges in graph.items():
         for edge in edges:
             indeg[edge] += 1
     # sort graph topologically
     # return nodes which input degree is 0
-    no_requirements = set([a for a in indeg if indeg.get(a, 0) == 0])
+    no_requirements = {a for a in indeg if indeg.get(a, 0) == 0}
     while no_requirements:
         next_node = no_requirements.pop()
         # for each node to which this one is pointing - decrease input degree
@@ -39,5 +39,5 @@ def _compare_instances_types(instances):
     Conditions:
         - transition can run only objects with the same type.
     """
-    if not all(map(lambda x: isinstance(instances[0], x.__class__), instances)):
+    if not all((isinstance(instances[0], x.__class__) for x in instances)):
         raise TypeError()

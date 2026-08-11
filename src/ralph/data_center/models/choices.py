@@ -30,12 +30,12 @@ class Orientation(Choices):
 
     @classmethod
     def is_width(cls, orientation):
-        is_width = orientation in set([choice.id for choice in cls.WIDTH.choices])
+        is_width = orientation in {choice.id for choice in cls.WIDTH.choices}
         return is_width
 
     @classmethod
     def is_depth(cls, orientation):
-        is_depth = orientation in set([choice.id for choice in cls.DEPTH.choices])
+        is_depth = orientation in {choice.id for choice in cls.DEPTH.choices}
         return is_depth
 
 

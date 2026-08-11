@@ -819,13 +819,13 @@ class DCHostAdmin(RalphAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request).filter(visibility_scope_filter(request.user))
         # location
-        polymorphic_select_related = dict(
-            DataCenterAsset=["rack__server_room__data_center", "model"],
-            VirtualServer=[
+        polymorphic_select_related = {
+            "DataCenterAsset": ["rack__server_room__data_center", "model"],
+            "VirtualServer": [
                 "parent__asset__datacenterasset__rack__server_room__data_center",  # noqa
             ],
-            CloudHost=["hypervisor__rack__server_room__data_center"],
-        )
+            "CloudHost": ["hypervisor__rack__server_room__data_center"],
+        }
         qs = qs.polymorphic_select_related(**polymorphic_select_related)
         qs = qs.polymorphic_prefetch_related(
             Cluster=[

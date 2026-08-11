@@ -151,7 +151,7 @@ class RalphAPISerializerMixin(
         if request and is_root:
             requested = getattr(request, "query_params", {}).get("fields")
             if requested:
-                allowed = set(name.strip() for name in requested.split(",") if name.strip())
+                allowed = {name.strip() for name in requested.split(",") if name.strip()}
                 fields = {name: field for name, field in fields.items() if name in allowed}
 
         for field in fields.values():
@@ -279,9 +279,7 @@ class RalphAPISaveSerializer(
         if hasattr(exc, "error_dict"):
             return RestFrameworkValidationError(detail=dict(list(exc)))
         else:
-            return RestFrameworkValidationError(
-                detail=dict([(NON_FIELD_ERRORS, [value]) for value in exc])
-            )
+            return RestFrameworkValidationError(detail={NON_FIELD_ERRORS: list(exc)})
 
     def _extra_instance_validation(self, instance):
         pass

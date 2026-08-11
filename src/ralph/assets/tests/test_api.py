@@ -562,7 +562,7 @@ class BaseObjectAPITests(RalphAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], BaseObject.objects.count())
         barcodes = [item["barcode"] for item in response.data["results"] if "barcode" in item]
-        self.assertCountEqual(barcodes, set(["12345", "12543"]))
+        self.assertCountEqual(barcodes, {"12345", "12543"})
 
     def test_get_base_objects_list_different_type_with_custom_fields(self):
         CustomFieldFactory(name="test_field")

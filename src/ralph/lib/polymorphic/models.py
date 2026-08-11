@@ -181,7 +181,7 @@ class PolymorphicQuerySet(models.QuerySet):
         # mysql uses different quotes than postgres
         q = get_database_quote_type()
         through_table_name = through_table._meta.db_table  # type: str
-        fields = {field for field in through_table._meta.fields}  # type: set[models.Field]
+        fields = set(through_table._meta.fields)  # type: set[models.Field]
         if target_column_name in {field.column for field in fields}:
             our_table = None  # type: str | None
             back_column = None  # type: str | None
@@ -213,7 +213,7 @@ class PolymorphicQuerySet(models.QuerySet):
         self._fetch_all()
         try:
             cache_ = self._my_cache.copy()
-            pks = [pk for pk in self._pks_order]
+            pks = list(self._pks_order)
         except AttributeError:
             yield from self._result_cache
         else:
@@ -307,7 +307,7 @@ class PolymorphicBase(models.base.ModelBase):
 
     def __new__(cls, name, bases, attrs):
         full_mro = set(tuple([mro for b in bases for mro in b.__mro__]) + bases)
-        base_polymorphic = set([b for b in full_mro if issubclass(b, Polymorphic)])
+        base_polymorphic = {b for b in full_mro if issubclass(b, Polymorphic)}
         attrs["_polymorphic_descendants"] = []
         attrs["_polymorphic_models"] = base_polymorphic
         new_class = super().__new__(cls, name, bases, attrs)

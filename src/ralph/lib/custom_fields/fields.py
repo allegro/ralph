@@ -248,7 +248,7 @@ def create_generic_related_manager_with_inheritance(superclass, rel):  # noqa: C
             queryset = queryset.using(queryset._db or self._db)
             content_type = ContentType.objects.get_for_model(instances[0])
             # store possible content types of CustomFieldValue
-            content_types = set([content_type])
+            content_types = {content_type}
             # store possible values of object id
             objects_ids = set()
             # mapping from instance id to content_type and object id of

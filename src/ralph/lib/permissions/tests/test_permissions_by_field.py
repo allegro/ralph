@@ -86,7 +86,7 @@ class PermissionsByFieldTestCase(TestCase):
     def test_user_allowed_fields(self):
         """Test allowed fields in permissions model."""
         fields_list = self.asset_model.allowed_fields(self.user, action="change")
-        self.assertEqual(set(["height_of_device"]), fields_list)
+        self.assertEqual({"height_of_device"}, fields_list)
 
     def test_user_not_allowed_fields(self):
         """Test not allowed field in permission model."""

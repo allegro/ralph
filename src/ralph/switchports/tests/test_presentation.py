@@ -21,17 +21,17 @@ class BuildValidationContextTestCase(TestCase):
         self.rack_config, _ = RackConfiguration.objects.get_or_create(rack=self.rack)
 
     def _make_vr(self, **kwargs):
-        defaults = dict(
-            switch=self.switch,
-            port_label="0/0/10",
-            status=ValidationStatus.ASSET_FOUND,
-            remote_asset=self.server,
-            remote_hostname="srv-pres.dc.example.com",
-            oper_status="up",
-            admin_status="up",
-            speed=25000,
-            raw_data={"name": "0/0/10", "speed": 25000},
-        )
+        defaults = {
+            "switch": self.switch,
+            "port_label": "0/0/10",
+            "status": ValidationStatus.ASSET_FOUND,
+            "remote_asset": self.server,
+            "remote_hostname": "srv-pres.dc.example.com",
+            "oper_status": "up",
+            "admin_status": "up",
+            "speed": 25000,
+            "raw_data": {"name": "0/0/10", "speed": 25000},
+        }
         defaults.update(kwargs)
         return BackendValidationResult.objects.create(**defaults)
 

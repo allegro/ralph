@@ -316,7 +316,7 @@ def _prepare_action_data(action, data, history_kwargs=None, shared_params=None, 
 
 def _save_instance_after_transition(instance, transition, user=None):
     # don't save object if any of actions have `disable_save_object` flag set
-    if not any([a.disable_save_object for a in transition.get_pure_actions()]):
+    if not any(a.disable_save_object for a in transition.get_pure_actions()):
         with transaction.atomic(), reversion.create_revision():
             instance.save()
             # TODO: store changed fields
@@ -526,7 +526,7 @@ class Transition(models.Model):
 
     @property
     def is_async(self):
-        return self.run_asynchronously or any([func.is_async for func in self.get_pure_actions()])
+        return self.run_asynchronously or any(func.is_async for func in self.get_pure_actions())
 
     @classmethod
     def transitions_for_model(cls, model, user=None):

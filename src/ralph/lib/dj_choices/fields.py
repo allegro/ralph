@@ -170,15 +170,15 @@ class ChoiceField(six.with_metaclass(SubfieldBase, IntegerField)):
         return self.get_db_prep_value(value)
 
     def south_field_triple(self):
-        kwargs = dict(
-            null=repr(self.null),
-            blank=repr(self.blank),
-            db_column=repr(self.db_column),
-            db_index=repr(self.db_index),
-            primary_key=repr(self.primary_key),
-            unique=repr(self.unique),
-            _in_south=repr(True),
-        )
+        kwargs = {
+            "null": repr(self.null),
+            "blank": repr(self.blank),
+            "db_column": repr(self.db_column),
+            "db_index": repr(self.db_index),
+            "primary_key": repr(self.primary_key),
+            "unique": repr(self.unique),
+            "_in_south": repr(True),
+        }
         if self.default is not models.NOT_PROVIDED:
             kwargs["default"] = repr(self.default)
         return ("ralph.lib.dj_choices.fields.ChoiceField", [], kwargs)
