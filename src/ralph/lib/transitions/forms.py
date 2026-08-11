@@ -62,7 +62,7 @@ class TransitionForm(forms.ModelForm):
         )
         async_services = list(settings.RALPH_INTERNAL_SERVICES.keys())
         self.fields["async_service_name"] = forms.ChoiceField(
-            choices=((("", "-------"),) + ((s, s) for s in async_services)),
+            choices=((("", "-------"),) + tuple((s, s) for s in async_services)),
             required=False,
         )
         actions_choices = [
