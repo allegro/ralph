@@ -36,6 +36,9 @@ class RalphClient:
         ralph_serial_number_param,
         changes_since=None,
     ):
+        # per-instance caching, safe from memory leaks
+        self._get_flavor_objects = lru_cache(maxsize=1024)(self.__get_flavor_objects)
+
         self.cloud_provider = self._get_or_create_cloud_provider(openstack_provider_name)
         self.openstack_provider_name = openstack_provider_name
         self.ironic_serial_number_param = ironic_serial_number_param
@@ -184,8 +187,7 @@ class RalphClient:
                     host.save()
 
     @staticmethod
-    @lru_cache()
-    def _get_flavor_objects():
+    def __get_flavor_objects():
         return {fl.flavor_id: fl for fl in CloudFlavor.objects.all()}
 
     def _add_server(self, openstack_server, server_id, project_id):

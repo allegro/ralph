@@ -79,6 +79,8 @@ class RalphOpenstackClient:
     """
 
     def __init__(self, site):
+        # per-instance caching, safe from memory leaks
+        self._get_images = lru_cache()(self.__get_images)
         if not nova_client_exists:
             logger.error("novaclient module is not installed")
             raise ImportError("No module named novaclient")
@@ -135,8 +137,7 @@ class RalphOpenstackClient:
         )
         return ks_session.Session(auth=auth)
 
-    @lru_cache()  # noqa: B019
-    def _get_images(self):
+    def __get_images(self):
         logger.info("Fetching images")
         return {img["id"]: img for img in self.glance_client.images.list()}
 
