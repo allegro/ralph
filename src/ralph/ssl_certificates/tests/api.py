@@ -39,9 +39,7 @@ class SSLCertificatesAPITests(RalphAPITestCase):
         response = self.client.get(url, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(
-            response.data["service_env"]["id"], self.certificate1.service_env.id
-        )
+        self.assertEqual(response.data["service_env"]["id"], self.certificate1.service_env.id)
         self.assertEqual(
             response.data["service_env"]["service"],
             self.certificate1.service_env.service.name,

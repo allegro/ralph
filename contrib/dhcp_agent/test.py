@@ -23,7 +23,7 @@ def mocked_urlopen(*args):
 
 
 def mocked_error(msg):
-    raise Exception(msg)
+    raise RuntimeError(msg)
 
 
 mocked_parser.error = mocked_error
@@ -53,12 +53,12 @@ class TestDHCPConfigManager(unittest.TestCase):
 
     @patch("optparse.OptionParser", mocked_parser)
     def test_empty_params_should_raise_exception(self):
-        with self.assertRaises(Exception):
+        with self.assertRaises(RuntimeError):
             _check_params({}, mocked_parser.error)
 
     @patch("optparse.OptionParser", mocked_parser)
     def test_env_end_dc_in_params_should_raise_exception(self):
-        with self.assertRaises(Exception):
+        with self.assertRaises(RuntimeError):
             _check_params(
                 {"key": 123, "host": "127.0.0.1:8000", "dc": "DC1", "net_env": "test"},
                 mocked_parser.error,
@@ -96,9 +96,7 @@ class TestDHCPConfigManager(unittest.TestCase):
         mock.headers.get.return_value = ""
         mocked_urlopen.return_value = mock
         with Cache("/tmp/") as cache:
-            dhcp_manager = DHCPConfigManager(
-                cache=cache, logger=logger, **default_params
-            )
+            dhcp_manager = DHCPConfigManager(cache=cache, logger=logger, **default_params)
             dhcp_manager.download_and_apply_configuration()
 
 

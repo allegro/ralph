@@ -18,9 +18,7 @@ def visibility_scope_filter(user):
     if not scopes:
         return Q()
 
-    return Q(
-        service_env__service__in=Service.objects.filter(visibility_scopes__in=scopes)
-    )
+    return Q(service_env__service__in=Service.objects.filter(visibility_scopes__in=scopes))
 
 
 def visibility_scope_asset_support_filter(user):
@@ -33,7 +31,5 @@ def visibility_scope_asset_support_filter(user):
         return Q()
 
     return Q(
-        baseobject__service_env__service__in=Service.objects.filter(
-            visibility_scopes__in=scopes
-        )
+        baseobject__service_env__service__in=Service.objects.filter(visibility_scopes__in=scopes)
     )

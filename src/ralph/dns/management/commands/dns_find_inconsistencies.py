@@ -99,9 +99,7 @@ class Command(BaseCommand):
         records_by_types_rev = defaultdict(lambda: defaultdict(list))
         for record in api_results:
             records_by_types[record["type"]][record["name"]].append(record["content"])
-            records_by_types_rev[record["type"]][record["content"]].append(
-                record["name"]
-            )
+            records_by_types_rev[record["type"]][record["content"]].append(record["name"])
         return records_by_types, records_by_types_rev
 
     def _get_ips(self):

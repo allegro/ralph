@@ -28,9 +28,7 @@ class NotificationTest(TransactionTestCase):
 
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(
-            "Device has been assigned to Service: {} ({})".format(
-                new_service, self.dca
-            ),
+            "Device has been assigned to Service: {} ({})".format(new_service, self.dca),
             mail.outbox[0].subject,
         )
         self.assertCountEqual(mail.outbox[0].to, ["test1@test.pl", "test2@test.pl"])

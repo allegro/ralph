@@ -76,12 +76,8 @@ class Accessory(
     models.Model,
     metaclass=TransitionWorkflowBaseWithPermissions,
 ):
-    manufacturer = models.ForeignKey(
-        Manufacturer, on_delete=models.PROTECT, blank=True, null=True
-    )
-    category = TreeForeignKey(
-        Category, null=True, related_name="+", on_delete=models.CASCADE
-    )
+    manufacturer = models.ForeignKey(Manufacturer, on_delete=models.PROTECT, blank=True, null=True)
+    category = TreeForeignKey(Category, null=True, related_name="+", on_delete=models.CASCADE)
     accessory_name = models.CharField(
         max_length=255, null=False, blank=False, help_text=_("Accessory name")
     )

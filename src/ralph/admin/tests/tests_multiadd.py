@@ -16,12 +16,8 @@ class MultiAddTest(ClientMixin, TestCase):
     def setUp(self):  # noqa
         super().setUp()
         self.login_as_user()
-        self.bo_admin = BackOfficeAssetAdmin(
-            model=BackOfficeAsset, admin_site=ralph_site
-        )
-        self.dc_admin = BackOfficeAssetAdmin(
-            model=DataCenterAsset, admin_site=ralph_site
-        )
+        self.bo_admin = BackOfficeAssetAdmin(model=BackOfficeAsset, admin_site=ralph_site)
+        self.dc_admin = BackOfficeAssetAdmin(model=DataCenterAsset, admin_site=ralph_site)
         self.bo_1 = BackOfficeAssetFactory()
         self.dc_1 = DataCenterAssetFactory(sn="12345")
 
@@ -107,9 +103,7 @@ class MultiAddTest(ClientMixin, TestCase):
             post_data,
             follow=True,
         )
-        self.assertFormError(
-            response.context["form"], "sn", "There are duplicates in field."
-        )
+        self.assertFormError(response.context["form"], "sn", "There are duplicates in field.")
 
     def test_multi_add_barcode_and_sn_empty(self):
         post_data = {
@@ -143,9 +137,7 @@ class MultiAddTest(ClientMixin, TestCase):
             response.context["form"],
             "sn",
             ('Following items already exist: <a href="{}">{}</a>').format(
-                reverse(
-                    "admin:data_center_datacenterasset_change", args=[self.dc_1.pk]
-                ),
+                reverse("admin:data_center_datacenterasset_change", args=[self.dc_1.pk]),
                 self.dc_1.pk,
             ),
         )
@@ -170,6 +162,4 @@ class MultiAddTest(ClientMixin, TestCase):
             post_data,
             follow=True,
         )
-        self.assertFormError(
-            response.context["form"], "position", "Enter a valid number."
-        )
+        self.assertFormError(response.context["form"], "position", "Enter a valid number.")

@@ -10,9 +10,7 @@ from django.core.management.base import CommandError
 from ralph.accounts.management.commands._base import PermissionBaseCommand
 
 
-def assign_permission_to_group(
-    group_name: str, perm_key: str
-) -> tuple[bool, str | None]:
+def assign_permission_to_group(group_name: str, perm_key: str) -> tuple[bool, str | None]:
     """
     Assign permission to group. Returns (success, error).
 
@@ -61,10 +59,10 @@ class Command(PermissionBaseCommand):
         try:
             with open(options["file"], "r") as f:
                 mappings = json.load(f)
-        except FileNotFoundError:
-            raise CommandError(f"File not found: {options['file']}")
+        except FileNotFoundError as e:
+            raise CommandError(f"File not found: {options['file']}") from e
         except json.JSONDecodeError as e:
-            raise CommandError(f"Invalid JSON file: {e}")
+            raise CommandError(f"Invalid JSON file: {e}") from e
 
         headers = ["group", "permission", "status"]
         rows = []

@@ -87,9 +87,7 @@ class ConfigurationModuleAdmin(CustomFieldValueAdminMixin, RalphMPTTAdmin):
     def show_children_modules(self, module):
         if not module or not module.pk:
             return "&ndash;"
-        return TableWithUrl(
-            module.children_modules.all(), ["name"], url_field="name"
-        ).render()
+        return TableWithUrl(module.children_modules.all(), ["name"], url_field="name").render()
 
     show_children_modules.short_description = _("Children modules")
 
@@ -311,10 +309,14 @@ class CategoryAdmin(RalphMPTTAdmin):
             .annotate(count=Count("pk"))
             .values("count")
         )
-        return super().get_queryset(request).annotate(
-            count=Coalesce(
-                Subquery(assets_count, output_field=IntegerField()),
-                0,
+        return (
+            super()
+            .get_queryset(request)
+            .annotate(
+                count=Coalesce(
+                    Subquery(assets_count, output_field=IntegerField()),
+                    0,
+                )
             )
         )
 

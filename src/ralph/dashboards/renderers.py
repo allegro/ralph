@@ -106,7 +106,7 @@ class ChartistGraphRenderer(object):
 
     def _series_with_urls(self, series, urls):
         series_with_urls = []
-        for value, url in zip(series, urls):
+        for value, url in zip(series, urls, strict=True):
             series_with_urls.append(
                 {
                     "value": value,
@@ -119,9 +119,7 @@ class ChartistGraphRenderer(object):
 
     def post_data_hook(self, data):
         try:
-            click_urls = self._labels2urls(
-                self.obj.changelist_model, self.obj.id, data["labels"]
-            )
+            click_urls = self._labels2urls(self.obj.changelist_model, self.obj.id, data["labels"])
             data["series"] = self._series_with_urls(data["series"], click_urls)
         except NoReverseMatch as e:
             # graph will be non-clickable when model is not exposed in
@@ -193,7 +191,7 @@ class PieChart(ChartistGraphRenderer):
         return super().get_options(data)
 
     def include_values_in_labels(self, data):
-        for idx, pack in enumerate(zip(data["labels"], data["series"])):
+        for idx, pack in enumerate(zip(data["labels"], data["series"], strict=True)):
             label, series = pack
             new_label = "{} ({})".format(label, series["value"])
             data["labels"][idx] = new_label

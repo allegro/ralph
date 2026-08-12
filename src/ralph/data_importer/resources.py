@@ -52,9 +52,7 @@ class RalphModelResource(
 
 class ResourceWithPrice(resources.ModelResource):
     price = PriceField(attribute="price", widget=PriceAmountWidget())
-    price_currency = fields.Field(
-        attribute="price", readonly=True, widget=PriceCurrencyWidget()
-    )
+    price_currency = fields.Field(attribute="price", readonly=True, widget=PriceCurrencyWidget())
 
 
 class AssetModelResource(RalphModelResource):
@@ -83,11 +81,7 @@ class AssetModelResource(RalphModelResource):
     def dehydrate_assets_count(self, model):
         # check if model has `assets_count` attribute first (it's only included
         # when using annotated queryset above)
-        return (
-            model.assets_count
-            if hasattr(model, "assets_count")
-            else model.assets.count()
-        )
+        return model.assets_count if hasattr(model, "assets_count") else model.assets.count()
 
 
 class CategoryResource(RalphModelResource):
@@ -776,9 +770,7 @@ class OperationResource(RalphModelResource):
                 queryset=BaseObject.polymorphic_objects.polymorphic_filter(
                     operations__in=Operation.objects.all()
                 )
-                .select_related(
-                    "service_env", "service_env__service", "service_env__environment"
-                )
+                .select_related("service_env", "service_env__service", "service_env__environment")
                 .polymorphic_select_related(
                     Cluster=["type"], ServiceEnvironment=["service", "environment"]
                 ),

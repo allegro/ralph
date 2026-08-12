@@ -67,9 +67,7 @@ class M2MInlineTest(ClientMixin, TestCase):
             "bars-1-price_1": "PLN",  # change here!
             "bars-1-count": "11",  # change here!
         }
-        response = self.client.post(
-            reverse("admin:tests_foo_change", args=(self.foo1.id,)), data
-        )
+        response = self.client.post(reverse("admin:tests_foo_change", args=(self.foo1.id,)), data)
         self.assertEqual(response.status_code, 302)
         foo = Foo.objects.get(bar="a")
         self.assertEqual(foo.bars.count(), 1)

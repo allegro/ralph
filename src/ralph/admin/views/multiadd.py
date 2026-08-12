@@ -59,9 +59,7 @@ class MultiAddView(RalphTemplateView):
                     required=required,
                 )
 
-        multi_form = type(
-            "MultiForm", (MultivalueFormMixin, forms.Form), multi_form_attrs
-        )
+        multi_form = type("MultiForm", (MultivalueFormMixin, forms.Form), multi_form_attrs)
         if self.request.method == "POST":
             form_kwargs["data"] = self.request.POST
         return multi_form(**form_kwargs)
@@ -110,7 +108,7 @@ class MultiAddView(RalphTemplateView):
     def form_valid(self, form):
         saved_objects = []
         args = [form.cleaned_data[field["field"]] for field in self.fields]
-        for data in zip(*args):
+        for data in zip(*args, strict=False):
             for field in self._get_ancestors_pointers(self.obj):
                 setattr(self.obj, field, None)
             self.obj.id = self.obj.pk = None
@@ -186,9 +184,7 @@ class MulitiAddAdminMixin(object):
         if not extra_context:
             extra_context = {}
         if self.has_add_permission(request):
-            extra_context.update(
-                {"multi_add_url": reverse(self.get_url_name(), args=[object_id])}
-            )
+            extra_context.update({"multi_add_url": reverse(self.get_url_name(), args=[object_id])})
 
         return super().change_view(request, object_id, form_url, extra_context)
 

@@ -54,7 +54,5 @@ class FilterParser(object):
             "y": "years",
         }
         val, period = FILTER_FROM_NOW.match(value).groups()
-        result = datetime.date.today() + relativedelta(
-            **{period_mapper.get(period): int(val)}
-        )
+        result = datetime.date.today() + relativedelta(**{period_mapper.get(period): int(val)})
         return [], {key: result.strftime("%Y-%m-%d")}

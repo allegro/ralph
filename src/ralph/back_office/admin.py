@@ -126,9 +126,7 @@ class BackOfficeAssetAdmin(
     search_fields = ["barcode", "sn", "hostname", "invoice_no", "order_no"]
 
     def get_search_results(self, request, queryset, search_term):
-        queryset, use_distinct = super().get_search_results(
-            request, queryset, search_term
-        )  # noqa
+        queryset, use_distinct = super().get_search_results(request, queryset, search_term)  # noqa
         if "barcode" in request.GET:
             barcode = request.GET.get("barcode").split(";")
             queryset = self.model.objects.filter(barcode__in=barcode)
@@ -230,12 +228,10 @@ class BackOfficeAssetAdmin(
     ]
     bulk_edit_no_fillable = ["barcode", "sn", "imei", "imei2", "hostname"]
     _invoice_report_name = "invoice-back-office-asset"
-    _invoice_report_item_fields = (
-        AssetInvoiceReportMixin._invoice_report_item_fields + ["owner"]
-    )
-    _invoice_report_select_related = (
-        AssetInvoiceReportMixin._invoice_report_select_related + ["owner"]
-    )
+    _invoice_report_item_fields = AssetInvoiceReportMixin._invoice_report_item_fields + ["owner"]
+    _invoice_report_select_related = AssetInvoiceReportMixin._invoice_report_select_related + [
+        "owner"
+    ]
 
     fieldsets = (
         (
@@ -318,9 +314,7 @@ class BackOfficeAssetAdmin(
                 label=_("licences"),
                 required=False,
                 widget=AutocompleteWidget(
-                    field=apps.get_model("licences.BaseObjectLicence")._meta.get_field(
-                        "licence"
-                    ),
+                    field=apps.get_model("licences.BaseObjectLicence")._meta.get_field("licence"),
                     admin_site=ralph_site,
                     request=request,
                     multi=True,
@@ -333,9 +327,7 @@ class BackOfficeAssetAdmin(
                     # TODO: permissions handling: now this field is only visible
                     # to superusers
                     str(_id)
-                    for _id in kwargs["instance"].licences.values_list(
-                        "licence__id", flat=True
-                    )
+                    for _id in kwargs["instance"].licences.values_list("licence__id", flat=True)
                 ]
                 kwargs["initial"] = initial
                 super().__init__(*args, **kwargs)
@@ -344,9 +336,7 @@ class BackOfficeAssetAdmin(
                 form_licences = self.cleaned_data["licences"]
 
                 form_licences_ids = [licence.id for licence in form_licences]
-                asset_licences_ids = self.instance.licences.values_list(
-                    "licence__id", flat=True
-                )
+                asset_licences_ids = self.instance.licences.values_list("licence__id", flat=True)
 
                 to_add = set(form_licences_ids) - set(asset_licences_ids)
                 to_remove = set(asset_licences_ids) - set(form_licences_ids)

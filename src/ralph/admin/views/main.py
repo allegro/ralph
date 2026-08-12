@@ -60,9 +60,7 @@ class RalphChangeList(ChangeList):
         if self.is_popup:
             # For popup window we limit display of records to the same as
             # we have in the autocomplete widget.
-            autocomplete_queryset = getattr(
-                self.model, "get_autocomplete_queryset", None
-            )
+            autocomplete_queryset = getattr(self.model, "get_autocomplete_queryset", None)
             if autocomplete_queryset:
                 autocomplete_queryset = autocomplete_queryset()
                 # #2248 - cannot combine unique (distinct) and non-unique query

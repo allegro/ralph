@@ -76,7 +76,7 @@ class AsyncTransitionsTest(TransitionTestCaseMixin, TransactionTestCase):
             field="status",
             data={"name": "def", "foo": self.foo},
         )
-        for job_id, async_order in zip(job_ids, async_orders):
+        for job_id, async_order in zip(job_ids, async_orders, strict=True):
             job = TransitionJob.objects.get(pk=job_id)
             async_order.refresh_from_db()
             self.assertEqual(job.status, JobStatus.FINISHED.id)
@@ -86,9 +86,7 @@ class AsyncTransitionsTest(TransitionTestCaseMixin, TransactionTestCase):
             # check if shared params and history kwargs are properly stored
             # during rescheduling
             self.assertEqual(job.params["shared_params"][async_order.pk]["counter"], 5)
-            self.assertEqual(
-                job.params["history_kwargs"][async_order.pk]["hist_counter"], 5
-            )
+            self.assertEqual(job.params["history_kwargs"][async_order.pk]["hist_counter"], 5)
             # check history entries
             th = TransitionsHistory.objects.get(object_id=async_order.id)
             self.assertEqual(th.kwargs, {"hist_counter": 5})
@@ -121,7 +119,7 @@ class AsyncTransitionsTest(TransitionTestCaseMixin, TransactionTestCase):
             field="status",
             data={"name": "def", "foo": self.foo},
         )
-        for job_id, async_order in zip(job_ids, async_orders):
+        for job_id, async_order in zip(job_ids, async_orders, strict=True):
             job = TransitionJob.objects.get(pk=job_id)
             async_order.refresh_from_db()
             self.assertEqual(job.status, JobStatus.FROZEN)
@@ -131,7 +129,7 @@ class AsyncTransitionsTest(TransitionTestCaseMixin, TransactionTestCase):
             job = TransitionJob.objects.get(pk=job_id)
             job.unfreeze()
 
-        for job_id, async_order in zip(job_ids, async_orders):
+        for job_id, async_order in zip(job_ids, async_orders, strict=True):
             job = TransitionJob.objects.get(pk=job_id)
             async_order.refresh_from_db()
             self.assertEqual(job.status, JobStatus.FINISHED)
@@ -139,9 +137,7 @@ class AsyncTransitionsTest(TransitionTestCaseMixin, TransactionTestCase):
             self.assertEqual(async_order.name, "def")
             # check if shared params and history kwargs are properly stored
             # during freezing
-            self.assertEqual(
-                job.params["shared_params"][async_order.pk]["test"], "freezing"
-            )
+            self.assertEqual(job.params["shared_params"][async_order.pk]["test"], "freezing")
             # check history entries
             th = TransitionsHistory.objects.get(object_id=async_order.id)
             self.assertCountEqual(
@@ -166,7 +162,7 @@ class AsyncTransitionsTest(TransitionTestCaseMixin, TransactionTestCase):
             field="status",
             data={"name": "def", "foo": self.foo},
         )
-        for job_id, order in zip(job_ids, [async_order, async_order2]):
+        for job_id, order in zip(job_ids, [async_order, async_order2], strict=True):
             job = TransitionJob.objects.get(pk=job_id)
             self.assertEqual(job.status, JobStatus.FAILED.id)
             self.assertEqual(job.params["shared_params"][order.pk]["test"], "failing")

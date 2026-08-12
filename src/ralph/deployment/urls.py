@@ -23,8 +23,6 @@ urlpatterns = [
         files,
         name="deployment_files",
     ),
-    re_path(
-        r"^(?P<deployment_id>[-\w]+)/mark_as_done$", done_ping, name="deployment_done"
-    ),
+    re_path(r"^(?P<deployment_id>[-\w]+)/mark_as_done$", done_ping, name="deployment_done"),
     re_path(r"^(?P<deployment_id>[-\w]+)/$", deployment_base, name="deployment_base"),
 ]

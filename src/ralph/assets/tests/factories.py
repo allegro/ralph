@@ -98,9 +98,7 @@ class CategoryFactory(DjangoModelFactory):
 
 class DataCenterCategoryFactory(DjangoModelFactory):
     imei_required = False
-    name = factory.Iterator(
-        ["ATS", "Database Machine", "Blade System", "Chassis blade"]
-    )
+    name = factory.Iterator(["ATS", "Database Machine", "Blade System", "Chassis blade"])
 
     class Meta:
         model = Category

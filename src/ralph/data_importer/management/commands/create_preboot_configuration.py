@@ -60,9 +60,7 @@ class Command(BaseCommand):
         )
 
     @classmethod
-    def create_preboot_configuration(
-        cls, kickstart_file, ipxe_file, preboot_name, description
-    ):
+    def create_preboot_configuration(cls, kickstart_file, ipxe_file, preboot_name, description):
         kickstart_file, _ = PrebootConfiguration.objects.get_or_create(
             name="{} kickstart".format(preboot_name),
             type=PrebootItemType.kickstart.id,
@@ -73,8 +71,6 @@ class Command(BaseCommand):
             type=PrebootItemType.ipxe.id,
             configuration=ipxe_file,
         )
-        preboot, _ = Preboot.objects.get_or_create(
-            name=preboot_name, description=description
-        )
+        preboot, _ = Preboot.objects.get_or_create(name=preboot_name, description=description)
         preboot.items.add(ipxe_file)
         preboot.items.add(kickstart_file)

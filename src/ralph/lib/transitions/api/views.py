@@ -114,13 +114,9 @@ class AvailableTransitionViewSet(TransitionViewSet):
 
 class TransitionViewMixin(NonAtomicView, APIView):
     def initial(self, request, *args, **kwargs):
-        self.obj = self.transition.model.content_type.get_object_for_this_type(
-            pk=kwargs["obj_pk"]
-        )
+        self.obj = self.transition.model.content_type.get_object_for_this_type(pk=kwargs["obj_pk"])
         self.objects = [self.obj]
-        self.actions, self.return_attachment = collect_actions(
-            self.obj, self.transition
-        )
+        self.actions, self.return_attachment = collect_actions(self.obj, self.transition)
         super().initial(request, *args, **kwargs)
 
     def get_fields(self):
@@ -134,12 +130,8 @@ class TransitionViewMixin(NonAtomicView, APIView):
                 condition = options.get("condition", lambda x, y: True)
                 if not condition(self.obj, self.actions):
                     continue
-                field_class, field_attr = FIELD_MAP.get(
-                    options["field"].__class__, None
-                )
-                attrs = {
-                    name: getattr(options["field"], name, None) for name in field_attr
-                }
+                field_class, field_attr = FIELD_MAP.get(options["field"].__class__, None)
+                attrs = {name: getattr(options["field"], name, None) for name in field_attr}
                 choices = options.get("choices")
                 if choices:
                     if callable(choices):
@@ -177,7 +169,7 @@ class TransitionViewMixin(NonAtomicView, APIView):
         errors = _transition_data_validation(self.objects, self.transition, data)
         if errors:
             api_errors = {}
-            for action_name, action_errors in errors.items():
+            for _action_name, action_errors in errors.items():
                 for field_name, field_errors in action_errors.items():
                     api_errors[field_name] = [exc.message for exc in field_errors]
             raise DRFValidationError(api_errors)
@@ -191,12 +183,8 @@ class TransitionViewMixin(NonAtomicView, APIView):
             )
         except TransitionNotAllowedError as e:
             raise DRFValidationError(
-                {
-                    api_settings.NON_FIELD_ERRORS_KEY: list(
-                        itertools.chain(*e.errors.values())
-                    )
-                }
-            )
+                {api_settings.NON_FIELD_ERRORS_KEY: list(itertools.chain(*e.errors.values()))}
+            ) from e
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer_class()(data=request.data)
@@ -242,8 +230,8 @@ class TransitionView(TransitionViewMixin):
                 filters["name"] = kwargs["transition_name"]
 
             self.transition = Transition.objects.get(**filters)
-        except ObjectDoesNotExist:
-            raise NotFound("Transition not found!")
+        except ObjectDoesNotExist as e:
+            raise NotFound("Transition not found!") from e
         super().initial(request, *args, **kwargs)
 
 
@@ -251,6 +239,6 @@ class TransitionByIdView(TransitionViewMixin):
     def initial(self, request, *args, **kwargs):
         try:
             self.transition = Transition.objects.get(pk=kwargs["transition_pk"])
-        except ObjectDoesNotExist:
-            raise NotFound("Transition not found!")
+        except ObjectDoesNotExist as e:
+            raise NotFound("Transition not found!") from e
         super().initial(request, *args, **kwargs)

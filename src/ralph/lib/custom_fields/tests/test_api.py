@@ -35,9 +35,7 @@ class CustomFieldsAPITests(APITestCase):
             username="root", password="password", email="email@email.pl"
         )
         cls.list_view_name = "{}-customfields-list".format(SomeModel._meta.model_name)
-        cls.detail_view_name = "{}-customfields-detail".format(
-            SomeModel._meta.model_name
-        )
+        cls.detail_view_name = "{}-customfields-detail".format(SomeModel._meta.model_name)
 
     def setUp(self):
         self.client.force_authenticate(self.user)
@@ -173,9 +171,7 @@ class CustomFieldsAPITests(APITestCase):
         self.assertIn("POST", response["allow"])
 
     def test_get_customfields_for_wrong_object_should_return_404(self):
-        url = reverse(
-            self.detail_view_name, kwargs={"pk": self.cfv1.pk, "object_pk": self.sm2.pk}
-        )
+        url = reverse(self.detail_view_name, kwargs={"pk": self.cfv1.pk, "object_pk": self.sm2.pk})
         response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
@@ -186,9 +182,7 @@ class CustomFieldsAPITests(APITestCase):
         )
         response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(
-            response.data["custom_field"]["name"], self.custom_field_str.name
-        )
+        self.assertEqual(response.data["custom_field"]["name"], self.custom_field_str.name)
         self.assertEqual(response.data["value"], self.cfv1.value)
         self.assertTrue(
             response.data["url"].endswith(

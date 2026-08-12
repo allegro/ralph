@@ -43,9 +43,7 @@ class TestReversedChoiceField(RalphTestCase):
         )
 
     def test_to_representation_should_return_choice_text(self):
-        self.assertEqual(
-            self.reversed_choice_field.to_representation(TestChoices.foo.id), "foo11"
-        )
+        self.assertEqual(self.reversed_choice_field.to_representation(TestChoices.foo.id), "foo11")
 
     def test_to_internal_value_should_map_choice_text_to_id(self):
         self.assertEqual(

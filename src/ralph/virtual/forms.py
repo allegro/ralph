@@ -24,4 +24,4 @@ class CloudProviderForm(RalphAdminFormMixin, forms.ModelForm):
             self.add_error("client_config", error)
             raise forms.ValidationError(
                 _("Client configuration must be a valid JSON text.")
-            )
+            ) from error

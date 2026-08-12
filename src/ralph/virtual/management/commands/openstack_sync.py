@@ -36,9 +36,10 @@ class RalphClient:
         ralph_serial_number_param,
         changes_since=None,
     ):
-        self.cloud_provider = self._get_or_create_cloud_provider(
-            openstack_provider_name
-        )
+        # per-instance caching, safe from memory leaks
+        self._get_flavor_objects = lru_cache(maxsize=1024)(self.__get_flavor_objects)
+
+        self.cloud_provider = self._get_or_create_cloud_provider(openstack_provider_name)
         self.openstack_provider_name = openstack_provider_name
         self.ironic_serial_number_param = ironic_serial_number_param
         self.ralph_serial_number_param = ralph_serial_number_param
@@ -59,9 +60,7 @@ class RalphClient:
             cloud_provider = CloudProvider(
                 name=provider_name,
             )
-            self._save_object(
-                cloud_provider, "Add {} CloudProvider".format(provider_name)
-            )
+            self._save_object(cloud_provider, "Add {} CloudProvider".format(provider_name))
         return cloud_provider
 
     @classmethod
@@ -74,9 +73,9 @@ class RalphClient:
 
     def get_ralph_projects(self):
         ralph_projects = {}
-        projects = CloudProject.objects.filter(
-            cloudprovider=self.cloud_provider
-        ).prefetch_related("tags")
+        projects = CloudProject.objects.filter(cloudprovider=self.cloud_provider).prefetch_related(
+            "tags"
+        )
 
         for project in projects:
             project_id = project.project_id
@@ -160,9 +159,7 @@ class RalphClient:
 
             try:
                 host = CloudHost.objects.get(host_id=node.instance_uuid)
-                asset = DataCenterAsset.objects.get(
-                    **{self.ralph_serial_number_param: node_sn}
-                )
+                asset = DataCenterAsset.objects.get(**{self.ralph_serial_number_param: node_sn})
             except DataCenterAsset.DoesNotExist:
                 logger.warning(not_found_message_tpl, "DC asset", node_sn)
             except CloudHost.DoesNotExist:
@@ -189,8 +186,8 @@ class RalphClient:
                     host.hypervisor = asset
                     host.save()
 
-    @lru_cache()
-    def _get_flavor_objects(self):
+    @staticmethod
+    def __get_flavor_objects():
         return {fl.flavor_id: fl for fl in CloudFlavor.objects.all()}
 
     def _add_server(self, openstack_server, server_id, project_id):
@@ -214,9 +211,7 @@ class RalphClient:
                 openstack_server,
             )
             return
-        logger.info(
-            "Creating new server %s (%s)", server_id, openstack_server["hostname"]
-        )
+        logger.info("Creating new server %s (%s)", server_id, openstack_server["hostname"])
         new_server = CloudHost(
             hostname=openstack_server["hostname"],
             cloudflavor=flavor,
@@ -229,9 +224,7 @@ class RalphClient:
 
         # workaround - created field has auto_now_add attribute
         new_server.save()
-        new_server.created = datetime.strptime(
-            openstack_server["created"], self.DATETIME_FORMAT
-        )
+        new_server.created = datetime.strptime(openstack_server["created"], self.DATETIME_FORMAT)
         self._save_object(new_server, "add server %s" % new_server.hostname)
 
         new_server.tags.add(openstack_server["tag"])
@@ -258,9 +251,7 @@ class RalphClient:
 
         if obj.hostname != openstack_server["hostname"]:
             logger.info(
-                "Updating hostname ({}) for {}".format(
-                    openstack_server["hostname"], server_id
-                )
+                "Updating hostname ({}) for {}".format(openstack_server["hostname"], server_id)
             )
             obj.hostname = openstack_server["hostname"]
             self._save_object(obj, "Modify hostname")
@@ -283,11 +274,7 @@ class RalphClient:
             modified = True
 
         if obj.image_name != openstack_server["image"]:
-            logger.info(
-                "Updating image ({}) for {}".format(
-                    openstack_server["image"], server_id
-                )
-            )
+            logger.info("Updating image ({}) for {}".format(openstack_server["image"], server_id))
             obj.image_name = openstack_server["image"]
             self._save_object(obj, "Updated image info")
             modified = True
@@ -370,9 +357,7 @@ class RalphClient:
                 modified = True
                 project.name = openstack_project_data["name"]
                 self._save_object(project, "Modify name")
-            if not all(
-                [tag in ralph_project["tags"] for tag in openstack_project_data["tags"]]
-            ):
+            if not all([tag in ralph_project["tags"] for tag in openstack_project_data["tags"]]):
                 modified = True
                 for tag in openstack_project_data["tags"]:
                     project.tags.add(tag)
@@ -435,15 +420,11 @@ class RalphClient:
                 self.summary["mod_flavors"] += 1
         self.summary["total_flavors"] += 1
 
-    def perform_update(
-        self, openstack_projects, openstack_flavors, ralph_projects, ralph_flavors
-    ):
+    def perform_update(self, openstack_projects, openstack_flavors, ralph_projects, ralph_flavors):
         """Update existing and add new ralph data"""
         logger.info("Updating Ralph entries")
         for flavor_id in openstack_flavors:
-            self._add_or_modify_flavours(
-                openstack_flavors[flavor_id], flavor_id, ralph_flavors
-            )
+            self._add_or_modify_flavours(openstack_flavors[flavor_id], flavor_id, ralph_flavors)
 
         for project_id in openstack_projects:
             self._add_or_update_projects(
@@ -453,9 +434,7 @@ class RalphClient:
                 openstack_projects[project_id]["servers"], project_id, ralph_projects
             )
 
-    def calculate_servers_to_delete(
-        self, openstack_projects, ralph_projects, incremental=False
-    ):
+    def calculate_servers_to_delete(self, openstack_projects, ralph_projects, incremental=False):
         servers_to_delete = []
         for project_id in openstack_projects:
             if incremental:
@@ -512,8 +491,7 @@ class RalphClient:
                 self.summary["del_projects"] += 1
             else:
                 logger.error(
-                    "Cloud project name: %s id: %s cant't be deleted "
-                    "because it has %s children",
+                    "Cloud project name: %s id: %s cant't be deleted because it has %s children",
                     cloud_project.name,
                     cloud_project.id,
                     children_count,
@@ -642,10 +620,8 @@ class Command(BaseCommand):
             openstack = RalphOpenStackInfrastructureClient(openstack_provider_name)
             openstack_flavors = openstack.get_openstack_flavors()
             openstack_projects = openstack.get_openstack_projects()
-            openstack_projects, openstack_flavors = (
-                openstack.get_openstack_instances_data(
-                    openstack_projects, openstack_flavors, openstack_search_options
-                )
+            openstack_projects, openstack_flavors = openstack.get_openstack_instances_data(
+                openstack_projects, openstack_flavors, openstack_search_options
             )
 
             # Fetch data from Ralph

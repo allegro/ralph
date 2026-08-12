@@ -61,9 +61,7 @@ class CustomFieldValueSerializerMixin(object):
         }
 
 
-class CustomFieldValueSaveSerializer(
-    CustomFieldValueSerializerMixin, RalphAPISaveSerializer
-):
+class CustomFieldValueSaveSerializer(CustomFieldValueSerializerMixin, RalphAPISaveSerializer):
     custom_field = AdditionalLookupRelatedField(
         queryset=CustomField.objects.all(),
         lookup_fields=["attribute_name"],
@@ -96,7 +94,7 @@ class CustomFieldValueSaveSerializer(
         try:
             instance.validate_unique()
         except DjangoValidationError as e:
-            raise self._django_validation_error_to_drf_validation_error(e)
+            raise self._django_validation_error_to_drf_validation_error(e) from e
 
 
 class CustomFieldValueSerializer(CustomFieldValueSerializerMixin, RalphAPISerializer):
@@ -121,10 +119,7 @@ class WithCustomFieldsSerializerMixin(serializers.Serializer):
     def get_custom_fields(self, obj):
         # use base manager to not execute separated query when
         # custom fields are included in prefetch_related
-        return {
-            cfv.custom_field.attribute_name: cfv.value
-            for cfv in obj.custom_fields.all()
-        }
+        return {cfv.custom_field.attribute_name: cfv.value for cfv in obj.custom_fields.all()}
 
     def get_configuration_variables(self, obj):
         # use base manager to not execute separated query when

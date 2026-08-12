@@ -13,15 +13,9 @@ from ralph.lib.transitions.models import TransitionsHistory
 register = Library()
 
 
-@register.inclusion_tag(
-    "admin/templatetags/download_attachment.html", takes_context=True
-)
+@register.inclusion_tag("admin/templatetags/download_attachment.html", takes_context=True)
 def download_attachments(context):
-    return {
-        "attachments_to_download": context.request.session.pop(
-            "attachments_to_download", []
-        )
-    }
+    return {"attachments_to_download": context.request.session.pop("attachments_to_download", [])}
 
 
 @register.inclusion_tag("admin/templatetags/tabs.html", takes_context=True)

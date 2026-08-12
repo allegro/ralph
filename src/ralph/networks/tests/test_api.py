@@ -31,9 +31,7 @@ class IPAddressAPITests(RalphAPITestCase):
         self.assertEqual(response.data["count"], 1)
 
     def test_get_ip_list_filter_by_mac(self):
-        url = "{}?ethernet__mac={}".format(
-            reverse("ipaddress-list"), self.ip1.ethernet.mac
-        )
+        url = "{}?ethernet__mac={}".format(reverse("ipaddress-list"), self.ip1.ethernet.mac)
         response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 1)
@@ -48,9 +46,7 @@ class IPAddressAPITests(RalphAPITestCase):
         response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["ethernet"]["mac"], self.ip1.ethernet.mac)
-        self.assertEqual(
-            response.data["ethernet"]["ipaddress"]["address"], self.ip1.address
-        )
+        self.assertEqual(response.data["ethernet"]["ipaddress"]["address"], self.ip1.address)
         self.assertEqual(
             response.data["ethernet"]["base_object"]["id"],
             self.ip1.ethernet.base_object.id,
@@ -90,36 +86,28 @@ class IPAddressAPITests(RalphAPITestCase):
         url = reverse("ipaddress-detail", args=(self.ip1.id,))
         response = self.client.patch(url, format="json", data=data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn(
-            "IP address with this IP address already exists.", response.data["address"]
-        )
+        self.assertIn("IP address with this IP address already exists.", response.data["address"])
 
     def test_change_ip_address_with_dhcp_exposition_should_not_pass(self):
         data = {"address": "127.0.0.3"}
         url = reverse("ipaddress-detail", args=(self.ip_with_dhcp.id,))
         response = self.client.patch(url, format="json", data=data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn(
-            "Cannot change address when exposing in DHCP", response.data["__all__"]
-        )
+        self.assertIn("Cannot change address when exposing in DHCP", response.data["__all__"])
 
     def test_change_ip_hostname_with_dhcp_exposition_should_not_pass(self):
         data = {"hostname": "some-hostname"}
         url = reverse("ipaddress-detail", args=(self.ip_with_dhcp.id,))
         response = self.client.patch(url, format="json", data=data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn(
-            "Cannot change hostname when exposing in DHCP", response.data["__all__"]
-        )
+        self.assertIn("Cannot change hostname when exposing in DHCP", response.data["__all__"])
 
     def test_change_ip_ethernet_with_dhcp_exposition_should_not_pass(self):
         data = {"ethernet": self.eth.id}
         url = reverse("ipaddress-detail", args=(self.ip_with_dhcp.id,))
         response = self.client.patch(url, format="json", data=data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn(
-            "Cannot change ethernet when exposing in DHCP", response.data["__all__"]
-        )
+        self.assertIn("Cannot change ethernet when exposing in DHCP", response.data["__all__"])
 
     def test_change_ip_dhcp_expose_with_dhcp_exposition_should_not_pass(self):
         data = {"dhcp_expose": False}
@@ -135,9 +123,7 @@ class IPAddressAPITests(RalphAPITestCase):
         url = reverse("ipaddress-detail", args=(self.ip_with_dhcp.id,))
         response = self.client.delete(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn(
-            "Could not delete IPAddress when it is exposed in DHCP", response.data
-        )
+        self.assertIn("Could not delete IPAddress when it is exposed in DHCP", response.data)
 
 
 class NetworkAPITests(RalphAPITestCase):

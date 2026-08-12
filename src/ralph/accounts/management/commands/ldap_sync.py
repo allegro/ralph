@@ -47,9 +47,7 @@ def _truncate(field_key, field_name, ldap_dict):
     """
     if field_key in ldap_dict:
         max_length = get_user_model()._meta.get_field(field_name).max_length
-        ldap_dict[field_key] = [
-            surname[:max_length] for surname in ldap_dict[field_key]
-        ]
+        ldap_dict[field_key] = [surname[:max_length] for surname in ldap_dict[field_key]]
 
 
 class LDAPConnectionManager(object):
@@ -102,9 +100,7 @@ def get_nested_groups() -> tuple[dict[str, set[str]], defaultdict[str, set[str]]
             logger.info("{} fetched".format(ralph_group_name))
             group_name_to_usernames[ralph_group_name] = set(
                 [
-                    u[1][settings.AUTH_LDAP_USER_USERNAME_ATTR][0]
-                    .decode("utf-8")
-                    .lower()  # noqa
+                    u[1][settings.AUTH_LDAP_USER_USERNAME_ATTR][0].decode("utf-8").lower()  # noqa
                     for u in users
                 ]
             )
@@ -189,8 +185,9 @@ class NestedGroups:
     def __init__(self):
         self.group_users, self.users_groups = get_nested_groups()
 
+    @staticmethod
     @lru_cache()
-    def get_group_from_db(self, name):
+    def get_group_from_db(name):
         return Group.objects.get_or_create(name=name)[0]
 
     def handle(self, user: RalphUser):
@@ -255,9 +252,7 @@ class Command(BaseCommand):
                     else:
                         break
                 else:
-                    logger.error(
-                        "LDAP::_run_ldap_query\tQuery: Server ignores RFC 2696 control"
-                    )
+                    logger.error("LDAP::_run_ldap_query\tQuery: Server ignores RFC 2696 control")
                     sys.exit(1)
 
     def _get_users(self):

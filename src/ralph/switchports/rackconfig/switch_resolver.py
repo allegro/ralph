@@ -16,9 +16,7 @@ def rack_data_center(rack) -> DataCenter | None:
     return getattr(server_room, "data_center", None)
 
 
-def resolve_switch(
-    identifier: str, dc: DataCenter | None = None
-) -> DataCenterAsset | None:
+def resolve_switch(identifier: str, dc: DataCenter | None = None) -> DataCenterAsset | None:
     """Resolve a switch from a barcode, hostname or ``rackNuM`` position.
 
     Resolution order (first match wins):
@@ -43,9 +41,7 @@ def resolve_switch(
     return None
 
 
-def resolve_switch_by_position(
-    position_str: str, dc: DataCenter
-) -> DataCenterAsset | None:
+def resolve_switch_by_position(position_str: str, dc: DataCenter) -> DataCenterAsset | None:
     """Resolve ``rack{n}u{pos}`` to the asset at that rack position in ``dc``.
 
     ``rack12u42`` is the asset at position 42 of the rack whose name ends with

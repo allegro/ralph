@@ -32,9 +32,7 @@ date_now = datetime.now().date()
 
 
 class LicenceTypeFactory(DjangoModelFactory):
-    name = factory.Iterator(
-        ["per user", "per install", "msdn", "disk drive", "vl (per core)"]
-    )
+    name = factory.Iterator(["per user", "per install", "msdn", "disk drive", "vl (per core)"])
 
     class Meta:
         model = LicenceType

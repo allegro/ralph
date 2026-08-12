@@ -270,9 +270,7 @@ class Choices(six.with_metaclass(_ChoicesMeta, list)):
             for group in self.__groups__:
                 group_choices = []
                 for choice in group.choices:
-                    if choice.name in filter or (
-                        unset in filter and isinstance(choice, Choice)
-                    ):
+                    if choice.name in filter or (unset in filter and isinstance(choice, Choice)):
                         group_choices.append(item(choice))
                 if group_choices:
                     self.append((group.desc, tuple(group_choices)))
@@ -281,12 +279,10 @@ class Choices(six.with_metaclass(_ChoicesMeta, list)):
                 import warnings
 
                 warnings.warn(
-                    "Choices class called with grouped=True and no actual groups."
+                    "Choices class called with grouped=True and no actual groups.", stacklevel=2
                 )
             for choice in self.__choices__:
-                if choice.name in filter or (
-                    unset in filter and isinstance(choice, Choice)
-                ):
+                if choice.name in filter or (unset in filter and isinstance(choice, Choice)):
                     self.append(item(choice))
 
     from_name = _getter(
@@ -884,9 +880,7 @@ class Language(Choices):
     zh_tw = _("Traditional Chinese")
     zu = _("Zulu")
 
-    from_name = _language_lookup_getter(
-        overrides=Choices.from_name, getter=lambda choice: choice
-    )
+    from_name = _language_lookup_getter(overrides=Choices.from_name, getter=lambda choice: choice)
 
     id_from_name = _language_lookup_getter(
         overrides=Choices.id_from_name, getter=lambda choice: choice.id

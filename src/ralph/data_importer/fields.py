@@ -67,9 +67,7 @@ class ThroughField(fields.Field):
 
             to_add_list = []
             for i in to_add:
-                logger.info(
-                    "Adding %s to %s/%s assignments", i.pk, self.through_model, obj.pk
-                )
+                logger.info("Adding %s to %s/%s assignments", i.pk, self.through_model, obj.pk)
                 to_add_list.append(
                     self.through_model(
                         **{
@@ -99,4 +97,4 @@ class ThroughField(fields.Field):
 class PriceField(fields.Field):
     def save(self, obj, data, is_m2m=False, **kwargs):
         price = Money(data["price"], data.get("price_currency", DEFAULT_CURRENCY_CODE))
-        setattr(obj, "price", price)
+        obj.price = price

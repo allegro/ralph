@@ -49,9 +49,7 @@ def preboot_file_name(instance, filename):
     return os.sep.join(("pxe", instance.get_type_display(), slugify(instance.name)))
 
 
-class PrebootItem(
-    AdminAbsoluteUrlMixin, NamedMixin, Polymorphic, metaclass=PolymorphicBase
-):
+class PrebootItem(AdminAbsoluteUrlMixin, NamedMixin, Polymorphic, metaclass=PolymorphicBase):
     description = models.TextField(
         verbose_name=_("description"),
         blank=True,
@@ -98,9 +96,7 @@ class PrebootConfiguration(PrebootItem):
         default=PrebootItemType.ipxe.id,
     )
     configuration = NUMP(
-        models.TextField(
-            _("configuration"), blank=True, help_text=_(CONFIGURATION_HELP_TEXT)
-        )
+        models.TextField(_("configuration"), blank=True, help_text=_(CONFIGURATION_HELP_TEXT))
     )
 
     class Meta:
@@ -135,10 +131,7 @@ class ActiveObjectsManager(Manager):
         return (
             super()
             .get_queryset()
-            .filter(
-                Q(disappears_after__isnull=True)
-                | Q(disappears_after__gte=timezone.now())
-            )
+            .filter(Q(disappears_after__isnull=True) | Q(disappears_after__gte=timezone.now()))
         )
 
 
@@ -188,9 +181,7 @@ class Preboot(AdminAbsoluteUrlMixin, NamedMixin):
             return item.file.url
 
     def get_configuration(self, configuration_type):
-        item = self._get_item(
-            model_name="prebootconfiguration", item_type=configuration_type
-        )
+        item = self._get_item(model_name="prebootconfiguration", item_type=configuration_type)
         if item is not None:
             return item.configuration
 

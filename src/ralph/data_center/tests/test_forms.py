@@ -100,9 +100,7 @@ class TestDataCenterAssetForm(RalphTestCase):
         response = self.client.post(self.dca.get_absolute_url(), data)
         self.assertEqual(response.status_code, 200)
         self.dca.refresh_from_db()
-        self.assertIn(
-            "Management IP is already assigned to", response.context["errors"][0][0]
-        )
+        self.assertIn("Management IP is already assigned to", response.context["errors"][0][0])
 
     def test_enter_duplicated_mgmt_hostname_should_not_pass(self):
         IPAddressFactory(
@@ -239,9 +237,7 @@ class TestDataCenterAssetForm(RalphTestCase):
                 "management_hostname": "qwerty.mydc.net",
             }
         )
-        response = self.client.post(
-            reverse("admin:data_center_datacenterasset_add"), data
-        )
+        response = self.client.post(reverse("admin:data_center_datacenterasset_add"), data)
         self.assertEqual(response.status_code, 302)
         dca = DataCenterAsset.objects.get(barcode="1234")
         self.assertEqual(dca.management_ip, "10.20.30.44")
@@ -258,9 +254,7 @@ class TestDataCenterAssetForm(RalphTestCase):
             }
         )
         ip_count = IPAddress.objects.count()
-        response = self.client.post(
-            reverse("admin:data_center_datacenterasset_add"), data
-        )
+        response = self.client.post(reverse("admin:data_center_datacenterasset_add"), data)
         self.assertEqual(response.status_code, 302)
         dca = DataCenterAsset.objects.get(barcode="1234")
         self.assertEqual(dca.management_ip, "")

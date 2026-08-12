@@ -32,9 +32,7 @@ class ReportTemplate(TimeStampMixin, models.Model):
     )
     language = models.ForeignKey(ReportLanguage, on_delete=models.CASCADE)
     default = models.BooleanField()
-    report = models.ForeignKey(
-        Report, related_name="templates", on_delete=models.CASCADE
-    )
+    report = models.ForeignKey(Report, related_name="templates", on_delete=models.CASCADE)
 
     class Meta:
         unique_together = ("language", "report")

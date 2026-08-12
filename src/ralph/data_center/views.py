@@ -55,9 +55,7 @@ class RelationsView(RalphDetailView):
             related_objects["physical_hosts"] = physical_hosts
 
     def _add_clusters(self, related_objects):
-        clusters = [
-            base_object.cluster for base_object in list(self.object.clusters.all())
-        ]
+        clusters = [base_object.cluster for base_object in list(self.object.clusters.all())]
 
         if clusters:
             related_objects["clusters"] = clusters
@@ -84,14 +82,10 @@ class PortsView(RalphDetailView):
 
     def _self_switch_validation_map(self):
         """netmaker results where THIS asset is the switch, keyed by port label."""
-        results = BackendValidationResult.objects.filter(
-            switch=self.object
-        ).select_related("remote_asset")
-        return {
-            vr.port_label: vr
-            for vr in results
-            if vr.port_label != SWITCH_SENTINEL_LABEL
-        }
+        results = BackendValidationResult.objects.filter(switch=self.object).select_related(
+            "remote_asset"
+        )
+        return {vr.port_label: vr for vr in results if vr.port_label != SWITCH_SENTINEL_LABEL}
 
     def _remote_switch_validation_map(self, remote_asset_ids):
         """netmaker results where the REMOTE asset is the switch.
@@ -119,9 +113,7 @@ class PortsView(RalphDetailView):
             .prefetch_related(
                 Prefetch(
                     "connectionmember__connection__members",
-                    queryset=ConnectionMember.objects.select_related(
-                        "port__data_center_asset"
-                    ),
+                    queryset=ConnectionMember.objects.select_related("port__data_center_asset"),
                 )
             )
         )
@@ -158,14 +150,10 @@ class PortsView(RalphDetailView):
             vr_self = self_switch_map.get(port.label)
             if vr_self is not None:
                 expected_id = remote_asset.id if remote_asset else None
-                validation = build_validation_context(
-                    vr_self, expected_asset_id=expected_id
-                )
+                validation = build_validation_context(vr_self, expected_asset_id=expected_id)
             elif remote_asset is not None and remote_port is not None:
                 vr_remote = remote_switch_map.get((remote_asset.id, remote_port.label))
-                validation = build_validation_context(
-                    vr_remote, expected_asset_id=self.object.id
-                )
+                validation = build_validation_context(vr_remote, expected_asset_id=self.object.id)
 
             ports_data.append(
                 {

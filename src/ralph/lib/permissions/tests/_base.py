@@ -11,9 +11,7 @@ class PermissionsTestMixin(object):
         self.user1 = get_user_model().objects.create(username="user1")
         self.user2 = get_user_model().objects.create(username="user2")
         self.user3 = get_user_model().objects.create(username="user3")
-        self.superuser = get_user_model().objects.create(
-            username="superuser", is_superuser=True
-        )
+        self.superuser = get_user_model().objects.create(username="superuser", is_superuser=True)
 
         content_types = [
             ContentType.objects.get_for_model(m)

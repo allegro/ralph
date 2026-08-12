@@ -114,7 +114,7 @@ class CustomField(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
             choices = self._get_choices()
             params.update(
                 {
-                    "choices": zip(choices, choices),
+                    "choices": zip(choices, choices, strict=True),
                 }
             )
         else:
@@ -123,9 +123,7 @@ class CustomField(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
 
 
 class CustomFieldValue(TimeStampMixin, models.Model):
-    custom_field = models.ForeignKey(
-        CustomField, verbose_name=_("key"), on_delete=models.PROTECT
-    )
+    custom_field = models.ForeignKey(CustomField, verbose_name=_("key"), on_delete=models.PROTECT)
     # value is stored in charfield on purpose - ralph's custom field mechanism
     # is by-design simple, so it, for example, doesn't allow to filter by range
     # of integers or other Django filters like gte, lte.
@@ -251,9 +249,9 @@ class WithCustomFieldsMixin(models.Model, metaclass=CustomFieldMeta):
             custom_fields_values_to_delete = CustomFieldValue.objects.filter(
                 custom_field=custom_field,
                 content_type=ContentType.objects.get_for_model(model),
-                object_id__in=model._default_manager.filter(
-                    **{field_path: self}
-                ).values_list("pk", flat=True),
+                object_id__in=model._default_manager.filter(**{field_path: self}).values_list(
+                    "pk", flat=True
+                ),
             )
             logger.warning(
                 "Deleting %s CFVs for descendants of %s (%s by %s)",

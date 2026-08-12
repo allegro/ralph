@@ -50,9 +50,7 @@ class DiskShare(Component):
 
 
 class DiskShareMount(AdminAbsoluteUrlMixin, models.Model):
-    share = models.ForeignKey(
-        DiskShare, verbose_name=_("share"), on_delete=models.CASCADE
-    )
+    share = models.ForeignKey(DiskShare, verbose_name=_("share"), on_delete=models.CASCADE)
     asset = models.ForeignKey(
         Asset,
         verbose_name=_("asset"),
@@ -71,11 +69,7 @@ class DiskShareMount(AdminAbsoluteUrlMixin, models.Model):
     )
 
     def get_total_mounts(self):
-        return (
-            self.share.disksharemount_set.exclude(device=None)
-            .filter(is_virtual=False)
-            .count()
-        )
+        return self.share.disksharemount_set.exclude(device=None).filter(is_virtual=False).count()
 
     def get_size(self):
         return self.size or self.share.get_total_size()

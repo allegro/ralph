@@ -52,9 +52,7 @@ class SupportSimpleSerializer(RalphAPISerializer):
 class BackOfficeAssetForSupportSerializer(RalphAPISerializer):
     id = serializers.IntegerField(source="pk")
     model = serializers.CharField(source="model.name", read_only=True)
-    manufacturer = serializers.CharField(
-        source="model.manufacturer.name", read_only=True
-    )
+    manufacturer = serializers.CharField(source="model.manufacturer.name", read_only=True)
     category = serializers.CharField(source="model.category.name", read_only=True)
     service_env = ServiceEnvironmentSimpleSerializer(read_only=True)
     property_of = serializers.CharField(source="property_of.name", read_only=True)
@@ -82,9 +80,7 @@ class BackOfficeAssetForSupportSerializer(RalphAPISerializer):
 class DataCenterAssetForSupportSerializer(RalphAPISerializer):
     id = serializers.IntegerField(source="pk")
     model = serializers.CharField(source="model.name", read_only=True)
-    manufacturer = serializers.CharField(
-        source="model.manufacturer.name", read_only=True
-    )
+    manufacturer = serializers.CharField(source="model.manufacturer.name", read_only=True)
     category = serializers.CharField(source="model.category.name", read_only=True)
     service_env = ServiceEnvironmentSimpleSerializer(read_only=True)
     property_of = serializers.CharField(source="property_of.name", read_only=True)
@@ -120,9 +116,7 @@ class SupportSerializer(TypeFromContentTypeSerializerMixin, RalphAPISerializer):
         request = self.context.get("request")
         base_objects = [bos.baseobject for bos in obj.baseobjectssupport_set.all()]
         return [
-            request.build_absolute_uri(
-                reverse("baseobject-detail", kwargs={"pk": bo.pk})
-            )
+            request.build_absolute_uri(reverse("baseobject-detail", kwargs={"pk": bo.pk}))
             for bo in base_objects
         ]
 
@@ -258,9 +252,7 @@ class SupportViewSet(RalphAPIViewSet):
 
 class BaseObjectsSupportSerializer(RalphAPISerializer):
     support = SupportSimpleSerializer()
-    baseobject = serializers.HyperlinkedRelatedField(
-        view_name="baseobject-detail", read_only=True
-    )
+    baseobject = serializers.HyperlinkedRelatedField(view_name="baseobject-detail", read_only=True)
 
     class Meta:
         model = BaseObjectsSupport
@@ -277,9 +269,7 @@ class BaseObjectSupportViewSet(RalphAPIViewSet):
 
     def get_queryset(self):
         return (
-            super()
-            .get_queryset()
-            .filter(visibility_scope_asset_support_filter(self.request.user))
+            super().get_queryset().filter(visibility_scope_asset_support_filter(self.request.user))
         )
 
 

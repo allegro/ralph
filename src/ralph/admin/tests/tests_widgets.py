@@ -18,7 +18,7 @@ class PerimissionsSelectWidgetTest(SimpleTestCase):
     def test_render(self):
         """Test render items."""
         rendered_widget = self.widget.render(name="test_perms", value="")
-        for value, label in self.choices:
+        for _, label in self.choices:
             self.assertTrue(label.split(self.separator)[-1] in rendered_widget)
 
     def test_render_selected_option(self):
@@ -29,7 +29,5 @@ class PerimissionsSelectWidgetTest(SimpleTestCase):
     def test_get_value_from_dict(self):
         """Test get value from dictionary."""
         name = "test_perms"
-        value = self.widget.value_from_datadict(
-            data={name: "1,2,3"}, files=None, name=name
-        )
+        value = self.widget.value_from_datadict(data={name: "1,2,3"}, files=None, name=name)
         self.assertEqual(value, [1, 2, 3])

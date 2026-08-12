@@ -16,7 +16,8 @@ class PermissionsByFieldTestCase(TestCase):
 
         TODO:
             Dont use ralph models here - it should be "abstract"
-            http://stackoverflow.com/questions/502916/django-how-to-create-a-model-dynamically-just-for-testing  # noqa
+            http://stackoverflow.com/questions/502916/
+            django-how-to-create-a-model-dynamically-just-for-testing
         """
         super().setUpClass()
         cls.asset_model = AssetModel.objects.create(type=ObjectModelType.back_office)
@@ -32,9 +33,7 @@ class PermissionsByFieldTestCase(TestCase):
         )
 
         # TODO Change to UserFactory
-        cls.super_user = get_user_model().objects.create(
-            username="superuser", is_superuser=True
-        )
+        cls.super_user = get_user_model().objects.create(username="superuser", is_superuser=True)
 
         cls.user = get_user_model().objects.create(username="user")
         cls.user.user_permissions.add(permission)
@@ -51,17 +50,13 @@ class PermissionsByFieldTestCase(TestCase):
     def test_superuser_change_has_access_to_field(self):
         """Test has access to field."""
         self.assertTrue(
-            self.asset_model.has_access_to_field(
-                "height_of_device", self.super_user, "change"
-            )
+            self.asset_model.has_access_to_field("height_of_device", self.super_user, "change")
         )
 
     def test_user_change_has_access_to_field(self):
         """Test has access to field."""
         self.assertTrue(
-            self.asset_model.has_access_to_field(
-                "height_of_device", self.user, "change"
-            )
+            self.asset_model.has_access_to_field("height_of_device", self.user, "change")
         )
 
     def test_view_has_access_to_field(self):

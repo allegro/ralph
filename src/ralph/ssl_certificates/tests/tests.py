@@ -28,9 +28,7 @@ class ImportSSLCertificatesTest(TestCase):
     def test_ssl_should_have_proper_type(self):
         out = StringIO()
         call_command("import_ssl_certificates", self.samples_dir, stderr=out)
-        self.assertTrue(
-            SSLCertificate.objects.get(certificate_type=CertificateType.wildcard.id)
-        )
+        self.assertTrue(SSLCertificate.objects.get(certificate_type=CertificateType.wildcard.id))
 
     def test_command_should_read_issuer(self):
         out = StringIO()
@@ -59,12 +57,8 @@ class ImportSSLCertificatesTest(TestCase):
 
 class UpdateServiceEnvTest(TestCase):
     @patch("ralph.dns.dnsaas.requests")
-    @patch(
-        "ralph.ssl_certificates.management.commands.update_dns_service_env_from_dnsaas.DNSaaS"
-    )
-    def test_command_should_informed_if_service_not_exist(
-        self, dnsaas_client_class, requests
-    ):
+    @patch("ralph.ssl_certificates.management.commands.update_dns_service_env_from_dnsaas.DNSaaS")
+    def test_command_should_informed_if_service_not_exist(self, dnsaas_client_class, requests):
         dnsaas_client = MagicMock()
         dnsaas_client_class.side_effect = lambda: dnsaas_client
         dnsaas_client.get_api_result.return_value = [

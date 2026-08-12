@@ -33,10 +33,7 @@ class NetworkableBaseObjectTestMixin(object):
     """Provides common code required for this test module."""
 
     def _generate_rack_with_networks(self, num_networks=5):
-        nets = [
-            NetworkFactory(address="10.0.{}.0/24".format(i))
-            for i in range(num_networks)
-        ]
+        nets = [NetworkFactory(address="10.0.{}.0/24".format(i)) for i in range(num_networks)]
 
         rack = RackFactory()
         for net in nets:
@@ -59,9 +56,7 @@ class OpenstackModelsTestCase(RalphTestCase):
         self.envs = EnvironmentFactory.create_batch(2)
         self.services = ServiceFactory.create_batch(2)
         self.service_env = [
-            ServiceEnvironmentFactory(
-                service=self.services[i], environment=self.envs[i]
-            )
+            ServiceEnvironmentFactory(service=self.services[i], environment=self.envs[i])
             for i in range(2)
         ]
 
@@ -142,19 +137,11 @@ class OpenstackModelsTestCase(RalphTestCase):
         }
         self.cloud_host.ip_addresses = ip_addresses
         self.assertEqual(set(self.cloud_host.ip_addresses), set(ip_addresses))
-        self.assertEqual(
-            IPAddress.objects.get(address="10.0.0.1").hostname, "hostname1.mydc.net"
-        )
-        self.assertEqual(
-            IPAddress.objects.get(address="10.0.0.2").hostname, "hostname2.mydc.net"
-        )
+        self.assertEqual(IPAddress.objects.get(address="10.0.0.1").hostname, "hostname1.mydc.net")
+        self.assertEqual(IPAddress.objects.get(address="10.0.0.2").hostname, "hostname2.mydc.net")
         self.cloud_host.ip_addresses = ip_addresses2
-        self.assertEqual(
-            IPAddress.objects.get(address="10.0.0.1").hostname, "hostname3.mydc.net"
-        )
-        self.assertEqual(
-            IPAddress.objects.get(address="10.0.0.3").hostname, "hostname4.mydc.net"
-        )
+        self.assertEqual(IPAddress.objects.get(address="10.0.0.1").hostname, "hostname3.mydc.net")
+        self.assertEqual(IPAddress.objects.get(address="10.0.0.3").hostname, "hostname4.mydc.net")
         self.assertEqual(set(self.cloud_host.ip_addresses), set(ip_addresses2))
 
     def test_service_env_inheritance_on_project_change(self):
@@ -188,9 +175,7 @@ class CloudHostTestCase(RalphTestCase, NetworkableBaseObjectTestMixin):
             custom_field=self.custom_field_str,
             value="sample_value",
         )
-        self.assertEqual(
-            self.cloud_host.custom_fields_as_dict, {"test str": "sample_value"}
-        )
+        self.assertEqual(self.cloud_host.custom_fields_as_dict, {"test str": "sample_value"})
 
     def test_if_custom_fields_are_inherited_and_overwrited_from_cloud_project(self):
         self.assertEqual(self.cloud_host.custom_fields_as_dict, {})
@@ -204,9 +189,7 @@ class CloudHostTestCase(RalphTestCase, NetworkableBaseObjectTestMixin):
             custom_field=self.custom_field_str,
             value="sample_value22",
         )
-        self.assertEqual(
-            self.cloud_host.custom_fields_as_dict, {"test str": "sample_value22"}
-        )
+        self.assertEqual(self.cloud_host.custom_fields_as_dict, {"test str": "sample_value22"})
 
     def test_get_available_networks(self):
         rack, nets = self._generate_rack_with_networks()

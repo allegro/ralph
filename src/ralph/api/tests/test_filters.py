@@ -63,12 +63,8 @@ class TestLookupFilterBackend(RalphAPITestCase):
             price=Decimal("21.4"),
             count=1,
         )
-        Bar.objects.create(
-            name="Bar22", date=date(2014, 4, 1), price=Decimal("11.4"), count=2
-        )
-        Bar.objects.create(
-            name="Bar33", date=date(2013, 5, 1), price=Decimal("31.4"), count=3
-        )
+        Bar.objects.create(name="Bar22", date=date(2014, 4, 1), price=Decimal("11.4"), count=2)
+        Bar.objects.create(name="Bar33", date=date(2013, 5, 1), price=Decimal("31.4"), count=3)
         Bar.objects.create(name="Bar44", date=None, price=Decimal("41.4"), count=4)
         self.lookup_filter = LookupFilterBackend()
 
@@ -135,9 +131,7 @@ class TestLookupFilterBackend(RalphAPITestCase):
     def test_query_filters_datetimefield(self):
         request = self.request_factory.get("/api/bar")
         bvs = BarViewSet()
-        request.query_params = QueryDict(
-            urlencode({"created__year": date.today().year})
-        )
+        request.query_params = QueryDict(urlencode({"created__year": date.today().year}))
         bvs.request = request
         self.assertEqual(
             len(self.lookup_filter.filter_queryset(request, Bar.objects.all(), bvs)), 4
@@ -174,9 +168,7 @@ class TestLookupFilterBackend(RalphAPITestCase):
             request.query_params = QueryDict(urlencode({"date__isnull": val}))
             bvs.request = request
             self.assertEqual(
-                len(
-                    self.lookup_filter.filter_queryset(request, Bar.objects.all(), bvs)
-                ),
+                len(self.lookup_filter.filter_queryset(request, Bar.objects.all(), bvs)),
                 1,
             )
 
@@ -184,8 +176,6 @@ class TestLookupFilterBackend(RalphAPITestCase):
             request.query_params = QueryDict(urlencode({"date__isnull": val}))
             bvs.request = request
             self.assertEqual(
-                len(
-                    self.lookup_filter.filter_queryset(request, Bar.objects.all(), bvs)
-                ),
+                len(self.lookup_filter.filter_queryset(request, Bar.objects.all(), bvs)),
                 3,
             )

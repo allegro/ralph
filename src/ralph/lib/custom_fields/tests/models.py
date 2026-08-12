@@ -16,9 +16,7 @@ class CustomFieldAdminAbsoluteUrlMixin(object):
 
     @classmethod
     def get_add_url(self):
-        return reverse(
-            "cf_admin:{}_{}_add".format(self._meta.app_label, self._meta.model_name)
-        )
+        return reverse("cf_admin:{}_{}_add".format(self._meta.app_label, self._meta.model_name))
 
 
 class ModelA(CustomFieldAdminAbsoluteUrlMixin, WithCustomFieldsMixin, models.Model):

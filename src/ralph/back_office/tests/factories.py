@@ -32,9 +32,7 @@ class OfficeInfrastructureFactory(DjangoModelFactory):
 
 
 class WarehouseFactory(DjangoModelFactory):
-    name = factory.Iterator(
-        ["Warehouse 1", "Warehouse 2", "Warehouse 3", "Warehouse 4"]
-    )
+    name = factory.Iterator(["Warehouse 1", "Warehouse 2", "Warehouse 3", "Warehouse 4"])
 
     class Meta:
         model = Warehouse

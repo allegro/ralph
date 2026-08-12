@@ -98,7 +98,7 @@ FACTORY_MAP = {
     "ralph.supports.models.Support": "ralph.supports.tests.factories.SupportFactory",  # noqa
     "ralph.supports.models.SupportType": "ralph.supports.tests.factories.SupportTypeFactory",  # noqa
     "ralph.switchports.models.connections.Port": "ralph.switchports.tests.factories.PortFactory",  # noqa
-    "ralph.switchports.models.rack_config.RackSwitchConfigurationOverride": "ralph.switchports.tests.factories.RackSwitchConfigurationOverrideFactory",
+    "ralph.switchports.models.rack_config.RackSwitchConfigurationOverride": "ralph.switchports.tests.factories.RackSwitchConfigurationOverrideFactory",  # noqa
     "ralph.trade_marks.models.TradeMark": "ralph.trade_marks.tests.factories.TradeMarkFactory",  # noqa
     "ralph.trade_marks.models.TradeMarksLinkedDomains": "ralph.trade_marks.tests.factories.TradeMarksLinkedDomainsFactory",  # noqa
     "ralph.trade_marks.models.UtilityModel": "ralph.trade_marks.tests.factories.UtilityModelFactory",  # noqa
@@ -212,9 +212,7 @@ class ViewsTest(TestCase):
 class ViewMixinTest(TestCase):
     def setUp(self):
         password = "secret"
-        self.user = get_user_model().objects.create_superuser(
-            "test", "test@test.test", password
-        )
+        self.user = get_user_model().objects.create_superuser("test", "test@test.test", password)
         self.client.login(username=self.user.username, password=password)
 
     def test_redirect_when_one_result_after_searching(self):

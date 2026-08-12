@@ -15,9 +15,7 @@ class RequestFormMixin(object):
         if not hasattr(self, "_request") or not self._request:
             self._request = kwargs.pop("_request", None)
         if not hasattr(self, "_user"):
-            self._user = kwargs.pop(
-                "_user", self._request.user if self._request else None
-            )
+            self._user = kwargs.pop("_user", self._request.user if self._request else None)
         super().__init__(*args, **kwargs)
 
 
@@ -36,9 +34,7 @@ class SelectWithOtherOpitonWidget(forms.Select):
         js = ("src/js/widgets.js",)
 
     def _get_other_field(self, name, value):
-        return forms.TextInput().render(
-            name=OTHER_NAME.format(name), value=value.get(OTHER) or ""
-        )
+        return forms.TextInput().render(name=OTHER_NAME.format(name), value=value.get(OTHER) or "")
 
     def render(self, name, value, attrs=None, renderer=None):
         show_other = value and value.get("value") == OTHER

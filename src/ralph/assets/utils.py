@@ -26,9 +26,7 @@ class DNSaaSPublisherMixin:
             ("model", str(self.model) if self.model else ""),
             ("location", " / ".join(self.get_location() or [])),
         ):
-            purpose = settings.DNSAAS_AUTO_TXT_RECORD_PURPOSE_MAP.get(
-                purpose_name, None
-            )
+            purpose = settings.DNSAAS_AUTO_TXT_RECORD_PURPOSE_MAP.get(purpose_name, None)
             if not purpose or not content:
                 continue
             update_def = {

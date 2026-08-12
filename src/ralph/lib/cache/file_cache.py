@@ -49,9 +49,7 @@ def file_cache(subdir: str, key_arg: str | None = None):
         return_type = hints.get("return")
 
         is_pydantic = (
-            return_type
-            and isinstance(return_type, type)
-            and issubclass(return_type, BaseModel)
+            return_type and isinstance(return_type, type) and issubclass(return_type, BaseModel)
         )
 
         @functools.wraps(func)

@@ -162,9 +162,7 @@ class RelationsViewTest(TestCase):
 
     def test_should_add_clusters_to_dictionary(self):
         cluster = ContentType.objects.get_for_model(Cluster)
-        self.view.object.clusters.add(
-            BaseObjectCluster(cluster=ClusterFactory()), bulk=False
-        )
+        self.view.object.clusters.add(BaseObjectCluster(cluster=ClusterFactory()), bulk=False)
         related_objects = {}
         self.view._add_clusters(related_objects)
         content_type = related_objects["clusters"][0].content_type

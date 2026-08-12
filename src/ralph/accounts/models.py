@@ -52,9 +52,7 @@ def object_has_region(user):
 
 
 class Regionalizable(PermissionsForObjectMixin):
-    region = models.ForeignKey(
-        Region, blank=False, null=False, on_delete=models.CASCADE
-    )
+    region = models.ForeignKey(Region, blank=False, null=False, on_delete=models.CASCADE)
 
     class Meta:
         abstract = True
@@ -67,9 +65,7 @@ class Team(AdminAbsoluteUrlMixin, NamedMixin):
     pass
 
 
-class RalphUser(
-    PermByFieldMixin, AbstractUser, AdminAbsoluteUrlMixin, AutocompleteTooltipMixin
-):
+class RalphUser(PermByFieldMixin, AbstractUser, AdminAbsoluteUrlMixin, AutocompleteTooltipMixin):
     country = models.PositiveIntegerField(
         verbose_name=_("country"),
         choices=Country(),

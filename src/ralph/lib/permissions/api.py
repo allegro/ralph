@@ -83,7 +83,7 @@ class PermissionsPerFieldSerializerMixin(object):
         Return model read only fields for current user.
         """
         read_only_fields = set()
-        model = getattr(self.Meta, "model")
+        model = self.Meta.model
         if issubclass(model, PermByFieldMixin):
             user = self.context["request"].user
             change_fields = model.allowed_fields(user, action="change")
@@ -134,14 +134,10 @@ class RelatedObjectsPermissionsSerializerMixin(object):
         Overwrite related field queryset to objects for which current user has
         permissions.
         """
-        field_class, field_kwargs = super().build_relational_field(
-            field_name, relation_info
-        )
+        field_class, field_kwargs = super().build_relational_field(field_name, relation_info)
         queryset = field_kwargs.get("queryset")
         if queryset and issubclass(queryset.model, PermissionsForObjectMixin):
-            queryset = queryset.model._get_objects_for_user(
-                self.context["request"].user, queryset
-            )
+            queryset = queryset.model._get_objects_for_user(self.context["request"].user, queryset)
             field_kwargs["queryset"] = queryset
         return field_class, field_kwargs
 

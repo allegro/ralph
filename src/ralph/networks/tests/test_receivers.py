@@ -14,9 +14,7 @@ class IPAddressReceiversTestCase(RalphTestCase):
         # fetch "clean" ip from db to fet base object instead of final instance
         # (cloud host in this case)
         self.cloud_ip = IPAddress.objects.get(address=self.cloud_ip.address)
-        self.dc_asset_ip = IPAddressFactory(
-            ethernet__base_object=DataCenterAssetFactory()
-        )
+        self.dc_asset_ip = IPAddressFactory(ethernet__base_object=DataCenterAssetFactory())
         self.dc_asset_ip = IPAddress.objects.get(address=self.dc_asset_ip.address)
 
     @patch("ralph.networks.receivers.DNSaaS")

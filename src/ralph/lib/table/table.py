@@ -63,9 +63,7 @@ class Table(object):
         """
         self.queryset = queryset
         self.list_display_raw = list_display
-        self.list_display = [
-            (f[0] if isinstance(f, (tuple, list)) else f) for f in list_display
-        ]
+        self.list_display = [(f[0] if isinstance(f, (tuple, list)) else f) for f in list_display]
         self.additional_row_method = additional_row_method
         self.request = request
         self.transpose = transpose
@@ -114,9 +112,7 @@ class Table(object):
         else:
             value = getattr_dunder(item, field)
             try:
-                choice_class = get_field_by_relation_path(
-                    item._meta.model, field
-                ).choices
+                choice_class = get_field_by_relation_path(item._meta.model, field).choices
             except FieldDoesNotExist:
                 choice_class = None
             if use_choices and choice_class and isinstance(choice_class, Choices):
@@ -129,9 +125,7 @@ class Table(object):
         """
         result = [self.get_headers()]
         # Remove fields which are not in model
-        list_display = [
-            field for field in self.list_display if not hasattr(self, field)
-        ]
+        list_display = [field for field in self.list_display if not hasattr(self, field)]
         if "id" not in list_display:
             list_display.append("id")
         if self.additional_row_method:
@@ -153,7 +147,7 @@ class Table(object):
                     if additional_data:
                         result.append(additional_data)
         if self.transpose:
-            result = list(zip(*result))
+            result = list(zip(*result, strict=True))
         return result
 
     def render(self, request=None):
@@ -197,4 +191,4 @@ class TableWithUrl(Table):
 
     def __init__(self, queryset, list_display, *args, **kwargs):
         self.url_field = kwargs.pop("url_field", None)
-        super().__init__(queryset=queryset, list_display=list_display, *args, **kwargs)
+        super().__init__(*args, queryset=queryset, list_display=list_display, **kwargs)

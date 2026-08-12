@@ -55,12 +55,8 @@ class TestOAuthToken(TestCase):
 
         second_client = DNSaaS()
 
-        self.assertEqual(
-            first_client.session.headers["Authorization"], "Bearer old-token"
-        )
-        self.assertEqual(
-            second_client.session.headers["Authorization"], "Bearer new-token"
-        )
+        self.assertEqual(first_client.session.headers["Authorization"], "Bearer old-token")
+        self.assertEqual(second_client.session.headers["Authorization"], "Bearer new-token")
         self.assertEqual(oauth_session_mock.return_value.fetch_token.call_count, 2)
 
     @patch("ralph.dns.dnsaas.OAuth2Session")
@@ -102,15 +98,11 @@ class TestGetDnsRecords(TestCase):
 
     @override_settings(DNSAAS_URL="http://dnsaas.com/")
     def test_build_url(self):
-        self.assertEqual(
-            self.dnsaas.build_url("domains"), "http://dnsaas.com/api/domains/"
-        )
+        self.assertEqual(self.dnsaas.build_url("domains"), "http://dnsaas.com/api/domains/")
 
     @override_settings(DNSAAS_URL="http://dnsaas.com/")
     def test_build_url_with_version(self):
-        self.assertEqual(
-            self.dnsaas.build_url("domains"), "http://dnsaas.com/api/domains/"
-        )
+        self.assertEqual(self.dnsaas.build_url("domains"), "http://dnsaas.com/api/domains/")
 
     @override_settings(DNSAAS_URL="http://dnsaas.com/")
     def test_build_url_with_id(self):
@@ -185,9 +177,7 @@ class TestGetTXTDataToPublishToDNSaaS(TestCase):
         )
         cls.virtual_server = VirtualServerFactory(
             hostname="s000.local",
-            configuration_path=ConfigurationClassFactory(
-                class_name="worker", module__name="auth"
-            ),
+            configuration_path=ConfigurationClassFactory(class_name="worker", module__name="auth"),
             service_env__service__name="service",
             service_env__environment__name="prod",
             type__name="Xen",

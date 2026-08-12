@@ -141,9 +141,7 @@ class IntellectualPropertyAdminBase(AttachmentsMixin, RalphAdmin):
 
     def get_database_link(self, obj):
         if obj.database_link:
-            return mark_safe(
-                '<a target="_blank" href="{}">link</a>'.format(obj.database_link)
-            )
+            return mark_safe('<a target="_blank" href="{}">link</a>'.format(obj.database_link))
         else:
             return "-"
 
@@ -226,8 +224,7 @@ class TradeMarkAdmin(IntellectualPropertyAdminBase):
 
     def region(self, obj):
         return ", ".join(
-            tm_country.country.name
-            for tm_country in obj.trademarkadditionalcountry_set.all()
+            tm_country.country.name for tm_country in obj.trademarkadditionalcountry_set.all()
         )
 
     def get_queryset(self, request):
@@ -264,15 +261,12 @@ class DesignAdmin(IntellectualPropertyAdminBase):
 
     def region(self, obj):
         return ", ".join(
-            tm_country.country.name
-            for tm_country in obj.designadditionalcountry_set.all()
+            tm_country.country.name for tm_country in obj.designadditionalcountry_set.all()
         )
 
     def get_queryset(self, request):
         return (
-            super()
-            .get_queryset(request)
-            .prefetch_related("designadditionalcountry_set__country")
+            super().get_queryset(request).prefetch_related("designadditionalcountry_set__country")
         )
 
     class AdditionalCountryInline(RalphTabularInline):
@@ -302,15 +296,12 @@ class PatentAdmin(IntellectualPropertyAdminBase):
 
     def region(self, obj):
         return ", ".join(
-            tm_country.country.name
-            for tm_country in obj.patentadditionalcountry_set.all()
+            tm_country.country.name for tm_country in obj.patentadditionalcountry_set.all()
         )
 
     def get_queryset(self, request):
         return (
-            super()
-            .get_queryset(request)
-            .prefetch_related("patentadditionalcountry_set__country")
+            super().get_queryset(request).prefetch_related("patentadditionalcountry_set__country")
         )
 
     class AdditionalCountryInline(RalphTabularInline):
@@ -355,8 +346,7 @@ class UtilityModelAdmin(IntellectualPropertyAdminBase):
 
     def region(self, obj):
         return ", ".join(
-            tm_country.country.name
-            for tm_country in obj.utilitymodeladditionalcountry_set.all()
+            tm_country.country.name for tm_country in obj.utilitymodeladditionalcountry_set.all()
         )
 
     def get_queryset(self, request):

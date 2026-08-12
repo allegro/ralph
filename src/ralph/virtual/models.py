@@ -96,9 +96,7 @@ class VirtualComponentDescriptor(metaclass=abc.ABCMeta):
         try:
             VirtualComponent.objects.get(base_object=instance, model=model)
         except ObjectDoesNotExist:
-            for component in instance.virtualcomponent_set.filter(
-                model__type=model_args["type"]
-            ):
+            for component in instance.virtualcomponent_set.filter(model__type=model_args["type"]):
                 component.delete()
             VirtualComponent(base_object=instance, model=model).save()
 
@@ -196,9 +194,7 @@ class CloudProject(PreviousStateMixin, AdminAbsoluteUrlMixin, BaseObject):
         ]
     )
 
-    project_id = models.CharField(
-        verbose_name=_("project ID"), unique=True, max_length=100
-    )
+    project_id = models.CharField(verbose_name=_("project ID"), unique=True, max_length=100)
     name = models.CharField(max_length=100)
 
     def __str__(self):
@@ -220,9 +216,7 @@ def update_service_env_on_cloudproject_save(sender, instance, **kwargs):
         instance.children.all().update(service_env=instance.service_env)
 
 
-class CloudHost(
-    PreviousStateMixin, AdminAbsoluteUrlMixin, NetworkableBaseObject, BaseObject
-):
+class CloudHost(PreviousStateMixin, AdminAbsoluteUrlMixin, NetworkableBaseObject, BaseObject):
     _allow_in_dashboard = True
     previous_dc_host_update_fields = ["hostname"]
     custom_fields_inheritance = OrderedDict(
@@ -248,9 +242,7 @@ class CloudHost(
     cloudprovider._autocomplete = False
 
     host_id = models.CharField(verbose_name=_("host ID"), unique=True, max_length=100)
-    hostname = models.CharField(
-        verbose_name=_("hostname"), max_length=255, db_index=True
-    )
+    hostname = models.CharField(verbose_name=_("hostname"), max_length=255, db_index=True)
     hypervisor = models.ForeignKey(
         DataCenterAsset, blank=True, null=True, on_delete=models.CASCADE
     )
@@ -299,16 +291,13 @@ class CloudHost(
                     new_ip.save()
                 else:
                     logger.warning(
-                        "Cannot assign IP %s to %s - it is already in use by "
-                        "another asset",
+                        "Cannot assign IP %s to %s - it is already in use by another asset",
                         ip,
                         self.hostname,
                     )
             except ObjectDoesNotExist:
                 logger.info("Creating new IP {} for {}".format(ip, self))
-                new_ip = IPAddress(
-                    ethernet=Ethernet.objects.create(base_object=self), address=ip
-                )
+                new_ip = IPAddress(ethernet=Ethernet.objects.create(base_object=self), address=ip)
                 new_ip.save()
         # refresh hostnames
         if isinstance(value, dict):
@@ -330,9 +319,7 @@ class CloudHost(
         to_delete = set(self.ip_addresses) - set(value)
         for ip in to_delete:
             logger.warning("Deleting %s from %s", ip, self)
-        Ethernet.objects.filter(
-            base_object=self, ipaddress__address__in=to_delete
-        ).delete()
+        Ethernet.objects.filter(base_object=self, ipaddress__address__in=to_delete).delete()
 
     @property
     def cloudproject(self):
@@ -372,9 +359,7 @@ class VirtualComponent(Component):
     pass
 
 
-class VirtualServerType(
-    AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model
-):
+class VirtualServerType(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
     pass
 
 
@@ -423,9 +408,7 @@ class VirtualServer(
         db_index=True,
     )
     # TODO: remove this field
-    cluster = models.ForeignKey(
-        Cluster, blank=True, null=True, on_delete=models.CASCADE
-    )
+    cluster = models.ForeignKey(Cluster, blank=True, null=True, on_delete=models.CASCADE)
 
     previous_dc_host_update_fields = ["hostname"]
     _allow_in_dashboard = True
@@ -487,9 +470,7 @@ class VirtualServer(
     def _validate_hostname(self):
         if self.status == VirtualServerStatus.used.id:
             if not self.hostname:
-                raise ValidationError(
-                    {"hostname": _("Hostname is required for status 'in use'")}
-                )
+                raise ValidationError({"hostname": _("Hostname is required for status 'in use'")})
 
 
 post_commit(publish_host_update, VirtualServer)

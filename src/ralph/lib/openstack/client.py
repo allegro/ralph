@@ -79,6 +79,8 @@ class RalphOpenstackClient:
     """
 
     def __init__(self, site):
+        # per-instance caching, safe from memory leaks
+        self._get_images = lru_cache()(self.__get_images)
         if not nova_client_exists:
             logger.error("novaclient module is not installed")
             raise ImportError("No module named novaclient")
@@ -96,9 +98,7 @@ class RalphOpenstackClient:
         self.site = site
 
     def _get_nova_client_connection(self, site):
-        if site.get("keystone_auth_url") and site.get(
-            "keystone_version", ""
-        ).startswith("3"):
+        if site.get("keystone_auth_url") and site.get("keystone_version", "").startswith("3"):
             nt = novac.Client(site["version"], session=self.session)
         else:
             nt = novac.Client(
@@ -137,8 +137,7 @@ class RalphOpenstackClient:
         )
         return ks_session.Session(auth=auth)
 
-    @lru_cache()
-    def _get_images(self):
+    def __get_images(self):
         logger.info("Fetching images")
         return {img["id"]: img for img in self.glance_client.images.list()}
 
@@ -258,9 +257,7 @@ class RalphOpenStackInfrastructureClient:
     def get_openstack_flavors(self):
         openstack_flavors = {}
         for client in self.clients:
-            logger.info(
-                "Processing {} ({})".format(client.site["auth_url"], client.site["tag"])
-            )
+            logger.info("Processing {} ({})".format(client.site["auth_url"], client.site["tag"]))
             for flavor in client.get_flavors_list():
                 openstack_flavors[flavor["id"]] = self._get_flavor_data(client, flavor)
         return openstack_flavors
@@ -268,9 +265,7 @@ class RalphOpenStackInfrastructureClient:
     def get_openstack_projects(self):
         openstack_projects = {}
         for client in self.clients:
-            logger.info(
-                "Processing {} ({})".format(client.site["auth_url"], client.site["tag"])
-            )
+            logger.info("Processing {} ({})".format(client.site["auth_url"], client.site["tag"]))
             for project in client.get_keystone_projects():
                 if project.id not in openstack_projects:
                     openstack_projects[project.id] = {
@@ -300,16 +295,12 @@ class RalphOpenStackInfrastructureClient:
         search_opts.update(default_search_opts)
 
         for client in self.clients:
-            logger.info(
-                "Processing {} ({})".format(client.site["auth_url"], client.site["tag"])
-            )
+            logger.info("Processing {} ({})".format(client.site["auth_url"], client.site["tag"]))
             for server in client.get_servers_list(search_opts=search_opts):
                 project_id = server["tenant_id"]
                 host_id = server["id"]
                 image_name = (
-                    client.get_image_name(server["image"]["id"])
-                    if server["image"]
-                    else None
+                    client.get_image_name(server["image"]["id"]) if server["image"] else None
                 )
                 flavor_id = server["flavor"]["id"]
                 new_server = {
@@ -332,9 +323,7 @@ class RalphOpenStackInfrastructureClient:
                         addr = ip["addr"]
                         # fetch FQDN from DNS by IP address
                         hostname = network.hostname(addr)
-                        logger.debug(
-                            "Get IP {} ({}) for {}".format(addr, hostname, server["id"])
-                        )
+                        logger.debug("Get IP {} ({}) for {}".format(addr, hostname, server["id"]))
                         new_server["ips"][addr] = hostname
                         if not new_server["hostname"]:
                             new_server["hostname"] = hostname
@@ -344,9 +333,7 @@ class RalphOpenStackInfrastructureClient:
                 try:
                     openstack_projects[project_id]["servers"][host_id] = new_server
                 except KeyError:
-                    logger.warning(
-                        "Project %s not found for server %s", project_id, host_id
-                    )
+                    logger.warning("Project %s not found for server %s", project_id, host_id)
 
                 if flavor_id not in openstack_flavors:
                     logger.warning(

@@ -101,9 +101,7 @@ class AggregateType(Choices):
     )
     aggregate_max = _("Max").extra(aggregate_func=Max)
     aggregate_sum = _("Sum").extra(aggregate_func=Sum)
-    aggregate_sum_with_zeros = _("Sum with zeros").extra(
-        aggregate_func=Sum, handler=zero_handler
-    )
+    aggregate_sum_with_zeros = _("Sum with zeros").extra(aggregate_func=Sum, handler=zero_handler)
     aggregate_sum_bool_values = _("Sum boolean values").extra(
         aggregate_func=Sum, handler=sum_bool_value_handler
     )
@@ -176,9 +174,7 @@ class GroupingLabel:
             if self.label in self.date_fields:
                 return queryset.annotate(**{self.label: self._trunc_date_function()})
             else:
-                queryset = queryset.extra(
-                    {self.label: getattr(self, "group_" + self.label)()}
-                )
+                queryset = queryset.extra({self.label: getattr(self, "group_" + self.label)()})
         return queryset
 
     def _format_part_of_date(self, value):
@@ -199,9 +195,7 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
     chart_type = models.PositiveIntegerField(choices=ChartType())
     params = JSONField(blank=True)
     active = models.BooleanField(default=True)
-    push_to_statsd = models.BooleanField(
-        default=False, help_text="Push graph's data to statsd."
-    )
+    push_to_statsd = models.BooleanField(default=False, help_text="Push graph's data to statsd.")
 
     @property
     def changelist_model(self):
@@ -209,20 +203,17 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
 
     @property
     def custom_changelist_model(self):
-        model_name_from_params = self.params.get("target") and self.params[
-            "target"
-        ].get("model")
+        model_name_from_params = self.params.get("target") and self.params["target"].get("model")
         if not model_name_from_params:
             return None
         try:
             return ContentType.objects.get(model=model_name_from_params.lower())
-        except ContentType.DoesNotExist:
+        except ContentType.DoesNotExist as e:
             raise ValueError(
-                'Model "{}" does not exist.'
-                "Please provide correct model to target.model".format(
+                'Model "{}" does not exist.Please provide correct model to target.model'.format(
                     model_name_from_params
                 )
-            )
+            ) from e
 
     @property
     def custom_changelist_filter_key(self):
@@ -245,9 +236,7 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
         if filters:
             queryset = FilterParser(queryset, filters).get_queryset()
         if excludes:
-            queryset = FilterParser(
-                queryset, excludes, exclude_mode=True
-            ).get_queryset()
+            queryset = FilterParser(queryset, excludes, exclude_mode=True).get_queryset()
         return queryset
 
     @property
@@ -279,9 +268,7 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
             aggregate_expression=aggregate_expression,
         )
 
-    def _default_aggregation_handler(
-        self, aggregate_func, series, aggregate_expression
-    ):
+    def _default_aggregation_handler(self, aggregate_func, series, aggregate_expression):
         series_field, fn_name = _unpack_series(series)
         aggregate_fn_kwargs = {}
         if fn_name == "distinct":
@@ -294,9 +281,7 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
                 )
 
             aggregate_fn_kwargs["distinct"] = True
-        return aggregate_func(
-            aggregate_expression or series_field, **aggregate_fn_kwargs
-        )
+        return aggregate_func(aggregate_expression or series_field, **aggregate_fn_kwargs)
 
     def build_queryset(self, annotated=True, queryset=None):
         queryset = queryset or self.model.model_class().objects.all()
@@ -350,9 +335,7 @@ class Graph(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
             # and you need to inject it to filters (ex. to filter objects
             # having some field set to false) when switching model in
             # changelist
-            queryset = queryset.filter(
-                **self.params["target"].get("additional_filters", {})
-            )
+            queryset = queryset.filter(**self.params["target"].get("additional_filters", {}))
         else:
             queryset = self.build_queryset(annotated=False, queryset=queryset)
             if filters:

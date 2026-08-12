@@ -138,18 +138,12 @@ class DataCenter(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
 
     show_on_dashboard = models.BooleanField(default=True)
 
-    company = models.CharField(
-        verbose_name=_("company"), max_length=256, blank=True, null=True
-    )
+    company = models.CharField(verbose_name=_("company"), max_length=256, blank=True, null=True)
     country = models.PositiveIntegerField(
         verbose_name=_("country"), choices=Country(), blank=True, null=True
     )
-    city = models.CharField(
-        verbose_name=_("city"), max_length=256, blank=True, null=True
-    )
-    address = models.CharField(
-        verbose_name=_("address"), max_length=256, blank=True, null=True
-    )
+    city = models.CharField(verbose_name=_("city"), max_length=256, blank=True, null=True)
+    address = models.CharField(verbose_name=_("address"), max_length=256, blank=True, null=True)
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
     type = models.PositiveIntegerField(
@@ -158,9 +152,7 @@ class DataCenter(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
         blank=True,
         null=True,
     )
-    shortcut = models.CharField(
-        verbose_name=_("shortcut"), max_length=256, blank=True, null=True
-    )
+    shortcut = models.CharField(verbose_name=_("shortcut"), max_length=256, blank=True, null=True)
 
     management_hostname_suffix = models.CharField(
         verbose_name=_("management hostname suffix"),
@@ -179,9 +171,7 @@ class DataCenter(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
 
     @property
     def rack_set(self):
-        return Rack.objects.select_related("server_room").filter(
-            server_room__data_center=self
-        )
+        return Rack.objects.select_related("server_room").filter(server_room__data_center=self)
 
     @property
     def server_rooms(self):
@@ -193,12 +183,7 @@ class DataCenter(AdminAbsoluteUrlMixin, NamedMixin, models.Model):
 
 class ServerRoomManager(models.Manager):
     def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .select_related("data_center")
-            .prefetch_related("racks")
-        )
+        return super().get_queryset().select_related("data_center").prefetch_related("racks")
 
 
 class ServerRoom(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
@@ -330,8 +315,7 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
     require_position = models.BooleanField(
         default=True,
         help_text=_(
-            "Uncheck if position is optional for this rack (ex. when rack "
-            "has warehouse-kind role"
+            "Uncheck if position is optional for this rack (ex. when rack has warehouse-kind role"
         ),
     )
     reverse_ordering = models.BooleanField(
@@ -377,9 +361,7 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
     def get_free_u(self):
         u_list = [True] * self.max_u_height
         accessories = RackAccessory.objects.values_list("position").filter(rack=self)
-        dc_assets = self.get_root_assets().values_list(
-            "position", "model__height_of_device"
-        )
+        dc_assets = self.get_root_assets().values_list("position", "model__height_of_device")
 
         def fill_u_list(objects, height_of_device=lambda obj: 1):
             for obj in objects:
@@ -438,9 +420,9 @@ class NetworkableBaseObject(models.Model):
                 NetworkEnvironment.objects.filter(
                     network__racks=self.rack,
                     # filter env by ips assigned to current object
-                    network__in=self.ipaddresses.filter(
-                        is_management=False
-                    ).values_list("network", flat=True),
+                    network__in=self.ipaddresses.filter(is_management=False).values_list(
+                        "network", flat=True
+                    ),
                 )
                 .distinct()
                 .first()
@@ -472,11 +454,7 @@ class NetworkableBaseObject(models.Model):
 
     def _get_available_network_environments(self):
         if self.rack_id:
-            return list(
-                NetworkEnvironment.objects.filter(
-                    network__racks=self.rack_id
-                ).distinct()
-            )
+            return list(NetworkEnvironment.objects.filter(network__racks=self.rack_id).distinct())
         return NetworkEnvironment.objects.none()
 
     def _get_available_networks(self, as_query=False, is_broadcasted_in_dhcp=False):
@@ -564,9 +542,7 @@ class DataCenterAsset(
         verbose_name=_("source"),
     )
     delivery_date = models.DateField(null=True, blank=True)
-    production_year = models.PositiveSmallIntegerField(
-        null=True, blank=True, db_index=True
-    )
+    production_year = models.PositiveSmallIntegerField(null=True, blank=True, db_index=True)
     production_use_date = models.DateField(null=True, blank=True, db_index=True)
     metadata = models.JSONField(
         blank=True,
@@ -609,9 +585,7 @@ class DataCenterAsset(
             # When changing position if is blade,
             # we search and save all descendants
             if self._previous_state["position"] != self.position:
-                DataCenterAsset.objects.filter(parent=self).update(
-                    position=self.position
-                )
+                DataCenterAsset.objects.filter(parent=self).update(position=self.position)
 
     def get_orientation_desc(self):
         return Orientation.name_from_id(self.orientation)
@@ -723,11 +697,7 @@ class DataCenterAsset(
         """
         Validate if position is in rack height range.
         """
-        if (
-            self.rack
-            and self.position is not None
-            and self.position > self.rack.max_u_height
-        ):
+        if self.rack and self.position is not None and self.position > self.rack.max_u_height:
             msg = 'Position is higher than "max u height" = {}'.format(
                 self.rack.max_u_height,
             )
@@ -739,16 +709,10 @@ class DataCenterAsset(
     def _validate_slot_no(self):
         if self.model_id:
             if self.model.has_parent and not self.slot_no:
-                raise ValidationError(
-                    {"slot_no": "Slot number is required when asset is blade"}
-                )
+                raise ValidationError({"slot_no": "Slot number is required when asset is blade"})
             if not self.model.has_parent and self.slot_no:
                 raise ValidationError(
-                    {
-                        "slot_no": (
-                            "Slot number cannot be filled when asset is not blade"
-                        )
-                    }
+                    {"slot_no": ("Slot number cannot be filled when asset is not blade")}
                 )
             if self.parent:
                 dc_asset_with_slot_no = (
@@ -763,8 +727,7 @@ class DataCenterAsset(
                 if dc_asset_with_slot_no:
                     message = mark_safe(
                         (
-                            "Slot is already occupied by: "
-                            '<a href="{}" target="_blank">{}</a>'
+                            'Slot is already occupied by: <a href="{}" target="_blank">{}</a>'
                         ).format(
                             reverse(
                                 "admin:data_center_datacenterasset_change",
@@ -778,9 +741,7 @@ class DataCenterAsset(
     def _validate_hostname(self, *args, **kwargs):
         if self.status == DataCenterAssetStatus.used.id:
             if not self.hostname or self.hostname == "":
-                raise ValidationError(
-                    {"hostname": _("Hostname is required for status 'in use'")}
-                )
+                raise ValidationError({"hostname": _("Hostname is required for status 'in use'")})
 
     def clean(self):
         errors = {}
@@ -862,9 +823,7 @@ class DataCenterAsset(
                 back_office_asset = BackOfficeAsset()
 
                 back_office_asset.region = Region.objects.get(pk=kwargs["region"])
-                back_office_asset.warehouse = Warehouse.objects.get(
-                    pk=kwargs["warehouse"]
-                )
+                back_office_asset.warehouse = Warehouse.objects.get(pk=kwargs["warehouse"])
                 target_status = int(
                     Transition.objects.values_list("target", flat=True).get(
                         pk=kwargs["transition_id"]
@@ -873,9 +832,7 @@ class DataCenterAsset(
                 back_office_asset.status = dc_asset_to_bo_asset_status_converter(  # noqa
                     instance.status, target_status
                 )
-                move_parents_models(
-                    instance, back_office_asset, exclude_copy_fields=["status"]
-                )
+                move_parents_models(instance, back_office_asset, exclude_copy_fields=["status"])
                 # Save new asset to list, required to redirect url.
                 # RunTransitionView.get_success_url()
                 instances[i] = back_office_asset

@@ -119,9 +119,7 @@ class ExportManyToManyStrTroughWidget(ManyToManyThroughWidget):
     def render(self, value, obj=None, **kwargs):
         if value is None:
             return ""
-        return self.separator.join(
-            [str(getattr(obj, self.through_field)) for obj in value.all()]
-        )
+        return self.separator.join([str(getattr(obj, self.through_field)) for obj in value.all()])
 
 
 class BaseObjectManyToManyWidget(widgets.ManyToManyWidget):
@@ -266,9 +264,7 @@ class BaseObjectServiceNamesM2MWidget(widgets.ManyToManyWidget):
     def render(self, value, obj=None, **kwargs):
         if value is None:
             return ""
-        return self.separator.join(
-            [bo.service.name if bo.service else "-" for bo in value.all()]
-        )
+        return self.separator.join([bo.service.name if bo.service else "-" for bo in value.all()])
 
 
 class PriceAmountWidget(widgets.Widget):

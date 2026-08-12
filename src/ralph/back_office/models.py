@@ -90,9 +90,7 @@ class BackOfficeAssetStatus(Choices):
     in_use_team_update_excluded = _("in use team (update excluded)")
 
 
-class OfficeInfrastructure(
-    AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model
-):
+class OfficeInfrastructure(AdminAbsoluteUrlMixin, NamedMixin, TimeStampMixin, models.Model):
     class Meta:
         verbose_name = _("Office Infrastructure")
         verbose_name_plural = _("Office Infrastructures")
@@ -237,9 +235,7 @@ class BackOfficeAsset(Regionalizable, Asset):
     def clean(self):
         super().clean()
         if self.imei and not self.validate_imei(self.imei):
-            raise ValidationError(
-                {"imei": _("%(imei)s is not IMEI format") % {"imei": self.imei}}
-            )
+            raise ValidationError({"imei": _("%(imei)s is not IMEI format") % {"imei": self.imei}})
         if self.imei2 and not self.validate_imei(self.imei2):
             raise ValidationError(
                 {
@@ -251,9 +247,7 @@ class BackOfficeAsset(Regionalizable, Asset):
         date = date or datetime.date.today()
         # check if asset has status 'liquidated' and if yes, check if it has
         # this status on given date
-        if self.status == BackOfficeAssetStatus.liquidated and self._liquidated_at(
-            date
-        ):
+        if self.status == BackOfficeAssetStatus.liquidated and self._liquidated_at(date):
             return True
         return False
 
@@ -360,9 +354,7 @@ class BackOfficeAsset(Regionalizable, Asset):
     @transition_action(run_after=["loan_report", "return_report"])
     def unassign_owner(cls, instances, **kwargs):
         for instance in instances:
-            kwargs["history_kwargs"][instance.pk]["affected_owner"] = str(
-                instance.owner
-            )
+            kwargs["history_kwargs"][instance.pk]["affected_owner"] = str(instance.owner)
             instance.owner = None
 
     @classmethod
@@ -417,9 +409,7 @@ class BackOfficeAsset(Regionalizable, Asset):
         },
     )
     def assign_office_infrastructure(cls, instances, **kwargs):
-        office_inf = OfficeInfrastructure.objects.get(
-            pk=int(kwargs["office_infrastructure"])
-        )
+        office_inf = OfficeInfrastructure.objects.get(pk=int(kwargs["office_infrastructure"]))
         for instance in instances:
             instance.office_infrastructure = office_inf
 
@@ -535,9 +525,7 @@ class BackOfficeAsset(Regionalizable, Asset):
         form_fields={
             "accept": {
                 "field": forms.BooleanField(
-                    label=_(
-                        "I have read and fully understand and accept the agreement."
-                    )
+                    label=_("I have read and fully understand and accept the agreement.")
                 )
             },
         }

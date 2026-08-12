@@ -13,9 +13,7 @@ User = apps.get_model(*settings.AUTH_USER_MODEL.split("."))
 
 
 class AttachmentsTestCase(TestCase):
-    def create_attachment_for_object(
-        self, obj, filename=None, user=None, content=b"some content"
-    ):
+    def create_attachment_for_object(self, obj, filename=None, user=None, content=b"some content"):
         if not user:
             user, _ = User.objects.get_or_create(username="tester")
         if not filename:

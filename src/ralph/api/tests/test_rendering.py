@@ -161,8 +161,7 @@ class RalphAPIRenderingTests(APIPermissionsTestMixin, APITestCase):
                 max_queries,
                 msg=f"Too many queries when getting {endpoint}."
                 f"\nQueries count: {len(cqc.captured_queries)}."
-                "\nQueries:\n"
-                + "\n".join(query["sql"] for query in cqc.captured_queries),
+                "\nQueries:\n" + "\n".join(query["sql"] for query in cqc.captured_queries),
             )
             endpoint = response.json()["next"]
             if not BROWSE_ALL_API_ITEMS or endpoint is None:

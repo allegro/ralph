@@ -14,12 +14,8 @@ MAXUDPSIZE = getattr(settings, "STATSD_MAXUDPSIZE", defaults.MAXUDPSIZE)
 IPV6 = getattr(settings, "STATSD_IPV6", defaults.IPV6)
 
 
-def build_statsd_client(
-    host=HOST, port=PORT, prefix=PREFIX, maxudpsize=MAXUDPSIZE, ipv6=IPV6
-):
-    return StatsClient(
-        host=host, port=port, prefix=prefix, maxudpsize=maxudpsize, ipv6=ipv6
-    )
+def build_statsd_client(host=HOST, port=PORT, prefix=PREFIX, maxudpsize=MAXUDPSIZE, ipv6=IPV6):
+    return StatsClient(host=host, port=port, prefix=prefix, maxudpsize=maxudpsize, ipv6=ipv6)
 
 
 if settings.COLLECT_METRICS and statsd is None:
@@ -44,9 +40,7 @@ if statsd is None:
 
     class StatsdMockClient(object):
         def __init__(self, *args, **kwargs):
-            logger.warning(
-                "Statsd not installed or configured - metrics will NOT be collected"
-            )
+            logger.warning("Statsd not installed or configured - metrics will NOT be collected")
 
         def timer(self, *args, **kwargs):
             return TimerMock()

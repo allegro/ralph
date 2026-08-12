@@ -107,9 +107,9 @@ def build_validation_map(rack_configuration: RackConfiguration) -> tuple[dict, d
     that reported one.
     """
     switches = iter_rack_switches(rack_configuration)
-    results = BackendValidationResult.objects.filter(
-        switch__in=switches
-    ).select_related("remote_asset")
+    results = BackendValidationResult.objects.filter(switch__in=switches).select_related(
+        "remote_asset"
+    )
 
     validation_map = {}
     switch_status = {}
@@ -251,9 +251,7 @@ def build_grid_rows(
 
 
 def _propose_port(asset: DataCenterAsset, switch: DataCenterAsset) -> str | None:
-    port_proposals = BackendValidationResult.objects.filter(
-        switch=switch, remote_asset=asset
-    )
+    port_proposals = BackendValidationResult.objects.filter(switch=switch, remote_asset=asset)
     if port_proposals:
         return " ".join([p.port_label for p in port_proposals])
     return None

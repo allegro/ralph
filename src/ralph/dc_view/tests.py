@@ -31,9 +31,7 @@ class TestRestAssetInfoPerRack(TestCase):
 
         environment = EnvironmentFactory()
         service = ServiceFactory(name="Service1")
-        service_env = ServiceEnvironmentFactory(
-            service=service, environment=environment
-        )
+        service_env = ServiceEnvironmentFactory(service=service, environment=environment)
         asset_model = DataCenterAssetModelFactory(type=ObjectModelType.data_center)
         self.server_room = ServerRoomFactory()
 

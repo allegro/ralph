@@ -76,9 +76,7 @@ class IPAddressSaveSerializer(RalphAPISaveSerializer):
             and self.instance.dhcp_expose
             and not value
         ):
-            raise ValidationError(
-                "Cannot remove entry from DHCP. Use transition to do this."
-            )
+            raise ValidationError("Cannot remove entry from DHCP. Use transition to do this.")
         return value
 
 
@@ -107,9 +105,7 @@ class IPAddressViewSet(RalphAPIViewSet):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         if instance and instance.dhcp_expose:
-            raise ValidationError(
-                "Could not delete IPAddress when it is exposed in DHCP"
-            )
+            raise ValidationError("Could not delete IPAddress when it is exposed in DHCP")
         return super().destroy(request, *args, **kwargs)
 
 

@@ -54,6 +54,4 @@ class SSLCertificate(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
     )
 
     def __str__(self):
-        return (
-            "{} from {} to {}".format(self.name, self.date_from, self.date_to) or None
-        )
+        return "{} from {} to {}".format(self.name, self.date_from, self.date_to) or None

@@ -31,8 +31,7 @@ class DNSRecordForm(forms.Form):
         label=_("Content"),
         max_length=255,
         help_text=_(
-            "The 'right hand side' of a DNS record. For an A"
-            " record, this is the IP address"
+            "The 'right hand side' of a DNS record. For an A record, this is the IP address"
         ),
         widget=forms.TextInput(attrs={"style": "width:300px;"}),
     )

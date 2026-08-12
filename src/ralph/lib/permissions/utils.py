@@ -82,9 +82,7 @@ def collect_permission_info(
 
     Returns: (permissions, active_count, orphaned_count)
     """
-    orphaned_codenames = set(
-        query_orphaned_permissions().values_list("codename", flat=True)
-    )
+    orphaned_codenames = set(query_orphaned_permissions().values_list("codename", flat=True))
 
     result = []
     for perm in query_permissions():

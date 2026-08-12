@@ -56,9 +56,7 @@ class CustomFieldValueAdminMaxinTestCase(TestCase):
             reverse("admin:customfield_formfield", args=(self.custom_field_str.id,))
         )
         # default_value should be placed
-        self.assertContains(
-            response, '<input type="text" name="__empty__" value="xyz">'
-        )
+        self.assertContains(response, '<input type="text" name="__empty__" value="xyz">')
 
     def test_add_new_custom_field_value_for_existing_object(self):
         data = {
@@ -246,9 +244,7 @@ class CustomFieldValueAdminMaxinTestCase(TestCase):
         response = self.client.get(self.sm1.get_absolute_url())
 
         self.assertEqual(1, len(response.context_data["custom_fields_all"]))
-        self.assertEqual(
-            "sample_value", response.context_data["custom_fields_all"][0]["value"]
-        )
+        self.assertEqual("sample_value", response.context_data["custom_fields_all"][0]["value"])
 
         filled_in_custom_field_forms = [
             form
@@ -270,9 +266,7 @@ class CustomFieldValueAdminMaxinTestCase(TestCase):
         response = self.client.get(self.sm1.get_absolute_url())
 
         self.assertEqual(1, len(response.context_data["custom_fields_all"]))
-        self.assertEqual(
-            "sample_value", response.context_data["custom_fields_all"][0]["value"]
-        )
+        self.assertEqual("sample_value", response.context_data["custom_fields_all"][0]["value"])
 
         filled_in_custom_field_forms = [
             form
@@ -346,9 +340,7 @@ class CustomFieldValueAdminMaxinTestCase(TestCase):
         response = self.client.post(self.sm1.get_absolute_url(), data, follow=True)
         self.assertEqual(response.status_code, HTTP_200_OK)
 
-        expected_error_message = (
-            f"Only users from {group.name} group can set this custom field"
-        )
+        expected_error_message = f"Only users from {group.name} group can set this custom field"
         self.assertIn("errors", response.context_data)
         self.assertIn(expected_error_message, response.context_data["errors"][0][0])
 
@@ -382,9 +374,7 @@ class CustomFieldValueAdminMaxinTestCase(TestCase):
         response = self.client.post(self.sm1.get_absolute_url(), data, follow=True)
         self.assertEqual(response.status_code, HTTP_200_OK)
 
-        expected_error_message = (
-            f"Only users from {group.name} group can set this custom field"
-        )
+        expected_error_message = f"Only users from {group.name} group can set this custom field"
         self.assertIn("errors", response.context_data)
         self.assertIn(expected_error_message, response.context_data["errors"][0][0])
 

@@ -45,9 +45,7 @@ class AccessZone(AdminAbsoluteUrlMixin, MPTTModel, models.Model):
     def __str__(self):
         return self.name
 
-    description = models.TextField(
-        null=True, blank=True, help_text=_("Optional description")
-    )
+    description = models.TextField(null=True, blank=True, help_text=_("Optional description"))
     parent = TreeForeignKey(
         "self",
         null=True,
@@ -79,9 +77,7 @@ class AccessCard(
         unique=True,
         help_text=_("Internal number in the access system"),
     )
-    issue_date = models.DateField(
-        null=True, blank=True, help_text=_("Date of issue to the User")
-    )
+    issue_date = models.DateField(null=True, blank=True, help_text=_("Date of issue to the User"))
     notes = models.TextField(null=True, blank=True, help_text=_("Optional notes"))
     user = models.ForeignKey(
         RalphUser,
@@ -107,9 +103,7 @@ class AccessCard(
         help_text=_("Access card status"),
         db_index=True,
     )
-    access_zones = TreeManyToManyField(
-        AccessZone, blank=True, related_name="access_cards"
-    )
+    access_zones = TreeManyToManyField(AccessZone, blank=True, related_name="access_cards")
 
     def __str__(self):
         return _("Access Card: {}").format(self.visual_number)
@@ -160,9 +154,7 @@ class AccessCard(
     @transition_action()
     def unassign_owner(cls, instances, **kwargs):
         for instance in instances:
-            kwargs["history_kwargs"][instance.pk]["affected_owner"] = str(
-                instance.owner
-            )
+            kwargs["history_kwargs"][instance.pk]["affected_owner"] = str(instance.owner)
             instance.owner = None
 
     @classmethod
@@ -196,9 +188,7 @@ class AccessCard(
         form_fields={
             "accept": {
                 "field": forms.BooleanField(
-                    label=_(
-                        "I have read and fully understand and accept the agreement."
-                    )
+                    label=_("I have read and fully understand and accept the agreement.")
                 )
             },
         }

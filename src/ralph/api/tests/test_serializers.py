@@ -55,9 +55,7 @@ class TestRalphSerializer(RalphAPITestCase):
     def test_get_serializer_related_field_when_safe_request(self):
         request = self.request_factory.get("/api/cars")
         car_serializer = CarSerializer(instance=self.car, context={"request": request})
-        self.assertEqual(
-            car_serializer.serializer_related_field, RalphHyperlinkedRelatedField
-        )
+        self.assertEqual(car_serializer.serializer_related_field, RalphHyperlinkedRelatedField)
 
     def test_get_serializer_related_field_when_not_safe_request(self):
         request = self.request_factory.patch("/api/cars", data={})
@@ -152,9 +150,7 @@ class TestRalphSerializer(RalphAPITestCase):
         bo_asset = BackOfficeAssetFactory(region=region_pl)
         licence = LicenceFactory(region=region_pl)
         url = reverse("baseobjectlicence-list")
-        response = self.client.post(
-            url, data={"base_object": bo_asset.id, "licence": licence.id}
-        )
+        response = self.client.post(url, data={"base_object": bo_asset.id, "licence": licence.id})
         base_object_licence = BaseObjectLicence.objects.get(pk=response.data["id"])
         history = Version.objects.get_for_object(base_object_licence)
         self.assertEqual(len(history), 1)

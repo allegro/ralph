@@ -34,7 +34,7 @@ class BooleanWidget(Widget):
 class BooleanFilter(Filter):
     def __init__(self, widget=None, *args, **kwargs):
         widget = widget or BooleanWidget
-        super().__init__(widget=widget, *args, **kwargs)
+        super().__init__(*args, widget=widget, **kwargs)
 
 
 class AdditionalDjangoFilterBackend(DjangoFilterBackend):
@@ -81,9 +81,7 @@ class ImportedIdFilterBackend(BaseFilterBackend):
             param_value = request.query_params.get(param_name)
             if param_value:
                 logger.debug(
-                    "Processing imported id query param {}:{}".format(
-                        param_name, param_value
-                    )
+                    "Processing imported id query param {}:{}".format(param_name, param_value)
                 )
                 query_params = {field_name: param_value}
                 if use_content_type:
@@ -130,9 +128,7 @@ class ExtendedFiltersBackend(BaseFilterBackend):
         extended_filter_fields = getattr(view, "extended_filter_fields", {})
         if extended_filter_fields:
             logger.debug("Applying ExtendedFiltersBackend filters")
-            queryset = self._handle_extended_filters(
-                request, queryset, extended_filter_fields
-            )
+            queryset = self._handle_extended_filters(request, queryset, extended_filter_fields)
         return queryset
 
 
@@ -254,25 +250,19 @@ class LookupFilterBackend(BaseFilterBackend):
             for cl in inspect.getmro(model_field.__class__):
                 field_lookups |= self.field_type_lookups.get(cl, set())
             logger.debug(
-                "Available lookups for {}.{} : {}".format(
-                    model, model_field_name, field_lookups
-                )
+                "Available lookups for {}.{} : {}".format(model, model_field_name, field_lookups)
             )
             if lookup in field_lookups:
                 if lookup == "isnull":
                     if value not in BOOL_VALUES:
-                        logger.debug(
-                            "Unknown value for isnull filter: {}".format(value)
-                        )
+                        logger.debug("Unknown value for isnull filter: {}".format(value))
                         return {}
                     else:
                         value = BOOL_VALUES[value]
                 result = {"{}__{}".format(model_field_name, lookup): value}
         return result
 
-    def _validate_query_lookups(
-        self, model, request, filterset_fields, extended_filter_fields
-    ):
+    def _validate_query_lookups(self, model, request, filterset_fields, extended_filter_fields):
         """
         Validates all lookups from query params.
 
@@ -293,8 +283,9 @@ class LookupFilterBackend(BaseFilterBackend):
         result = []
         kw_result = {}
         logger.debug(
-            "Processing {} filters with filterset fields={} and extended filter "
-            "fields={}".format(model, filterset_fields, extended_filter_fields)
+            "Processing {} filters with filterset fields={} and extended filter fields={}".format(
+                model, filterset_fields, extended_filter_fields
+            )
         )
         for field_name, value in request.query_params.items():
             logger.debug("Processing query param {}:{}".format(field_name, value))
@@ -304,9 +295,7 @@ class LookupFilterBackend(BaseFilterBackend):
             extended_filters = {}
             for extended_field_name in extended_filter_fields.get(model_field_name, []):
                 extended_filters.update(
-                    self._validate_single_query_lookup(
-                        model, extended_field_name, lookup, value
-                    )
+                    self._validate_single_query_lookup(model, extended_field_name, lookup, value)
                 )
             if extended_filters:
                 logger.debug(
@@ -326,11 +315,7 @@ class LookupFilterBackend(BaseFilterBackend):
                 filters = self._validate_single_query_lookup(
                     model, model_field_name, lookup, value
                 )
-                logger.debug(
-                    "Using {} filters for query {}:{}".format(
-                        filters, field_name, value
-                    )
-                )
+                logger.debug("Using {} filters for query {}:{}".format(filters, field_name, value))
                 kw_result.update(filters)
         return result, kw_result
 
@@ -360,11 +345,7 @@ class PolymorphicDescendantsFilterBackend(LookupFilterBackend):
         )
         if lookups or kw_lookups:
             is_lookup_used = True
-            ids = set(
-                model.objects.filter(*lookups, **kw_lookups).values_list(
-                    "pk", flat=True
-                )
-            )
+            ids = set(model.objects.filter(*lookups, **kw_lookups).values_list("pk", flat=True))
         return ids, is_lookup_used
 
     def _get_polymorphic_ids(self, base_model, polymorphic_models, request, view):
@@ -415,9 +396,7 @@ class PolymorphicDescendantsFilterBackend(LookupFilterBackend):
         return ids, is_lookup_used
 
     def filter_queryset(self, request, queryset, view):
-        polymorphic_descendants = getattr(
-            queryset.model, "_polymorphic_descendants", []
-        )
+        polymorphic_descendants = getattr(queryset.model, "_polymorphic_descendants", [])
         if polymorphic_descendants:
             ids, is_lookup_used = self._get_polymorphic_ids(
                 queryset.model, polymorphic_descendants, request, view

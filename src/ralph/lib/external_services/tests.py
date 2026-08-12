@@ -26,9 +26,7 @@ def test_job_func(job_id):
 class JobDumpParamsTestCase(TestCase):
     def setUp(self):
         self.foo = Foo.objects.create(bar="abc")
-        self.bar = Bar.objects.create(
-            name="bar", date="2016-03-03", price=Money(10, "XXX")
-        )
+        self.bar = Bar.objects.create(name="bar", date="2016-03-03", price=Money(10, "XXX"))
         self.foo_content_type_id = ContentType.objects.get_for_model(self.foo).pk  # noqa
         self.bar_content_type_id = ContentType.objects.get_for_model(self.bar).pk  # noqa
 

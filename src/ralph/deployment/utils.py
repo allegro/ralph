@@ -8,9 +8,7 @@ from django.urls import reverse
 def _render_configuration(configuration, deployment, disable_reverse=False):
     def url(name, kwargs):
         if disable_reverse:
-            return "{}({})".format(
-                name, ", ".join([str(value) for value in kwargs.values()])
-            )
+            return "{}({})".format(name, ", ".join([str(value) for value in kwargs.values()]))
         return reverse(name, kwargs=kwargs)
 
     template = Template(configuration)
@@ -115,9 +113,7 @@ def _render_configuration(configuration, deployment, disable_reverse=False):
             "hostname": deployment.obj.hostname,
             "service_env": str(deployment.obj.service_env),
             "service_uid": (
-                deployment.obj.service_env.service.uid
-                if deployment.obj.service_env
-                else None
+                deployment.obj.service_env.service.uid if deployment.obj.service_env else None
             ),
             "done_url": urljoin(
                 ralph_instance,

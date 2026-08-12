@@ -108,7 +108,7 @@ class Command(BaseCommand):
                 )
             )
             return
-        for root, dirs, files in os.walk(certs_dir):
+        for root, _dirs, files in os.walk(certs_dir):
             for filename in fnmatch.filter(files, "*.crt"):
                 cert = None
                 pem_data = None
@@ -118,9 +118,7 @@ class Command(BaseCommand):
                 except IOError:
                     continue
                 try:
-                    cert = x509.load_pem_x509_certificate(
-                        pem_data.encode(), default_backend()
-                    )
+                    cert = x509.load_pem_x509_certificate(pem_data.encode(), default_backend())
                 except ValueError:
                     self.stderr.write("{}/{} is not valid\n".format(root, filename))
                     continue

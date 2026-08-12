@@ -432,6 +432,8 @@ rq==1.16.2
     # via
     #   ralph (pyproject.toml)
     #   django-rq
+ruff==0.16.2
+    # via ralph (pyproject.toml)
 setuptools==65.7.0
     # via
     #   ralph (pyproject.toml)

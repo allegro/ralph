@@ -34,10 +34,7 @@ class DataCenterAssetForm(PriceFormMixin, AssetFormMixin, RalphAdminForm):
         # DataCenterAsset)
         obj.save()
 
-        if (
-            not self.cleaned_data["management_hostname"]
-            and not self.cleaned_data["management_ip"]
-        ):
+        if not self.cleaned_data["management_hostname"] and not self.cleaned_data["management_ip"]:
             del obj.management_ip
         else:
             obj.management_ip = self.cleaned_data["management_ip"]
@@ -57,8 +54,7 @@ class DataCenterAssetForm(PriceFormMixin, AssetFormMixin, RalphAdminForm):
             if ip.base_object and ip.base_object.pk != self.instance.pk:
                 ip_obj = ip.base_object.last_descendant
                 msg = _(
-                    "Management IP is already assigned to "
-                    '<a target="_blank" href="{}">{}</a>'
+                    'Management IP is already assigned to <a target="_blank" href="{}">{}</a>'
                 ).format(ip_obj.get_absolute_url(), ip_obj)
                 exc = ValidationError({"management_ip": mark_safe(msg)})
                 self._update_errors(exc)
@@ -94,8 +90,7 @@ class DataCenterAssetForm(PriceFormMixin, AssetFormMixin, RalphAdminForm):
                 ValidationError(
                     {
                         "management_ip": _(
-                            "Management IP could not be empty when management hostname is "
-                            "passed"
+                            "Management IP could not be empty when management hostname is passed"
                         )
                     }
                 )

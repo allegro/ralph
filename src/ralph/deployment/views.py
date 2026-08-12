@@ -17,9 +17,9 @@ DEPLOYMENT_404_MSG = "Deployment %s doesn't exist"
 def get_object_or_404_with_message(model, msg, logger_args, **kwargs):
     try:
         return model.objects.get(**kwargs)
-    except model.DoesNotExist:
+    except model.DoesNotExist as e:
         logger.error(msg, *logger_args)
-        raise Http404(msg)
+        raise Http404(msg) from e
 
 
 def _get_preboot(deployment_id):
@@ -32,9 +32,9 @@ def _get_preboot(deployment_id):
             id=deployment_id,
         ).preboot
         return Preboot.objects.get(id=preboot_id)
-    except ValueError:
+    except ValueError as e:
         logger.warning("Incorrect UUID: %s", deployment_id)
-        raise SuspiciousOperation("Malformed UUID")
+        raise SuspiciousOperation("Malformed UUID") from e
 
 
 def ipxe(request, deployment_id=None):
@@ -55,12 +55,12 @@ def ipxe(request, deployment_id=None):
             deployment = Deployment.objects.get(id=deployment_id)
         else:
             deployment = Deployment.get_deployment_for_ip(ip)
-    except Ethernet.DoesNotExist:
+    except Ethernet.DoesNotExist as e:
         logger.warning("Deployment does not exists for ip: %s", ip)
-        raise Http404
-    except Deployment.DoesNotExist:
+        raise Http404 from e
+    except Deployment.DoesNotExist as e:
         logger.warning(DEPLOYMENT_404_MSG, deployment_id)
-        raise Http404
+        raise Http404 from e
     preboot = _get_preboot(deployment.id)
     configuration = _render_configuration(preboot.get_configuration("ipxe"), deployment)
     return HttpResponse(configuration, content_type="text/plain")
@@ -119,9 +119,7 @@ def files(request, file_type, deployment_id):
     preboot = _get_preboot(deployment_id)
     file_url = preboot.get_file_url(file_type)
     if file_url is None:
-        logger.warning(
-            "File %s for deployment %s doesn't exist", file_type, deployment_id
-        )
+        logger.warning("File %s for deployment %s doesn't exist", file_type, deployment_id)
         raise Http404
     return HttpResponseRedirect(file_url)
 

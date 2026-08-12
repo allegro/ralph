@@ -43,11 +43,7 @@ SUPPORTS_RELATED_OBJECTS_PREFETCH_RELATED = [
 
 class AssignedObjectsCountManager(models.Manager):
     def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .annotate(assigned_objects_count=models.Count("base_objects"))
-        )
+        return super().get_queryset().annotate(assigned_objects_count=models.Count("base_objects"))
 
 
 class SupportsRelatedObjectsManager(AssignedObjectsCountManager):
@@ -56,11 +52,7 @@ class SupportsRelatedObjectsManager(AssignedObjectsCountManager):
     """
 
     def get_queryset(self):
-        return (
-            super()
-            .get_queryset()
-            .prefetch_related(*SUPPORTS_RELATED_OBJECTS_PREFETCH_RELATED)
-        )
+        return super().get_queryset().prefetch_related(*SUPPORTS_RELATED_OBJECTS_PREFETCH_RELATED)
 
 
 class Support(
@@ -77,9 +69,7 @@ class Support(
         choices=ObjectModelType(),
         default=ObjectModelType.all.id,
     )
-    contract_id = models.CharField(
-        verbose_name=_("contract ID"), max_length=50, blank=False
-    )
+    contract_id = models.CharField(verbose_name=_("contract ID"), max_length=50, blank=False)
     description = models.CharField(max_length=100, blank=True)
     date_from = models.DateField(null=True, blank=True)
     date_to = models.DateField(null=False, blank=False)
@@ -95,15 +85,11 @@ class Support(
     )
     producer = models.CharField(max_length=100, blank=True)
     supplier = models.CharField(max_length=100, blank=True)
-    serial_no = models.CharField(
-        verbose_name=_("serial number"), max_length=100, blank=True
-    )
+    serial_no = models.CharField(verbose_name=_("serial number"), max_length=100, blank=True)
     invoice_no = models.CharField(
         verbose_name=_("invoice number"), max_length=100, blank=True, db_index=True
     )
-    invoice_date = models.DateField(
-        verbose_name=_("invoice date"), null=True, blank=True
-    )
+    invoice_date = models.DateField(verbose_name=_("invoice date"), null=True, blank=True)
     period_in_months = models.IntegerField(null=True, blank=True)
     property_of = models.ForeignKey(
         AssetHolder,

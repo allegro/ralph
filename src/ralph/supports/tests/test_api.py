@@ -34,12 +34,8 @@ class SupportAPITests(RalphAPITestCase):
         self.assertEqual(response.data["name"], self.support.name)
         self.assertEqual(response.data["contract_id"], self.support.contract_id)
         self.assertEqual(response.data["status"], "new")
-        self.assertEqual(
-            response.data["support_type"]["id"], self.support.support_type.id
-        )
-        self.assertEqual(
-            response.data["service_env"]["service"], self.service_env.service.name
-        )
+        self.assertEqual(response.data["support_type"]["id"], self.support.support_type.id)
+        self.assertEqual(response.data["service_env"]["service"], self.service_env.service.name)
         self.assertEqual(
             response.data["service_env"]["environment"],
             self.service_env.environment.name,
@@ -104,9 +100,7 @@ class SupportAPITests(RalphAPITestCase):
             response = self.client.get(url, {"include_assets": "true"}, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(
-            response.data["count"], 15
-        )  # 4 with assets + 10 without + 1 from setUp
+        self.assertEqual(response.data["count"], 15)  # 4 with assets + 10 without + 1 from setUp
 
         for result in response.data["results"]:
             if result["name"] == "support_with_assets_1":

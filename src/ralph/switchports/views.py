@@ -53,9 +53,7 @@ class RackSwitchportGridView(RalphDetailView):
 
     def _latest_refresh_job(self):
         return (
-            SwitchportRefreshJob.objects.filter(
-                rack_configuration=self.rack_configuration
-            )
+            SwitchportRefreshJob.objects.filter(rack_configuration=self.rack_configuration)
             .order_by("-created")
             .first()
         )
@@ -75,9 +73,7 @@ class RackSwitchportGridView(RalphDetailView):
                 "status": job.status,
                 "is_running": job.is_running,
                 "started_at": job.started_at.isoformat() if job.started_at else None,
-                "finished_at": (
-                    job.finished_at.isoformat() if job.finished_at else None
-                ),
+                "finished_at": (job.finished_at.isoformat() if job.finished_at else None),
                 "summary": job.summary,
                 "error": job.error,
             }
@@ -89,9 +85,7 @@ class RackSwitchportGridView(RalphDetailView):
         switch_configs = list(grid.get_switch_configs(self.rack_configuration))
         override_map = build_override_map(switch_configs)
         connection_map = grid.build_connection_map(assets, switch_configs)
-        validation_map, switch_status = grid.build_validation_map(
-            self.rack_configuration
-        )
+        validation_map, switch_status = grid.build_validation_map(self.rack_configuration)
 
         # Check if we have any validation results at all
         has_validation = bool(validation_map) or bool(switch_status)
@@ -114,9 +108,7 @@ class RackSwitchportGridView(RalphDetailView):
                 else:
                     last_refresh_dict[switch.barcode] = _("Never")
             if last_refresh_dict:
-                last_refresh = ", ".join(
-                    {f"{k} => {v}" for k, v in last_refresh_dict.items()}
-                )
+                last_refresh = ", ".join({f"{k} => {v}" for k, v in last_refresh_dict.items()})
 
         context["switch_configs"] = switch_configs
         context["switch_status"] = switch_status
@@ -169,12 +161,8 @@ class RackSwitchportGridView(RalphDetailView):
             for asset in assets:
                 for sc in switch_configs:
                     edit = CellEdit(
-                        new_value=request.POST.get(
-                            grid_port_field(asset.id, sc.id), ""
-                        ),
-                        override_value=request.POST.get(
-                            grid_override_field(asset.id, sc.id), ""
-                        ),
+                        new_value=request.POST.get(grid_port_field(asset.id, sc.id), ""),
+                        override_value=request.POST.get(grid_override_field(asset.id, sc.id), ""),
                         forced=grid_force_field(asset.id, sc.id) in request.POST,
                     )
                     result = apply_cell_edit(asset, sc, edit, connection_map, dc)
@@ -268,12 +256,8 @@ class RackConfigurationView(RalphDetailView):
         return context
 
     def post(self, request, *args, **kwargs):
-        config_form = RackConfigurationForm(
-            request.POST, instance=self.rack_configuration
-        )
-        formset = RackSwitchConfigurationFormSet(
-            request.POST, instance=self.rack_configuration
-        )
+        config_form = RackConfigurationForm(request.POST, instance=self.rack_configuration)
+        formset = RackSwitchConfigurationFormSet(request.POST, instance=self.rack_configuration)
         if config_form.is_valid() and formset.is_valid():
             with transaction.atomic():
                 config_form.save()

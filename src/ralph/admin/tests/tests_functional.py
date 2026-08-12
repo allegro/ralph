@@ -89,13 +89,9 @@ class ExtraViewsTest(ReloadUrlsMixin, ClientMixin, TestCase):
 
         self._register_model_in_admin(Foo, FooChangeAdmin)
 
-        response = self.client.get(
-            reverse("admin:tests_foo_change", args=(obj.pk,)), follow=True
-        )
+        response = self.client.get(reverse("admin:tests_foo_change", args=(obj.pk,)), follow=True)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.context["change_views"][0].label, ExtraDetailView.label
-        )
+        self.assertEqual(response.context["change_views"][0].label, ExtraDetailView.label)
 
     def test_visit_extra_list_view(self):
         """
@@ -107,9 +103,7 @@ class ExtraViewsTest(ReloadUrlsMixin, ClientMixin, TestCase):
 
         self._register_model_in_admin(Foo, FooListAdmin)
 
-        response = self.client.get(
-            reverse("admin:tests_foo_extra_list_view"), follow=True
-        )
+        response = self.client.get(reverse("admin:tests_foo_extra_list_view"), follow=True)
         self.assertEqual(response.status_code, 200)
 
     def test_visit_extra_detail_view(self):
@@ -156,9 +150,7 @@ class ExtraViewsTest(ReloadUrlsMixin, ClientMixin, TestCase):
             url_name = "extra_detail_view"
 
         self.reload_urls()
-        response = self.client.get(
-            reverse("admin:tests_foo_change", args=(obj.pk,)), follow=True
-        )
+        response = self.client.get(reverse("admin:tests_foo_change", args=(obj.pk,)), follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["change_views"][0].label, TestView.label)
 
@@ -197,9 +189,7 @@ class ExtraViewsTest(ReloadUrlsMixin, ClientMixin, TestCase):
 
         self._register_model_in_admin(Foo, FooAdmin)
 
-        response = self.client.get(
-            reverse("admin:tests_foo_change", args=(obj.pk,)), follow=True
-        )
+        response = self.client.get(reverse("admin:tests_foo_change", args=(obj.pk,)), follow=True)
         tabs = response.context["change_views"]
         for tab in tabs:
             resp = self.client.get(
@@ -220,12 +210,8 @@ class ChangeListTest(TestCase):
         manufacturer = TestManufacturer.objects.create(name="test", country="pl")
         TestManufacturer.objects.create(name="test2", country="pl2")
         Car.objects.create(year=2015, name="test", manufacturer=manufacturer)
-        Car.objects.create(
-            year=2014, name="AutotompleteTest 2", manufacturer=manufacturer
-        )
-        Car.objects.create(
-            year=2015, name="AutotompleteTest", manufacturer=manufacturer
-        )
+        Car.objects.create(year=2014, name="AutotompleteTest 2", manufacturer=manufacturer)
+        Car.objects.create(year=2015, name="AutotompleteTest", manufacturer=manufacturer)
 
     def _change_list_factory(self, model, model_admin, request, list_display=None):
         return RalphChangeList(

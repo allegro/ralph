@@ -15,12 +15,8 @@ from ralph.data_center.tests.factories import DataCenterAssetFactory
 from django.test.utils import override_settings
 
 
-@unittest.skipUnless(
-    settings.ENABLE_HERMES_INTEGRATION, reason="Hermes integration is disabled"
-)
-@override_settings(
-    HERMES_SERVICE_SYNC_COMPONENTS_TYPES=["service", "third party system"]
-)
+@unittest.skipUnless(settings.ENABLE_HERMES_INTEGRATION, reason="Hermes integration is disabled")
+@override_settings(HERMES_SERVICE_SYNC_COMPONENTS_TYPES=["service", "third party system"])
 class ServiceSubscribersTestCase(TestCase):
     def setUp(self):
         super().setUp()
@@ -30,9 +26,7 @@ class ServiceSubscribersTestCase(TestCase):
 
     def _make_request(self, event_data, subscriber_name):
         response = self.client.post(
-            reverse(
-                "hermes-event-subscriber", kwargs={"subscriber_name": subscriber_name}
-            ),
+            reverse("hermes-event-subscriber", kwargs={"subscriber_name": subscriber_name}),
             json.dumps(event_data),
             content_type="application/json",
             follow=False,
@@ -59,9 +53,7 @@ class ServiceSubscribersTestCase(TestCase):
         self.assertEqual(service.name, "TestName")
         self.assertEqual(service.business_segment.name, "new area")
         self.assertEqual(service.profit_center.name, "test-PC")
-        self.assertCountEqual(
-            ["prod", "dev"], [env.name for env in service.environments.all()]
-        )
+        self.assertCountEqual(["prod", "dev"], [env.name for env in service.environments.all()])
         self.assertCountEqual(
             ["business_user1"],
             [user.username for user in service.business_owners.all()],
@@ -176,13 +168,9 @@ class ServiceSubscribersTestCase(TestCase):
         self.assertEqual(Service.objects.get(uid=service_uid).name, "This has old type")
 
     @patch("ralph.assets.subscribers.logger")
-    def test_update_service_environment_when_environment_assigned_to_object(
-        self, mock_logger
-    ):
+    def test_update_service_environment_when_environment_assigned_to_object(self, mock_logger):
         service = ServiceFactory(active=True)
-        service_env = ServiceEnvironmentFactory(
-            service=service, environment__name="prod"
-        )
+        service_env = ServiceEnvironmentFactory(service=service, environment__name="prod")
         DataCenterAssetFactory(service_env=service_env)
         data = {
             "actionType": "update",

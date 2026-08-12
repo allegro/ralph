@@ -19,9 +19,7 @@ class SomeModelSerializer(WithCustomFieldsSerializerMixin, serializers.Serialize
 class SomeModelViewset(viewsets.ModelViewSet):
     queryset = SomeModel.objects.prefetch_related("custom_fields")
     serializer_class = SomeModelSerializer
-    filter_backends = viewsets.ModelViewSet.filter_backends + [
-        CustomFieldsFilterBackend
-    ]
+    filter_backends = viewsets.ModelViewSet.filter_backends + [CustomFieldsFilterBackend]
 
 
 class CustomFieldsAPITestsRouter(NestedCustomFieldsRouterMixin, routers.DefaultRouter):

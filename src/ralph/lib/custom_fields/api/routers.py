@@ -28,9 +28,9 @@ class NestedCustomFieldsRouterMixin(object):
             basename = self.get_default_basename(viewset)
         from .serializers import WithCustomFieldsSerializerMixin
 
-        if issubclass(
-            viewset.serializer_class, WithCustomFieldsSerializerMixin
-        ) and getattr(viewset, "_nested_custom_fields", True):
+        if issubclass(viewset.serializer_class, WithCustomFieldsSerializerMixin) and getattr(
+            viewset, "_nested_custom_fields", True
+        ):
             # additionally, registed nested resource for custom fields
             self._attach_nested_custom_fields(prefix, viewset, basename)
 

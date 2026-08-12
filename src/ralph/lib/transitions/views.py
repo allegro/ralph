@@ -1,5 +1,4 @@
 from copy import deepcopy
-from itertools import repeat
 
 from django import forms
 from django.apps import apps
@@ -38,14 +37,12 @@ from ralph.lib.transitions.models import (
 def collect_actions(obj, transition):
     names = transition.actions.values_list("name", flat=True).all()
     actions = [getattr(obj, name) for name in names]
-    return_attachment = [
-        getattr(action, "return_attachment", False) for action in actions
-    ]
+    return_attachment = [getattr(action, "return_attachment", False) for action in actions]
     return actions, any(return_attachment)
 
 
 def build_params_url_for_redirect(ids):
-    return urlencode(list(zip(repeat("select", len(ids)), ids)))
+    return urlencode([("select", id_) for id_ in ids])
 
 
 class NonAtomicView(object):
@@ -138,9 +135,7 @@ class TransitionViewMixin(NonAtomicView, object):
             )
         ):
             return HttpResponseForbidden()
-        self.actions, self.return_attachment = collect_actions(
-            self.obj, self.transition
-        )
+        self.actions, self.return_attachment = collect_actions(self.obj, self.transition)
         if not len(self.form_fields_from_actions):
             return self.run_and_redirect(request, *args, **kwargs)
         return super().dispatch(request, *args, **kwargs)
@@ -316,8 +311,8 @@ class AsyncBulkTransitionsAwaiterView(RalphTemplateView):
             jobs = list(TransitionJob.objects.filter(pk__in=job_ids))
             if len(jobs) != len(job_ids):
                 raise ValueError()
-        except ValueError:
-            raise Http404()  # ?
+        except ValueError as e:
+            raise Http404() from e
         else:
             context["jobs"] = jobs
             context["are_jobs_running"] = any([j.is_running for j in jobs])

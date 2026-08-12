@@ -11,9 +11,7 @@ from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
 
 dir_file_name_validator = RegexValidator(regex=r"\w+")
 
-ConfigurationModuleBase = type(
-    "ConfigurationModuleBase", (MPTTModelBase, CustomFieldMeta), {}
-)
+ConfigurationModuleBase = type("ConfigurationModuleBase", (MPTTModelBase, CustomFieldMeta), {})
 
 
 class ConfigurationModule(

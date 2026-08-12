@@ -292,9 +292,7 @@ MESSAGE_TAGS = {
 FILE_UPLOAD_PERMISSIONS = 0o644
 
 DEFAULT_DEPRECIATION_RATE = int(os.environ.get("DEFAULT_DEPRECIATION_RATE", 25))  # noqa
-DEFAULT_LICENCE_DEPRECIATION_RATE = int(
-    os.environ.get("DEFAULT_LICENCE_DEPRECIATION_RATE", 50)
-)  # noqa
+DEFAULT_LICENCE_DEPRECIATION_RATE = int(os.environ.get("DEFAULT_LICENCE_DEPRECIATION_RATE", 50))  # noqa
 CHECK_IP_HOSTNAME_ON_SAVE = bool_from_env("CHECK_IP_HOSTNAME_ON_SAVE", True)
 ASSET_HOSTNAME_TEMPLATE = {
     "prefix": "{{ country_code|upper }}{{ code|upper }}",
@@ -317,9 +315,7 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("ralph.lib.permissions.api.RalphPermission",),
-    "DEFAULT_FILTER_BACKENDS": (
-        "ralph.lib.permissions.api.PermissionsForObjectFilter",
-    ),
+    "DEFAULT_FILTER_BACKENDS": ("ralph.lib.permissions.api.PermissionsForObjectFilter",),
     "DEFAULT_RENDERER_CLASSES": (
         "rest_framework.renderers.JSONRenderer",
         "ralph.lib.api.utils.NoFiltersBrowsableAPIRenderer",
@@ -345,9 +341,7 @@ if API_THROTTLING:
     REST_FRAMEWORK.update(
         {
             "DEFAULT_THROTTLE_CLASSES": ("rest_framework.throttling.UserRateThrottle",),
-            "DEFAULT_THROTTLE_RATES": {
-                "user": os.environ.get("API_THROTTLING_USER", "5000/hour")
-            },
+            "DEFAULT_THROTTLE_RATES": {"user": os.environ.get("API_THROTTLING_USER", "5000/hour")},
         }
     )
 
@@ -365,9 +359,7 @@ if REDIS_SENTINEL_ENABLED:
     if not REDIS_SENTINEL_HOSTS:
         raise ImproperlyConfigured("No sentinel hosts configured")
     REDIS_CLUSTER_NAME = os.environ.get("REDIS_CLUSTER_NAME", "ralph_ng")
-    REDIS_SENTINEL_SOCKET_TIMEOUT = float(
-        os.environ.get("REDIS_SENTINEL_SOCKET_TIMEOUT", 1.0)
-    )  # noqa
+    REDIS_SENTINEL_SOCKET_TIMEOUT = float(os.environ.get("REDIS_SENTINEL_SOCKET_TIMEOUT", 1.0))  # noqa
 
     sentinel = Sentinel(
         REDIS_SENTINEL_HOSTS,
@@ -419,9 +411,7 @@ BACK_OFFICE_ASSET_AUTO_ASSIGN_HOSTNAME = bool_from_env(
     "BACK_OFFICE_ASSET_AUTO_ASSIGN_HOSTNAME", False
 )
 
-BACKOFFICE_HOSTNAME_FIELD_READONLY = bool_from_env(
-    "BACKOFFICE_HOSTNAME_FIELD_READONLY", False
-)
+BACKOFFICE_HOSTNAME_FIELD_READONLY = bool_from_env("BACKOFFICE_HOSTNAME_FIELD_READONLY", False)
 
 TAGGIT_CASE_INSENSITIVE = True  # case insensitive tags
 
@@ -458,12 +448,8 @@ RALPH_INTERNAL_SERVICES = {
 
 # Switchport netmaker refresh tuning. MAX_PARALLEL bounds simultaneous backend
 # refreshes so the lock-less switchApp backend is not overloaded.
-SWITCHPORT_REFRESH_MAX_PARALLEL = int(
-    os.environ.get("SWITCHPORT_REFRESH_MAX_PARALLEL", 4)
-)
-SWITCHPORT_REFRESH_LOCK_TIMEOUT = int(
-    os.environ.get("SWITCHPORT_REFRESH_LOCK_TIMEOUT", 300)
-)
+SWITCHPORT_REFRESH_MAX_PARALLEL = int(os.environ.get("SWITCHPORT_REFRESH_MAX_PARALLEL", 4))
+SWITCHPORT_REFRESH_LOCK_TIMEOUT = int(os.environ.get("SWITCHPORT_REFRESH_LOCK_TIMEOUT", 300))
 SWITCHPORT_REFRESH_LOCK_BLOCKING_TIMEOUT = int(
     os.environ.get("SWITCHPORT_REFRESH_LOCK_BLOCKING_TIMEOUT", 120)
 )
@@ -510,13 +496,9 @@ INVENTORY_TAG_USER = os.environ.get("INVENTORY_TAG_USER", "INV_CONF")
 INVENTORY_TAG_MISSING = os.environ.get("INVENTORY_TAG_MISSING", "INV_MISSING")
 INVENTORY_TAG_APPEND_DATE = bool_from_env("INVENTORY_TAG_APPEND_DATE", True)
 
-ENABLE_ACCEPT_ASSETS_FOR_CURRENT_USER = bool_from_env(
-    "ENABLE_ACCEPT_ASSETS_FOR_CURRENT_USER"
-)  # noqa
+ENABLE_ACCEPT_ASSETS_FOR_CURRENT_USER = bool_from_env("ENABLE_ACCEPT_ASSETS_FOR_CURRENT_USER")  # noqa
 ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG = {
-    "TRANSITION_ID": os.environ.get(
-        "ACCEPT_ASSETS_FOR_CURRENT_USER_TRANSITION_ID", None
-    ),
+    "TRANSITION_ID": os.environ.get("ACCEPT_ASSETS_FOR_CURRENT_USER_TRANSITION_ID", None),
     "TRANSITION_SIM_ID": os.environ.get("ACCEPT_SIMCARD_FOR_CURRENT_USER_CONFIG", None),
     "TRANSITION_ACCESS_CARD_ID": os.environ.get(
         "ACCEPT_ACCESS_CARD_FOR_CURRENT_USER_CONFIG", None
@@ -531,16 +513,12 @@ ACCEPT_ASSETS_FOR_CURRENT_USER_CONFIG = {
     "ACCESS_CARD_ACCEPT_ACCEPT_STATUS": os.environ.get(
         "ACCESS_CARD_FOR_CURRENT_USER_BACK_OFFICE_ACCEPT_STATUS", 2
     ),
-    "LOAN_TRANSITION_ID": os.environ.get(
-        "LOAN_ASSETS_FOR_CURRENT_USER_TRANSITION_ID", None
-    ),
+    "LOAN_TRANSITION_ID": os.environ.get("LOAN_ASSETS_FOR_CURRENT_USER_TRANSITION_ID", None),
     # loan_in_progress by default
     "BACK_OFFICE_ACCEPT_LOAN_STATUS": os.environ.get(
         "LOAN_ASSETS_FOR_CURRENT_USER_BACK_OFFICE_ACCEPT_STATUS", 13
     ),
-    "RETURN_TRANSITION_ID": os.environ.get(
-        "RETURN_ASSETS_FOR_CURRENT_USER_TRANSITION_ID", None
-    ),
+    "RETURN_TRANSITION_ID": os.environ.get("RETURN_ASSETS_FOR_CURRENT_USER_TRANSITION_ID", None),
     # waiting_for_return by default
     "BACK_OFFICE_ACCEPT_RETURN_STATUS": os.environ.get(
         "RETURN_ASSESTS_FOR_CURRENT_USER_BACK_OFFICE_ACCEPT_STATUS", 14
@@ -568,9 +546,7 @@ RELEASE_REPORT_CONFIG = {
 MAP_IMPORTED_ID_TO_NEW_ID = False
 
 OPENSTACK_INSTANCES = json_from_env("OPENSTACK_INSTANCES", [])
-DEFAULT_OPENSTACK_PROVIDER_NAME = os.environ.get(
-    "DEFAULT_OPENSTACK_PROVIDER_NAME", "openstack"
-)
+DEFAULT_OPENSTACK_PROVIDER_NAME = os.environ.get("DEFAULT_OPENSTACK_PROVIDER_NAME", "openstack")
 # issue tracker url for Operations urls (issues ids) - should end with /
 ISSUE_TRACKER_URL = os.environ.get("ISSUE_TRACKER_URL", "")
 
@@ -648,9 +624,7 @@ CHANGE_MGMT_PROCESSOR = os.getenv(
 )
 
 HERMES_CHANGE_MGMT_TOPICS = {
-    "CHANGES": os.getenv(
-        "HERMES_CHANGE_MGMT_CHANGES_TOPIC", "hermes.changemanagement.changes"
-    )
+    "CHANGES": os.getenv("HERMES_CHANGE_MGMT_CHANGES_TOPIC", "hermes.changemanagement.changes")
 }
 
 
@@ -664,9 +638,7 @@ HERMES["ENABLED"] = ENABLE_HERMES_INTEGRATION
 HERMES_HOST_UPDATE_TOPIC_NAME = os.environ.get("HERMES_HOST_UPDATE_TOPIC_NAME", None)
 
 HERMES_SERVICE_TOPICS = {
-    "UPDATE": os.environ.get(
-        "SERVICE_UPDATE_HERMES_TOPIC_NAME", "hermes.service.update"
-    )
+    "UPDATE": os.environ.get("SERVICE_UPDATE_HERMES_TOPIC_NAME", "hermes.service.update")
 }
 
 if types := os.getenv("HERMES_SERVICE_SYNC_COMPONENTS_TYPES", default="service"):

@@ -212,9 +212,7 @@ class EthernetViewSet(RalphAPIViewSet):
         instance = self.get_object()
         try:
             if instance and instance.ipaddress.dhcp_expose:
-                raise ValidationError(
-                    "Could not delete Ethernet when it is exposed in DHCP"
-                )
+                raise ValidationError("Could not delete Ethernet when it is exposed in DHCP")
         except IPAddress.DoesNotExist:
             pass
         return super().destroy(request, *args, **kwargs)
@@ -351,9 +349,7 @@ class DCHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
                     return ClusterSerializer
                 else:
                     raise NotFound()
-            except (
-                AssertionError
-            ):  # for some reason when opening browsable api this raises
+            except AssertionError:  # for some reason when opening browsable api this raises
                 pass
         return ralph.assets.api.serializers_dchosts.DCHostSerializer
 

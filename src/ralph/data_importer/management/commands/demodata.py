@@ -24,7 +24,7 @@ from ralph.assets.tests.factories import (
 from ralph.back_office.models import BackOfficeAsset, BackOfficeAssetStatus
 from ralph.back_office.tests.factories import BackOfficeAssetFactory
 from ralph.data_center.models.choices import DataCenterAssetStatus
-from ralph.data_center.models.physical import DataCenterAsset
+from ralph.data_center.models.physical import DataCenterAsset, Rack
 from ralph.data_center.tests.factories import (
     AccessoryFactory,
     DataCenterAssetFactory,
@@ -53,13 +53,7 @@ def get_imei(n):
 
     def luhn_residue(digits):
         """Luhn algorithm"""
-        return (
-            sum(
-                sum(divmod(int(d) * (1 + i % 2), 10))
-                for i, d in enumerate(digits[::-1])
-            )
-            % 10
-        )
+        return sum(sum(divmod(int(d) * (1 + i % 2), 10)) for i, d in enumerate(digits[::-1])) % 10
 
     part = "".join(str(random.randrange(0, 9)) for _ in range(n - 1))
     res = luhn_residue("{}{}".format(part, 0))
@@ -100,15 +94,13 @@ class Command(BaseCommand):
     def generate_data_center(self):
         self.stdout.write("Generating Data Center assets")
         data_center_status = DataCenterAssetStatus()
-        parent_category = DataCenterCategoryFactory(
-            name="DATA CENTER", imei_required=False
-        )
-        for i in range(2):
+        parent_category = DataCenterCategoryFactory(name="DATA CENTER", imei_required=False)
+        for _ in range(2):
             server_room = ServerRoomFactory()
             visualization_col = 1
             visualization_row = 1
-            for j in range(10):
-                rack = RackFactory(
+            for _ in range(10):
+                rack: Rack = RackFactory(  # noqa
                     server_room=server_room,
                     visualization_row=visualization_row,
                     visualization_col=visualization_col,
@@ -121,8 +113,8 @@ class Command(BaseCommand):
                 accessory = AccessoryFactory()
                 RackAccessoryFactory(rack=rack, accessory=accessory)
                 position = 1
-                for status_id, name in data_center_status:
-                    for i in range(2):
+                for status_id, _ in data_center_status:
+                    for _ in range(2):
                         asset_model = DataCenterAssetModelFactory(
                             category=DataCenterCategoryFactory(parent=parent_category)
                         )
@@ -170,12 +162,12 @@ class Command(BaseCommand):
         back_office_status = BackOfficeAssetStatus()
         per_page = 2
         parent_category = CategoryFactory(name="BACK OFFICE", imei_required=False)
-        for i in range(3):
+        for _ in range(3):
             ProfitCenterFactory()
             BusinessSegmentFactory()
 
-        for status_id, name in back_office_status:
-            for i in range(int(per_page)):
+        for status_id, _ in back_office_status:
+            for _ in range(int(per_page)):
                 BackOfficeAssetFactory(
                     status=status_id,
                     user=self.get_user(),
@@ -277,9 +269,7 @@ class Command(BaseCommand):
         report_template = ReportTemplate.objects.create(
             language=language, default=True, report=report
         )
-        with open(
-            os.path.join(settings.BASE_DIR, "data_importer/data/release.odt"), "rb"
-        ) as f:
+        with open(os.path.join(settings.BASE_DIR, "data_importer/data/release.odt"), "rb") as f:
             report_template.template.save("release.odt", File(f))
 
         bo_content_type = ContentType.objects.get_for_model(BackOfficeAsset)
@@ -369,25 +359,21 @@ class Command(BaseCommand):
 
     def generate_licence(self):
         self.stdout.write("Generating Licences")
-        for i in range(self.object_limit):
+        for _ in range(self.object_limit):
             licence = LicenceFactory()
             LicenceUser.objects.create(licence=licence, user=self.get_user())
-            for j in range(3):
-                back_office_asset = BaseObjectLicenceFactory(
-                    licence=licence
-                ).base_object
+            for _ in range(3):
+                back_office_asset = BaseObjectLicenceFactory(licence=licence).base_object
                 back_office_asset.owner = self.get_user()
                 back_office_asset.user = self.get_user()
                 back_office_asset.save()
 
             licence = LicenceFactory()
             LicenceUser.objects.create(licence=licence, user=self.get_user())
-            for j in range(3):
-                DataCenterAssetLicenceFactory(licence=licence)
+            DataCenterAssetLicenceFactory.create_batch(3, licence=licence)
 
     def generate_users(self):
-        for i in range(self.object_limit):
-            UserFactory()
+        UserFactory.create_batch(self.object_limit)
         return RalphUser.objects.all()
 
     def get_user(self):
@@ -397,9 +383,9 @@ class Command(BaseCommand):
 
     def generate_support(self):
         self.stdout.write("Generating Supports")
-        for i in range(self.object_limit):
+        for _ in range(self.object_limit):
             # BaseObjectsSupportFactory automatically generates Support
-            for j in range(3):
+            for _ in range(3):
                 back_office_asset = BaseObjectsSupportFactory().baseobject
                 back_office_asset.owner = self.get_user()
                 back_office_asset.user = self.get_user()
@@ -407,8 +393,7 @@ class Command(BaseCommand):
 
     def generate_cloud_images(self):
         self.stdout.write("Generating Cloud Images")
-        for i in range(self.object_limit):
-            CloudImageFactory()
+        CloudImageFactory.create_batch(self.object_limit)
 
     def handle(self, *args, **options):
         apps = options.get("apps").split(",")

@@ -73,9 +73,7 @@ class NetmakerSwitchportBackendBase(SwitchportSyncBackend):
         return response["hostnames"]
 
     def get_switchports(self, switch_hostname: str) -> SwitchDTO:
-        response = requests.get(
-            self._switchports_url(switch_hostname), headers=self._auth()
-        )
+        response = requests.get(self._switchports_url(switch_hostname), headers=self._auth())
         response.raise_for_status()
         response: dict[str, Any] = response.json()
         if not response.get("success"):
@@ -92,9 +90,7 @@ class NetmakerSwitchportBackendBase(SwitchportSyncBackend):
         request, so this call blocks until the switch data has been re-pulled
         from netmaker and stored on the backend side.
         """
-        response = requests.post(
-            self._switch_refresh_url(switch_hostname), headers=self._auth()
-        )
+        response = requests.post(self._switch_refresh_url(switch_hostname), headers=self._auth())
         response.raise_for_status()
         response_dict: dict[str, Any] = response.json()
         if not response_dict.get("success"):
@@ -109,7 +105,5 @@ class NetmakerSwitchportBackend(NetmakerSwitchportBackendBase, StaticTokenMixin)
     pass
 
 
-class NetmakerSwitchportBackendOauth(
-    NetmakerSwitchportBackendBase, OauthTokenAuthMixin
-):
+class NetmakerSwitchportBackendOauth(NetmakerSwitchportBackendBase, OauthTokenAuthMixin):
     pass

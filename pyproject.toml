@@ -97,6 +97,7 @@ dependencies = [
   "requests-oauthlib==1.3.0",
   "requests==2.32.4",
   "rq==1.16.2",
+  "ruff>=0.16.2",
   "setuptools<66.0",
   "simplejson==3.8.2",
   "six==1.16.0",
@@ -126,15 +127,15 @@ exclude = [
   "*local.py",
   "*migrations*"
 ]
+indent-width = 4
+line-length = 99
 
 [tool.ruff.lint]
 ignore = []
-# Add "B" (bugbear) in the future
-select = ["E4", "E7", "E9", "F"]
+select = ["B", "E", "F"]
 
 [tool.uv]
 default-groups = ["dev", "test"]
 
 [tools.ruff.format]
 line-ending = "auto"
-line-length = 88

@@ -35,9 +35,7 @@ class PermissionsByFieldTestCase(TestCase):
             username="user_with_perm",
             password="password",
         )
-        self.user_with_perm.user_permissions.add(
-            Permission.objects.get(codename=self.codename)
-        )
+        self.user_with_perm.user_permissions.add(Permission.objects.get(codename=self.codename))
         self.root = get_user_model().objects.create_superuser(
             username="root", password="password", email="email@email.pl"
         )

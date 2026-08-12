@@ -165,15 +165,11 @@ class TransitionActionTest(TransitionActionTestMixin, TransitionTestCase):
         )
         self.assertEqual(request.status_code, 200)
         self.assertEqual(request.data["actions"]["POST"]["remarks"]["type"], "string")
-        self.assertEqual(
-            request.data["actions"]["POST"]["loan_end_date"]["type"], "date"
-        )
+        self.assertEqual(request.data["actions"]["POST"]["loan_end_date"]["type"], "date")
         self.assertEqual(request.data["actions"]["POST"]["country"]["type"], "choice")
 
 
-class TestAsyncActions(
-    TransitionActionTestMixin, TransitionTestCaseMixin, TransactionTestCase
-):
+class TestAsyncActions(TransitionActionTestMixin, TransitionTestCaseMixin, TransactionTestCase):
     def test_async_api(self):
         response = self.api_client.post(
             reverse("transitions-view", args=(self.transition_2.id, self.bo.pk)),
@@ -245,9 +241,5 @@ class TestAsyncActions(
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.data,
-            {
-                "non_field_errors": [
-                    "Another async transition for this object is already started"
-                ]
-            },
+            {"non_field_errors": ["Another async transition for this object is already started"]},
         )

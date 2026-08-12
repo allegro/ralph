@@ -38,15 +38,15 @@ class ImportedObjects(TimeStampMixin, models.Model):
                 old_object_pk=old_pk,
                 content_type=ContentType.objects.get_for_model(model),
             )
-        except cls.DoesNotExist:
-            raise ImportedObjectDoesNotExist()
+        except cls.DoesNotExist as e:
+            raise ImportedObjectDoesNotExist() from e
         else:
             try:
                 return model.objects.get(id=imported_obj.object_pk)
-            except model.DoesNotExist:
+            except model.DoesNotExist as e:
                 raise ImportedObjectDoesNotExist(
                     "Target object does not exist (it was probably removed)"
-                )
+                ) from e
 
     @classmethod
     def create(cls, obj, old_pk):
@@ -82,7 +82,7 @@ class ImportedObjects(TimeStampMixin, models.Model):
                 object_pk=obj.pk,
                 content_type=ContentType.objects.get_for_model(obj._meta.model),
             )
-        except cls.DoesNotExist:
-            raise ImportedObjectDoesNotExist()
+        except cls.DoesNotExist as e:
+            raise ImportedObjectDoesNotExist() from e
         else:
             return imported_obj.old_object_pk

@@ -67,9 +67,7 @@ class DNSServerGroupAdmin(RalphAdmin):
         )
 
     def servers_formatted(self, obj):
-        return ", ".join(
-            [d.dns_server.ip_address for d in obj.server_group_order.all()]
-        )
+        return ", ".join([d.dns_server.ip_address for d in obj.server_group_order.all()])
 
     servers_formatted.short_description = "DNS Servers"
 

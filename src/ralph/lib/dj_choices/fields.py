@@ -60,10 +60,10 @@ class ChoiceField(six.with_metaclass(SubfieldBase, IntegerField)):
             try:
                 if not issubclass(kwargs["choices"], Choices):
                     raise TypeError()
-            except TypeError:
+            except TypeError as e:
                 raise exceptions.ImproperlyConfigured(
                     "dj.choices class required as `choices` argument."
-                )
+                ) from e
         self.choice_class = kwargs["choices"]
         self.item_getter = kwargs.get("item", lambda x: (x.id,))
         kwargs["choices"] = self.choice_class(
@@ -84,10 +84,10 @@ class ChoiceField(six.with_metaclass(SubfieldBase, IntegerField)):
             return value
         try:
             return self.choice_class.from_id(value)
-        except (TypeError, ValueError):
+        except (TypeError, ValueError) as e:
             raise exceptions.ValidationError(
                 self.error_messages["invalid_choice"] % {"value": value}
-            )
+            ) from e
 
     # def from_db_value(self, value, expression, connection, context):
     def from_db_value(self, value, *_, **__):
@@ -121,9 +121,7 @@ class ChoiceField(six.with_metaclass(SubfieldBase, IntegerField)):
         return super(ChoiceField, self).get_prep_lookup(lookup_type, value)
 
     def validate(self, value, model_instance):
-        return super(ChoiceField, self).validate(
-            self.get_prep_value(value), model_instance
-        )
+        return super(ChoiceField, self).validate(self.get_prep_value(value), model_instance)
 
     def formfield(self, form_class=forms.CharField, **kwargs):
         """Has to be defined as a whole without doing super() because of
@@ -141,9 +139,7 @@ class ChoiceField(six.with_metaclass(SubfieldBase, IntegerField)):
                 defaults["initial"] = self.get_default()
         if self.choices:
             # Fields with choices get special treatment.
-            include_blank = self.blank or not (
-                self.has_default() or "initial" in kwargs
-            )
+            include_blank = self.blank or not (self.has_default() or "initial" in kwargs)
             defaults["choices"] = self.get_choices(include_blank=include_blank)
             defaults["coerce"] = self.from_python  # XXX: changed
             if self.null:

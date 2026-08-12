@@ -83,9 +83,7 @@ class BaseFormattersTestCase(TestCase):
         headers = ["col1", "col2"]
         rows = [["a", "b"], ["c", "d"]]
         result = format_table(headers, rows)
-        self.assertEqual(
-            len(result), 7
-        )  # separator, header, separator, 2 rows, separator, count
+        self.assertEqual(len(result), 7)  # separator, header, separator, 2 rows, separator, count
         self.assertIn("(2 rows)", result[-1])
 
 
@@ -131,7 +129,7 @@ class ExportGroupPermissionsTestCase(TestCase):
     def test_export_format_is_app_label_codename(self):
         result = export_all_group_permissions()
 
-        for group_name, perm_keys in result.items():
+        for perm_keys in result.values():
             for perm_key in perm_keys:
                 parts = perm_key.split(".", 1)
                 self.assertEqual(len(parts), 2)
@@ -167,9 +165,7 @@ class RestoreGroupPermissionsTestCase(TestCase):
         self.assertIn("not found", error)
 
     def test_assign_permission_to_group_invalid_permission(self):
-        success, error = assign_permission_to_group(
-            self.group.name, "invalid.permission"
-        )
+        success, error = assign_permission_to_group(self.group.name, "invalid.permission")
 
         self.assertFalse(success)
         self.assertIn("not found", error)
@@ -207,9 +203,7 @@ class RestoreGroupPermissionsTestCase(TestCase):
     def test_restore_command_file_not_found(self):
         out = StringIO()
         with self.assertRaises(CommandError) as ctx:
-            call_command(
-                "restore_group_permissions", "/nonexistent/file.json", stderr=out
-            )
+            call_command("restore_group_permissions", "/nonexistent/file.json", stderr=out)
 
         self.assertIn("File not found", str(ctx.exception))
 
@@ -246,9 +240,7 @@ class CleanupExtraViewPermissionsTestCase(TestCase):
         output = out.getvalue()
         self.assertIn("Dry run", output)
         self.assertTrue(
-            Permission.objects.filter(
-                codename="can_view_extra_orphanedtestview"
-            ).exists()
+            Permission.objects.filter(codename="can_view_extra_orphanedtestview").exists()
         )
 
     def test_cleanup_with_force_deletes(self):
@@ -258,9 +250,7 @@ class CleanupExtraViewPermissionsTestCase(TestCase):
         output = out.getvalue()
         self.assertIn("Deleted", output)
         self.assertFalse(
-            Permission.objects.filter(
-                codename="can_view_extra_orphanedtestview"
-            ).exists()
+            Permission.objects.filter(codename="can_view_extra_orphanedtestview").exists()
         )
 
     def test_cleanup_exclude_option(self):
@@ -274,9 +264,7 @@ class CleanupExtraViewPermissionsTestCase(TestCase):
 
         # Permission should still exist because it was excluded
         self.assertTrue(
-            Permission.objects.filter(
-                codename="can_view_extra_orphanedtestview"
-            ).exists()
+            Permission.objects.filter(codename="can_view_extra_orphanedtestview").exists()
         )
 
     def test_cleanup_no_orphaned_permissions(self):

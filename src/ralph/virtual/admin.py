@@ -48,9 +48,7 @@ class VirtualServerTypeForm(RalphAdmin):
 
 
 class VirtualServerForm(RalphAdminForm):
-    HYPERVISOR_TYPE_ERR_MSG = _(
-        "Hypervisor must be one of DataCenterAsset or CloudHost"
-    )
+    HYPERVISOR_TYPE_ERR_MSG = _("Hypervisor must be one of DataCenterAsset or CloudHost")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -63,9 +61,7 @@ class VirtualServerForm(RalphAdminForm):
         return value
 
     def _validate_parent_type(self, value):
-        allowed_types = ContentType.objects.get_for_models(
-            DataCenterAsset, CloudHost
-        ).values()
+        allowed_types = ContentType.objects.get_for_models(DataCenterAsset, CloudHost).values()
         if value.content_type not in allowed_types:
             raise ValidationError(self.HYPERVISOR_TYPE_ERR_MSG)
 
@@ -106,9 +102,7 @@ class VirtualServerAdmin(
     search_fields = ["hostname", "sn", "ethernet_set__ipaddress__hostname"]
     list_filter_prefix = [BaseObjectHostnameFilter]
     list_filter_postfix = ["sn", "parent", TagsListFilter]
-    list_filter = generate_list_filter_with_common_fields(
-        list_filter_prefix, list_filter_postfix
-    )
+    list_filter = generate_list_filter_with_common_fields(list_filter_prefix, list_filter_postfix)
     list_display = [
         "hostname",
         "type",
@@ -166,9 +160,7 @@ class VirtualServerAdmin(
     def parent_(self, obj):
         try:
             parent = obj.polymorphic_parent
-            return '<a href="{}">{}</a>'.format(
-                parent.get_absolute_url(), parent.hostname
-            )
+            return '<a href="{}">{}</a>'.format(parent.get_absolute_url(), parent.hostname)
         except:  # noqa  # this happens when no parent or parent doesn't have a hostname
             return "-"
 
@@ -206,9 +198,7 @@ class CloudHostTabularInline(RalphTabularInline):
         if obj.hypervisor is None:
             return _("Not set")
         return '<a href="{}">{}</a>'.format(
-            reverse(
-                "admin:data_center_datacenterasset_change", args=(obj.hypervisor.id,)
-            ),
+            reverse("admin:data_center_datacenterasset_change", args=(obj.hypervisor.id,)),
             obj.hypervisor.hostname,
         )
 
@@ -285,9 +275,7 @@ class CloudHostAdmin(
         TagsListFilter,
         "hypervisor",
     ]
-    list_filter = generate_list_filter_with_common_fields(
-        list_filter_prefix, list_filter_postfix
-    )
+    list_filter = generate_list_filter_with_common_fields(list_filter_prefix, list_filter_postfix)
     list_select_related = [
         "cloudflavor",
         "cloudprovider",
@@ -397,9 +385,7 @@ class CloudHostAdmin(
         if obj.hypervisor is None:
             return _("Not set")
         return '<a href="{}">{}</a>'.format(
-            reverse(
-                "admin:data_center_datacenterasset_change", args=(obj.hypervisor.id,)
-            ),
+            reverse("admin:data_center_datacenterasset_change", args=(obj.hypervisor.id,)),
             obj.hypervisor.hostname,
         )
 
@@ -451,9 +437,7 @@ class CloudHostAdmin(
     def get_service(self, obj):
         if obj.service_env_id:
             return '<a href="{}">{}</a>'.format(
-                reverse(
-                    "admin:assets_service_change", args=(obj.service_env.service_id,)
-                ),
+                reverse("admin:assets_service_change", args=(obj.service_env.service_id,)),
                 obj.service_env,
             )
         return ""

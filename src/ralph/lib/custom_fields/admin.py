@@ -100,9 +100,7 @@ class CustomFieldValueAdminMixin(object):
         """
         result = []
         obj_content_type_id = ContentType.objects.get_for_model(obj).id
-        for cfv in obj.custom_fields.select_related("custom_field").order_by(
-            "custom_field__name"
-        ):
+        for cfv in obj.custom_fields.select_related("custom_field").order_by("custom_field__name"):
             if cfv.content_type_id == obj_content_type_id and cfv.object_id == obj.pk:
                 object = "-"
                 object_url = ""

@@ -23,12 +23,10 @@ def assign_management_hostname_and_ip(modeladmin, request, queryset):
             }:
                 raise RuntimeError("asset should be in status 'in use' or 'to deploy'")
             try:
-                rack_number_int = int(
-                    re.match(r".*?(\d+).*?", dca.rack.name).groups()[0]
-                )
+                rack_number_int = int(re.match(r".*?(\d+).*?", dca.rack.name).groups()[0])
                 rack_number = "%03d" % rack_number_int  # type: str
-            except:  # noqa
-                raise RuntimeError(f"invalid rack name {dca.rack.name}")
+            except Exception as e:  # noqa
+                raise RuntimeError(f"invalid rack name {dca.rack.name}") from e
 
             hostname = _infer_hostname(dca, rack_number)
             if not hostname:
@@ -61,9 +59,7 @@ def assign_management_hostname_and_ip(modeladmin, request, queryset):
             return
 
 
-assign_management_hostname_and_ip.short_description = _(
-    "Assign management hostname and IP"
-)
+assign_management_hostname_and_ip.short_description = _("Assign management hostname and IP")
 
 
 def _infer_hostname(asset: DataCenterAsset, rack_number: str) -> Union[str, None]:
@@ -88,15 +84,15 @@ def _infer_ip(asset: DataCenterAsset, rack_number: str) -> Union[str, None]:
         # convert to int to remove zeros at the beginning
         rack_ip_part = int(rack_number[1] + rack_number[0] + rack_number[2])
         assert int(rack_ip_part) <= 255
-    except:  # noqa
-        raise RuntimeError(f"invalid rack name {asset.rack.name}")
+    except Exception as e:  # noqa
+        raise RuntimeError(f"invalid rack name {asset.rack.name}") from e
 
     try:
         position_ip_part = asset.position + 200  # a magic number
         if ip_prefix and rack_ip_part and position_ip_part:
             return f"{ip_prefix}.{rack_ip_part}.{position_ip_part}"
-    except:  # noqa
-        raise RuntimeError("can't infer management IP address")
+    except Exception as e:  # noqa
+        raise RuntimeError("can't infer management IP address") from e
 
 
 def combine_racks_into_module(modeladmin, request, queryset):
@@ -134,6 +130,4 @@ def combine_racks_into_module(modeladmin, request, queryset):
     )
 
 
-combine_racks_into_module.short_description = _(
-    "Combine selected racks into a RackModule"
-)
+combine_racks_into_module.short_description = _("Combine selected racks into a RackModule")

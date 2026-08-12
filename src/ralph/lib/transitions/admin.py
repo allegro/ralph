@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from itertools import repeat
 
 from django.contrib.admin import TabularInline
 from django.contrib.contenttypes.models import ContentType
@@ -122,14 +121,10 @@ class TransitionAdminMixin(object):
         name = transition.name
 
         def transition_action_redirect(cls, request, queryset, transition):
-            base_url = reverse(
-                self.get_transition_bulk_url_name(), args=(transition.pk,)
-            )
+            base_url = reverse(self.get_transition_bulk_url_name(), args=(transition.pk,))
             ids = queryset.values_list("id", flat=True)
             back_url = request.META.get("HTTP_REFERER")
-            select_url = urlencode(
-                list(zip(repeat("select", len(ids)), ids)) + [("back_url", back_url)]
-            )
+            select_url = urlencode([("select", id_) for id_ in ids] + [("back_url", back_url)])
             return HttpResponseRedirect(base_url + "?" + select_url)
 
         return (

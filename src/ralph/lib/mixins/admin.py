@@ -36,9 +36,7 @@ class ParentChangeMixin(MemorizeBeforeStateMixin):
         if parent:
             message = None
             if obj:
-                message = self.get_add_message().format(
-                    parent.get_absolute_url(), parent
-                )
+                message = self.get_add_message().format(parent.get_absolute_url(), parent)
                 self.message_user(request, mark_safe(message))
         return super().response_add(request, obj, post_url_continue)
 
@@ -49,9 +47,7 @@ class ParentChangeMixin(MemorizeBeforeStateMixin):
         if parent and old_parent != parent:
             old_url = old_parent and old_parent.get_absolute_url() or ""
             parent_url = parent and parent.get_absolute_url() or ""
-            message = self.get_change_message().format(
-                old_url, old_parent, parent_url, parent
-            )
+            message = self.get_change_message().format(old_url, old_parent, parent_url, parent)
         if message:
             self.message_user(request, mark_safe(message))
         return super().response_change(request, obj)

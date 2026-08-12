@@ -7,7 +7,5 @@ class RalphRelatedField(QuerysetRelatedMixin, relations.PrimaryKeyRelatedField):
     pass
 
 
-class RalphHyperlinkedRelatedField(
-    QuerysetRelatedMixin, relations.HyperlinkedRelatedField
-):
+class RalphHyperlinkedRelatedField(QuerysetRelatedMixin, relations.HyperlinkedRelatedField):
     pass

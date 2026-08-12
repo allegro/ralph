@@ -83,9 +83,7 @@ class user_permission(object):  # noqa
         func._is_operator = True
         return type(self)(
             func,
-            name="({}: {}, {})".format(
-                operator_.__name__.rstrip("_").upper(), self, other
-            ),
+            name="({}: {}, {})".format(operator_.__name__.rstrip("_").upper(), self, other),
         )
 
     def __and__(self, other):
@@ -239,9 +237,7 @@ class PermByFieldMixin(models.Model, metaclass=PermissionsBase):
         blacklist = cls._permissions.blacklist
 
         for field in cls._meta.fields + cls._meta.many_to_many:
-            if field.name not in blacklist and cls.has_access_to_field(
-                field.name, user, action
-            ):
+            if field.name not in blacklist and cls.has_access_to_field(field.name, user, action):
                 result.add(field.name)
         # If the user does not have rights to view,
         # but has the right to change he can view the field

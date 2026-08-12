@@ -93,9 +93,7 @@ class DataImporterTestCase(TestCase):
 
     def test_importer_command_back_office_asset(self):
         """Test importer management command with BackOfficeAsset model."""
-        back_office_csv = os.path.join(
-            self.base_dir, "tests/samples/back_office_assets.csv"
-        )
+        back_office_csv = os.path.join(self.base_dir, "tests/samples/back_office_assets.csv")
         management.call_command(
             "importer",
             back_office_csv,
@@ -144,9 +142,7 @@ class DataImporterTestCase(TestCase):
         """Test importer management command with Warehouse model and
         tab separation file
         """
-        warehouse_csv = os.path.join(
-            self.base_dir, "tests/samples/warehouses_skipid.csv"
-        )
+        warehouse_csv = os.path.join(self.base_dir, "tests/samples/warehouses_skipid.csv")
         management.call_command(
             "importer",
             warehouse_csv,
@@ -169,9 +165,7 @@ class DataImporterTestCase(TestCase):
         """Test importer management command with Warehouse model and
         semicolon separation file
         """
-        warehouse_csv = os.path.join(
-            self.base_dir, "tests/samples/warehouses_semicolon.csv"
-        )
+        warehouse_csv = os.path.join(self.base_dir, "tests/samples/warehouses_semicolon.csv")
         management.call_command(
             "importer",
             warehouse_csv,
@@ -244,9 +238,7 @@ class IPManagementTestCase(TestCase):
         DataCenterAssetModelFactory(id=1, name="asset_model_1")
 
     def test_data_center_asset_is_imported_when_ip_management_is_created(self):
-        xlsx_path = os.path.join(
-            self.base_dir, "tests/samples/management_ip_existing.csv"
-        )
+        xlsx_path = os.path.join(self.base_dir, "tests/samples/management_ip_existing.csv")
         self.assertFalse(IPAddress.objects.filter(address="10.0.0.103").exists())
 
         management.call_command(
@@ -267,9 +259,7 @@ class IPManagementTestCase(TestCase):
         IPAddress.objects.create(address="10.0.0.103")
         self.assertTrue(IPAddress.objects.filter(address="10.0.0.103").exists())
 
-        xlsx_path = os.path.join(
-            self.base_dir, "tests/samples/management_ip_existing.csv"
-        )
+        xlsx_path = os.path.join(self.base_dir, "tests/samples/management_ip_existing.csv")
         management.call_command(
             "importer",
             xlsx_path,
@@ -380,9 +370,7 @@ class TestCreateTransitionsCommand(TestCase):
         except Transition.DoesNotExist as e:
             self.fail(e)
 
-        self.assertCountEqual(
-            actions, [action.name for action in transition.actions.all()]
-        )
+        self.assertCountEqual(actions, [action.name for action in transition.actions.all()])
 
 
 class TestCreateNetworkCommand(TestCase):
@@ -409,10 +397,7 @@ class TestCreateNetworkCommand(TestCase):
         self.assertEqual(expected_dc, network.data_center.name)
         self.assertCountEqual(
             expected_dns,
-            [
-                str(server.ip_address)
-                for server in network.dns_servers_group.servers.all()
-            ],
+            [str(server.ip_address) for server in network.dns_servers_group.servers.all()],
         )
 
     def test_dns_group_generated(self):
@@ -459,9 +444,7 @@ class TestCreatePrebootCommand(TestCase):
 
     def test_preboot_details(self):
         preboot = Preboot.objects.first()
-        kickstart = PrebootConfiguration.objects.filter(
-            type=PrebootItemType.kickstart.id
-        ).first()
+        kickstart = PrebootConfiguration.objects.filter(type=PrebootItemType.kickstart.id).first()
         ipxe = PrebootConfiguration.objects.filter(type=PrebootItemType.ipxe.id).first()
         self.assertIn(kickstart, preboot.items.all())
         self.assertIn(ipxe, preboot.items.all())
@@ -505,9 +488,7 @@ class TestInitialDataCommand(TestCase):
         ("10.0.1.0/24", "10.0.1.1", "10.0.0.11", "10.0.0.12"),
         ("10.0.2.0/24", "10.0.2.1", "10.0.0.11", "10.0.0.12"),
     )
-    def test_subnets_generated(
-        self, network_address, gateway_address, dns1_address, dns2_address
-    ):
+    def test_subnets_generated(self, network_address, gateway_address, dns1_address, dns2_address):
         try:
             network = Network.objects.get(name=network_address)
         except Network.DoesNotExist:
@@ -519,10 +500,7 @@ class TestInitialDataCommand(TestCase):
         self.assertEqual(gateway_address, str(network.gateway))
         self.assertCountEqual(
             expected_dns,
-            [
-                str(server.ip_address)
-                for server in network.dns_servers_group.servers.all()
-            ],
+            [str(server.ip_address) for server in network.dns_servers_group.servers.all()],
         )
 
     def test_user_created(self):
@@ -544,15 +522,11 @@ class TestInitialDataCommand(TestCase):
             try:
                 AssetModel.objects.get(name="Model {}".format(name))
             except AssetModel.DoesNotExist:
-                self.fail(
-                    'Asset model with name "Model {}" does not exist.'.format(name)
-                )
+                self.fail('Asset model with name "Model {}" does not exist.'.format(name))
         for name in ["A", "B", "C"]:
             try:
                 AssetModel.objects.get(name="Blade server model {}".format(name))
             except AssetModel.DoesNotExist:
                 self.fail(
-                    'Asset model with name "Blade server model {}" does not exist.'.format(
-                        name
-                    )
+                    'Asset model with name "Blade server model {}" does not exist.'.format(name)
                 )

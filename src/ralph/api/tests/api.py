@@ -82,7 +82,5 @@ router.register(r"manufacturers", ManufacturerViewSet)
 router.register(r"cars", CarViewSet)
 router.register(r"bars", BarViewSet)
 urlpatterns = [
-    re_path(
-        r"test-ralph-api/", include((router.urls, app_name), namespace="test-ralph-api")
-    ),
+    re_path(r"test-ralph-api/", include((router.urls, app_name), namespace="test-ralph-api")),
 ]
