@@ -97,7 +97,6 @@ dependencies = [
   "requests-oauthlib==1.3.0",
   "requests==2.32.4",
   "rq==1.16.2",
-  "ruff>=0.16.2",
   "setuptools<66.0",
   "simplejson==3.8.2",
   "six==1.16.0",
