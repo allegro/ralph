@@ -1,3 +1,10 @@
+ralph (20260813.1) jammy; urgency=medium
+
+  * Record missing history
+  * Extra linter rules
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Thu, 13 Aug 2026 09:58:48 +0000
+
 ralph (20260810.1) jammy; urgency=medium
 
   * nop
