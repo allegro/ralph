@@ -135,7 +135,7 @@ class RalphClient:
 
     def match_physical_and_cloud_hosts(self):
         """Connect CloudHosts and DC assets according to data from Ironic."""
-
+        os_conf: dict
         for os_conf in settings.OPENSTACK_INSTANCES:
             if (
                 os_conf.get("provider", DEFAULT_OPENSTACK_PROVIDER_NAME)
@@ -184,7 +184,7 @@ class RalphClient:
                 logger.info("Cloud host %s matched DC asset %s.", host.id, asset.id)
                 if host.hypervisor != asset:
                     host.hypervisor = asset
-                    host.save()
+                    self._save_object(host, "Modify hypervisor (_match_nodes_to_hosts)")
 
     @staticmethod
     def __get_flavor_objects():
