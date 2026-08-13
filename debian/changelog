@@ -1,3 +1,9 @@
+ralph (20260813.2) jammy; urgency=medium
+
+  * Remove ruff from prod
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Thu, 13 Aug 2026 11:52:28 +0000
+
 ralph (20260813.1) jammy; urgency=medium
 
   * Record missing history
