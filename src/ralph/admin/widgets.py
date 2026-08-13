@@ -35,12 +35,12 @@ class DatepickerWidgetMixin:
 
     @property
     def media(self):
-        js = map(
-            lambda x: os.path.join(*x),
-            [
+        js = (
+            os.path.join(*x)
+            for x in [
                 ("vendor", "js", "foundation-datepicker.js"),
                 ("src", "js", "foundation-datepicker-init.js"),
-            ],
+            ]
         )
         return forms.Media(js=[static(path) for path in js])
 
@@ -115,7 +115,7 @@ class PermissionsSelectWidget(forms.Widget):
             items = list(group_choices)
             local_values = [item[0] for item in items]
             # int(str(v)) makes sure it works both with ModelChoiceIteratorValue and regular int
-            local_selected = set([int(str(v)) for v in local_values]) & set(selected_choices or [])
+            local_selected = {int(str(v)) for v in local_values} & set(selected_choices or [])
             slug = slugify(group_key)
             label = title(group_key)
             logger.warning("%s: %d of %d", group_key, len(local_selected), len(local_values))

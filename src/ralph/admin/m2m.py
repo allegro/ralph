@@ -216,16 +216,7 @@ class InlineM2MAdminMixin(object):
             fields = kwargs.pop("fields")
         else:
             fields = flatten_fieldsets(self.get_fieldsets(request, obj))
-        excluded = self.get_exclude(request, obj)
-        exclude = [] if excluded is None else list(excluded)
-        exclude.extend(self.get_readonly_fields(request, obj))
-        if excluded is None and hasattr(self.form, "_meta") and self.form._meta.exclude:
-            # Take the custom ModelForm's Meta.exclude into account only if the
-            # InlineModelAdmin doesn't define its own.
-            exclude.extend(self.form._meta.exclude)
-        # If exclude is an empty list we use None, since that's the actual
-        # default.
-        exclude = exclude or None
+        exclude = self._get_exclude(request, obj, **kwargs)
         can_delete = self.can_delete and self.has_delete_permission(request, obj)
         defaults = {
             "form": self.form,
@@ -295,6 +286,19 @@ class InlineM2MAdminMixin(object):
             self.model = self.model._meta.auto_created
 
         return m2minlineformset_factory(self.parent_model, self.model, **defaults)
+
+    def _get_exclude(self, request, obj=None, **kwargs) -> list[str]:
+        excluded = self.get_exclude(request, obj)
+        exclude = [] if excluded is None else list(excluded)
+        exclude.extend(self.get_readonly_fields(request, obj))
+        if excluded is None and hasattr(self.form, "_meta") and self.form._meta.exclude:
+            # Take the custom ModelForm's Meta.exclude into account only if the
+            # InlineModelAdmin doesn't define its own.
+            exclude.extend(self.form._meta.exclude)
+        # If exclude is an empty list we use None, since that's the actual
+        # default.
+        exclude = exclude or None
+        return exclude
 
 
 class RalphTabularM2MInline(InlineM2MAdminMixin, RalphTabularInline):

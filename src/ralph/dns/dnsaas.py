@@ -165,7 +165,7 @@ class DNSaaS:
             + ipaddresses,
         )
         api_results = self.get_api_result(url)
-        ptrs = set([i["content"] for i in api_results if i["type"] == "PTR"])
+        ptrs = {i["content"] for i in api_results if i["type"] == "PTR"}
 
         for item in api_results:
             if item["type"] in {"A", "CNAME", "TXT"}:

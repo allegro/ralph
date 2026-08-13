@@ -144,7 +144,7 @@ class PolymorphicTestCaseNew(TestCase):
                 o1,
                 o2,
                 o3,
-            ) = [obj for obj in PolymorphicModelBaseTest.polymorphic_objects.all()]
+            ) = list(PolymorphicModelBaseTest.polymorphic_objects.all())
             self.assertEqual(o1.sth_related.name, "Rel1")
             self.assertEqual(o2.sth_related.name, "Rel2")
             self.assertEqual(o3.another_related.name, "Rel3")
@@ -155,13 +155,12 @@ class PolymorphicTestCaseNew(TestCase):
         Resulting in 1 + NUM_MODELS queries (base query + separate query for each descendant model)
         """
         with self.assertNumQueries(3):
-            o1, o2, o3 = [
-                obj
-                for obj in PolymorphicModelBaseTest.polymorphic_objects.polymorphic_select_related(
+            o1, o2, o3 = list(
+                PolymorphicModelBaseTest.polymorphic_objects.polymorphic_select_related(
                     PolymorphicModelTest=["sth_related"],
                     PolymorphicModelTest2=["another_related"],
                 ).all()
-            ]
+            )
             self.assertEqual(o1.sth_related.name, "Rel1")
             self.assertEqual(o2.sth_related.name, "Rel2")
             self.assertEqual(o3.another_related.name, "Rel3")
@@ -173,13 +172,12 @@ class PolymorphicTestCaseNew(TestCase):
         (base query + separate query for each descendant model + separate query for each prefetch)
         """
         with self.assertNumQueries(5):
-            o1, o2, o3 = [
-                obj
-                for obj in PolymorphicModelBaseTest.polymorphic_objects.polymorphic_prefetch_related(  # noqa
+            o1, o2, o3 = list(
+                PolymorphicModelBaseTest.polymorphic_objects.polymorphic_prefetch_related(  # noqa
                     PolymorphicModelTest=["sth_related"],
                     PolymorphicModelTest2=["another_related"],
                 ).all()
-            ]
+            )
             self.assertEqual(o1.sth_related.name, "Rel1")
             self.assertEqual(o2.sth_related.name, "Rel2")
             self.assertEqual(o3.another_related.name, "Rel3")
@@ -190,12 +188,11 @@ class PolymorphicTestCaseNew(TestCase):
         Resulting in 1 + NUM_MODELS (that actually have that field)
         """
         with self.assertNumQueries(2):
-            (o3,) = [
-                obj
-                for obj in PolymorphicModelBaseTest.polymorphic_objects.polymorphic_filter(
+            (o3,) = list(
+                PolymorphicModelBaseTest.polymorphic_objects.polymorphic_filter(
                     another_related__name="Rel3"
                 )
-            ]
+            )
             self.assertEqual(o3.id, self.pol_3.id)
 
     def test_m2m_to_polymorphic_models(self):
@@ -210,9 +207,9 @@ class PolymorphicTestCaseNew(TestCase):
 
         with self.assertNumQueries(5):
             m1_, m2_ = SomeM2MModel.objects.prefetch_related("polymorphics__sth_related").all()
-            z1_, z2_, z3_ = [o for o in m1_.polymorphics.all()]
+            z1_, z2_, z3_ = list(m1_.polymorphics.all())
             self.assertListEqual([z1_.id, z2_.id, z3_.id], [z1.id, z2.id, z3.id])
-            z2_, z3_, z4_ = [o for o in m2_.polymorphics.all()]
+            z2_, z3_, z4_ = list(m2_.polymorphics.all())
             self.assertListEqual([z2_.id, z3_.id, z4_.id], [z2.id, z3.id, z4.id])
 
     def test_polymorphics_objects_filter_with_prefetch(self):
@@ -220,10 +217,9 @@ class PolymorphicTestCaseNew(TestCase):
         _ = PolymorphicModelTest.objects.create(sth_related=self.sth_related)
 
         with self.assertNumQueries(4):
-            (item,) = [
-                item
-                for item in PolymorphicModelBaseTest.polymorphic_objects.filter(
-                    id=z1.id
-                ).prefetch_related("sth_related")
-            ]
+            (item,) = list(
+                PolymorphicModelBaseTest.polymorphic_objects.filter(id=z1.id).prefetch_related(
+                    "sth_related"
+                )
+            )
             self.assertEqual(item.sth_related.name, "Rel1")

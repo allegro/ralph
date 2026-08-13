@@ -17,32 +17,30 @@ SiteTree.current_app_is_admin = lambda self: False
 # import custom urls from each api module
 # notice that each module should have `urlpatters` variable defined
 # (as empty list if there is any custom url)
-api_urls = list(
-    map(
-        lambda u: re_path(r"^", include(u)),
-        [
-            "ralph.access_cards.api",
-            "ralph.accounts.api",
-            "ralph.assets.api.routers",
-            "ralph.back_office.api",
-            "ralph.dashboards.api.routers",
-            "ralph.data_center.api.routers",
-            "ralph.dc_view.urls.api",
-            "ralph.dhcp.api",
-            "ralph.domains.api",
-            "ralph.operations.api",
-            "ralph.supports.api",
-            "ralph.sim_cards.api",
-            "ralph.ssl_certificates.api",
-            "ralph.networks.api",
-            "ralph.virtual.api",
-            "ralph.lib.custom_fields.api.custom_fields_api",
-            "ralph.lib.transitions.api.routers",
-            "ralph.lib.visibility_scope.api",
-            "ralph.switchports.api",
-        ],
-    )
-)
+api_urls = [
+    re_path(r"^", include(u))
+    for u in [
+        "ralph.access_cards.api",
+        "ralph.accounts.api",
+        "ralph.assets.api.routers",
+        "ralph.back_office.api",
+        "ralph.dashboards.api.routers",
+        "ralph.data_center.api.routers",
+        "ralph.dc_view.urls.api",
+        "ralph.dhcp.api",
+        "ralph.domains.api",
+        "ralph.operations.api",
+        "ralph.supports.api",
+        "ralph.sim_cards.api",
+        "ralph.ssl_certificates.api",
+        "ralph.networks.api",
+        "ralph.virtual.api",
+        "ralph.lib.custom_fields.api.custom_fields_api",
+        "ralph.lib.transitions.api.routers",
+        "ralph.lib.visibility_scope.api",
+        "ralph.switchports.api",
+    ]
+]
 # include router urls
 # because we're using single router instance and urls are cached inside this
 # object, router.urls may be called after all urls are processed (and all

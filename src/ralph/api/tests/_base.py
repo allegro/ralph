@@ -19,11 +19,11 @@ class APIPermissionsTestMixin(object):
         cls.foo = Foo.objects.create(bar="rab")
 
         def create_user(name, **kwargs):
-            params = dict(
-                username=name,
-                is_staff=True,
-                is_active=True,
-            )
+            params = {
+                "username": name,
+                "is_staff": True,
+                "is_active": True,
+            }
             params.update(kwargs)
             return get_user_model().objects.create(**params)
 
@@ -81,11 +81,11 @@ class RalphAPITestCase(APITestCase):
     @classmethod
     def _create_users(cls):
         def create_user(name, **kwargs):
-            params = dict(
-                username=name,
-                is_staff=True,
-                is_active=True,
-            )
+            params = {
+                "username": name,
+                "is_staff": True,
+                "is_active": True,
+            }
             params.update(kwargs)
             return get_user_model().objects.create(**params)
 

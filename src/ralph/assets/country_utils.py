@@ -255,7 +255,7 @@ ISO_3166 = (
 
 def iso2_to_iso3(iso2_country):
     iso2_country = iso2_country.upper()
-    return {k: v for k, v in ISO_3166}[iso2_country]
+    return dict(ISO_3166)[iso2_country]
 
 
 def iso3_to_iso2(iso3_country):

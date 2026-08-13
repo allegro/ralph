@@ -55,7 +55,7 @@ class TimeStampMixin(models.Model):
         )
 
     class Permissions:
-        blacklist = set(["created", "modified"])
+        blacklist = {"created", "modified"}
 
 
 class LastSeenMixin(models.Model):

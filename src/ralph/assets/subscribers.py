@@ -56,8 +56,8 @@ def _update_service_environments(service, environments):
     for env_name in environments:
         new_envs.append(Environment.objects.get_or_create(name=env_name)[0])
 
-    current = set([e.id for e in service.environments.all()])
-    new = set([e.id for e in new_envs])
+    current = {e.id for e in service.environments.all()}
+    new = {e.id for e in new_envs}
     to_delete = current - new
     to_add = new - current
     for env_id in to_add:
@@ -97,7 +97,7 @@ class ServiceActionType(str, Enum):
 
 
 @pyhermes.subscriber(topic=settings.HERMES_SERVICE_TOPICS["UPDATE"])
-def update_service_handler(service_data):
+def update_service_handler(service_data) -> None:
     """
     Update information about Service from Hermes event.
 
@@ -144,7 +144,7 @@ def update_service_handler(service_data):
                     service_type,
                     extra=log_extra,
                 )
-                return
+                return None
         case ServiceActionType.UPDATE | ServiceActionType.REFRESH:
             if (
                 service_type not in settings.HERMES_SERVICE_SYNC_COMPONENTS_TYPES
@@ -156,18 +156,21 @@ def update_service_handler(service_data):
                     service_type,
                     extra=log_extra,
                 )
-                return
+                return None
         case ServiceActionType.DELETE:
             delete_service_handler(service_data)
-            return
-        case _:
-            return  # noqa
+            return None
 
     logger.info(
         "Syncing service %s",
         service_uid,
         extra=log_extra,
     )
+    _do_update_service(service_data, log_extra)
+    return None
+
+
+def _do_update_service(service_data, log_extra) -> None:
     try:
         service, _ = Service.objects.update_or_create(
             uid=service_data["uid"],

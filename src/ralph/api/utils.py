@@ -100,7 +100,7 @@ class PolymorphicListSerializer(serializers.ListSerializer):
                     except Exception:
                         yield {}
 
-        return [i for i in iterate()]
+        return list(iterate())
 
 
 class PolymorphicSerializer(serializers.Serializer):
@@ -126,12 +126,10 @@ class PolymorphicSerializer(serializers.Serializer):
             "child_serializers": child_serializers,
         }
         list_kwargs.update(
-            dict(
-                [
-                    (key, value)
-                    for key, value in kwargs.items()
-                    if key in serializers.LIST_SERIALIZER_KWARGS
-                ]
-            )
+            {
+                key: value
+                for key, value in kwargs.items()
+                if key in serializers.LIST_SERIALIZER_KWARGS
+            }
         )
         return PolymorphicListSerializer(*args, **list_kwargs)

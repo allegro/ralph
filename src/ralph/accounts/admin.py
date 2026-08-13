@@ -165,7 +165,7 @@ class AssetList(Table):
         return ""
 
     def confirm_ownership(self, item):
-        has_inv_tag = any([n.startswith(settings.INVENTORY_TAG) for n in item.tags.names()])
+        has_inv_tag = any(n.startswith(settings.INVENTORY_TAG) for n in item.tags.names())
         if not (item.warehouse.stocktaking_enabled or item.region.stocktaking_enabled):
             return ""
         elif settings.INVENTORY_TAG_MISSING in item.tags.names():

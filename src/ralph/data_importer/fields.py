@@ -53,14 +53,12 @@ class ThroughField(fields.Field):
             value = data.get(self.column_name)
             current = set(self.widget.clean(value, **kwargs))
             # filter old assignments to obj by through_model
-            old_objs = set(
-                [
-                    getattr(i, self.through_to_field_name)
-                    for i in self.through_model.objects.filter(
-                        **{self.through_from_field_name: obj}
-                    ).select_related(self.through_to_field_name)
-                ]
-            )
+            old_objs = {
+                getattr(i, self.through_to_field_name)
+                for i in self.through_model.objects.filter(
+                    **{self.through_from_field_name: obj}
+                ).select_related(self.through_to_field_name)
+            }
 
             to_add = current - old_objs
             to_remove = old_objs - current

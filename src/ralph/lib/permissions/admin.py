@@ -12,7 +12,7 @@ from ralph.lib.permissions.models import PermByFieldMixin, PermissionsForObjectM
 logger = logging.getLogger(__name__)
 
 
-class PermissionPerFieldAdminMixin(object):
+class PermissionPerFieldAdminMixin:
     def _has_access_to_field(self, field_name, request):
         """
         Check if user has access to field

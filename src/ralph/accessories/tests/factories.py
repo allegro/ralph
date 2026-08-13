@@ -23,7 +23,7 @@ class AccessoryFactory(DjangoModelFactory):
         if not create:
             return
         if extracted:
-            self.user.set([user for user in extracted])
+            self.user.set(list(extracted))
         else:
             acu = AccessoryUser(user=UserFactory(), accessory=self, quantity=1)
             acu.save()

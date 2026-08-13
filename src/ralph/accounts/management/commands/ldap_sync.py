@@ -98,12 +98,10 @@ def get_nested_groups() -> tuple[dict[str, set[str]], defaultdict[str, set[str]]
                 settings.AUTH_LDAP_QUERY_PAGE_SIZE,
             )
             logger.info("{} fetched".format(ralph_group_name))
-            group_name_to_usernames[ralph_group_name] = set(
-                [
-                    u[1][settings.AUTH_LDAP_USER_USERNAME_ATTR][0].decode("utf-8").lower()  # noqa
-                    for u in users
-                ]
-            )
+            group_name_to_usernames[ralph_group_name] = {
+                u[1][settings.AUTH_LDAP_USER_USERNAME_ATTR][0].decode("utf-8").lower()  # noqa
+                for u in users
+            }
             logger.info(
                 "Users in nested group {}: {}".format(
                     ralph_group_name, group_name_to_usernames[ralph_group_name]

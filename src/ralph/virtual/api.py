@@ -282,12 +282,10 @@ class CloudHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
 
     extended_filter_fields = dict(
         list(BaseObjectViewSetMixin.extended_filter_fields.items())
-        + list(
-            {
-                "cloudproject__name": ["parent__cloudproject__name"],
-                "cloudproject__id": ["parent__cloudproject__id"],
-            }.items()
-        )
+        + [
+            ("cloudproject__name", ["parent__cloudproject__name"]),
+            ("cloudproject__id", ["parent__cloudproject__id"]),
+        ]
     )
 
     def get_queryset(self):
@@ -347,11 +345,7 @@ class VirtualServerViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
     additional_filter_class = VirtualServerFilterSet
     extended_filter_fields = dict(
         list(BaseObjectViewSetMixin.extended_filter_fields.items())
-        + list(
-            dict(
-                hypervisor_service=["parent__service_env__service__uid"],
-            ).items()
-        )
+        + [("hypervisor_service", ["parent__service_env__service__uid"])]
     )
 
     def get_queryset(self):

@@ -205,7 +205,7 @@ class NetworkInlineTestCase(RalphTestCase):
         response = self.client.post(self.obj1.get_absolute_url(), data)
         self.assertEqual(response.status_code, 200)
         msg = "Address {} already exist.".format(self.ip2.address)
-        self.assertTrue(any([msg in err for err in response.context_data["errors"]]))
+        self.assertTrue(any(msg in err for err in response.context_data["errors"]))
 
     def test_more_than_one_ip_is_management(self):
         inline_data = {
@@ -262,7 +262,7 @@ class NetworkInlineTestCase(RalphTestCase):
         response = self.client.post(self.obj1.get_absolute_url(), data)
         self.assertEqual(response.status_code, 200)
         msg = "Address is required when one of hostname, is_management, dhcp_expose is filled"
-        self.assertTrue(any([msg in err for err in response.context_data["errors"]]))
+        self.assertTrue(any(msg in err for err in response.context_data["errors"]))
 
 
 class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
@@ -341,7 +341,7 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
         response = self.client.post(self.obj1.get_absolute_url(), data)
         self.assertEqual(response.status_code, 200)
         msg = "Cannot delete entry if its exposed in DHCP"
-        self.assertTrue(any([msg in err for err in response.context_data["errors"]]))
+        self.assertTrue(any(msg in err for err in response.context_data["errors"]))
 
     def test_dhcp_expose_for_new_record_should_pass(self):
         self.ip1.dhcp_expose = True
@@ -407,7 +407,7 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
             hostname=self.ip1.hostname, dc=network.network_environment.data_center
         )
         self.assertIn("errors", response.context_data)
-        self.assertTrue(any([msg in err for err in response.context_data["errors"]]))
+        self.assertTrue(any(msg in err for err in response.context_data["errors"]))
 
     def test_dhcp_expose_for_existing_record_duplicate_hostname_should_not_pass(self):  # noqa
         network = NetworkFactory(
@@ -444,7 +444,7 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
             hostname=self.ip1.hostname, dc=network.network_environment.data_center
         )
         self.assertIn("errors", response.context_data)
-        self.assertTrue(any([msg in err for err in response.context_data["errors"]]))
+        self.assertTrue(any(msg in err for err in response.context_data["errors"]))
 
     def test_dhcp_expose_for_existing_record_should_pass(self):
         inline_data = {
@@ -496,7 +496,7 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
         response = self.client.post(self.obj1.get_absolute_url(), data)
         self.assertEqual(response.status_code, 200)
         msg = "Cannot expose in DHCP without IP address"
-        self.assertTrue(any([msg in err for err in response.context_data["errors"]]))
+        self.assertTrue(any(msg in err for err in response.context_data["errors"]))
 
     def test_dhcp_expose_with_address_exist_for_new_record_should_not_pass(self):
         self.ip1.dhcp_expose = True
@@ -526,7 +526,7 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
             "Address {} already exist.".format(self.ip1.address),
         ]
         for msg in error_messages:
-            self.assertTrue(any([msg in err for err in response.context_data["errors"]]))
+            self.assertTrue(any(msg in err for err in response.context_data["errors"]))
 
     def test_dhcp_expose_without_mac_for_new_record_should_not_pass(self):
         self.ip1.dhcp_expose = True
@@ -552,7 +552,7 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
         response = self.client.post(self.obj1.get_absolute_url(), data)
         self.assertEqual(response.status_code, 200)
         msg = "Cannot expose in DHCP without MAC address"
-        self.assertTrue(any([msg in err for err in response.context_data["errors"]]))
+        self.assertTrue(any(msg in err for err in response.context_data["errors"]))
 
     def test_dhcp_expose_without_hostname_for_new_record_should_not_pass(self):
         self.ip1.dhcp_expose = True
@@ -578,7 +578,7 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
         response = self.client.post(self.obj1.get_absolute_url(), data)
         self.assertEqual(response.status_code, 200)
         msg = "Cannot expose in DHCP without hostname"
-        self.assertTrue(any([msg in err for err in response.context_data["errors"]]))
+        self.assertTrue(any(msg in err for err in response.context_data["errors"]))
 
     def test_dhcp_expose_without_address_for_existing_record_should_not_pass(self):  # noqa
         inline_data = {
@@ -600,7 +600,7 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
         response = self.client.post(self.obj1.get_absolute_url(), data)
         self.assertEqual(response.status_code, 200)
         msg = "Cannot expose in DHCP without IP address"
-        self.assertTrue(any([msg in err for err in response.context_data["errors"]]))
+        self.assertTrue(any(msg in err for err in response.context_data["errors"]))
 
     def test_dhcp_expose_without_mac_for_existing_record_should_not_pass(self):
         inline_data = {
@@ -622,7 +622,7 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
         response = self.client.post(self.obj1.get_absolute_url(), data)
         self.assertEqual(response.status_code, 200)
         msg = "Cannot expose in DHCP without MAC address"
-        self.assertTrue(any([msg in err for err in response.context_data["errors"]]))
+        self.assertTrue(any(msg in err for err in response.context_data["errors"]))
 
     def test_dhcp_expose_without_hostname_for_existing_record_should_not_pass(self):  # noqa
         inline_data = {
@@ -644,4 +644,4 @@ class NetworkInlineWithDHCPExposeTestCase(RalphTestCase):
         response = self.client.post(self.obj1.get_absolute_url(), data)
         self.assertEqual(response.status_code, 200)
         msg = "Cannot expose in DHCP without hostname"
-        self.assertTrue(any([msg in err for err in response.context_data["errors"]]))
+        self.assertTrue(any(msg in err for err in response.context_data["errors"]))

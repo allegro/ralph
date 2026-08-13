@@ -179,7 +179,7 @@ class GroupingLabel:
 
     def _format_part_of_date(self, value):
         i = self.date_fields.index(self.label) + 1
-        format_str = "".join([f for f in self.date_format[:i]])
+        format_str = "".join(list(self.date_format[:i]))
         return value.strftime(format_str)
 
     def format_label(self, value):

@@ -158,12 +158,7 @@ class RalphOpenstackClient:
         flavors = []
         for is_public in (True, False):
             flavors.extend(
-                list(
-                    map(
-                        lambda fl: fl.__dict__,
-                        self.nova_client.flavors.list(is_public=is_public),
-                    )
-                )
+                [fl.__dict__ for fl in self.nova_client.flavors.list(is_public=is_public)]
             )
         if len(flavors) == 0:
             raise EmptyListError(
@@ -196,7 +191,7 @@ class RalphOpenstackClient:
             except IndexError:
                 break
 
-        servers = list(map(lambda server: server.__dict__, servers))
+        servers = [server.__dict__ for server in servers]
         # If only an incremental update is being performed, it is possible
         # that no servers are returned. Otherwise, zero servers is an error.
         if len(servers) == 0 and not search_opts.get("changes-since"):

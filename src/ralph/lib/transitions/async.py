@@ -80,13 +80,11 @@ def _perform_async_transition(transition_job):
     except AsyncTransitionError:
         return
 
-    completed_actions_names = set(
-        [
-            tja.action_name
-            for tja in executed_actions
-            if tja.status != TransitionJobActionStatus.STARTED
-        ]
-    )
+    completed_actions_names = {
+        tja.action_name
+        for tja in executed_actions
+        if tja.status != TransitionJobActionStatus.STARTED
+    }
     attachments = []
     # TODO: move this to transition (sth like
     # `for action in transition.get_actions(obj)`)
@@ -111,9 +109,9 @@ def _perform_async_transition(transition_job):
         tja = TransitionJobAction.objects.get_or_create(
             transition_job=transition_job,
             action_name=action.name,
-            defaults=dict(
-                status=TransitionJobActionStatus.STARTED,
-            ),
+            defaults={
+                "status": TransitionJobActionStatus.STARTED,
+            },
         )[0]
         freeze = False
         try:
