@@ -1,3 +1,9 @@
+ralph (20260817.1) jammy; urgency=medium
+
+  * Drop positional
+
+ -- Paweł Szulc <pawel.szulc@allegro.com>  Mon, 17 Aug 2026 11:51:06 +0000
+
 ralph (20260813.2) jammy; urgency=medium
 
   * Remove ruff from prod
