@@ -254,7 +254,6 @@ pbr==6.1.1
     #   osc-lib
     #   oslo-i18n
     #   oslo-utils
-    #   positional
     #   python-glanceclient
     #   python-ironicclient
     #   python-keystoneclient
@@ -263,8 +262,6 @@ pillow==11.3.0
     # via ralph (pyproject.toml)
 platformdirs==4.11.0
     # via python-ironicclient
-positional==1.0.1
-    # via ralph (pyproject.toml)
 prettytable==1.0.1
     # via
     #   ralph (pyproject.toml)
