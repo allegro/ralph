@@ -355,7 +355,6 @@ pbr==6.1.1
     #   osc-lib
     #   oslo-i18n
     #   oslo-utils
-    #   positional
     #   python-glanceclient
     #   python-ironicclient
     #   python-keystoneclient
@@ -372,8 +371,6 @@ polars==1.43.0
     # via ralph (pyproject.toml:dev)
 polars-runtime-32==1.43.0
     # via polars
-positional==1.0.1
-    # via ralph (pyproject.toml)
 prettytable==1.0.1
     # via
     #   ralph (pyproject.toml)
