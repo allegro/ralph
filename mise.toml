@@ -107,10 +107,9 @@ description = "Run the RQ worker"
 
 [tasks.requirements]
 run = [
-  "uv pip compile pyproject.toml --group dev --group docs --group test --group prod -o requirements/dev.txt",
-  "uv pip compile pyproject.toml --group docs -o requirements/docs.txt",
-  "uv pip compile pyproject.toml --group dev --group test -o requirements/test.txt",
-  "uv pip compile pyproject.toml --group prod -o requirements/prod.txt",
+  "uv pip compile pyproject.toml --group test -o requirements/dev.txt",
+  "uv pip compile pyproject.toml --group test -o requirements/test.txt",
+  "uv pip compile pyproject.toml -o requirements/prod.txt",
 ]
 description = "Compile requirements"
 

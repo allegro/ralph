@@ -4,7 +4,7 @@ DOCKER_REPO_NAME?=allegro
 DOCKER?=docker
 RALPH_VERSION?=$(shell git describe --abbrev=0)
 
-.PHONY: test flake clean coverage docs coveralls
+.PHONY: test flake clean coverage coveralls
 
 # release-new-version is used by ralph mainteiners prior to publishing
 # new version of the package. The command generates the debian changelog
@@ -99,9 +99,6 @@ install-test:
 install-dev:
 	pip3 install -r requirements/dev.txt
 
-install-docs:
-	pip3 install -r requirements/docs.txt
-
 isort:
 	isort --diff --recursive --check-only --quiet src
 
@@ -123,7 +120,7 @@ coverage: clean
 	coverage run $(shell which test_ralph) test $(TEST) -v 2 --keepdb --settings="ralph.settings.test"
 	coverage report
 
-docs: install-docs
+docs: install-dev
 	mkdocs build
 
 run:

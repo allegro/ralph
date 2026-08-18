@@ -10,20 +10,15 @@ dev = [
   "django-silk",
   "ipdb",
   "ipython",
+  "mkdocs",
+  "mkdocs-bootswatch",
+  "mkdocs-material",
+  "mkdocs_bootstrap",
   "polars>=1.41.2",
   "pudb",
   "ruff",
   "toml-sort>=0.23.1",
   "werkzeug==0.16.1"
-]
-docs = [
-  "mkdocs",
-  "mkdocs-bootswatch",
-  "mkdocs-material",
-  "mkdocs_bootstrap"
-]
-prod = [
-  "gunicorn==23.0.0"
 ]
 test = [
   "coverage",
@@ -63,6 +58,7 @@ dependencies = [
   "drf-nested-routers==0.92.5",
   "factory-boy==3.2.1",
   "funcsigs==0.4",
+  "gunicorn==23.0.0",
   "hiredis==3.2.1",
   "iso8601==0.1.11",
   "keystoneauth1",
@@ -104,7 +100,7 @@ dependencies = [
   "stevedore",
   "tblib>=3.1.0",
   "typing==3.6.6",
-  "wrapt==1.10.6",
+  "wrapt==1.10.6"
 ]
 dynamic = [
   "authors",
