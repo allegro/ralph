@@ -37,4 +37,7 @@ jobs:
               RETRY_COUNT=$((RETRY_COUNT-1))
               echo "==== Publish docker failed. Remaining retries: $RETRY_COUNT ===="
             done
+          if [ "$RETRY_COUNT" -le 0 ]; then
+            exit 1
+          fi
           docker logout

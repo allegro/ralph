@@ -102,4 +102,5 @@ RUN set -a && \
     chown -R ralphsrv:ralphsrv /var/log/ralph "$RALPH_LOCAL_DIR/media"
 
 ENTRYPOINT ["/var/local/ralph/docker-entrypoint.sh"]
+EXPOSE 8000
 CMD ["start"]
