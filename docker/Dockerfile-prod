@@ -1,15 +1,56 @@
+# Stage 1: build static assets (scss, vendor js/css, polymer elements)
+FROM node:22-bookworm AS assets
+
+WORKDIR /app
+
+COPY package.json package-lock.json bower.json gulpfile.js ./
+RUN npm ci && \
+    echo '{ "allow_root": true }' > /root/.bowerrc && \
+    ./node_modules/bower/bin/bower --allow-root install
+
+COPY src ./src
+RUN ./node_modules/.bin/gulp
+
+
+# Stage 2: build the virtualenv with uv
+FROM ubuntu:jammy AS build
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && \
+    apt-get -y install --no-install-recommends \
+    build-essential python3.10-dev ca-certificates \
+    libmysqlclient-dev libldap2-dev libsasl2-dev libssl-dev libffi-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
+
+ARG RALPH_VERSION=""
+ENV UV_PROJECT_ENVIRONMENT=/opt/ralph/ralph-core
+ENV UV_PYTHON=/usr/bin/python3.10
+
+WORKDIR /ralph
+
+COPY pyproject.toml uv.lock ./
+RUN uv sync --locked --no-group dev --no-group test --no-install-project
+
+COPY . .
+COPY --from=assets /app/src/ralph/static ./src/ralph/static
+COPY --from=assets /app/src/ralph/admin/static ./src/ralph/admin/static
+RUN RALPH_VERSION="$RALPH_VERSION" \
+    uv sync --locked --no-group dev --no-group test --no-editable
+
+
+# Stage 3: runtime
 FROM ubuntu:jammy
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Ralph configuration and paths
 ARG RALPH_LOCAL_DIR="/var/local/ralph"
 ARG RALPH_VERSION=""
-ARG SNAPSHOT="0"
 ENV PATH=/opt/ralph/ralph-core/bin/:$PATH
 ENV RALPH_CONF_DIR="/etc/ralph"
 ENV RALPH_LOCAL_DIR="$RALPH_LOCAL_DIR"
-ENV RALPH_IMAGE_TMP_DIR="/tmp"
 
 LABEL maintainer="Allegro.pl Sp. z o.o. opensource@allegro.pl"
 LABEL authors="Allegro.pl Sp. z o.o. and Contributors opensource@allegro.pl"
@@ -18,15 +59,14 @@ LABEL version="$RALPH_VERSION"
 
 RUN apt-get clean && \
     apt-get update && \
-    apt-get -y install apt-transport-https ca-certificates \
-    python3.10-dev python3.10-distutils gnupg2 locales curl && \
+    apt-get -y install --no-install-recommends \
+    ca-certificates curl locales \
+    python3.10 libmysqlclient21 libldap-2.5-0 libsasl2-2 && \
     rm -rf /var/lib/apt/lists/*
-
 
 # Multiprocess mode: https://prometheus.github.io/client_python/multiprocess/
 ENV PROMETHEUS_MULTIPROC_DIR="/tmp/prometheus-metrics"
 RUN mkdir -p /tmp/prometheus-metrics
-
 
 # set UTF-8 locale
 RUN locale-gen en_US.UTF-8
@@ -34,16 +74,32 @@ ENV LANG=en_US.UTF-8
 ENV LANGUAGE=en_US:en
 ENV LC_ALL=en_US.UTF-8
 
-COPY contrib/common/apt/ralph.list \
+RUN adduser --system ralphsrv --home "$RALPH_LOCAL_DIR" --group && \
+    mkdir -p "$RALPH_CONF_DIR/conf.d" \
+             "$RALPH_LOCAL_DIR/media" \
+             /var/log/ralph \
+             /usr/share/ralph/static
+
+COPY --from=build /opt/ralph/ralph-core /opt/ralph/ralph-core
+
+COPY contrib/common/etc/ralph/ralph.conf $RALPH_CONF_DIR/
+COPY contrib/common/etc/ralph/conf.d/ docker/provision/database.conf $RALPH_CONF_DIR/conf.d/
+COPY contrib/common/usr/bin/ralphctl /usr/bin/ralphctl
+
+COPY contrib/common/gunicorn/gunicorn.ini \
      docker/provision/docker-entrypoint.sh \
      docker/provision/createsuperuser.py \
      docker/provision/start-ralph.sh \
      docker/provision/wait-for-it.sh \
-     docker/provision/install_ralph.sh \
-     build/*$RALPH_VERSION*.deb \
-     docker/provision/init-ralph.sh $RALPH_IMAGE_TMP_DIR/
+     docker/provision/init-ralph.sh $RALPH_LOCAL_DIR/
 
-RUN "$RALPH_IMAGE_TMP_DIR/install_ralph.sh"
+# what the deb postinst used to do: collectstatic + ownership fixes
+RUN set -a && \
+    . "$RALPH_CONF_DIR/ralph.conf" && \
+    for f in "$RALPH_CONF_DIR"/conf.d/*.conf; do . "$f"; done && \
+    set +a && \
+    ralph collectstatic --noinput && \
+    chown -R ralphsrv:ralphsrv /var/log/ralph "$RALPH_LOCAL_DIR/media"
 
 ENTRYPOINT ["/var/local/ralph/docker-entrypoint.sh"]
 CMD ["start"]

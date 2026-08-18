@@ -32,7 +32,7 @@ nav:
       - Custom fields: development/custom_fields.md
       - Transitions: development/transitions.md
       - Addons : development/addons.md
-      - Packaging: development/packaging.md
+      - Releasing: development/packaging.md
       - Maintainer's development tools: development/maintainers_devtools.md
       - API: development/api.md
       - FAQ: development/faq.md

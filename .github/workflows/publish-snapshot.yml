@@ -19,15 +19,21 @@ jobs:
         with:
           fetch-depth: 0
           ref: ${{ github.event.inputs.branch }}
+      - name: Install and configure Mise
+        run: |
+          curl https://mise.run | sh
+          echo "$HOME/.local/share/mise/bin" >> $GITHUB_PATH
+          echo "$HOME/.local/share/mise/shims" >> $GITHUB_PATH
+      - name: Mise install tools
+        run: mise install uv python
       - name: Publish docker snapshot
         env:
           RETRY_COUNT: 3
         run: |
           docker login --username ${{ secrets.DOCKER_HUB_USERNAME }} --password ${{ secrets.DOCKER_HUB_PASSWORD }}
-          export RALPH_VERSION=$(shell ./get_version.sh show)
           until [ "$RETRY_COUNT" -le 0 ]
             do
-              make publish-docker-snapshot-image && break
+              mise run publish-docker-snapshot-image && break
               RETRY_COUNT=$((RETRY_COUNT-1))
               echo "==== Publish docker failed. Remaining retries: $RETRY_COUNT ===="
             done

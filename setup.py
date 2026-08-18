@@ -14,6 +14,10 @@ def read(fname):
 
 
 def get_version():
+    # RALPH_VERSION is set in environments without git metadata (docker builds)
+    version = os.environ.get("RALPH_VERSION")
+    if version:
+        return version
     script = os.path.join(os.path.abspath(os.path.dirname(__file__)), "get_version.sh")
     ver = subprocess.check_output([script], shell=True)
     return ver.decode().strip()
