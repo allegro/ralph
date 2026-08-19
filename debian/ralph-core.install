@@ -1,7 +1,0 @@
-contrib/common/gunicorn/gunicorn.ini var/local/ralph
-contrib/common/etc/ralph/ralph.conf etc/ralph
-contrib/common/etc/ralph/conf.d/gunicorn.conf etc/ralph/conf.d
-contrib/common/etc/ralph/conf.d/redis.conf etc/ralph/conf.d
-contrib/common/etc/ralph/conf.d/cache.conf etc/ralph/conf.d
-contrib/common/usr/bin/ralphctl usr/bin
-contrib/common/systemd/ralph.service lib/systemd/system

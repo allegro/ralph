@@ -133,7 +133,7 @@ ignore = []
 select = ["B", "B9", "E", "F", "W"]
 
 [tool.uv]
-default-groups = ["dev", "test"]
+default-groups = ["dev", "prod", "test"]
 
 [tools.ruff.format]
 line-ending = "auto"

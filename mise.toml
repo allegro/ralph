@@ -10,6 +10,8 @@ DATABASE_NAME = "ralph_ng"
 DATABASE_HOST = "127.0.0.1"
 MISE_PROJECT_ROOT = "."
 MISE_PROJECT_NAME = "ralph"
+DOCKER_BIN = "docker"
+DOCKER_REPO_NAME = "allegro"
 
 [vars]
 skip_containers = false
@@ -113,6 +115,92 @@ run = [
   "uv pip compile pyproject.toml --group prod -o requirements/prod.txt",
 ]
 description = "Compile requirements"
+
+[tasks.build-docker-image]
+run = """
+set -e
+RALPH_VERSION="${RALPH_VERSION:-$(git describe --abbrev=0)}"
+$DOCKER_BIN build \
+  --no-cache \
+  -f docker/Dockerfile-prod \
+  --build-arg RALPH_VERSION="$RALPH_VERSION" \
+  -t "$DOCKER_REPO_NAME/ralph:latest" \
+  -t "$DOCKER_REPO_NAME/ralph:$RALPH_VERSION" .
+$DOCKER_BIN build \
+  -f docker/Dockerfile-inkpy \
+  -t "$DOCKER_REPO_NAME/inkpy:$RALPH_VERSION" .
+$DOCKER_BIN build \
+  --no-cache \
+  -f docker/Dockerfile-static \
+  --build-arg RALPH_VERSION="$RALPH_VERSION" \
+  -t "$DOCKER_REPO_NAME/ralph-static-nginx:latest" \
+  -t "$DOCKER_REPO_NAME/ralph-static-nginx:$RALPH_VERSION" .
+"""
+description = "Build production docker images (ralph, inkpy, static-nginx)"
+
+[tasks.build-snapshot-docker-image]
+run = """
+set -e
+RALPH_VERSION="$(./get_version.sh show)"
+$DOCKER_BIN build \
+  -f docker/Dockerfile-prod \
+  --build-arg RALPH_VERSION="$RALPH_VERSION" \
+  -t "$DOCKER_REPO_NAME/ralph:latest" \
+  -t "$DOCKER_REPO_NAME/ralph:$RALPH_VERSION" .
+$DOCKER_BIN build \
+  -f docker/Dockerfile-inkpy \
+  -t "$DOCKER_REPO_NAME/inkpy:$RALPH_VERSION" .
+$DOCKER_BIN build \
+  -f docker/Dockerfile-static \
+  --build-arg RALPH_VERSION="$RALPH_VERSION" \
+  -t "$DOCKER_REPO_NAME/ralph-static-nginx:$RALPH_VERSION" .
+"""
+description = "Build snapshot docker images"
+
+[tasks.publish-docker-image]
+depends = ["build-docker-image"]
+run = """
+set -e
+RALPH_VERSION="${RALPH_VERSION:-$(git describe --abbrev=0)}"
+$DOCKER_BIN push "$DOCKER_REPO_NAME/ralph:$RALPH_VERSION"
+$DOCKER_BIN push "$DOCKER_REPO_NAME/ralph:latest"
+$DOCKER_BIN push "$DOCKER_REPO_NAME/ralph-static-nginx:$RALPH_VERSION"
+$DOCKER_BIN push "$DOCKER_REPO_NAME/ralph-static-nginx:latest"
+$DOCKER_BIN push "$DOCKER_REPO_NAME/inkpy:$RALPH_VERSION"
+"""
+description = "Build and push production docker images"
+
+[tasks.publish-docker-snapshot-image]
+depends = ["build-snapshot-docker-image"]
+run = """
+set -e
+RALPH_VERSION="$(./get_version.sh show)"
+$DOCKER_BIN push "$DOCKER_REPO_NAME/ralph:$RALPH_VERSION"
+$DOCKER_BIN push "$DOCKER_REPO_NAME/inkpy:$RALPH_VERSION"
+$DOCKER_BIN push "$DOCKER_REPO_NAME/ralph-static-nginx:$RALPH_VERSION"
+"""
+description = "Build and push snapshot docker images"
+
+[tasks.release-new-version]
+run = """
+set -e
+new_version="$(./get_version.sh generate)"
+git tag -m "$new_version" -a "$new_version"
+echo "Tagged $new_version. Push with: git push origin $new_version"
+"""
+description = "Tag a new release version"
+
+[tasks.translate-messages]
+run = "uv run ralph makemessages -a"
+description = "Extract translatable messages"
+
+[tasks.compile-messages]
+run = "uv run ralph compilemessages"
+description = "Compile translation messages"
+
+[tasks.docs]
+run = "uv run --group docs mkdocs build"
+description = "Build documentation"
 
 [tasks.checks]
 run = "ruff check"
