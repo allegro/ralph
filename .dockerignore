@@ -2,3 +2,5 @@
 docker-compose.yml
 node_modules
 bower_components
+.git
+.venv

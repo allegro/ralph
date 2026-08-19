@@ -98,8 +98,8 @@ It is now possible to run Ralph in development mode:
 $ python setup.py develop
 $ dev_ralph migrate
 $ dev_ralph createsuperuser
-$ make menu
-$ make run
+$ dev_ralph sitetree_resync_apps
+$ dev_ralph runserver
 ```
 
 At this point Ralph should be available under http://127.0.0.1:8000.

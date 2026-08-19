@@ -3,5 +3,5 @@
 set -eux
 
 pushd ".."
-DOCKER_REPO_NAME="index.docker.io/allegro" make build-docker-image
+DOCKER_REPO_NAME="index.docker.io/allegro" mise run build-docker-image
 popd

@@ -22,26 +22,26 @@ jobs:
               >&2 echo "The \$GITHUB_REF does not point to a properly named tag."
               exit 1
           fi
-      - name: Build
-        run: make build-package
-      - name: Install packagecloud CLI
-        run: sudo gem install package_cloud
-      - name: Publish deb
-        env:
-          PACKAGECLOUD_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
-        run: package_cloud push allegro/ralph/ubuntu/jammy build/*.deb
+      - name: Install and configure Mise
+        run: |
+          curl https://mise.run | sh
+          echo "$HOME/.local/share/mise/bin" >> $GITHUB_PATH
+          echo "$HOME/.local/share/mise/shims" >> $GITHUB_PATH
+      - name: Mise install tools
+        run: mise install uv python
       - name: Publish docker
         env:
-          WAIT_FOR_PACKAGECLOUD_DELAY: 10
           RETRY_COUNT: 3
         run: |
           docker login --username ${{ secrets.DOCKER_HUB_USERNAME }} --password ${{ secrets.DOCKER_HUB_PASSWORD }}
           export RALPH_VERSION=${GITHUB_REF#refs/*/}
           until [ "$RETRY_COUNT" -le 0 ]
             do
-              sleep $WAIT_FOR_PACKAGECLOUD_DELAY
-              make publish-docker-image && break
+              mise run publish-docker-image && break
               RETRY_COUNT=$((RETRY_COUNT-1))
               echo "==== Publish docker failed. Remaining retries: $RETRY_COUNT ===="
             done
+          if [ "$RETRY_COUNT" -le 0 ]; then
+            exit 1
+          fi
           docker logout

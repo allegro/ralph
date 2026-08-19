@@ -43,7 +43,7 @@ To overcome this problem, you may do following steps:
 *(assumptions: empty database, assets will be assigned to user **r2** by user **root**)*
 
 * dev_ralph migrate
-* make menu (if you didn't do it already)
+* dev_ralph sitetree_resync_apps (if you didn't do it already)
 * dev_ralph createsuperuser --email='foo@bar.pl' --username=root
 * dev_ralph createsuperuser --email='foo@bar.pl' --username=r2 (or create user in by root in web)
 * dev_ralph runserver
