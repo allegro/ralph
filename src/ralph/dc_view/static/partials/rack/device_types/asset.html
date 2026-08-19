@@ -6,7 +6,7 @@
 >
     <div class="info">
         <span class="asset-description">
-            {{ device.service }}: {{ device.hostname }}
+            {{ device.service }}: {{ device.hostname }} {{ device.ports }}
             <span class="tip" ng-if="device.height <= 2">
                 <tooltip>
                     <div>Barcode: {{ device.barcode }}</div>

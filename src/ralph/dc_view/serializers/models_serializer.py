@@ -86,12 +86,18 @@ class DataCenterAssetSerializer(DataCenterAssetSerializerBase):
     management_ip = serializers.SerializerMethodField("get_management")
     orientation = serializers.SerializerMethodField("get_orientation_desc")
     url = serializers.CharField(source="get_absolute_url")
+    ports = serializers.SerializerMethodField("get_ports")
 
     def get_type(self, obj):
         return TYPE_ASSET
 
     def get_management(self, obj):
         return obj.management_ip or ""
+
+    def get_ports(self, obj):
+        ports = obj.ports.select_related("connectionmember").all()
+        free_ports = ports.filter(connectionmember__isnull=True)
+        return f"{len(free_ports)}/{len(ports)}"
 
     class Meta:
         model = DataCenterAsset
@@ -114,6 +120,7 @@ class DataCenterAssetSerializer(DataCenterAssetSerializerBase):
             "remarks",
             "metadata",
             "url",
+            "ports",
         )
 
 
