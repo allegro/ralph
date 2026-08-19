@@ -1,5 +1,9 @@
+import ipaddress
+import re
+
 from django import forms
 from django.core.exceptions import ValidationError
+from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
@@ -9,6 +13,49 @@ from ralph.data_center.models.physical import DataCenterAsset
 from ralph.lib.field_validation.form_fields import CharFormFieldWithAutoStrip
 from ralph.lib.mixins.forms import AssetFormMixin, PriceFormMixin
 from ralph.networks.models import IPAddress
+
+
+HOSTNAME_LABEL_RE = re.compile(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$", re.IGNORECASE)
+
+
+def _get_http_url(value):
+    value = str(value or "")
+    if not value or value != value.strip():
+        return None
+
+    try:
+        address = ipaddress.ip_address(value)
+    except ValueError:
+        hostname = value[:-1] if value.endswith(".") else value
+        if (
+            not hostname
+            or len(hostname) > 253
+            or any(not HOSTNAME_LABEL_RE.fullmatch(label) for label in hostname.split("."))
+        ):
+            return None
+        host = value
+    else:
+        host = "[{}]".format(address.compressed) if address.version == 6 else address.compressed
+
+    return "http://{}".format(host)
+
+
+class HostLinkInput(forms.TextInput):
+    def render(self, name, value, attrs=None, renderer=None):
+        input_html = super().render(name, value, attrs, renderer)
+        url = _get_http_url(value)
+        if not url:
+            return input_html
+        return format_html(
+            '<div class="row collapse host-link-field">'
+            '<div class="small-11 columns">{}</div>'
+            '<div class="small-1 columns"><a class="postfix host-link" href="{}" '
+            'target="_blank" rel="noopener noreferrer" title="Open address" '
+            'aria-label="Open address"><i class="fa fa-external-link" '
+            'aria-hidden="true"></i></a></div></div>',
+            input_html,
+            url,
+        )
 
 
 class DataCenterAssetForm(PriceFormMixin, AssetFormMixin, RalphAdminForm):
@@ -24,6 +71,9 @@ class DataCenterAssetForm(PriceFormMixin, AssetFormMixin, RalphAdminForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        for field_name in ["hostname"] + self.ip_fields:
+            field = self.fields[field_name]
+            field.widget = HostLinkInput(attrs=field.widget.attrs)
         for field_name in self.ip_fields:
             field = self.fields[field_name]
             field.initial = getattr(self.instance, field_name)

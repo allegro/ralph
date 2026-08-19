@@ -28,6 +28,13 @@ form {
         margin-bottom: 1rem;
     }
 
+    .host-link-field {
+        margin-bottom: 1rem;
+        input {
+            margin-bottom: 0;
+        }
+    }
+
     table tbody tr th,
     table tbody tr td {
         &[class^=field-is], &.delete {

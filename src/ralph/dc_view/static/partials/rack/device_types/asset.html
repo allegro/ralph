@@ -1,12 +1,12 @@
 <div
     class="device height-u-{{ device.height }} position-u-{{ device.position }} {{ getLayout() }}"
     ng-click="setActiveItem(device)"
-    ng-class="{has_children: device.children.length,  active: device.active}"
+    ng-class="{has_children: device.children.length, has_ports: device.ports != null, active: device.active}"
     ng-if="device.children.length || side == device.orientation"
 >
     <div class="info">
         <span class="asset-description">
-            {{ device.service }}: {{ device.hostname }} {{ device.ports }}
+            {{ device.service }}: {{ device.hostname }}
             <span class="tip" ng-if="device.height <= 2">
                 <tooltip>
                     <div>Barcode: {{ device.barcode }}</div>
@@ -14,6 +14,22 @@
                 </tooltip>
             </span>
         </span>
+        <a
+            class="port-availability"
+            href="{{ device.ports_url }}"
+            ng-click="$event.stopPropagation()"
+            ng-if="device.ports != null"
+        >
+            <span class="port-availability-count">
+                {{ device.free_ports }} / {{ device.ports }} free
+            </span>
+            <span class="port-availability-track">
+                <span
+                    class="port-availability-free"
+                    ng-style="{width: (device.ports ? device.free_ports / device.ports * 100 : 0) + '%'}"
+                ></span>
+            </span>
+        </a>
         <span ng-if="device.height > 2">
             <div class="barcode">{{ device.barcode }}</div>
             <div class="sn">{{ device.sn }}</div>

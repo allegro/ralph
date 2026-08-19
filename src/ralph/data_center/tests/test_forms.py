@@ -276,6 +276,27 @@ class TestDataCenterAssetForm(RalphTestCase):
         self.dca.management_hostname = "qwerty.mydc.net"
         response = self.client.get(self.dca.get_absolute_url())
         self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'href="http://{}"'.format(self.dca.hostname))
+        self.assertContains(response, 'href="http://10.20.30.40"')
+        self.assertContains(response, 'href="http://qwerty.mydc.net"')
+        self.assertContains(response, 'rel="noopener noreferrer"', count=3)
+        self.assertContains(response, 'class="fa fa-external-link"', count=3)
+        self.assertContains(response, 'aria-label="Open address"', count=3)
+        self.assertContains(response, 'class="postfix host-link"', count=3)
+
+    def test_host_links_reject_unsafe_values(self):
+        unsafe_value = 'example.com"><script>alert(1)</script>'
+        DataCenterAsset.objects.filter(pk=self.dca.pk).update(hostname=unsafe_value)
+        self.dca.refresh_from_db()
+        self.dca.management_ip = "10.20.30.40"
+        self.dca.management_hostname = unsafe_value
+
+        response = self.client.get(self.dca.get_absolute_url())
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "<script>alert(1)</script>")
+        self.assertNotContains(response, 'href="http://example.com')
+        self.assertContains(response, 'href="http://10.20.30.40"')
 
     def test_model_asset_type_data_center_shall_pass(self):
         data_center_model = DataCenterAssetModelFactory(
