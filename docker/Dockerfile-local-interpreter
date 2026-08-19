@@ -28,10 +28,19 @@ RUN apt-get clean && \
     apt-get update && \
     apt-get -y install \
     apt-transport-https gnupg2 locales curl \
-    python3.10-dev python3-setuptools git libldap2-dev libsasl2-dev \
+    build-essential git pkg-config libldap2-dev libsasl2-dev \
     libffi-dev nodejs npm \
-    libmysqlclient21 && \
+    libmysqlclient21 libmysqlclient-dev && \
     rm -rf /var/lib/apt/lists/*
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
+
+ENV UV_PROJECT_ENVIRONMENT=/opt/ralph/ralph-core
+ENV UV_PYTHON=3.12
+ENV UV_PYTHON_PREFERENCE=only-managed
+ENV UV_PYTHON_INSTALL_DIR=/opt/uv/python
+
+RUN uv python install 3.12
 
 # set UTF-8 locale
 RUN locale-gen en_US.UTF-8
@@ -42,4 +51,4 @@ ENV LC_ALL=en_US.UTF-8
 RUN mkdir -p $RALPH_LOCAL_DIR
 COPY . $RALPH_LOCAL_DIR
 WORKDIR $RALPH_LOCAL_DIR
-RUN pip3 install -r $RALPH_LOCAL_DIR/requirements/dev.txt
+RUN uv sync --locked

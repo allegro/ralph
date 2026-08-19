@@ -1,6 +1,6 @@
 import enum
+from importlib.metadata import entry_points
 
-import pkg_resources
 from django.conf import settings
 from django.core.checks import Error
 
@@ -21,7 +21,7 @@ ERRORS = {
     ),
     Codes.EMPTY_ENTRY_POINT: lambda key: Error(
         'Entry point "{}" is not defined in any installed package!'.format(key),  # noqa
-        hint="Add entry point to setup.py and add default value to them.",
+        hint="Add entry point to pyproject.toml and add default value to them.",
         id="hooks.E002",
     ),
     Codes.INVALID_ENV_VAR: lambda key, active_variant, variants: Error(
@@ -40,7 +40,7 @@ def check_configuration(**kwargs):
         variants = []
         found = False
         ep = None
-        for ep in pkg_resources.iter_entry_points(key):
+        for ep in entry_points(group=key):
             variants.append(ep.name)
             try:
                 ep.load()

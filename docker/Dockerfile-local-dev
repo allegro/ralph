@@ -28,10 +28,19 @@ RUN apt-get clean && \
     apt-get update && \
     apt-get -y install \
     apt-transport-https gnupg2 locales curl \
-    python3.10-dev python3-pip python3-setuptools git libldap2-dev libsasl2-dev \
+    build-essential git pkg-config libldap2-dev libsasl2-dev \
     libffi-dev \
     libmysqlclient21 libmysqlclient-dev && \
     rm -rf /var/lib/apt/lists/*
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
+
+ENV UV_PROJECT_ENVIRONMENT=/opt/ralph/ralph-core
+ENV UV_PYTHON=3.12
+ENV UV_PYTHON_PREFERENCE=only-managed
+ENV UV_PYTHON_INSTALL_DIR=/opt/uv/python
+
+RUN uv python install 3.12
 
 RUN curl -sL https://deb.nodesource.com/setup_22.x | bash -
 RUN apt-get update && apt-get install -y nodejs && node -v

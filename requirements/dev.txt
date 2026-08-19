@@ -14,8 +14,6 @@ asgiref==3.12.1
     #   django-cors-headers
 asttokens==3.0.2
     # via stack-data
-async-timeout==5.0.1
-    # via redis
 attrs==26.1.0
     # via
     #   jsonschema
@@ -25,7 +23,6 @@ autopage==0.6.0
 babel==2.11.0
     # via
     #   ralph (pyproject.toml)
-    #   debtcollector
     #   mkdocs-material
     #   py-moneyed
     #   sphinx
@@ -64,7 +61,7 @@ cryptography==49.0.0
     #   social-auth-core
 ddt==1.7.2
     # via ralph (pyproject.toml:test)
-debtcollector==1.3.0
+debtcollector==3.1.0
     # via
     #   ralph (pyproject.toml)
     #   oslo-config
@@ -97,7 +94,6 @@ django==4.2.30
     #   django-import-export
     #   django-js-asset
     #   django-money
-    #   django-plainpasswordhasher
     #   django-redis
     #   django-reversion
     #   django-rq
@@ -128,8 +124,6 @@ django-money==3.4.1
     # via ralph (pyproject.toml)
 django-mptt==0.14.0
     # via ralph (pyproject.toml)
-django-plainpasswordhasher==0.3
-    # via ralph (pyproject.toml:test)
 django-prometheus==2.2.0
     # via ralph (pyproject.toml)
 django-redis==5.0.0
@@ -163,8 +157,6 @@ drf-nested-routers==0.92.5
     # via ralph (pyproject.toml)
 et-xmlfile==2.0.0
     # via openpyxl
-exceptiongroup==1.3.1
-    # via ipython
 executing==2.2.1
     # via stack-data
 factory-boy==3.2.1
@@ -173,8 +165,6 @@ faker==0.9.0
     # via
     #   ralph (pyproject.toml)
     #   factory-boy
-funcsigs==0.4
-    # via ralph (pyproject.toml)
 ghp-import==2.1.0
     # via mkdocs
 gnureadline==8.3.3
@@ -268,13 +258,9 @@ mkdocs-material-extensions==1.3.1
     # via mkdocs-material
 mock==4.0.2
     # via ralph (pyproject.toml:test)
-monotonic==0.6
-    # via ralph (pyproject.toml)
 msgpack==1.2.1
     # via oslo-serialization
-msgpack-python==0.4.7
-    # via ralph (pyproject.toml)
-mysqlclient==2.0.3
+mysqlclient==2.2.8
     # via ralph (pyproject.toml)
 netaddr==0.10.1
     # via
@@ -348,7 +334,6 @@ pathspec==1.1.1
 pbr==6.1.1
     # via
     #   ralph (pyproject.toml)
-    #   debtcollector
     #   keystoneauth1
     #   openstacksdk
     #   os-service-types
@@ -371,7 +356,7 @@ polars==1.43.0
     # via ralph (pyproject.toml:dev)
 polars-runtime-32==1.43.0
     # via polars
-prettytable==1.0.1
+prettytable==3.18.0
     # via
     #   ralph (pyproject.toml)
     #   cliff
@@ -516,22 +501,19 @@ rq==1.16.2
     #   django-rq
 ruff==0.16.2
     # via ralph (pyproject.toml:dev)
-setuptools==65.7.0
+setuptools==84.0.0
     # via
     #   ralph (pyproject.toml)
     #   django-money
-    #   django-plainpasswordhasher
     #   markdown
     #   pbr
-    #   prettytable
 shellingham==1.5.4
     # via typer
-simplejson==3.8.2
+simplejson==4.1.1
     # via ralph (pyproject.toml)
 six==1.16.0
     # via
     #   ralph (pyproject.toml)
-    #   debtcollector
     #   faker
     #   pyhermes
     #   python-dateutil
@@ -583,11 +565,6 @@ text-unidecode==1.2
     # via faker
 toml-sort==0.24.4
     # via ralph (pyproject.toml:dev)
-tomli==2.4.1
-    # via
-    #   coverage
-    #   ipdb
-    #   sphinx
 tomlkit==0.15.1
     # via toml-sort
 traitlets==5.15.1
@@ -596,15 +573,8 @@ traitlets==5.15.1
     #   matplotlib-inline
 typer==0.27.0
     # via coveralls
-typing==3.6.6
-    # via ralph (pyproject.toml)
 typing-extensions==4.16.0
     # via
-    #   asgiref
-    #   cryptography
-    #   dogpile-cache
-    #   exceptiongroup
-    #   ipython
     #   os-service-types
     #   psycopg
     #   psycopg-pool
@@ -612,7 +582,6 @@ typing-extensions==4.16.0
     #   py-moneyed
     #   pydantic
     #   pydantic-core
-    #   pyjwt
     #   pyopenssl
     #   referencing
     #   typing-inspection
@@ -645,7 +614,7 @@ wcwidth==0.8.2
     #   urwid
 werkzeug==0.16.1
     # via ralph (pyproject.toml:dev)
-wrapt==1.10.6
+wrapt==2.3.0
     # via
     #   ralph (pyproject.toml)
     #   debtcollector

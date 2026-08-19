@@ -1,6 +1,6 @@
+from importlib.metadata import entry_points
 from typing import Any, Callable, Optional
 
-import pkg_resources
 from django.conf import settings
 from functools import lru_cache
 
@@ -23,7 +23,7 @@ def get_hook(name: str, variant: Optional[str] = None) -> Callable[..., Any]:
     if variant is None:
         variant = settings.HOOKS_CONFIGURATION[name]
 
-    for entry_point in pkg_resources.iter_entry_points(name):
+    for entry_point in entry_points(group=name):
         if variant == entry_point.name:
             loaded_func = entry_point.load()
             break

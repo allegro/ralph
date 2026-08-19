@@ -1,8 +1,8 @@
 import json
 import logging
 import threading
+from importlib.metadata import entry_points
 
-import pkg_resources
 from django.db.models import Q
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseNotFound
 from django.views.decorators.csrf import csrf_exempt
@@ -34,11 +34,11 @@ def load_processors():
 
         CLOUD_SYNC_DRIVERS = {}
 
-        for ep in pkg_resources.iter_entry_points(ENTRY_POINTS_GROUP):
+        for ep in entry_points(group=ENTRY_POINTS_GROUP):
             try:
-                CLOUD_SYNC_DRIVERS[ep.name] = ep.resolve()
+                CLOUD_SYNC_DRIVERS[ep.name] = ep.load()
             except ImportError:
-                logger.error("Could not import DC asset event processor from %s.", ep.module_name)
+                logger.error("Could not import DC asset event processor from %s.", ep.value)
 
 
 @csrf_exempt

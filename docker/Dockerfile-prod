@@ -19,15 +19,21 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
     apt-get -y install --no-install-recommends \
-    build-essential python3.10-dev ca-certificates \
+    build-essential ca-certificates pkg-config \
     libmysqlclient-dev libldap2-dev libsasl2-dev libssl-dev libffi-dev && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
 
-ARG RALPH_VERSION=""
 ENV UV_PROJECT_ENVIRONMENT=/opt/ralph/ralph-core
-ENV UV_PYTHON=/usr/bin/python3.10
+# Python comes from uv (python-build-standalone), not from apt; the install
+# dir must be copied into the runtime stage at the same path because the
+# virtualenv symlinks its interpreter there.
+ENV UV_PYTHON=3.12
+ENV UV_PYTHON_PREFERENCE=only-managed
+ENV UV_PYTHON_INSTALL_DIR=/opt/uv/python
+
+RUN uv python install 3.12
 
 WORKDIR /ralph
 
@@ -37,8 +43,7 @@ RUN uv sync --locked --no-group dev --no-group test --no-install-project
 COPY . .
 COPY --from=assets /app/src/ralph/static ./src/ralph/static
 COPY --from=assets /app/src/ralph/admin/static ./src/ralph/admin/static
-RUN RALPH_VERSION="$RALPH_VERSION" \
-    uv sync --locked --no-group dev --no-group test --no-editable
+RUN uv sync --locked --no-group dev --no-group test --no-editable
 
 
 # Stage 3: runtime
@@ -61,7 +66,7 @@ RUN apt-get clean && \
     apt-get update && \
     apt-get -y install --no-install-recommends \
     ca-certificates curl locales \
-    python3.10 libmysqlclient21 libldap-2.5-0 libsasl2-2 && \
+    libmysqlclient21 libldap-2.5-0 libsasl2-2 && \
     rm -rf /var/lib/apt/lists/*
 
 # Multiprocess mode: https://prometheus.github.io/client_python/multiprocess/
@@ -80,6 +85,7 @@ RUN adduser --system ralphsrv --home "$RALPH_LOCAL_DIR" --group && \
              /var/log/ralph \
              /usr/share/ralph/static
 
+COPY --from=build /opt/uv/python /opt/uv/python
 COPY --from=build /opt/ralph/ralph-core /opt/ralph/ralph-core
 
 COPY contrib/common/etc/ralph/ralph.conf $RALPH_CONF_DIR/

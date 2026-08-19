@@ -26,7 +26,7 @@ uv_venv_auto = true
 podman = "latest"
 node = "22"
 uv = "latest"
-python = "3.10"
+python = "3.12"
 ruff = "latest"
 
 [tasks.install]
@@ -83,7 +83,7 @@ depends = ["db", "frontend"]
 depends_post = ["init_transitions"]
 run = [
   "cp -n src/ralph/settings/local.template src/ralph/settings/local.py || true",
-  "uv run setup.py develop",
+  "uv sync",
   "uv run ralph migrate",
   "uv run ralph sitetree_resync_apps",
 ]

@@ -95,7 +95,7 @@ $ export DJANGO_SETTINGS_MODULE="ralph.settings.local"
 It is now possible to run Ralph in development mode:
 
 ```bash
-$ python setup.py develop
+$ uv sync
 $ dev_ralph migrate
 $ dev_ralph createsuperuser
 $ dev_ralph sitetree_resync_apps

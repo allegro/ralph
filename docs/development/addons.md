@@ -113,7 +113,7 @@ class ExtraView(RalphDetailView):
 ```
 
 ## Override methods (hooks)
-You can change behaviour some parts of Ralph by overriding exposed methods. It all comes down to add a new entry point in your package (entry in ``setup.py``) and configure by changing settings (by exporting a environment variable) for appropriate entry. For your convience, we create management command for checking current configuration for hooks. You can run it by following command:
+You can change behaviour some parts of Ralph by overriding exposed methods. It all comes down to add a new entry point in your package (entry in ``pyproject.toml``) and configure by changing settings (by exporting a environment variable) for appropriate entry. For your convience, we create management command for checking current configuration for hooks. You can run it by following command:
 
 ```bash
 $ dev_ralph show_hooks_configuration
@@ -125,24 +125,12 @@ Hooks:
             bar_method
 ```
 
-Where `foo_method` and `bar_method` are defined in `setup.py` in section `entry_points`:
+Where `foo_method` and `bar_method` are defined in `pyproject.toml` in the `entry-points` section:
 
-```python3
-from setuptools import setup, find_packages
-
-setup(
-    name='my_package',
-    ...
-
-    entry_points={
-        'back_office.transition_action.email_context': [
-            'foo_method = my_package.helpers:get_foo_context',
-            'bar_method = my_package.helpers:get_bar_context',
-        ]
-    },
-    ...
-)
-
+```toml
+[project.entry-points."back_office.transition_action.email_context"]
+foo_method = "my_package.helpers:get_foo_context"
+bar_method = "my_package.helpers:get_bar_context"
 ```
 
 
