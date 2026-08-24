@@ -104,6 +104,12 @@ class DataCenterAssetSerializer(DataCenterAssetSerializerBase):
         if not getattr(obj.model.category, "show_ports_in_visualization", False):
             return None
 
+        if hasattr(obj, "ports_count") and hasattr(obj, "free_ports_count"):
+            return {
+                "ports": obj.ports_count,
+                "free_ports": obj.free_ports_count,
+            }
+
         if not hasattr(obj, "_dc_view_port_counts"):
             obj._dc_view_port_counts = obj.ports.aggregate(
                 ports=Count("pk"),
