@@ -1,3 +1,4 @@
+from django.db.models import Count, Q
 from django.http import Http404
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -21,7 +22,20 @@ class DCAssetsView(APIView):
             raise Http404 from e
 
     def _get_assets(self, rack):
-        return DataCenterAssetSerializer(rack.get_root_assets(), many=True).data
+        queryset = rack.get_root_assets().annotate(
+            ports_count=Count(
+                "ports",
+                filter=Q(model__category__show_ports_in_visualization=True),
+            ),
+            free_ports_count=Count(
+                "ports",
+                filter=Q(
+                    model__category__show_ports_in_visualization=True,
+                    ports__connectionmember__isnull=True,
+                ),
+            ),
+        )
+        return DataCenterAssetSerializer(queryset, many=True).data
 
     def _get_rack_data(self, rack):
         return RackSerializer(rack).data
