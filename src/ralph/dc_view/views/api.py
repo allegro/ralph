@@ -26,6 +26,7 @@ class DCAssetsView(APIView):
             ports_count=Count(
                 "ports",
                 filter=Q(model__category__show_ports_in_visualization=True),
+                distinct=True,
             ),
             free_ports_count=Count(
                 "ports",
@@ -33,6 +34,7 @@ class DCAssetsView(APIView):
                     model__category__show_ports_in_visualization=True,
                     ports__connectionmember__isnull=True,
                 ),
+                distinct=True,
             ),
         )
         return DataCenterAssetSerializer(queryset, many=True).data
