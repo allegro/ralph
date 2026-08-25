@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from unittest import mock
+
 from django.contrib.auth import get_user_model
 from django.forms import ValidationError
 from django.test import RequestFactory
@@ -6,6 +8,7 @@ from django.urls import reverse
 
 from ralph.assets.models import Ethernet, ObjectModelType
 from ralph.assets.tests.factories import DataCenterAssetModelFactory
+from ralph.data_center.admin import DataCenterAssetAdmin
 from ralph.data_center.models import DataCenterAsset
 from ralph.data_center.tests.factories import DataCenterAssetFactory, RackFactory
 from ralph.networks.forms import validate_is_management
@@ -283,6 +286,45 @@ class TestDataCenterAssetForm(RalphTestCase):
         self.assertContains(response, 'class="fa fa-external-link"', count=3)
         self.assertContains(response, 'aria-label="Open address"', count=3)
         self.assertContains(response, 'class="postfix host-link"', count=3)
+
+    @mock.patch.object(
+        DataCenterAssetAdmin,
+        "get_readonly_fields",
+        return_value=DataCenterAssetAdmin.readonly_fields
+        + ["hostname", "management_ip", "management_hostname"],
+    )
+    def test_host_links_are_rendered_for_readonly_fields(self, get_readonly_fields):
+        self.dca.management_ip = "10.20.30.40"
+        self.dca.management_hostname = "qwerty.mydc.net"
+
+        response = self.client.get(self.dca.get_absolute_url())
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'href="http://{}"'.format(self.dca.hostname))
+        self.assertContains(response, 'href="http://10.20.30.40"')
+        self.assertContains(response, 'href="http://qwerty.mydc.net"')
+        self.assertContains(response, 'class="fa fa-external-link"', count=3)
+        self.assertContains(response, 'class="postfix host-link"', count=3)
+
+    @mock.patch.object(
+        DataCenterAssetAdmin,
+        "get_readonly_fields",
+        return_value=DataCenterAssetAdmin.readonly_fields
+        + ["hostname", "management_ip", "management_hostname"],
+    )
+    def test_update_preserves_readonly_host_fields(self, get_readonly_fields):
+        self.dca.management_ip = "10.20.30.40"
+        self.dca.management_hostname = "qwerty.mydc.net"
+        data = self._get_initial_data()
+        data["remarks"] = "updated"
+
+        response = self.client.post(self.dca.get_absolute_url(), data)
+
+        self.assertEqual(response.status_code, 302)
+        self.dca.refresh_from_db()
+        self.assertEqual(self.dca.management_ip, "10.20.30.40")
+        self.assertEqual(self.dca.management_hostname, "qwerty.mydc.net")
+        self.assertEqual(self.dca.remarks, "updated")
 
     def test_host_links_reject_unsafe_values(self):
         unsafe_value = 'example.com"><script>alert(1)</script>'

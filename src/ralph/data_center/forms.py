@@ -41,11 +41,10 @@ def _get_http_url(value):
 
 
 class HostLinkInput(forms.TextInput):
-    def render(self, name, value, attrs=None, renderer=None):
-        input_html = super().render(name, value, attrs, renderer)
+    def _render_with_link(self, field_html, value):
         url = _get_http_url(value)
         if not url:
-            return input_html
+            return field_html
         return format_html(
             '<div class="row collapse host-link-field">'
             '<div class="small-11 columns">{}</div>'
@@ -53,9 +52,20 @@ class HostLinkInput(forms.TextInput):
             'target="_blank" rel="noopener noreferrer" title="Open address" '
             'aria-label="Open address"><i class="fa fa-external-link" '
             'aria-hidden="true"></i></a></div></div>',
-            input_html,
+            field_html,
             url,
         )
+
+    def render(self, name, value, attrs=None, renderer=None):
+        input_html = super().render(name, value, attrs, renderer)
+        return self._render_with_link(input_html, value)
+
+    def render_readonly(self, value):
+        value_html = format_html(
+            '<span class="read-only">{}</span>',
+            value or "-",
+        )
+        return self._render_with_link(value_html, value)
 
 
 class DataCenterAssetForm(PriceFormMixin, AssetFormMixin, RalphAdminForm):
@@ -64,6 +74,12 @@ class DataCenterAssetForm(PriceFormMixin, AssetFormMixin, RalphAdminForm):
     management_hostname = CharFormFieldWithAutoStrip(required=False)
 
     ip_fields = ["management_ip", "management_hostname"]
+    host_link_fields = ["hostname"] + ip_fields
+    readonly_widgets = {
+        "hostname": HostLinkInput(),
+        "management_ip": HostLinkInput(),
+        "management_hostname": HostLinkInput(),
+    }
 
     class Meta:
         model = DataCenterAsset
@@ -71,12 +87,14 @@ class DataCenterAssetForm(PriceFormMixin, AssetFormMixin, RalphAdminForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for field_name in ["hostname"] + self.ip_fields:
-            field = self.fields[field_name]
-            field.widget = HostLinkInput(attrs=field.widget.attrs)
+        for field_name in self.host_link_fields:
+            field = self.fields.get(field_name)
+            if field:
+                field.widget = HostLinkInput(attrs=field.widget.attrs)
         for field_name in self.ip_fields:
-            field = self.fields[field_name]
-            field.initial = getattr(self.instance, field_name)
+            field = self.fields.get(field_name)
+            if field:
+                field.initial = getattr(self.instance, field_name)
 
     def save(self, *args, **kwargs):
         obj = super().save(*args, **kwargs)
@@ -84,11 +102,13 @@ class DataCenterAssetForm(PriceFormMixin, AssetFormMixin, RalphAdminForm):
         # DataCenterAsset)
         obj.save()
 
-        if not self.cleaned_data["management_hostname"] and not self.cleaned_data["management_ip"]:
+        management_hostname = self.cleaned_data.get("management_hostname", obj.management_hostname)
+        management_ip = self.cleaned_data.get("management_ip", obj.management_ip)
+        if not management_hostname and not management_ip:
             del obj.management_ip
         else:
-            obj.management_ip = self.cleaned_data["management_ip"]
-            obj.management_hostname = self.cleaned_data["management_hostname"]
+            obj.management_ip = management_ip
+            obj.management_hostname = management_hostname
         return obj
 
     def _validate_mgmt_ip_is_unique(self):

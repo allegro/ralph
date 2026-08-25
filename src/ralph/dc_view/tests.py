@@ -186,8 +186,7 @@ class TestRestAssetInfoPerRack(TestCase):
         )
 
         ports_1 = [
-            PortFactory(label="0/0/{}".format(i), data_center_asset=self.asset_1)
-            for i in range(2)
+            PortFactory(label="0/0/{}".format(i), data_center_asset=self.asset_1) for i in range(2)
         ]
         ConnectionFactory(post_members=[ports_1[0]])
 
@@ -199,11 +198,7 @@ class TestRestAssetInfoPerRack(TestCase):
         port_queries = [q for q in queries if "switchports_port" in q["sql"]]
         self.assertEqual(len(port_queries), 1)
 
-        devices = {
-            d["id"]: d
-            for d in response.data["devices"]
-            if d.get("_type") == TYPE_ASSET
-        }
+        devices = {d["id"]: d for d in response.data["devices"] if d.get("_type") == TYPE_ASSET}
         self.assertEqual(devices[self.asset_1.id]["ports"], 2)
         self.assertEqual(devices[self.asset_1.id]["free_ports"], 1)
         self.assertEqual(devices[asset_2.id]["ports"], 1)
