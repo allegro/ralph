@@ -55,7 +55,7 @@ class DataImporterTestCase(TestCase):
             content_type=asset_content_type, object_pk=asset_model.pk, old_object_pk=1
         )
 
-        warehouse = WarehouseFactory(name="warehouse_1")
+        warehouse = WarehouseFactory(id=1, name="warehouse_1")
         warehouse_content_type = ContentType.objects.get_for_model(Warehouse)
         ImportedObjects.objects.create(
             content_type=warehouse_content_type, object_pk=warehouse.pk, old_object_pk=1
