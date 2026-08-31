@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 from copy import copy
 from datetime import datetime
+from io import StringIO
 
 import mock
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.management import call_command
 from django.test.utils import override_settings
 
 from ralph.assets.models.components import ComponentModel
@@ -505,3 +507,88 @@ class TestOpenstackSync(RalphTestCase):
             self.host.host_id,
             ralph_projects_with_servers[self.cloud_project_1.project_id]["servers"].keys(),
         )
+
+
+COMMAND_MODULE = "ralph.virtual.management.commands.openstack_sync"
+
+
+class TestOpenstackSyncCommandCloudSyncEnabled(RalphTestCase):
+    """Command should sync only providers with `cloud_sync_enabled` turned on."""
+
+    def setUp(self):
+        patcher_openstack = mock.patch(
+            "{}.RalphOpenStackInfrastructureClient".format(COMMAND_MODULE)
+        )
+        patcher_ralph = mock.patch("{}.RalphClient".format(COMMAND_MODULE))
+        self.openstack_client_mock = patcher_openstack.start()
+        self.ralph_client_mock = patcher_ralph.start()
+        self.addCleanup(patcher_openstack.stop)
+        self.addCleanup(patcher_ralph.stop)
+
+        # `handle` unpacks the result of this call into two variables
+        self.openstack_client_mock.return_value.get_openstack_instances_data.return_value = (
+            {},
+            {},
+        )
+
+    def _call_command(self, **options):
+        call_command("openstack_sync", stdout=StringIO(), **options)
+
+    def assertSyncPerformed(self):  # noqa: N802
+        self.assertTrue(self.openstack_client_mock.called)
+        self.assertTrue(self.ralph_client_mock.return_value.perform_update.called)
+
+    def assertSyncSkipped(self):  # noqa: N802
+        self.assertFalse(self.openstack_client_mock.called)
+        self.assertFalse(self.ralph_client_mock.called)
+
+    def test_sync_is_performed_when_cloud_sync_is_enabled(self):
+        CloudProviderFactory(name="openstack", cloud_sync_enabled=True)
+
+        self._call_command()
+
+        self.assertSyncPerformed()
+
+    def test_sync_is_skipped_when_cloud_sync_is_disabled(self):
+        CloudProviderFactory(name="openstack", cloud_sync_enabled=False)
+
+        self._call_command()
+
+        self.assertSyncSkipped()
+
+    def test_disabled_provider_is_logged(self):
+        CloudProviderFactory(name="openstack", cloud_sync_enabled=False)
+
+        with self.assertLogs(COMMAND_MODULE, level="INFO") as logs:
+            self._call_command()
+
+        self.assertIn("Cloud sync disabled for openstack", [r.getMessage() for r in logs.records])
+        # make sure the command finished cleanly, not on a swallowed exception
+        self.assertNotIn("ERROR", [r.levelname for r in logs.records])
+
+    def test_cloud_sync_flag_is_checked_for_provider_from_option(self):
+        CloudProviderFactory(name="openstack", cloud_sync_enabled=False)
+        CloudProviderFactory(name="my-own-openstack", cloud_sync_enabled=True)
+
+        self._call_command(provider="my-own-openstack")
+
+        self.assertSyncPerformed()
+        self.assertEqual("my-own-openstack", self.openstack_client_mock.call_args[0][0])
+
+    def test_sync_is_skipped_when_provider_from_option_is_disabled(self):
+        CloudProviderFactory(name="openstack", cloud_sync_enabled=True)
+        CloudProviderFactory(name="my-own-openstack", cloud_sync_enabled=False)
+
+        self._call_command(provider="my-own-openstack")
+
+        self.assertSyncSkipped()
+
+    def test_unknown_provider_is_created_and_sync_is_skipped(self):
+        self.assertFalse(CloudProvider.objects.filter(name="brand-new").exists())
+
+        self._call_command(provider="brand-new")
+
+        provider = CloudProvider.objects.get(name="brand-new")
+        # new providers have cloud sync disabled by default
+        self.assertFalse(provider.cloud_sync_enabled)
+        self.assertSyncSkipped()
