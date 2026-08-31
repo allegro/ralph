@@ -66,6 +66,7 @@ class TestDataCenterAssetForm(RalphTestCase):
             "sn": dca.sn,
             "property_of": dca.property_of.id,
             "status": 1,
+            "production_year": dca.production_year or 2020,
             "custom_fields-customfieldvalue-content_type-object_id-INITIAL_FORMS": "0",
             "custom_fields-customfieldvalue-content_type-object_id-MAX_NUM_FORMS": "1000",
             "custom_fields-customfieldvalue-content_type-object_id-MIN_NUM_FORMS": "0",

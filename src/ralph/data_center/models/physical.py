@@ -543,7 +543,7 @@ class DataCenterAsset(
         verbose_name=_("source"),
     )
     delivery_date = models.DateField(null=True, blank=True)
-    production_year = models.PositiveSmallIntegerField(null=True, blank=True, db_index=True)
+    production_year = models.PositiveSmallIntegerField(null=True, blank=False, db_index=True)
     production_use_date = models.DateField(null=True, blank=True, db_index=True)
     metadata = models.JSONField(
         blank=True,
