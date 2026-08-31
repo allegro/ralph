@@ -1,6 +1,5 @@
 import logging
 
-import six
 from ralph.lib.dj_choices import Choices
 from django import forms
 from django.contrib.auth.models import Group
@@ -165,7 +164,7 @@ class CustomFieldValue(TimeStampMixin, models.Model):
         params = {
             "model": self,
             "model_class": model_class,
-            "model_name": six.text_type(capfirst(opts.verbose_name)),
+            "model_name": str(capfirst(opts.verbose_name)),
             "unique_check": unique_check,
         }
 

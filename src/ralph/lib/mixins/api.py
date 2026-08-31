@@ -1,4 +1,3 @@
-import six
 from django.utils.translation import gettext_lazy as _
 from rest_framework.serializers import CharField, ChoiceField
 
@@ -44,4 +43,4 @@ class ChoiceFieldWithOtherOptionField(ChoiceField):
         return self.other_field.run_validation(data)
 
     def to_representation(self, value):
-        return six.text_type(value)
+        return str(value)

@@ -36,7 +36,6 @@ from django.utils.text import capfirst
 from django.utils.translation import gettext_lazy as _
 from ralph.lib.dj_choices import unset, Choices, Gender
 
-import six
 
 try:
     # Removed in Django 1.10 (replaced by `from_db_value` method)
@@ -47,7 +46,7 @@ except ImportError:
         pass
 
 
-class ChoiceField(six.with_metaclass(SubfieldBase, IntegerField)):
+class ChoiceField(IntegerField, metaclass=SubfieldBase):
     description = _("Integer")
 
     def __init__(self, *args, **kwargs):
@@ -102,7 +101,7 @@ class ChoiceField(six.with_metaclass(SubfieldBase, IntegerField)):
     def get_prep_value(self, value):
         if value in validators.EMPTY_VALUES:
             return None
-        if isinstance(value, (six.text_type, int)):
+        if isinstance(value, (str, int)):
             return int(value)
         if isinstance(value, long):  # noqa
             return value

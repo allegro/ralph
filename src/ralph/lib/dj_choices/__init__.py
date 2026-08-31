@@ -23,15 +23,10 @@
 
 """Choices - an enum implementation for Django forms and models."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import absolute_import, division, print_function, unicode_literals
 
 from functools import partial
 from textwrap import dedent
-
-import six
 
 unset = object()
 gettext = unset
@@ -88,8 +83,6 @@ class ChoicesEntry(int):
     def __str__(self, raw=False):
         """Returns Unicode on Py3, bytes on Py2."""
         result = self.__unicode__(raw=raw)
-        if six.PY2:
-            result = result.encode("utf8")
         return result
 
     def __repr__(self):
@@ -117,7 +110,7 @@ class ChoicesEntry(int):
             >>> Color.from_name(request.POST['color']).html
             '#00ff00'
         """
-        for key, value in six.iteritems(other):
+        for key, value in iter(other.items()):
             self.__extra__.append(key)
             setattr(self, key, value)
         return self
@@ -153,8 +146,6 @@ class Choice(ChoicesEntry):
 
     def __str__(self):
         result = self.__unicode__()
-        if six.PY2:
-            result = result.encode("utf8")
         return result
 
     def __repr__(self):
@@ -172,8 +163,6 @@ class Choice(ChoicesEntry):
         result = "<{}: {} (id: {}, name: {})>".format(
             self.__class__.__name__, rawval, self.id, name
         )
-        if six.PY2:
-            result = result.encode("utf8")
         return result
 
 
@@ -243,7 +232,7 @@ class _ChoicesMeta(type):
         return type.__new__(meta, classname, bases, classDict)
 
 
-class Choices(six.with_metaclass(_ChoicesMeta, list)):
+class Choices(list, metaclass=_ChoicesMeta):
     __metaclass__ = _ChoicesMeta
 
     def __init__(self, filter=(unset,), item=unset, grouped=False):

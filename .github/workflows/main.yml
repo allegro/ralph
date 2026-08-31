@@ -20,7 +20,7 @@ jobs:
         DATABASE_PASSWORD: ralph_ng
     services:
       postgres:
-        image: postgres:14.17
+        image: postgres:18
         env:
           POSTGRES_USER: ralph_ng
           POSTGRES_PASSWORD: ralph_ng
