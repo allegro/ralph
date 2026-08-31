@@ -607,6 +607,12 @@ class Command(BaseCommand):
             logger.info("Openstack sync started...")
             match_ironic = options["match_ironic_physical_hosts"]
             openstack_provider_name = options["provider"]
+            provider, _ = CloudProvider.objects.get_or_create(name=openstack_provider_name)
+
+            if not provider.cloud_sync_enabled:
+                logger.info("Cloud sync disabled for %s", provider.name)
+                return
+
             ironic_serial_number_param = options["node_serial_number_parameter"]
             ralph_serial_number_param = options["asset_serial_number_parameter"]
             changes_since = options["changes_since"]
