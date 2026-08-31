@@ -352,6 +352,7 @@ class Rack(AdminAbsoluteUrlMixin, NamedMixin.NonUnique, models.Model):
             filter_kwargs["orientation"] = side
         else:
             filter_kwargs["orientation__in"] = [Orientation.front, Orientation.back]
+
         return (
             DataCenterAsset.objects.select_related("model__category")
             .filter(Q(slot_no="") | Q(slot_no=None), **filter_kwargs)

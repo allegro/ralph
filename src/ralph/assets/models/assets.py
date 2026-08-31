@@ -222,6 +222,10 @@ class Category(
     imei_required = models.BooleanField(default=False)
     allow_deployment = models.BooleanField(default=False)
     show_buyout_date = models.BooleanField(default=False)
+    show_ports_in_visualization = models.BooleanField(
+        default=False,
+        verbose_name=_("show ports in rack visualization"),
+    )
     default_depreciation_rate = models.DecimalField(
         blank=True,
         decimal_places=2,

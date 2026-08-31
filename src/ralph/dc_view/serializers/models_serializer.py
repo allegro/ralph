@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+from django.db.models import Count, Q
 from django.urls import reverse
 from rest_framework import serializers
 
@@ -86,12 +87,43 @@ class DataCenterAssetSerializer(DataCenterAssetSerializerBase):
     management_ip = serializers.SerializerMethodField("get_management")
     orientation = serializers.SerializerMethodField("get_orientation_desc")
     url = serializers.CharField(source="get_absolute_url")
+    ports_url = serializers.SerializerMethodField("get_ports_url")
+    ports = serializers.SerializerMethodField("get_ports")
+    free_ports = serializers.SerializerMethodField("get_free_ports")
 
     def get_type(self, obj):
         return TYPE_ASSET
 
     def get_management(self, obj):
         return obj.management_ip or ""
+
+    def get_ports_url(self, obj):
+        return reverse("admin:data_center_datacenterasset_ports", args=(obj.id,))
+
+    def _get_port_counts(self, obj):
+        if not getattr(obj.model.category, "show_ports_in_visualization", False):
+            return None
+
+        if hasattr(obj, "ports_count") and hasattr(obj, "free_ports_count"):
+            return {
+                "ports": obj.ports_count,
+                "free_ports": obj.free_ports_count,
+            }
+
+        if not hasattr(obj, "_dc_view_port_counts"):
+            obj._dc_view_port_counts = obj.ports.aggregate(
+                ports=Count("pk"),
+                free_ports=Count("pk", filter=Q(connectionmember__isnull=True)),
+            )
+        return obj._dc_view_port_counts
+
+    def get_ports(self, obj):
+        counts = self._get_port_counts(obj)
+        return counts["ports"] if counts is not None else None
+
+    def get_free_ports(self, obj):
+        counts = self._get_port_counts(obj)
+        return counts["free_ports"] if counts is not None else None
 
     class Meta:
         model = DataCenterAsset
@@ -114,6 +146,9 @@ class DataCenterAssetSerializer(DataCenterAssetSerializerBase):
             "remarks",
             "metadata",
             "url",
+            "ports_url",
+            "ports",
+            "free_ports",
         )
 
 

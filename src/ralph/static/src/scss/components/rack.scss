@@ -251,6 +251,9 @@
                             width: 50%;
                             float: left;
                         }
+                        &:not(.has_children) .info {
+                            width: 100%;
+                        }
                         .children {
                             position: relative;
                             top: 0;
@@ -271,6 +274,9 @@
                     }
                     &.height-u-4 .children {
                         top: 1rem;
+                    }
+                    &.has_ports .info .asset-description {
+                        right: 92px;
                     }
                     &.position-u-1 .info .barcode, &.position-u-1 .info .asset-description {top:0;}
                     .info {
@@ -294,7 +300,41 @@
                             color: #333;
                             font-weight: bold;
                             left: $info-padding;
+                            overflow: hidden;
+                            right: $info-padding;
+                            text-overflow: ellipsis;
                             top:$info-padding;
+                            white-space: nowrap;
+                        }
+                        .port-availability {
+                            color: inherit;
+                            position: absolute;
+                            right: $info-padding;
+                            text-align: right;
+                            text-decoration: none;
+                            top: 2px;
+                            width: 84px;
+                            .port-availability-count {
+                                display: block;
+                                font-size: .9em;
+                                font-weight: bold;
+                                line-height: 1em;
+                                white-space: nowrap;
+                            }
+                            .port-availability-track {
+                                background: rgba(0, 0, 0, .3);
+                                border-radius: 2px;
+                                display: block;
+                                height: 4px;
+                                margin-top: 2px;
+                                overflow: hidden;
+                                width: 100%;
+                            }
+                            .port-availability-free {
+                                background: #fff;
+                                display: block;
+                                height: 100%;
+                            }
                         }
                         .accessory-remarks {
                             right: $info-padding;

@@ -2,6 +2,14 @@
     <div ng-show="rack.info.description" class="description">{{ rack.info.description }}</div>
     <table class="info">
         <tr>
+          <td colspan="2">
+                  <span ng-show="activeItem">
+                      <a target="_blank" ng-show="activeItem.url" href="{{ activeItem.url }}">Edit</a><br>
+                  </span>
+            <span ng-hide="activeItem">-</span>
+          </td>
+        </tr>
+        <tr>
             <td>Service Catalog</td>
             <td>{{ activeItem ? activeItem.service : '-' }}</td>
         </tr>
@@ -34,20 +42,6 @@
             <td>
                 <span ng-show="activeItem">
                     <a target="_blank" ng-show="activeItem.management_ip" href="https://{{ activeItem.management_ip }}">{{ activeItem.management_ip }}</a>
-                </span>
-                <span ng-hide="activeItem">-</span>
-            </td>
-        </tr>
-        <tr>
-            <td>Remarks</td>
-            <td>
-                {{ activeItem ? activeItem.remarks : '-' }}
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                <span ng-show="activeItem">
-                    <a target="_blank" ng-show="activeItem.url" href="{{ activeItem.url }}">Edit</a><br>
                 </span>
                 <span ng-hide="activeItem">-</span>
             </td>

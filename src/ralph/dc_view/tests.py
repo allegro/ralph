@@ -1,7 +1,10 @@
 import json
 
 from django.contrib.auth import get_user_model
+from django.db import connection
 from django.test import TestCase
+from django.test.utils import CaptureQueriesContext
+from django.urls import reverse
 from rest_framework.test import APIClient
 
 from ralph.assets.models.choices import ObjectModelType
@@ -19,7 +22,12 @@ from ralph.data_center.tests.factories import (
     RackFactory,
     ServerRoomFactory,
 )
-from ralph.dc_view.serializers.models_serializer import TYPE_ACCESSORY, TYPE_ASSET
+from ralph.dc_view.serializers.models_serializer import (
+    TYPE_ACCESSORY,
+    TYPE_ASSET,
+    DataCenterAssetSerializer,
+)
+from ralph.switchports.tests.factories import ConnectionFactory, PortFactory
 
 
 class TestRestAssetInfoPerRack(TestCase):
@@ -107,6 +115,11 @@ class TestRestAssetInfoPerRack(TestCase):
                     "metadata": None,
                     "service": "Service1",
                     "url": self.asset_1.get_absolute_url(),
+                    "ports_url": reverse(
+                        "admin:data_center_datacenterasset_ports", args=(self.asset_1.id,)
+                    ),
+                    "ports": None,
+                    "free_ports": None,
                 },
                 {
                     "_type": TYPE_ACCESSORY,
@@ -127,3 +140,66 @@ class TestRestAssetInfoPerRack(TestCase):
             ],
         }
         self.assertEqual(returned_json, expected_json)
+
+    def test_ports_are_not_queried_when_disabled_for_category(self):
+        with CaptureQueriesContext(connection) as queries:
+            data = DataCenterAssetSerializer(self.asset_1).data
+
+        port_queries = [query for query in queries if "switchports_port" in query["sql"]]
+        self.assertEqual(data["ports"], None)
+        self.assertEqual(data["free_ports"], None)
+        self.assertEqual(port_queries, [])
+
+    def test_ports_are_returned_when_enabled_for_category(self):
+        category = self.asset_1.model.category
+        category.show_ports_in_visualization = True
+        category.save(update_fields=["show_ports_in_visualization"])
+        ports = [
+            PortFactory(label="0/0/{}".format(index), data_center_asset=self.asset_1)
+            for index in range(3)
+        ]
+        ConnectionFactory(post_members=[ports[0]])
+
+        with CaptureQueriesContext(connection) as queries:
+            data = DataCenterAssetSerializer(self.asset_1).data
+
+        port_queries = [query for query in queries if "switchports_port" in query["sql"]]
+        self.assertEqual(data["ports"], 3)
+        self.assertEqual(data["free_ports"], 2)
+        self.assertEqual(len(port_queries), 1)
+
+    def test_port_counts_are_not_queried_per_asset_in_rack_view(self):
+        """
+        Verifies that retrieving port counts for multiple assets in a rack does
+        not result in one DB query per asset (N+1). The annotation should batch
+        all counts into a single query.
+        """
+        category = self.asset_1.model.category
+        category.show_ports_in_visualization = True
+        category.save(update_fields=["show_ports_in_visualization"])
+
+        asset_2 = DataCenterAssetFactory(
+            model=self.asset_1.model,
+            rack=self.rack_1,
+            position=2,
+            slot_no="",
+        )
+
+        ports_1 = [
+            PortFactory(label="0/0/{}".format(i), data_center_asset=self.asset_1) for i in range(2)
+        ]
+        ConnectionFactory(post_members=[ports_1[0]])
+
+        PortFactory(label="0/1/0", data_center_asset=asset_2)
+
+        with CaptureQueriesContext(connection) as queries:
+            response = self.client.get("/api/rack/{}/".format(self.rack_1.id))
+
+        port_queries = [q for q in queries if "switchports_port" in q["sql"]]
+        self.assertEqual(len(port_queries), 1)
+
+        devices = {d["id"]: d for d in response.data["devices"] if d.get("_type") == TYPE_ASSET}
+        self.assertEqual(devices[self.asset_1.id]["ports"], 2)
+        self.assertEqual(devices[self.asset_1.id]["free_ports"], 1)
+        self.assertEqual(devices[asset_2.id]["ports"], 1)
+        self.assertEqual(devices[asset_2.id]["free_ports"], 1)
