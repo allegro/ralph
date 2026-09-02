@@ -188,6 +188,9 @@ class DataCenterAssetSaveSerializer(RalphAPISaveSerializer):
     class Meta:
         model = DataCenterAsset
         fields = "__all__"
+        extra_kwargs = {
+            "production_year": {"required": True, "allow_null": False},
+        }
 
 
 class DatabaseSerializer(BaseObjectSerializer):

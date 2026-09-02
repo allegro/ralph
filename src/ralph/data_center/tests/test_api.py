@@ -155,6 +155,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
             "service_env": self.service_env.id,
             "force_depreciation": False,
             "property_of": self.assetHolder.id,
+            "production_year": 2020,
         }
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -162,6 +163,50 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         self.assertEqual(dc_asset.hostname, "12345")
         self.assertEqual(dc_asset.service_env, self.service_env)
         self.assertEqual(dc_asset.rack, self.rack)
+        self.assertEqual(dc_asset.production_year, 2020)
+
+    def test_create_data_center_asset_without_production_year(self):
+        url = reverse("datacenterasset-list")
+        data = {
+            "hostname": "12345",
+            "barcode": "12345",
+            "model": self.model.id,
+            "rack": self.rack.id,
+            "position": 12,
+            "service_env": self.service_env.id,
+            "force_depreciation": False,
+            "property_of": self.assetHolder.id,
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.data,
+            {
+                "production_year": ["This field is required."],
+            },
+        )
+
+    def test_create_data_center_asset_with_production_year_null(self):
+        url = reverse("datacenterasset-list")
+        data = {
+            "hostname": "12345",
+            "barcode": "12345",
+            "model": self.model.id,
+            "rack": self.rack.id,
+            "position": 12,
+            "service_env": self.service_env.id,
+            "force_depreciation": False,
+            "property_of": self.assetHolder.id,
+            "production_year": None,
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.data,
+            {
+                "production_year": ["This field may not be null."],
+            },
+        )
 
     def test_create_data_center_asset_without_rack(self):
         url = reverse("datacenterasset-list")
@@ -172,6 +217,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
             "position": 12,
             "service_env": self.service_env.id,
             "force_depreciation": False,
+            "production_year": 2020,
         }
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -192,6 +238,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
             "position": 12,
             "service_env": self.service_env.id,
             "force_depreciation": False,
+            "production_year": 2020,
         }
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -214,6 +261,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
             "force_depreciation": False,
             "tags": ["prod", "db"],
             "property_of": self.assetHolder.id,
+            "production_year": 2020,
         }
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -234,6 +282,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
             "force_depreciation": False,
             "tags": ["prod", "db"],
             "property_of": self.assetHolder.id,
+            "production_year": 2020,
         }
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -256,6 +305,7 @@ class DataCenterAssetAPITests(RalphAPITestCase):
             "force_depreciation": False,
             "tags": ["prod", "db"],
             "sn": "sn",
+            "production_year": 2020,
         }
         response = self.client.post(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

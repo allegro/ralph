@@ -67,6 +67,11 @@ class BackOfficeAssetViewSet(RalphAPIViewSet):
         "tags",
         "content_type",
     ]
+    filterset_fields = [
+        "modified",
+        "created",
+        "last_status_change",
+    ]
     queryset = BackOfficeAsset.objects.all()
     serializer_class = BackOfficeAssetSerializer
 
