@@ -132,3 +132,18 @@ class ApplyCellEditTestCase(TestCase):
             ).exists()
         )
         self.assertTrue(Port.objects.filter(label="0/0/7", data_center_asset=alt).exists())
+
+    def test_empty_override_removes_existing_override(self):
+        alt = DataCenterAssetFactory(hostname="ce.sw.alt.local", barcode="ALT-CE-1")
+        self._apply(self.server1, new_value="7", override_value="ALT-CE-1")
+
+        result = self._apply(self.server1, new_value="7", override_value="")
+
+        self.assertIsNone(result.error)
+        self.assertFalse(
+            RackSwitchConfigurationOverride.objects.filter(
+                rack_switch_configuration=self.sc_eth1,
+                data_center_asset=self.server1,
+            ).exists()
+        )
+        self.assertTrue(Port.objects.filter(label="0/0/7", data_center_asset=alt).exists())

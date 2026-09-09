@@ -5,7 +5,10 @@ switch port; ``SwitchportRefreshJob`` tracks the async rack refresh.
 """
 
 from django.db import models
+from django.db.models import TextChoices
+from django.utils.translation import gettext_lazy as _
 
+from ralph.accounts.models import RalphUser
 from ralph.data_center.models import DataCenterAsset
 from ralph.lib.mixins.models import AdminAbsoluteUrlMixin, TimeStampMixin
 
@@ -129,3 +132,61 @@ class SwitchportRefreshJob(AdminAbsoluteUrlMixin, TimeStampMixin, models.Model):
             RefreshJobStatus.PENDING,
             RefreshJobStatus.IN_PROGRESS,
         )
+
+
+class SwitchportDiffStatus(TextChoices):
+    SAME_ASSET = "same_asset"
+    ASSET_MISMATCH = "asset_mismatch"
+    PORT_MISSING = "port_missing"
+    NETMAKER_EMPTY = "netmaker_empty"
+    RALPH_EMPTY = "ralph_empty"
+    NOT_VALIDATED = "not_validated"
+
+
+MISMATCH_STATUSES = {
+    SwitchportDiffStatus.RALPH_EMPTY.value,
+    SwitchportDiffStatus.ASSET_MISMATCH.value,
+    SwitchportDiffStatus.PORT_MISSING.value,
+}
+
+
+class DiffEntry(AdminAbsoluteUrlMixin, TimeStampMixin):
+    """Difference in switch – server connection as reported by Netmaker vs Ralph
+
+    Exact detection algorithm is defined in switchports.report.diff_detection.compare
+    For a diff entry to appear, the switch must already be in ralph
+    Then for each port reported by netmaker a diff entry is created.
+
+    A diff entry can be stamped to suppress showing error in the report.
+    When a "key" changes, the stamp is discarded.
+
+    "Key" depends on detected status
+    ASSET_MISMATCH or SAME_ASSET – status, ralph_asset, netmaker_asset
+    other statuses – status only
+
+    That means stamp will be discarded only when status changes unless
+    both Ralph and Netmaker report an asset
+    in that case, stamp will be discarded for asset change
+    """
+
+    switch = models.ForeignKey(DataCenterAsset, on_delete=models.CASCADE, related_name="+")
+    label = models.CharField()  # would be ForeignKey to Port but want to handle port missing too!
+    status = models.CharField(
+        max_length=255, choices=SwitchportDiffStatus.choices, blank=False, null=False
+    )
+    ralph_asset = models.ForeignKey(
+        DataCenterAsset, null=True, blank=True, on_delete=models.CASCADE, related_name="+"
+    )
+    netmaker_asset = models.ForeignKey(
+        DataCenterAsset, null=True, blank=True, on_delete=models.CASCADE, related_name="+"
+    )
+
+    class Meta:
+        unique_together = ("switch", "label")
+        verbose_name = _("Switchport diff")
+        verbose_name_plural = _("Switchport diff entries")
+
+
+class DiffStamp(AdminAbsoluteUrlMixin, TimeStampMixin):
+    entry = models.OneToOneField(DiffEntry, on_delete=models.CASCADE, related_name="stamp")
+    actor = models.ForeignKey(RalphUser, on_delete=models.CASCADE)

@@ -7,16 +7,23 @@
 
 <h1>{% trans "Switchport Grid" %} &mdash; {{ object }}</h1>
 
-{% if not switch_configs %}
-<p>{% trans "No switch configurations defined for this rack. Add switches in the Rack Configuration form first." %}</p>
-{% elif not rows %}
-<p>{% trans "No assets found in this rack." %}</p>
-{% else %}
-
+{% if module_racks or switch_configs and rows %}
 <div class="grid-toolbar">
+    {% if module_racks %}
+    <nav class="tabs rack-tabs" aria-label="{% trans 'Racks in this module' %}">
+        <ul>
+            {% for rack in module_racks %}
+            <li{% if rack.pk == object.pk %} class="active"{% endif %}>
+                <a href="{% url 'admin:data_center_rack_switchport-grid' rack.pk %}"{% if rack.pk == object.pk %} aria-current="page"{% endif %}>{{ rack.name }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </nav>
+    {% endif %}
+    {% if switch_configs and rows %}
     <form method="post" style="display: inline;">
         {% csrf_token %}
-        <button type="submit" name="refresh_validation" class="btn-refresh">
+        <button type="submit" name="refresh_validation" class="grid-action btn-refresh">
             &#x21bb; {% trans "Refresh from netmaker" %}
         </button>
     </form>
@@ -24,7 +31,15 @@
     {% if last_refresh %}
     <span class="last-refresh">{% trans "Last refresh:" %} {{ last_refresh }}</span>
     {% endif %}
+    {% endif %}
 </div>
+{% endif %}
+
+{% if not switch_configs %}
+<p>{% trans "No switch configurations defined for this rack. Add switches in the Rack Configuration form first." %}</p>
+{% elif not rows %}
+<p>{% trans "No assets found in this rack." %}</p>
+{% else %}
 
 {% if has_conflicts %}
 <div class="conflict-banner">
@@ -56,7 +71,7 @@
         </thead>
         <tbody>
             {% for row in rows %}
-            <tr>
+            <tr{% if row.is_highlighted %} class="row-highlighted"{% endif %}>
                 <td class="col-position">{{ row.asset.position|default:"-" }}</td>
                 <td class="col-hostname">
                     <a href="{{ row.asset.get_absolute_url }}">{{ row.asset.barcode|default:row.asset.hostname }}</a>
@@ -115,7 +130,7 @@
     </table>
 
     <div class="submit-row" style="margin-top: 1rem;">
-        <input type="submit" value="{% trans 'Save connections' %}" class="default">
+        <button type="submit" class="grid-action">{% trans "Save connections" %}</button>
     </div>
 </form>
 
@@ -146,10 +161,25 @@
     .grid-toolbar {
         margin-bottom: 1rem;
         display: flex;
+        flex-wrap: wrap;
         align-items: center;
         gap: 1rem;
     }
-    .btn-refresh {
+    .grid-toolbar form,
+    .grid-action {
+        margin: 0;
+    }
+    .rack-tabs {
+        max-width: 100%;
+    }
+    .rack-tabs ul {
+        flex-wrap: wrap;
+    }
+    .rack-tabs ul li a {
+        display: block;
+        overflow-wrap: anywhere;
+    }
+    .grid-action {
         background: #417690;
         color: #fff;
         border: none;
@@ -158,7 +188,8 @@
         cursor: pointer;
         font-size: 13px;
     }
-    .btn-refresh:hover {
+    .grid-action:hover,
+    .grid-action:focus-visible {
         background: #205067;
     }
     .last-refresh {
@@ -301,6 +332,13 @@
     }
     .switchport-grid-table tbody tr:hover {
         background: #eef6fa;
+    }
+    .switchport-grid-table tbody tr.row-highlighted {
+        background: #fff3cd;
+        box-shadow: inset 4px 0 0 #f0ad00;
+    }
+    .switchport-grid-table tbody tr.row-highlighted:hover {
+        background: #ffe8a1;
     }
     .switchport-grid-table tbody td.col-position,
     .switchport-grid-table tbody td.col-hostname {
@@ -478,6 +516,9 @@
             var wrap = cell.querySelector('.override-wrap');
             var override = cell.querySelector('.override-input');
             var open = wrap.classList.toggle('open');
+            if (!open && override) {
+                override.value = '';
+            }
             btn.classList.toggle(
                 'active', open || !!(override && override.value.trim())
             );

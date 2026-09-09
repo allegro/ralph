@@ -1,4 +1,4 @@
-from factory import SubFactory, post_generation
+from factory import SubFactory, post_generation, Sequence
 from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyText
 
@@ -10,7 +10,9 @@ from ralph.switchports.models import (
     RackSwitchConfigurationOverride,
     RackSwitchConfiguration,
     RackConfiguration,
+    DiffEntry,
 )
+from ralph.switchports.models.validation import DiffStamp
 
 
 class PortFactory(DjangoModelFactory):
@@ -63,3 +65,15 @@ class RackSwitchConfigurationOverrideFactory(DjangoModelFactory):
     data_center_asset = SubFactory(DataCenterAssetFactory)
     rack_switch_configuration = SubFactory(RackSwitchConfigurationFactory)
     switch = SubFactory(DataCenterAssetFactory)
+
+
+class DiffEntryFactory(DjangoModelFactory):
+    label = Sequence(lambda n: f"0/0/{n}")
+
+    class Meta:
+        model = DiffEntry
+
+
+class DiffStampFactory(DjangoModelFactory):
+    class Meta:
+        model = DiffStamp

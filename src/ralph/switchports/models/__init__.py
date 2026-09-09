@@ -22,6 +22,7 @@ from ralph.switchports.models.rack_config import (
 )
 from ralph.switchports.models.validation import (
     BackendValidationResult,
+    DiffEntry,
     RefreshJobStatus,
     SwitchportRefreshJob,
     ValidationStatus,
@@ -32,6 +33,7 @@ __all__ = [
     "BackendValidationResult",
     "Connection",
     "ConnectionMember",
+    "DiffEntry",
     "Port",
     "RackConfiguration",
     "RackSwitchConfiguration",

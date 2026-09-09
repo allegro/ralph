@@ -244,6 +244,7 @@ sitetrees = [
                         url="failures-report",
                         access_by_perms=("accounts.can_view_extra_failurereport"),
                     ),
+                    section(_("Switchport report"), "switchports", "DiffEntry"),
                 ],
             ),
             ralph_item(

@@ -7,6 +7,7 @@ from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
 
 from ralph.admin.views.extra import RalphDetailView
+from ralph.data_center.models import Rack
 from ralph.lib.external_services import InternalService
 from ralph.switchports import grid
 from ralph.switchports.constants import (
@@ -81,6 +82,11 @@ class RackSwitchportGridView(RalphDetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context["module_racks"] = (
+            Rack.objects.filter(rack_module_id=self.object.rack_module_id).order_by("name", "pk")
+            if self.object.rack_module_id
+            else Rack.objects.none()
+        )
         assets = list(grid.get_rack_assets(self.object))
         switch_configs = list(grid.get_switch_configs(self.rack_configuration))
         override_map = build_override_map(switch_configs)
@@ -113,7 +119,7 @@ class RackSwitchportGridView(RalphDetailView):
         context["switch_configs"] = switch_configs
         context["switch_status"] = switch_status
         conflicts = getattr(self, "_conflicts", {})
-        context["rows"] = grid.build_grid_rows(
+        rows = grid.build_grid_rows(
             assets,
             switch_configs,
             override_map,
@@ -123,6 +129,14 @@ class RackSwitchportGridView(RalphDetailView):
             has_validation,
             conflicts=conflicts,
         )
+        highlights = {
+            barcode.strip()
+            for barcode in self.request.GET.get("highlight", "").split(",")
+            if barcode.strip()
+        }
+        for row in rows:
+            row["is_highlighted"] = row["asset"].barcode in highlights
+        context["rows"] = rows
         context["has_conflicts"] = bool(conflicts)
         context["has_validation"] = has_validation
         context["last_refresh"] = last_refresh
