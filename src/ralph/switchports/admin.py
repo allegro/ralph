@@ -216,7 +216,6 @@ class SwitchportReportAdmin(RalphAdmin):
 
     @mark_safe
     def _netmaker_asset(self, obj):
-        asset = obj.netmaker_asset
         return self._link_to_grid(obj.netmaker_asset)
 
     _netmaker_asset.short_description = _("Netmaker Asset")

@@ -12,7 +12,7 @@ from ralph.switchports.models import (
     RackConfiguration,
     DiffEntry,
 )
-from ralph.switchports.models.validation import DiffStamp
+from ralph.switchports.models.validation import DiffStamp, BackendValidationResult, ValidationStatus
 
 
 class PortFactory(DjangoModelFactory):
@@ -65,6 +65,15 @@ class RackSwitchConfigurationOverrideFactory(DjangoModelFactory):
     data_center_asset = SubFactory(DataCenterAssetFactory)
     rack_switch_configuration = SubFactory(RackSwitchConfigurationFactory)
     switch = SubFactory(DataCenterAssetFactory)
+
+
+class BackendValidationResultFactory(DjangoModelFactory):
+    class Meta:
+        model = BackendValidationResult
+
+    switch = SubFactory(DataCenterAssetFactory)
+    port_label = Sequence(lambda n: f"0/0/{n}")
+    status = ValidationStatus.ASSET_FOUND.value
 
 
 class DiffEntryFactory(DjangoModelFactory):
