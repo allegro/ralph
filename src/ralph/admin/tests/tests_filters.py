@@ -34,6 +34,7 @@ from ralph.supports.admin import SupportAdmin
 from ralph.supports.models import Support
 from ralph.supports.tests.factories import SupportFactory
 from ralph.tests.admin import Car2Admin, CarAdmin
+from ralph.tests.factories import TestManufacturerFactory
 from ralph.tests.models import Car, Car2
 
 
@@ -400,6 +401,22 @@ class AdminFiltersTestCase(TestCase):
         )
         with self.assertRaises(IncorrectLookupParameters):
             related_filter.queryset(request, Car.objects.all())
+
+    def test_related_autocomplete_filter_does_not_use_distinct_for_foreign_key(self):
+        request = RequestFactory().get("/")
+        manufacturer = TestManufacturerFactory()
+        related_filter = RelatedAutocompleteFieldListFilter(
+            field=Car2._meta.get_field("manufacturer"),
+            request=request,
+            params={"manufacturer": str(manufacturer.pk)},
+            model=Car2,
+            model_admin=Car2Admin,
+            field_path="manufacturer",
+        )
+
+        queryset = related_filter.queryset(request, Car2.objects.all())
+
+        self.assertFalse(queryset.query.distinct)
 
     def test_ip_address_filter(self):
         ipaddress_filter = IPFilter(
