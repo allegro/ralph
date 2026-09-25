@@ -292,7 +292,7 @@ class BaseObjectsSupportAdmin(RalphAdmin):
     def _get_asset_sn(self, obj):
         return obj.baseobject.asset.sn
 
-    _get_asset_sn.short_description = _("asset sn")
+    _get_asset_sn.short_description = _("asset SN")
     _get_asset_sn.admin_order_field = "baseobject__asset__sn"
 
     @mark_safe
