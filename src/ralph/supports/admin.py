@@ -199,6 +199,8 @@ class BaseObjectsSupportAdmin(RalphAdmin):
         "_get_support_date_to",
         "_get_asset_hostname",
         "_get_asset_service_env",
+        "_get_asset_barcode",
+        "_get_asset_sn",
     ]
     raw_id_fields = ["support", "baseobject"]
     list_select_related = [
@@ -280,6 +282,18 @@ class BaseObjectsSupportAdmin(RalphAdmin):
 
     _get_support_date_to.short_description = _("support date to")
     _get_support_date_to.admin_order_field = "support__date_to"
+
+    def _get_asset_barcode(self, obj):
+        return obj.baseobject.asset.barcode
+
+    _get_asset_barcode.short_description = _("asset barcode")
+    _get_asset_barcode.admin_order_field = "baseobject__asset__barcode"
+
+    def _get_asset_sn(self, obj):
+        return obj.baseobject.asset.sn
+
+    _get_asset_sn.short_description = _("asset sn")
+    _get_asset_sn.admin_order_field = "baseobject__asset__sn"
 
     @mark_safe
     def _get_asset_hostname(self, obj):
