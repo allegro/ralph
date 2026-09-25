@@ -181,6 +181,9 @@ class DiffEntry(AdminAbsoluteUrlMixin, TimeStampMixin):
         DataCenterAsset, null=True, blank=True, on_delete=models.CASCADE, related_name="+"
     )
 
+    def __str__(self):
+        return f"DiffEntry id={self.id} label={self.label} [{self.status}] {self.switch_id}, {self.ralph_asset}, {self.netmaker_asset}"
+
     class Meta:
         unique_together = ("switch", "label")
         verbose_name = _("Switchport diff")

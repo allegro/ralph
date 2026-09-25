@@ -4,7 +4,11 @@ from django.test import TestCase
 from django.urls import reverse
 
 from ralph.admin.tests.admin_testcase import RalphAdminTestCase
-from ralph.data_center.tests.factories import DataCenterAssetFactory, RackFactory
+from ralph.data_center.tests.factories import (
+    DataCenterAssetFactory,
+    RackFactory,
+    DataCenterAssetFullFactory,
+)
 from ralph.switchports.connections import connect
 from ralph.switchports.models import (
     BackendValidationResult,
@@ -24,16 +28,17 @@ from ralph.switchports.tests.factories import (
     RackConfigurationFactory,
     RackSwitchConfigurationFactory,
     BackendValidationResultFactory,
+    PortFactory,
 )
 
 
 class DiffDetectionTest(TestCase):
     def setUp(self):
         self.rack = RackFactory()
-        self.switch = DataCenterAssetFactory()
-        self.server = DataCenterAssetFactory()
-        self.other_server = DataCenterAssetFactory()
-        self.rack_configuration = RackConfigurationFactory(rack=self.rack)
+        self.switch = DataCenterAssetFullFactory(rack=self.rack)
+        self.server = DataCenterAssetFullFactory(rack=self.rack)
+        self.other_server = DataCenterAssetFullFactory(rack=self.rack)
+        self.rack_configuration = self.rack.rack_configuration
         self.switch_configuration = RackSwitchConfigurationFactory(
             rack_configuration=self.rack_configuration,
             switch=self.switch,
@@ -41,13 +46,12 @@ class DiffDetectionTest(TestCase):
         )
 
     def connect_switch_port(self, asset):
-        switch_port = Port.objects.create(label="0/0/10", data_center_asset=self.switch)
-        asset_port = Port.objects.create(label="eth1", data_center_asset=asset)
+        switch_port = PortFactory(label="0/0/10", data_center_asset=self.switch)
+        asset_port = PortFactory(label="eth1", data_center_asset=asset)
         connect(
             switch_port,
             asset_port
         )
-
     def test_compare_returns_not_validated_when_switch_validation_is_disabled(self):
         self.switch_configuration.backend_validation = False
         self.switch_configuration.save()
@@ -89,6 +93,7 @@ class DiffDetectionTest(TestCase):
         self.connect_switch_port(self.server)
         result = compare(BackendValidationResultFactory())
 
+        breakpoint()
         self.assertEqual(result.status, SwitchportDiffStatus.SAME_ASSET.value)
         self.assertEqual(result.ralph_asset, self.server)
         self.assertEqual(result.netmaker_asset, self.server)

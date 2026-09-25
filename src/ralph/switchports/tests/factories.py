@@ -19,7 +19,7 @@ class PortFactory(DjangoModelFactory):
     class Meta:
         model = Port
 
-    label = "0/0/0"
+    label = Sequence(lambda n: f"0/0/{n}")
     data_center_asset = SubFactory(DataCenterAssetFactory)
 
 
@@ -43,6 +43,7 @@ class ConnectionFactory(DjangoModelFactory):
 class RackConfigurationFactory(DjangoModelFactory):
     class Meta:
         model = RackConfiguration
+        django_get_or_create = ['rack']
 
     rack = SubFactory(RackFactory)
     description = FuzzyText()
@@ -55,7 +56,7 @@ class RackSwitchConfigurationFactory(DjangoModelFactory):
     rack_configuration = SubFactory(RackConfigurationFactory)
     switch = SubFactory(DataCenterAssetFactory)
     label = "eth1"
-    backend_validation = False
+    backend_validation = True
 
 
 class RackSwitchConfigurationOverrideFactory(DjangoModelFactory):
@@ -74,6 +75,7 @@ class BackendValidationResultFactory(DjangoModelFactory):
     switch = SubFactory(DataCenterAssetFactory)
     port_label = Sequence(lambda n: f"0/0/{n}")
     status = ValidationStatus.ASSET_FOUND.value
+    remote_asset = SubFactory(DataCenterAssetFactory)
 
 
 class DiffEntryFactory(DjangoModelFactory):
