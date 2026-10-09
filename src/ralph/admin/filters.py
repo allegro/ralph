@@ -333,8 +333,9 @@ class RelatedAutocompleteFieldListFilter(RelatedFieldListFilter):
         except ValueError as e:
             _add_incorrect_value_message(request, self.title)
             raise IncorrectLookupParameters() from e
-        # distinct for m2m
-        return queryset.distinct()
+        if self.value() and isinstance(self.field, models.ManyToManyField):
+            return queryset.distinct()
+        return queryset
 
     def get_related_url(self):
         return reverse(

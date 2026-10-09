@@ -6,6 +6,7 @@ from ralph.sim_cards.models import SIMCard
 from ralph.sim_cards.tests.factories import (
     CellularCarrierFactory,
     SIMCardFeatureFactory,
+    SIMCardFactory,
 )
 from ralph.tests.base import RalphTestCase
 from ralph.tests.factories import UserFactory
@@ -82,3 +83,23 @@ class TestSIMCardForm(ClientMixin, RalphTestCase):
         response = self.client.post(url, sim_card_data, follow=True)
         self.assertIn("errors", response.context_data)
         self.assertEqual(6, len(response.context_data["errors"]))
+
+    def test_delete_selected_with_user_filter(self):
+        user = UserFactory()
+        sim_card = SIMCardFactory(user=user)
+        other_sim_card = SIMCardFactory()
+        url = reverse("admin:sim_cards_simcard_changelist")
+
+        response = self.client.post(
+            "{}?user={}".format(url, user.pk),
+            {
+                "action": "delete_selected",
+                "_selected_action": [sim_card.pk],
+                "post": "yes",
+            },
+            follow=True,
+        )
+
+        self.assertEqual(200, response.status_code)
+        self.assertFalse(SIMCard.objects.filter(pk=sim_card.pk).exists())
+        self.assertTrue(SIMCard.objects.filter(pk=other_sim_card.pk).exists())
