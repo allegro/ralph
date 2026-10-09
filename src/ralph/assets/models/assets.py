@@ -428,7 +428,7 @@ class Asset(AdminAbsoluteUrlMixin, PriceMixin, BaseObject):
         AssetHolder,
         on_delete=models.PROTECT,
         null=True,
-        blank=True,
+        blank=False,
     )
     start_usage = models.DateField(
         blank=True,
