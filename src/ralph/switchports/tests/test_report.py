@@ -1,34 +1,30 @@
 from urllib.parse import urlencode
 
+from django.db import connection
 from django.test import TestCase
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from ralph.admin.tests.admin_testcase import RalphAdminTestCase
 from ralph.data_center.tests.factories import (
     DataCenterAssetFactory,
-    RackFactory,
     DataCenterAssetFullFactory,
+    RackFactory,
 )
 from ralph.switchports.connections import connect
 from ralph.switchports.models import (
-    BackendValidationResult,
-    Connection,
-    ConnectionMember,
     DiffEntry,
     Port,
-    RackConfiguration,
-    RackSwitchConfiguration,
     ValidationStatus,
 )
 from ralph.switchports.models.validation import MISMATCH_STATUSES, SwitchportDiffStatus
 from ralph.switchports.report.diff_detection import compare, compare_all
 from ralph.switchports.tests.factories import (
+    BackendValidationResultFactory,
     DiffEntryFactory,
     DiffStampFactory,
-    RackConfigurationFactory,
-    RackSwitchConfigurationFactory,
-    BackendValidationResultFactory,
     PortFactory,
+    RackSwitchConfigurationFactory,
 )
 
 
@@ -48,10 +44,8 @@ class DiffDetectionTest(TestCase):
     def connect_switch_port(self, asset):
         switch_port = PortFactory(label="0/0/10", data_center_asset=self.switch)
         asset_port = PortFactory(label="eth1", data_center_asset=asset)
-        connect(
-            switch_port,
-            asset_port
-        )
+        connect(switch_port, asset_port)
+
     def test_compare_returns_not_validated_when_switch_validation_is_disabled(self):
         self.switch_configuration.backend_validation = False
         self.switch_configuration.save()
@@ -93,7 +87,6 @@ class DiffDetectionTest(TestCase):
         self.connect_switch_port(self.server)
         result = compare(BackendValidationResultFactory())
 
-        breakpoint()
         self.assertEqual(result.status, SwitchportDiffStatus.SAME_ASSET.value)
         self.assertEqual(result.ralph_asset, self.server)
         self.assertEqual(result.netmaker_asset, self.server)
@@ -101,7 +94,6 @@ class DiffDetectionTest(TestCase):
     def test_compare_returns_asset_mismatch(self):
         self.connect_switch_port(self.other_server)
         result = compare(BackendValidationResultFactory())
-
 
         self.assertEqual(result.status, SwitchportDiffStatus.ASSET_MISMATCH.value)
         self.assertEqual(result.ralph_asset, self.other_server)
@@ -152,9 +144,7 @@ class DiffDetectionTest(TestCase):
 
         compare_all()
 
-        self.assertFalse(
-            DiffEntry.objects.filter(id=existing_entry.id).exists()
-        )
+        self.assertFalse(DiffEntry.objects.filter(id=existing_entry.id).exists())
         entry = DiffEntry.objects.get(
             switch=self.switch,
             label=validation_result.port_label,
@@ -174,9 +164,7 @@ class DiffDetectionTest(TestCase):
 
         compare_all()
 
-        self.assertFalse(
-            DiffEntry.objects.filter(id=existing_entry.id).exists()
-        )
+        self.assertFalse(DiffEntry.objects.filter(id=existing_entry.id).exists())
         entry = DiffEntry.objects.get(
             switch=self.switch,
             label=validation_result.port_label,
@@ -222,3 +210,45 @@ class SwitchportReportAdminTest(RalphAdminTestCase):
             DiffEntryFactory(switch=self.switch, status=status)
         qs = self.get_response_queryset(self.admin_url())
         self.assertCountEqual({s for s in MISMATCH_STATUSES}, [r.status for r in qs])
+
+    def _create_fully_populated_entries(self, count: int):
+        """Create entries touching every relation rendered on the changelist.
+
+        Each entry has a switch and both assets placed in a rack (links to the
+        switchport grid need ``asset.rack``). Every other entry is stamped, so
+        both branches of ``ack_by`` (``stamp.actor`` and missing stamp) are hit.
+        """
+        for i in range(count):
+            entry = DiffEntryFactory(
+                switch=DataCenterAssetFactory(rack=RackFactory()),
+                status=SwitchportDiffStatus.ASSET_MISMATCH.value,
+                ralph_asset=DataCenterAssetFactory(rack=RackFactory()),
+                netmaker_asset=DataCenterAssetFactory(rack=RackFactory()),
+            )
+            if i % 2 == 0:
+                DiffStampFactory(entry=entry, actor=self.user)
+
+    def _capture_changelist_queries(self, url) -> CaptureQueriesContext:
+        with CaptureQueriesContext(connection) as queries:
+            response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        return queries
+
+    def test_changelist_query_count_does_not_depend_on_number_of_entries(self):
+        url = self.admin_url(params={"status": "all", "stamp": "all"})
+        self._create_fully_populated_entries(3)
+        # warm up per-process caches (content types etc.) so they don't skew counts
+        self.client.get(url)
+
+        baseline = self._capture_changelist_queries(url)
+        self._create_fully_populated_entries(3)
+        doubled = self._capture_changelist_queries(url)
+
+        self.assertEqual(
+            len(baseline),
+            len(doubled),
+            "Changelist query count grows with number of rows (N+1):\n{}\n\nvs\n\n{}".format(
+                "\n".join(q["sql"] for q in baseline.captured_queries),
+                "\n".join(q["sql"] for q in doubled.captured_queries),
+            ),
+        )

@@ -12,7 +12,11 @@ from ralph.switchports.models import (
     RackConfiguration,
     DiffEntry,
 )
-from ralph.switchports.models.validation import DiffStamp, BackendValidationResult, ValidationStatus
+from ralph.switchports.models.validation import (
+    DiffStamp,
+    BackendValidationResult,
+    ValidationStatus,
+)
 
 
 class PortFactory(DjangoModelFactory):
@@ -43,7 +47,7 @@ class ConnectionFactory(DjangoModelFactory):
 class RackConfigurationFactory(DjangoModelFactory):
     class Meta:
         model = RackConfiguration
-        django_get_or_create = ['rack']
+        django_get_or_create = ["rack"]
 
     rack = SubFactory(RackFactory)
     description = FuzzyText()

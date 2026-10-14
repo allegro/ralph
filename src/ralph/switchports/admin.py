@@ -157,6 +157,12 @@ class SwitchportReportAdmin(RalphAdmin):
         "_netmaker_asset",
         "ack_by",
     ]
+    list_select_related = [
+        "switch",
+        "ralph_asset__rack",
+        "netmaker_asset__rack",
+        "stamp__actor",
+    ]
     list_filter = (
         ("status", SwitchportDiffStatusFilter),
         ("stamp", SwitchportDiffStampFilter),
