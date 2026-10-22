@@ -13,8 +13,9 @@ dev = [
   "polars>=1.41.2",
   "pudb",
   "ruff",
+  "s3-client>=0.1.5",
   "toml-sort>=0.23.1",
-  "werkzeug==0.16.1"
+  "werkzeug==0.16.1",
 ]
 docs = [
   "mkdocs",

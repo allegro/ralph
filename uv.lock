@@ -2032,6 +2032,7 @@ dev = [
     { name = "polars" },
     { name = "pudb" },
     { name = "ruff" },
+    { name = "s3-client" },
     { name = "toml-sort" },
     { name = "werkzeug" },
 ]
@@ -2138,6 +2139,7 @@ dev = [
     { name = "polars", specifier = ">=1.41.2" },
     { name = "pudb" },
     { name = "ruff" },
+    { name = "s3-client", specifier = ">=0.1.5" },
     { name = "toml-sort", specifier = ">=0.23.1" },
     { name = "werkzeug", specifier = "==0.16.1" },
 ]
@@ -2346,6 +2348,21 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/78/9b/475b927cf27a5cbbda3c7bafb69ed6ff77e1d7923d5d85f17c2749d7ae32/ruff-0.16.3-py3-none-win32.whl", hash = "sha256:388cdf2166642bd9b13d52b5932d3170f34f8abed7e8d9a855f1d84b83645a0a", size = 10931415, upload-time = "2026-08-13T15:17:05.726Z" },
     { url = "https://files.pythonhosted.org/packages/b2/99/e2a2bfc4fbf0a1e8a916bc9ebe6fe6c58cc34c28e0ffc6ce281d572d1c2e/ruff-0.16.3-py3-none-win_amd64.whl", hash = "sha256:e80a7d69ca2a6d1c4d352ec91458cdca6e56c83cdbcabd93e4abe1e53591d948", size = 11445993, upload-time = "2026-08-13T15:17:08.353Z" },
     { url = "https://files.pythonhosted.org/packages/69/3e/4132e539aed78c148854d4997a2685b0ed4dc4e87110b59ce528564e184e/ruff-0.16.3-py3-none-win_arm64.whl", hash = "sha256:b8ca152da82c1acc1fa8d5874b15951935f0eef46f10e6954c83859011b6178a", size = 11399302, upload-time = "2026-08-13T15:17:10.908Z" },
+]
+
+[[package]]
+name = "s3-client"
+version = "0.1.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "boto3" },
+    { name = "botocore" },
+    { name = "rich" },
+    { name = "urllib3" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/63/01/337c4d676a70710d9853600324cdd598529e1b750c677edd1de82832eb7a/s3_client-0.1.5.tar.gz", hash = "sha256:d19afd0c58e6761e04f40ae3232f7e64a34c79521c2d238858b8d0a576099ff5", size = 22631, upload-time = "2025-11-11T13:18:56.122Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/61/d9/eeedf1f943c200e7317932a2cbc4c33b763255e1ef0194040828f3f2a265/s3_client-0.1.5-py3-none-any.whl", hash = "sha256:45b2954751177fcc68d00acaba26986f2c25fb0ca1d3401d966a0802dda43413", size = 17606, upload-time = "2025-11-11T13:18:54.836Z" },
 ]
 
 [[package]]
