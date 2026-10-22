@@ -20,6 +20,15 @@ if TEST_DB_ENGINE == "psql":
             "OPTIONS": {},
         }
     )
+    DATABASES["default"]["TEST"].update(
+        {
+            "ENGINE": "django.db.backends.postgresql",
+            "PORT": os.environ.get("DATABASE_PORT", 5432),
+            "OPTIONS": {},
+        }
+    )
+    DATABASES["default"]["TEST"].pop("CHARSET", None)
+    DATABASES["default"]["TEST"].pop("COLLATION", None)
 elif TEST_DB_ENGINE == "mysql":
     DATABASES["default"]["TEST"].update(
         {
