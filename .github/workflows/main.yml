@@ -62,7 +62,7 @@ jobs:
           mysql -h127.0.0.1 -uroot -proot -e "FLUSH PRIVILEGES;"
 
       - name: Checkout source code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
 
       - name: Unshallow local copy
         run: git fetch --prune --unshallow

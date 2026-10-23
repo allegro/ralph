@@ -24,7 +24,7 @@ uv_venv_auto = true
 
 [tools]
 podman = "latest"
-node = "22"
+node = "22.23.4"
 uv = "latest"
 python = "3.10"
 ruff = "latest"

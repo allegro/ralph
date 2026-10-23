@@ -42,8 +42,8 @@ class DualWriteS3Storage(Storage):
     def serve_order(self):
         """Sources to read media from when S3 serving is enabled, in order of preference."""
         if getattr(settings, "PREFER_S3_FOR_MEDIA", False):
-            return ("s3", "disk")
-        return ("disk", "s3")
+            return "s3", "disk"
+        return "disk", "s3"
 
     def _first_available(self, name, **readers):
         """Return the result of the first reader, in serve order, that finds the file."""
@@ -209,7 +209,7 @@ class DualWriteS3Storage(Storage):
     def get_available_name(self, name, max_length=None):
         return super().get_available_name(name, max_length=max_length)
 
-    def listdir(self, path):
+    def listdir(self, path) -> tuple[list, list]:
         if not self.serve_from_s3:
             return self.local_storage.listdir(path)
 
@@ -231,7 +231,7 @@ class DualWriteS3Storage(Storage):
             files.update(item["Key"][len(prefix) :] for item in page.get("Contents", []))
         return sorted(directories), sorted(files)
 
-    def copy_local_to_s3(self, name):
+    def copy_local_to_s3(self, name) -> bool:
         """Copy a legacy local file to S3; return False if S3 already has it."""
         if self._s3_exists(name):
             return False
