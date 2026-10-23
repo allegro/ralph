@@ -34,13 +34,51 @@ class DualWriteS3StorageTest(FakeS3StorageMixin, SimpleTestCase):
             self.assertEqual(file_obj.read(), b"content")
 
         self.s3.files[("media", name)] = b"S3 copy"
-        with override_settings(S3_SERVE_FILES=True):
+        with override_settings(S3_SERVE_FILES=True, PREFER_S3_FOR_MEDIA=True):
             with self.storage.open(name) as file_obj:
                 self.assertEqual(file_obj.read(), b"S3 copy")
+            self.assertEqual(self.storage.size(name), len(b"S3 copy"))
             self.assertEqual(
                 self.storage.url(name),
                 "https://s3.example.com/media/{}?expires=3600".format(name),
             )
+
+    def test_serve_files_prefers_disk_by_default(self):
+        name = self.storage.save("attachments/file.txt", ContentFile(b"content"))
+        self.s3.files[("media", name)] = b"S3 copy"
+
+        with override_settings(S3_SERVE_FILES=True):
+            with self.storage.open(name) as file_obj:
+                self.assertEqual(file_obj.read(), b"content")
+            self.assertEqual(self.storage.size(name), len(b"content"))
+            self.assertEqual(self.storage.url(name), "/media/{}".format(name))
+
+        self.assertEqual(self.s3.downloads, [])
+
+    def test_serve_files_falls_back_to_s3_file_missing_on_disk(self):
+        name = "attachments/s3-only.txt"
+        self.s3.files[("media", name)] = b"S3 content"
+
+        with override_settings(S3_SERVE_FILES=True):
+            with self.assertLogs("ralph.lib.storage", level="WARNING"):
+                with self.storage.open(name) as file_obj:
+                    self.assertEqual(file_obj.read(), b"S3 content")
+            with self.assertLogs("ralph.lib.storage", level="WARNING"):
+                self.assertEqual(self.storage.size(name), len(b"S3 content"))
+            with self.assertLogs("ralph.lib.storage", level="WARNING"):
+                self.assertEqual(
+                    self.storage.url(name),
+                    "https://s3.example.com/media/{}?expires=3600".format(name),
+                )
+
+    def test_open_does_not_read_from_s3_when_serving_is_disabled(self):
+        self.s3.files[("media", "attachments/s3-only.txt")] = b"S3 content"
+
+        with override_settings(S3_SERVE_FILES=False, PREFER_S3_FOR_MEDIA=True):
+            with self.assertRaises(FileNotFoundError):
+                self.storage.open("attachments/s3-only.txt")
+
+        self.assertEqual(self.s3.downloads, [])
 
     def test_save_writes_only_to_disk_when_s3_is_disabled(self):
         with override_settings(S3_STORAGE_ENABLED=False):
@@ -78,23 +116,42 @@ class DualWriteS3StorageTest(FakeS3StorageMixin, SimpleTestCase):
     def test_open_falls_back_to_local_file_missing_in_s3(self):
         name = self.storage.local_storage.save("attachments/file.txt", ContentFile(b"legacy"))
 
-        with override_settings(S3_SERVE_FILES=True):
+        with override_settings(S3_SERVE_FILES=True, PREFER_S3_FOR_MEDIA=True):
             with self.assertLogs("ralph.lib.storage", level="WARNING"):
                 with self.storage.open(name) as file_obj:
                     self.assertEqual(file_obj.read(), b"legacy")
+            with self.assertLogs("ralph.lib.storage", level="WARNING"):
+                self.assertEqual(self.storage.size(name), len(b"legacy"))
 
     def test_open_raises_file_not_found_when_file_is_missing_everywhere(self):
-        with override_settings(S3_SERVE_FILES=True):
-            with self.assertRaises(FileNotFoundError):
-                self.storage.open("attachments/missing.txt")
+        for prefer_s3 in (True, False):
+            with self.subTest(prefer_s3=prefer_s3):
+                with override_settings(S3_SERVE_FILES=True, PREFER_S3_FOR_MEDIA=prefer_s3):
+                    with self.assertRaises(FileNotFoundError):
+                        self.storage.open("attachments/missing.txt")
+                    with self.assertRaises(FileNotFoundError):
+                        self.storage.size("attachments/missing.txt")
 
     def test_open_does_not_hide_other_s3_errors(self):
-        name = self.storage.save("attachments/file.txt", ContentFile(b"content"))
+        self.s3.files[("media", "attachments/s3-only.txt")] = b"content"
         self.s3.download_error = client_error("403", 403, "HeadObject")
 
+        for prefer_s3 in (True, False):
+            with self.subTest(prefer_s3=prefer_s3):
+                with override_settings(S3_SERVE_FILES=True, PREFER_S3_FOR_MEDIA=prefer_s3):
+                    with self.assertRaises(ClientError):
+                        self.storage.open("attachments/s3-only.txt")
+
+    def test_listdir_merges_disk_and_s3_when_serving_files(self):
+        self.storage.local_storage.save("attachments/local.txt", ContentFile(b"local"))
+        self.s3.files[("media", "attachments/s3.txt")] = b"s3"
+        self.s3.files[("media", "attachments/nested/file.txt")] = b"s3"
+
+        self.assertEqual(self.storage.listdir("attachments"), ([], ["local.txt"]))
         with override_settings(S3_SERVE_FILES=True):
-            with self.assertRaises(ClientError):
-                self.storage.open(name)
+            self.assertEqual(
+                self.storage.listdir("attachments"), (["nested"], ["local.txt", "s3.txt"])
+            )
 
     def test_backfill_is_idempotent(self):
         name = self.storage.local_storage.save("attachments/file.txt", ContentFile(b"legacy"))
@@ -117,7 +174,7 @@ class AttachmentS3Test(FakeS3StorageMixin, ClientMixin, TestCase):
         self.s3.files[("media", attachment.file.name)] = b"S3 content"
         self.login_as_user()
 
-        with override_settings(S3_SERVE_FILES=True):
+        with override_settings(S3_SERVE_FILES=True, PREFER_S3_FOR_MEDIA=True):
             response = self.client.get(
                 reverse("serve_attachment", args=(attachment.id, attachment.original_filename))
             )
@@ -139,7 +196,7 @@ class AttachmentS3Test(FakeS3StorageMixin, ClientMixin, TestCase):
             "ralph.attachments.utils.Transition.objects.get",
             return_value=SimpleNamespace(name="transition"),
         ):
-            with override_settings(S3_SERVE_FILES=True):
+            with override_settings(S3_SERVE_FILES=True, PREFER_S3_FOR_MEDIA=True):
                 send_transition_attachments_to_user(
                     requester, 1, context_func, attachments=[attachment]
                 )
@@ -156,7 +213,7 @@ class AttachmentS3Test(FakeS3StorageMixin, ClientMixin, TestCase):
             with open(file_path, "wb") as f:
                 f.write(b"report")
 
-            with override_settings(S3_SERVE_FILES=True):
+            with override_settings(S3_SERVE_FILES=True, PREFER_S3_FOR_MEDIA=True):
                 attachment = add_attachment_from_disk(
                     Foo.objects.create(bar="test"), file_path, UserFactory()
                 )

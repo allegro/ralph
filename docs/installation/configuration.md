@@ -238,13 +238,23 @@ utility models. Commands can be rerun safely; files already present in S3 are
 skipped. Files referenced in the database but missing on disk are listed and
 the command exits with an error after copying all remaining files; restore or
 clean them up and rerun the command. Once all backfills have completed, set
-`S3_SERVE_FILES=1` to read and serve media from S3. This setting defaults to
+`S3_SERVE_FILES=1` to serve media from S3 as well. This setting defaults to
 `0`, so the application continues to serve from disk during the first
 migration stage. Uploads are still written to disk as well, so switching back
-to `S3_SERVE_FILES=0` is safe, and a file missing in S3 is read from disk with
-a warning in the logs. S3 URLs are signed and expire after
-`AWS_QUERYSTRING_EXPIRE` seconds (3600 by default).
+to `S3_SERVE_FILES=0` is safe.
+
+With `S3_SERVE_FILES=1` media is served from both storages: a file missing in
+the preferred storage is read from the other one, with a warning in the logs.
+By default the filesystem is preferred and S3 is used only for files missing on
+disk. Set `PREFER_S3_FOR_MEDIA=1` to read from S3 first and fall back to disk
+for files missing in S3. `PREFER_S3_FOR_MEDIA` has no effect unless
+`S3_SERVE_FILES=1`. When the filesystem is preferred, files present on disk keep
+their local `MEDIA_URL` URLs and only files missing on disk get S3 URLs. When S3
+is preferred, all file URLs point to S3 (without checking that the object
+exists). S3 URLs are signed and expire after `AWS_QUERYSTRING_EXPIRE` seconds
+(3600 by default).
 
 With `S3_SERVE_FILES=1` the deployment `kernel`, `initrd` and `netboot` URLs
-redirect to signed S3 URLs, so the provisioned hosts must be able to reach the
+redirect to signed S3 URLs (with the filesystem preferred, only for files
+missing on disk), so the provisioned hosts must be able to reach the
 S3 endpoint (including HTTPS support in iPXE if the endpoint uses HTTPS).

@@ -53,6 +53,26 @@ class FakeS3Client:
     def delete_object(self, Bucket, Key):
         self.files.pop((Bucket, Key), None)
 
+    def get_paginator(self, operation_name):
+        return self
+
+    def paginate(self, Bucket, Prefix, Delimiter):
+        contents, prefixes = [], set()
+        for bucket, key in sorted(self.files):
+            if bucket != Bucket or not key.startswith(Prefix):
+                continue
+            rest = key[len(Prefix) :]
+            if Delimiter in rest:
+                prefixes.add(Prefix + rest.split(Delimiter)[0] + Delimiter)
+            else:
+                contents.append({"Key": key})
+        return [
+            {
+                "Contents": contents,
+                "CommonPrefixes": [{"Prefix": prefix} for prefix in sorted(prefixes)],
+            }
+        ]
+
 
 class FakeS3StorageMixin:
     """
@@ -73,6 +93,7 @@ class FakeS3StorageMixin:
             AWS_STORAGE_BUCKET_NAME=self.bucket,
             S3_STORAGE_ENABLED=True,
             S3_SERVE_FILES=False,
+            PREFER_S3_FOR_MEDIA=False,
         )
         settings_override.enable()
         self.addCleanup(settings_override.disable)

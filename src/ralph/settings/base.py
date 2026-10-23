@@ -294,8 +294,11 @@ AWS_QUERYSTRING_EXPIRE = int(os.environ.get("AWS_QUERYSTRING_EXPIRE", 3600))
 
 # S3 writes start automatically once a bucket is configured.
 # Serving is disk-based until S3_SERVE_FILES is explicitly enabled after the backfill is complete.
+# With S3_SERVE_FILES, files are read from disk first and from S3 when missing on disk;
+# PREFER_S3_FOR_MEDIA reverses that order.
 S3_STORAGE_ENABLED = bool_from_env("S3_STORAGE_ENABLED", bool(AWS_STORAGE_BUCKET_NAME))
 S3_SERVE_FILES = bool_from_env("S3_SERVE_FILES", False)
+PREFER_S3_FOR_MEDIA = bool_from_env("PREFER_S3_FOR_MEDIA", False)
 S3_FILE_SPOOL_MAX_SIZE = int(os.environ.get("S3_FILE_SPOOL_MAX_SIZE", 8 * 1024 * 1024))
 
 STORAGES = {
