@@ -36,8 +36,10 @@ class AttachmentManager(models.Manager):
         filename = os.path.basename(file_path)
         attachment.original_filename = filename
         with open(file_path, "rb") as f:
-            content = ContentFile(f.read())
-            attachment.file.save(filename, content, save=True)
+            # Assign an uncommitted file so md5 is computed from memory instead
+            # of reading the just-uploaded file back from the storage.
+            attachment.file = ContentFile(f.read(), name=filename)
+        attachment.save()
         return attachment
 
 
@@ -148,7 +150,9 @@ class Attachment(TimeStampMixin, models.Model):
         """
         if not self.pk:
             self.original_filename = self._safe_filename(self.original_filename or self.file.name)
-        self.md5 = self.get_md5_sum(self.file)
+        # Only hash new content; re-reading committed files would download them from S3.
+        if not self.md5 or not self.file._committed:
+            self.md5 = self.get_md5_sum(self.file)
         super().save(*args, **kwargs)
 
     @staticmethod

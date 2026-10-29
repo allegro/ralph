@@ -284,12 +284,35 @@ STATIC_ROOT = os.environ.get("STATIC_ROOT", os.path.join(BASE_DIR, "var", "stati
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.environ.get("MEDIA_ROOT", os.path.join(BASE_DIR, "var", "media"))
 
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL")
+AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
+AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", "us-east-1")
+AWS_S3_ADDRESSING_STYLE = os.environ.get("AWS_S3_ADDRESSING_STYLE", "path")
+AWS_QUERYSTRING_EXPIRE = int(os.environ.get("AWS_QUERYSTRING_EXPIRE", 3600))
+
+# S3 writes start automatically once a bucket is configured.
+# Serving is disk-based until S3_SERVE_FILES is explicitly enabled after the backfill is complete.
+# With S3_SERVE_FILES, files are read from disk first and from S3 when missing on disk;
+# PREFER_S3_FOR_MEDIA reverses that order.
+S3_STORAGE_ENABLED = bool_from_env("S3_STORAGE_ENABLED", bool(AWS_STORAGE_BUCKET_NAME))
+S3_SERVE_FILES = bool_from_env("S3_SERVE_FILES", False)
+PREFER_S3_FOR_MEDIA = bool_from_env("PREFER_S3_FOR_MEDIA", False)
+S3_FILE_SPOOL_MAX_SIZE = int(os.environ.get("S3_FILE_SPOOL_MAX_SIZE", 8 * 1024 * 1024))
+
+STORAGES = {
+    "default": {"BACKEND": "ralph.lib.storage.DualWriteS3Storage"},
+    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+}
+
 # adapt message's tags to bootstrap
 MESSAGE_TAGS = {
     messages.DEBUG: "info",
     messages.ERROR: "alert",
 }
 FILE_UPLOAD_PERMISSIONS = 0o644
+FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
 
 DEFAULT_DEPRECIATION_RATE = int(os.environ.get("DEFAULT_DEPRECIATION_RATE", 25))  # noqa
 DEFAULT_LICENCE_DEPRECIATION_RATE = int(os.environ.get("DEFAULT_LICENCE_DEPRECIATION_RATE", 50))  # noqa

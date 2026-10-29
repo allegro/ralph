@@ -201,3 +201,60 @@ First execution will add all the _Cloud Projects_, _Cloud Hosts_ and _Cloud
 Flavors_ from _OpenStack_ to _Ralph_. Following executions will add and modify
 data as well as delete all the objects which no longer exists in configured
 OpenStack Instances.
+
+# S3-compatible media storage
+
+Ralph can keep uploaded media both on the current filesystem and in an
+S3-compatible object store. Configure the bucket and credentials using
+environment variables (an endpoint is required for non-AWS S3 services):
+
+```sh
+AWS_STORAGE_BUCKET_NAME=ralph-media
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+AWS_S3_ENDPOINT_URL=https://s3.example.com
+AWS_S3_REGION_NAME=us-east-1
+```
+
+When a bucket is configured, uploads are written to both filesystem storage and
+S3. `S3_STORAGE_ENABLED=1` can be set explicitly to enable dual writes; its
+default is enabled when `AWS_STORAGE_BUCKET_NAME` is set. Reads continue to use
+the filesystem by default. Configure the same variables for every Ralph process
+that handles files, including the RQ workers (`ralph rqworker`), otherwise files
+created there (e.g. generated transition reports) are written only to disk.
+
+To backfill existing files, run these management commands after deploying the
+dual-write version to all processes:
+
+```sh
+ralph migrate_trade_marks_to_s3
+ralph migrate_preboot_files_to_s3
+ralph migrate_attachments_to_s3
+ralph migrate_report_templates_to_s3
+```
+
+The trade-mark command also copies images belonging to patents, designs and
+utility models. Commands can be rerun safely; files already present in S3 are
+skipped. Files referenced in the database but missing on disk are listed and
+the command exits with an error after copying all remaining files; restore or
+clean them up and rerun the command. Once all backfills have completed, set
+`S3_SERVE_FILES=1` to serve media from S3 as well. This setting defaults to
+`0`, so the application continues to serve from disk during the first
+migration stage. Uploads are still written to disk as well, so switching back
+to `S3_SERVE_FILES=0` is safe.
+
+With `S3_SERVE_FILES=1` media is served from both storages: a file missing in
+the preferred storage is read from the other one, with a warning in the logs.
+By default the filesystem is preferred and S3 is used only for files missing on
+disk. Set `PREFER_S3_FOR_MEDIA=1` to read from S3 first and fall back to disk
+for files missing in S3. `PREFER_S3_FOR_MEDIA` has no effect unless
+`S3_SERVE_FILES=1`. When the filesystem is preferred, files present on disk keep
+their local `MEDIA_URL` URLs and only files missing on disk get S3 URLs. When S3
+is preferred, all file URLs point to S3 (without checking that the object
+exists). S3 URLs are signed and expire after `AWS_QUERYSTRING_EXPIRE` seconds
+(3600 by default).
+
+With `S3_SERVE_FILES=1` the deployment `kernel`, `initrd` and `netboot` URLs
+redirect to signed S3 URLs (with the filesystem preferred, only for files
+missing on disk), so the provisioned hosts must be able to reach the
+S3 endpoint (including HTTPS support in iPXE if the endpoint uses HTTPS).

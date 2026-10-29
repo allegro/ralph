@@ -14,5 +14,10 @@ def send_transition_attachments_to_user(requester, transition_id, context_func, 
             to=[requester.email],
         )
         for attachment in kwargs["attachments"]:
-            email.attach_file(attachment.file.path)
+            with attachment.file.open("rb") as file_obj:
+                email.attach(
+                    attachment.original_filename,
+                    file_obj.read(),
+                    attachment.mime_type,
+                )
         email.send()
