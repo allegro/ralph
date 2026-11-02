@@ -80,6 +80,7 @@ class DualWriteS3Storage(Storage):
                 endpoint_url=getattr(settings, "AWS_S3_ENDPOINT_URL", None),
                 aws_access_key_id=getattr(settings, "AWS_ACCESS_KEY_ID", None),
                 aws_secret_access_key=getattr(settings, "AWS_SECRET_ACCESS_KEY", None),
+                aws_session_token=getattr(settings, "AWS_SESSION_TOKEN", None),
                 region_name=getattr(settings, "AWS_S3_REGION_NAME", "us-east-1"),
                 config=Config(
                     signature_version="s3v4",

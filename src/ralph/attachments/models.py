@@ -128,6 +128,9 @@ class Attachment(TimeStampMixin, models.Model):
 
     objects = AttachmentManager()
 
+    # Name of the file as last loaded from or saved to the database.
+    _saved_file_name = None
+
     def __str__(self):
         return "{} ({}) uploaded by {}".format(
             self.original_filename, self.mime_type, self.uploaded_by
@@ -151,9 +154,17 @@ class Attachment(TimeStampMixin, models.Model):
         if not self.pk:
             self.original_filename = self._safe_filename(self.original_filename or self.file.name)
         # Only hash new content; re-reading committed files would download them from S3.
-        if not self.md5 or not self.file._committed:
+        if not self.md5 or not self.file._committed or self.file.name != self._saved_file_name:
             self.md5 = self.get_md5_sum(self.file)
         super().save(*args, **kwargs)
+        self._saved_file_name = self.file.name
+
+    @classmethod
+    def from_db(cls, db, field_names, values):
+        instance = super().from_db(db, field_names, values)
+        if "file" in field_names:
+            instance._saved_file_name = instance.file.name
+        return instance
 
     @staticmethod
     def _safe_filename(filename):

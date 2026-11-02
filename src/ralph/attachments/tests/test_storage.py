@@ -161,6 +161,22 @@ class DualWriteS3StorageTest(FakeS3StorageMixin, SimpleTestCase):
         self.assertEqual(self.s3.files[("media", name)], b"legacy")
 
 
+class DualWriteS3StorageClientTest(SimpleTestCase):
+    @override_settings(
+        AWS_ACCESS_KEY_ID="ASIATEMPORARYKEY",
+        AWS_SECRET_ACCESS_KEY="secret",
+        AWS_SESSION_TOKEN="session-token",
+        AWS_S3_ENDPOINT_URL="https://s3.example.com",
+        AWS_STORAGE_BUCKET_NAME="media",
+        S3_SERVE_FILES=True,
+        PREFER_S3_FOR_MEDIA=True,
+    )
+    def test_signed_url_includes_session_token_of_temporary_credentials(self):
+        url = DualWriteS3Storage().url("attachments/file.txt")
+
+        self.assertIn("X-Amz-Security-Token=session-token", url)
+
+
 class AttachmentS3Test(FakeS3StorageMixin, ClientMixin, TestCase):
     def _create_attachment(self, content, filename="report.pdf"):
         return Attachment.objects.create(
@@ -206,6 +222,24 @@ class AttachmentS3Test(FakeS3StorageMixin, ClientMixin, TestCase):
             list(mail.outbox[0].attachments),
             [("report.pdf", b"S3 content", "application/pdf")],
         )
+
+    def test_replacing_file_with_field_file_save_updates_md5(self):
+        attachment = self._create_attachment(b"old content")
+
+        attachment.file.save("new.pdf", ContentFile(b"new content"))
+
+        attachment.refresh_from_db()
+        self.assertEqual(attachment.md5, hashlib.md5(b"new content").hexdigest())
+
+    def test_saving_loaded_attachment_does_not_read_file_back_from_s3(self):
+        attachment = Attachment.objects.get(pk=self._create_attachment(b"content").pk)
+        attachment.description = "changed"
+
+        with override_settings(S3_SERVE_FILES=True, PREFER_S3_FOR_MEDIA=True):
+            attachment.save()
+
+        self.assertEqual(attachment.md5, hashlib.md5(b"content").hexdigest())
+        self.assertEqual(self.s3.downloads, [])
 
     def test_add_attachment_from_disk_does_not_read_back_from_s3(self):
         with tempfile.TemporaryDirectory() as tmp_dir:

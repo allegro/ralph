@@ -216,6 +216,9 @@ AWS_S3_ENDPOINT_URL=https://s3.example.com
 AWS_S3_REGION_NAME=us-east-1
 ```
 
+When using temporary AWS credentials (e.g. from STS or SSO), also set
+`AWS_SESSION_TOKEN`.
+
 When a bucket is configured, uploads are written to both filesystem storage and
 S3. `S3_STORAGE_ENABLED=1` can be set explicitly to enable dual writes; its
 default is enabled when `AWS_STORAGE_BUCKET_NAME` is set. Reads continue to use

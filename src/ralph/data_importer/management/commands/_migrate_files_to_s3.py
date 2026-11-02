@@ -23,7 +23,8 @@ class MigrateFilesToS3Command(BaseCommand):
                 )
 
             self.stdout.write("Copying {}.{} files...".format(model.__name__, field_name))
-            queryset = model._default_manager.all().only("pk", field_name)
+            # Polymorphic default managers load the whole table into memory instead of streaming.
+            queryset = model._base_manager.all().only("pk", field_name)
             for obj in queryset.iterator():
                 file_field = getattr(obj, field_name)
                 if not file_field:
