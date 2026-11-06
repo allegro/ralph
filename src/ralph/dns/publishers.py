@@ -5,6 +5,7 @@ import pyhermes
 from django.conf import settings
 from pyhermes import publish
 
+from ralph.assets.utils import DNSaaSPublisherMixin
 from ralph.data_center.models.physical import DataCenterAsset
 from ralph.data_center.models.virtual import Cluster
 from ralph.signals import post_commit
@@ -13,7 +14,7 @@ from ralph.virtual.models import VirtualServer
 logger = logging.getLogger(__name__)
 
 
-def _get_txt_data_to_publish_to_dnsaas(obj):
+def _get_txt_data_to_publish_to_dnsaas(obj: DNSaaSPublisherMixin):
     publish_data = []
     for data in obj.get_auto_txt_data():
         data["owner"] = settings.DNSAAS_OWNER

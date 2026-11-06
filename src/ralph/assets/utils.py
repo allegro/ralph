@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
+
 
 
 class DNSaaSPublisherMixin:
@@ -44,10 +46,10 @@ class DNSaaSPublisherMixin:
 @transaction.atomic
 def move_parents_models(from_obj, to_obj, exclude_copy_fields=None):
     """
-    Move parents Django model to diffrent model inheriting from
+    Move parents Django model to different model inheriting from
     the same parent.
 
-    By default Django does not allow the remove of the model without parents.
+    By default, Django does not allow the remove of the model without parents.
     Clean _meta.parents, we remove object and add back default parents to class
 
     Args:
@@ -72,10 +74,15 @@ def move_parents_models(from_obj, to_obj, exclude_copy_fields=None):
     to_obj.save()
     parents = from_obj._meta.parents
     from_obj._meta.parents = {}
+    # get_fields() results are cached in _meta; without expiring the cache
+    # delete() would see inherited relations while parents are cleared, and
+    # the parentless fields would stay cached after parents are restored.
+    from_obj._meta._expire_cache()
     try:
         from_obj.delete()
     finally:
         from_obj._meta.parents = parents
+        from_obj._meta._expire_cache()
 
 
 def get_host_content_types():
