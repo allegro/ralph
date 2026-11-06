@@ -1,25 +1,12 @@
 # -*- coding: utf-8 -*-
-from typing import Protocol, Iterable
 
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
-from django.db.models import Model
-
-from ralph.assets.models import ConfigurationClass, Service
-from ralph.networks.models import IPAddress
 
 
-class DNSaaSPublisherMixinProtocol(Protocol):
-    configuration_path: ConfigurationClass
-    model: Model
-    service: Service
-    ipaddresses: Iterable[IPAddress]
 
-    def get_location(self) -> list[str]: ...
-
-
-class DNSaaSPublisherMixin(DNSaaSPublisherMixinProtocol):
+class DNSaaSPublisherMixin:
     """Generate data formatted for DNSaaS auto txt update"""
 
     def get_auto_txt_data(self):
