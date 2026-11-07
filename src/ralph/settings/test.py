@@ -20,6 +20,15 @@ if TEST_DB_ENGINE == "psql":
             "OPTIONS": {},
         }
     )
+    DATABASES["default"]["TEST"].update(
+        {
+            "ENGINE": "django.db.backends.postgresql",
+            "PORT": os.environ.get("DATABASE_PORT", 5432),
+            "OPTIONS": {},
+        }
+    )
+    DATABASES["default"]["TEST"].pop("CHARSET", None)
+    DATABASES["default"]["TEST"].pop("COLLATION", None)
 elif TEST_DB_ENGINE == "mysql":
     DATABASES["default"]["TEST"].update(
         {
@@ -87,6 +96,11 @@ if SKIP_MIGRATIONS:
 
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 ENABLE_EMAIL_NOTIFICATION = True
+
+# Don't touch a real bucket configured in the environment; S3 tests enable it explicitly.
+S3_STORAGE_ENABLED = False
+S3_SERVE_FILES = False
+PREFER_S3_FOR_MEDIA = False
 
 ENABLE_HERMES_INTEGRATION = True
 HERMES["ENABLED"] = ENABLE_HERMES_INTEGRATION

@@ -132,9 +132,9 @@ class InvoiceReportMixin(object):
             template = report.templates.filter(default=True).first()
         except (Report.DoesNotExist, ReportTemplate.DoesNotExist) as e:
             raise ReportTemplateNotDefined("Template for invoice report is not defined!") from e
-        logger.info("Using report {} and template {}".format(report.name, template.template.path))
+        logger.info("Using report {} and template {}".format(report.name, template.template.name))
         template_content = ""
-        with open(template.template.path, "rb") as f:
+        with template.template.open("rb") as f:
             template_content = f.read()
 
         service_pdf = ExternalService("PDF")
