@@ -371,6 +371,50 @@ class TestBackOfficeAssetTransitions(TransitionTestCase, RalphTestCase):
         dc_asset_status_name = DataCenterAssetStatus.from_id(dc_asset.status).name
         self.assertEqual(target_status_name, dc_asset_status_name)
 
+    def _convert_bo_asset_to_dc_asset(self, bo_asset):
+        transition = Transition.objects.create(
+            name="transition",
+            model=TransitionModel.get_for_field(bo_asset, "status"),
+            source=0,
+            target=0,
+        )
+        BackOfficeAsset.convert_to_data_center_asset(
+            instances=[bo_asset],
+            rack=RackFactory().id,
+            service_env=ServiceEnvironmentFactory().id,
+            position=1,
+            model=DataCenterAssetModelFactory().id,
+            request=None,
+            transition_id=transition.pk,
+        )
+
+    def test_convert_to_data_center_asset_with_warm_meta_fields_cache(self):
+        # Reproduces: ValueError: Cannot query "...": Must be "BaseObject"
+        # instance. Raised when BackOfficeAsset._meta.get_fields() was cached
+        # (with inherited reverse relations, e.g. BaseObject.children) before
+        # move_parents_models() temporarily cleared _meta.parents.
+        self.addCleanup(BackOfficeAsset._meta._expire_cache)
+        bo_asset = BackOfficeAssetFactory()
+        bo_asset_pk = bo_asset.pk
+        BackOfficeAsset._meta._expire_cache()
+        BackOfficeAsset._meta.get_fields(include_hidden=True)
+
+        self._convert_bo_asset_to_dc_asset(bo_asset)
+
+        self.assertTrue(DataCenterAsset.objects.filter(pk=bo_asset_pk).exists())
+        self.assertFalse(BackOfficeAsset.objects.filter(pk=bo_asset_pk).exists())
+
+    def test_convert_to_data_center_asset_does_not_corrupt_meta_fields_cache(self):
+        self.addCleanup(BackOfficeAsset._meta._expire_cache)
+        bo_asset = BackOfficeAssetFactory()
+        BackOfficeAsset._meta._expire_cache()
+
+        self._convert_bo_asset_to_dc_asset(bo_asset)
+
+        field_names = {f.name for f in BackOfficeAsset._meta.get_fields(include_hidden=True)}
+        self.assertIn("parent", field_names)
+        self.assertIn("barcode", field_names)
+
     def test_assign_many_licences(self):
         asset = BackOfficeAssetFactory()
         licences = [LicenceFactory() for i in range(2)]

@@ -18,7 +18,7 @@ def generate_report(name, requester, instances, language, context):
         template = report.templates.filter(default=True).first()
 
     template_content = ""
-    with open(template.template.path, "rb") as f:
+    with template.template.open("rb") as f:
         template_content = f.read()
 
     attachments = []
