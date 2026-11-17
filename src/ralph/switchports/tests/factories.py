@@ -41,6 +41,8 @@ class ConnectionFactory(DjangoModelFactory):
 class RackConfigurationFactory(DjangoModelFactory):
     class Meta:
         model = RackConfiguration
+        # rack configuration is created automatically by post_save signal on Rack
+        django_get_or_create = ("rack",)
 
     rack = SubFactory(RackFactory)
     description = FuzzyText()

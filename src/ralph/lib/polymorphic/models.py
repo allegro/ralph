@@ -181,6 +181,10 @@ class PolymorphicQuerySet(models.QuerySet):
         # mysql uses different quotes than postgres
         q = get_database_quote_type()
         through_table_name = through_table._meta.db_table  # type: str
+        if through_table_name in query.query.table_map:
+            # through table is already joined (e.g. by `polymorphic_filter`),
+            # adding it once again to FROM clause results in duplicated alias
+            return query
         fields = set(through_table._meta.fields)  # type: set[models.Field]
         if target_column_name in {field.column for field in fields}:
             our_table = None  # type: str | None

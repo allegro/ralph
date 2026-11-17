@@ -2,7 +2,8 @@
 Management command to list and audit extra view permissions.
 
 This command provides an overview of all extra view permissions,
-showing which are active, orphaned, and their group assignments.
+showing which are active, orphaned, their group assignments and how many
+groups and users have each of them.
 """
 
 import json
@@ -56,7 +57,15 @@ class Command(PermissionBaseCommand):
             return
 
         # Build headers and rows
-        headers = ["status", "codename", "name", "content_type"]
+        headers = [
+            "status",
+            "codename",
+            "name",
+            "content_type",
+            "group_count",
+            "user_count",
+            "direct_user_count",
+        ]
         if show_groups:
             headers.append("groups")
 
@@ -64,7 +73,15 @@ class Command(PermissionBaseCommand):
         style_map = {}
 
         for idx, info in enumerate(data):
-            row = [info.status, info.codename, info.name, info.content_type]
+            row = [
+                info.status,
+                info.codename,
+                info.name,
+                info.content_type,
+                info.group_count,
+                info.user_count,
+                info.direct_user_count,
+            ]
             if show_groups:
                 groups_str = ", ".join(info.groups) or "(none)"
                 row.append(groups_str)
@@ -93,6 +110,9 @@ class Command(PermissionBaseCommand):
                     "content_type": info.content_type,
                     "status": info.status,
                     "groups": info.groups,
+                    "group_count": info.group_count,
+                    "user_count": info.user_count,
+                    "direct_user_count": info.direct_user_count,
                 }
                 for info in data
             ],

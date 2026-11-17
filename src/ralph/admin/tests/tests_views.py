@@ -98,6 +98,7 @@ FACTORY_MAP = {
     "ralph.supports.models.Support": "ralph.supports.tests.factories.SupportFactory",  # noqa
     "ralph.supports.models.SupportType": "ralph.supports.tests.factories.SupportTypeFactory",  # noqa
     "ralph.switchports.models.connections.Port": "ralph.switchports.tests.factories.PortFactory",  # noqa
+    "ralph.switchports.models.connections.Connection": "ralph.switchports.tests.factories.ConnectionFactory",  # noqa
     "ralph.switchports.models.rack_config.RackSwitchConfigurationOverride": "ralph.switchports.tests.factories.RackSwitchConfigurationOverrideFactory",  # noqa
     "ralph.trade_marks.models.TradeMark": "ralph.trade_marks.tests.factories.TradeMarkFactory",  # noqa
     "ralph.trade_marks.models.TradeMarksLinkedDomains": "ralph.trade_marks.tests.factories.TradeMarksLinkedDomainsFactory",  # noqa

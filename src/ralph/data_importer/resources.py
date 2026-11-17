@@ -1,4 +1,5 @@
 from decimal import Decimal
+from typing import Any
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -235,7 +236,13 @@ class IPAddressResource(RalphModelResource):
     class Meta:
         model = networks.IPAddress
 
-    def skip_row(self, instance, original):
+    def skip_row(
+        self,
+        instance,
+        original,
+        row: dict[str, Any],
+        import_validation_errors: dict[str, Any] | None = None,
+    ):
         if settings.MAP_IMPORTED_ID_TO_NEW_ID:
             try:
                 networks.IPAddress.objects.get(address=instance.address)
