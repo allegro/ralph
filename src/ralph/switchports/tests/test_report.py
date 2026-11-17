@@ -14,10 +14,13 @@ from ralph.data_center.tests.factories import (
 from ralph.switchports.connections import connect
 from ralph.switchports.models import (
     DiffEntry,
-    Port,
     ValidationStatus,
 )
-from ralph.switchports.models.validation import MISMATCH_STATUSES, SwitchportDiffStatus
+from ralph.switchports.models.validation import (
+    MISMATCH_STATUSES,
+    SwitchportDiffStatus,
+    BackendValidationResult,
+)
 from ralph.switchports.report.diff_detection import compare, compare_all
 from ralph.switchports.tests.factories import (
     BackendValidationResultFactory,
@@ -29,6 +32,8 @@ from ralph.switchports.tests.factories import (
 
 
 class DiffDetectionTest(TestCase):
+    PORT_LABEL = "0/0/10"
+
     def setUp(self):
         self.rack = RackFactory()
         self.switch = DataCenterAssetFullFactory(rack=self.rack)
@@ -41,31 +46,44 @@ class DiffDetectionTest(TestCase):
             label="eth1",
         )
 
+    def validation_result(self, **kwargs) -> BackendValidationResult:
+        """BackendValidationResult for the validated switch, port and netmaker asset.
+
+        Without an explicit ``switch`` the factory creates a random asset that has no
+        validated rack switch configuration, so ``compare`` would return NOT_VALIDATED.
+        """
+        defaults = {
+            "switch": self.switch,
+            "port_label": self.PORT_LABEL,
+            "remote_asset": self.server,
+        }
+        return BackendValidationResultFactory(**{**defaults, **kwargs})
+
     def connect_switch_port(self, asset):
-        switch_port = PortFactory(label="0/0/10", data_center_asset=self.switch)
+        switch_port = PortFactory(label=self.PORT_LABEL, data_center_asset=self.switch)
         asset_port = PortFactory(label="eth1", data_center_asset=asset)
         connect(switch_port, asset_port)
 
     def test_compare_returns_not_validated_when_switch_validation_is_disabled(self):
         self.switch_configuration.backend_validation = False
         self.switch_configuration.save()
-        result = compare(BackendValidationResultFactory())
+        result = compare(self.validation_result())
 
         self.assertEqual(result.status, SwitchportDiffStatus.NOT_VALIDATED.value)
         self.assertIsNone(result.ralph_asset)
         self.assertIsNone(result.netmaker_asset)
 
     def test_compare_returns_port_missing(self):
-        result = compare(BackendValidationResultFactory())
+        result = compare(self.validation_result())
 
         self.assertEqual(result.status, SwitchportDiffStatus.PORT_MISSING.value)
         self.assertIsNone(result.ralph_asset)
         self.assertIsNone(result.netmaker_asset)
 
     def test_compare_returns_netmaker_empty(self):
-        Port.objects.create(label="0/0/10", data_center_asset=self.switch)
+        PortFactory(label=self.PORT_LABEL, data_center_asset=self.switch)
         result = compare(
-            BackendValidationResultFactory(
+            self.validation_result(
                 status=ValidationStatus.PORT_NOT_FOUND.value,
                 remote_asset=None,
             )
@@ -76,8 +94,8 @@ class DiffDetectionTest(TestCase):
         self.assertIsNone(result.netmaker_asset)
 
     def test_compare_returns_ralph_empty(self):
-        Port.objects.create(label="0/0/10", data_center_asset=self.switch)
-        result = compare(BackendValidationResultFactory())
+        PortFactory(label=self.PORT_LABEL, data_center_asset=self.switch)
+        result = compare(self.validation_result())
 
         self.assertEqual(result.status, SwitchportDiffStatus.RALPH_EMPTY.value)
         self.assertIsNone(result.ralph_asset)
@@ -85,7 +103,7 @@ class DiffDetectionTest(TestCase):
 
     def test_compare_returns_same_asset(self):
         self.connect_switch_port(self.server)
-        result = compare(BackendValidationResultFactory())
+        result = compare(self.validation_result())
 
         self.assertEqual(result.status, SwitchportDiffStatus.SAME_ASSET.value)
         self.assertEqual(result.ralph_asset, self.server)
@@ -93,14 +111,14 @@ class DiffDetectionTest(TestCase):
 
     def test_compare_returns_asset_mismatch(self):
         self.connect_switch_port(self.other_server)
-        result = compare(BackendValidationResultFactory())
+        result = compare(self.validation_result())
 
         self.assertEqual(result.status, SwitchportDiffStatus.ASSET_MISMATCH.value)
         self.assertEqual(result.ralph_asset, self.other_server)
         self.assertEqual(result.netmaker_asset, self.server)
 
     def test_compare_all_creates_entries_and_deletes_unmatched_entries(self):
-        validation_result = BackendValidationResultFactory()
+        validation_result = self.validation_result()
         stale_entry = DiffEntryFactory(
             switch=self.other_server,
             label="stale",
@@ -117,7 +135,7 @@ class DiffDetectionTest(TestCase):
         self.assertFalse(DiffEntry.objects.filter(id=stale_entry.id).exists())
 
     def test_compare_all_keeps_entry_when_only_non_asset_status_is_unchanged(self):
-        validation_result = BackendValidationResultFactory()
+        validation_result = self.validation_result()
         existing_entry = DiffEntryFactory(
             switch=self.switch,
             label=validation_result.port_label,
@@ -134,13 +152,13 @@ class DiffDetectionTest(TestCase):
         self.assertEqual(existing_entry.netmaker_asset, self.server)
 
     def test_compare_all_replaces_entry_when_status_changes(self):
-        validation_result = BackendValidationResultFactory()
+        validation_result = self.validation_result()
         existing_entry = DiffEntryFactory(
             switch=self.switch,
             label=validation_result.port_label,
             status=SwitchportDiffStatus.PORT_MISSING.value,
         )
-        Port.objects.create(label=validation_result.port_label, data_center_asset=self.switch)
+        PortFactory(label=validation_result.port_label, data_center_asset=self.switch)
 
         compare_all()
 
@@ -152,7 +170,7 @@ class DiffDetectionTest(TestCase):
         self.assertEqual(entry.status, SwitchportDiffStatus.RALPH_EMPTY.value)
 
     def test_compare_all_replaces_entry_when_assets_change(self):
-        validation_result = BackendValidationResultFactory()
+        validation_result = self.validation_result()
         self.connect_switch_port(self.server)
         existing_entry = DiffEntryFactory(
             switch=self.switch,

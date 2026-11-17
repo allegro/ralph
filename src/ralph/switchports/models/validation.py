@@ -170,7 +170,9 @@ class DiffEntry(AdminAbsoluteUrlMixin, TimeStampMixin):
     """
 
     switch = models.ForeignKey(DataCenterAsset, on_delete=models.CASCADE, related_name="+")
-    label = models.CharField()  # would be ForeignKey to Port but want to handle port missing too!
+    label = models.CharField(
+        max_length=255
+    )  # would be ForeignKey to Port but want to handle port missing too!
     status = models.CharField(
         max_length=255, choices=SwitchportDiffStatus.choices, blank=False, null=False
     )
