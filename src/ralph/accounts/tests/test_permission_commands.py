@@ -415,7 +415,7 @@ class AuditExtraViewPermissionsTestCase(TestCase):
         (line,) = [line for line in output.splitlines() if self.orphaned_perm.codename in line]
         cells = [cell.strip() for cell in strip_ansi(line).strip("|").split("|")]
         # status, codename, name, content_type, group_count, user_count, direct_user_count
-        self.assertEqual(cells[4:], ["1", "1", "0"])
+        self.assertEqual(cells[-3:], ["1", "1", "0"])
 
 
 class ExportRestoreRoundTripTestCase(TestCase):
