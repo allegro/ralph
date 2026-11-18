@@ -112,12 +112,21 @@ class PolymorphicQuerySet(models.QuerySet):
             return query
 
     def _add_polymorphic_filter_to_subquery(self, query: QuerySet) -> QuerySet:
+        if not (self._polymorphic_filter_args or self._polymorphic_filter_kwargs):
+            return query
         try:
-            return query.filter(*self._polymorphic_filter_args, **self._polymorphic_filter_kwargs)
+            # filter in a subquery to not join relations (ex. M2M through
+            # table) in the main query - these joins could be then reused
+            # (instead of the ones added by prefetch_related in
+            # `_add_where_conditions`) and give wrong prefetch results
+            matching = query.model._base_manager.filter(
+                *self._polymorphic_filter_args, **self._polymorphic_filter_kwargs
+            ).values("pk")
         except exceptions.FieldError:
             # This is expected
             # if a model doesn't have a field we don't want any object of that type
             return query.none()
+        return query.filter(pk__in=matching)
 
     def _add_extra_to_subquery(self, query: QuerySet) -> QuerySet:
         query = query.extra(*self._extra_args, **self._extra_kwargs)
@@ -181,10 +190,6 @@ class PolymorphicQuerySet(models.QuerySet):
         # mysql uses different quotes than postgres
         q = get_database_quote_type()
         through_table_name = through_table._meta.db_table  # type: str
-        if through_table_name in query.query.table_map:
-            # through table is already joined (e.g. by `polymorphic_filter`),
-            # adding it once again to FROM clause results in duplicated alias
-            return query
         fields = set(through_table._meta.fields)  # type: set[models.Field]
         if target_column_name in {field.column for field in fields}:
             our_table = None  # type: str | None

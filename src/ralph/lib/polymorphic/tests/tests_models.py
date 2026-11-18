@@ -233,6 +233,30 @@ class PolymorphicTestCaseNew(TestCase):
             [type(obj) for obj in polymorphics], [PolymorphicModelTest, PolymorphicModelTest2]
         )
 
+    def test_m2m_prefetch_with_narrow_polymorphic_filter_keeps_shared_children(self):
+        """
+        Child shared by two parents has to be prefetched for both of them,
+        even if `polymorphic_filter` is constrained to only one of them.
+        """
+        m1 = SomeM2MModel.objects.create(name="abc")
+        m2 = SomeM2MModel.objects.create(name="def")
+        shared = PolymorphicModelTest.objects.create(sth_related=self.sth_related)
+        only_m2 = PolymorphicModelTest2.objects.create(another_related=self.sth_related)
+        m1.polymorphics.set([shared])
+        m2.polymorphics.set([shared, only_m2])
+
+        m1_, m2_ = SomeM2MModel.objects.filter(pk__in=[m1.pk, m2.pk]).prefetch_related(
+            Prefetch(
+                "polymorphics",
+                queryset=PolymorphicModelBaseTest.polymorphic_objects.polymorphic_filter(
+                    some_m2m=m1
+                ),
+            )
+        )
+        self.assertEqual([obj.id for obj in m1_.polymorphics.all()], [shared.id])
+        # `only_m2` is not in `m1`, so it's filtered out; but `shared` has to stay
+        self.assertEqual([obj.id for obj in m2_.polymorphics.all()], [shared.id])
+
     def test_polymorphics_objects_filter_with_prefetch(self):
         z1 = PolymorphicModelTest.objects.create(sth_related=self.sth_related)
         _ = PolymorphicModelTest.objects.create(sth_related=self.sth_related)
