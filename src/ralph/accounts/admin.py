@@ -282,6 +282,7 @@ class RalphUserAdmin(UserAdmin, RalphAdmin):
     form = RalphUserChangeForm
     change_views = [UserInfoView, UserTransitionHistoryView]
     readonly_fields = ("api_token_key",)
+    import_export_exclude_fields = ("password",)
     fieldsets = (
         (None, {"fields": ("username",)}),
         (_("Personal info"), {"fields": ("first_name", "last_name", "email")}),

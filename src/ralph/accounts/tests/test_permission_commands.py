@@ -23,6 +23,7 @@ from ralph.accounts.management.commands.restore_group_permissions import (
     assign_permission_to_group,
 )
 from ralph.accounts.models import RalphUser
+from ralph.tests.factories import UserFactory
 
 
 class BaseFormattersTestCase(TestCase):
@@ -344,6 +345,77 @@ class AuditExtraViewPermissionsTestCase(TestCase):
             if perm["codename"] == "can_view_extra_audittestview":
                 self.assertIn("AuditTestGroup", perm["groups"])
                 break
+
+    def _get_permission_json(self, *args):
+        out = StringIO()
+        call_command("audit_extra_view_permissions", "--format=json", *args, stdout=out)
+        (perm,) = [
+            perm
+            for perm in json.loads(out.getvalue())["permissions"]
+            if perm["codename"] == self.orphaned_perm.codename
+        ]
+        return perm
+
+    def test_audit_counts_without_assignments(self):
+        perm = self._get_permission_json()
+
+        self.assertEqual(perm["group_count"], 0)
+        self.assertEqual(perm["user_count"], 0)
+        self.assertEqual(perm["direct_user_count"], 0)
+
+    def test_audit_counts_groups_and_users(self):
+        group1 = Group.objects.create(name="AuditTestGroup1")
+        group2 = Group.objects.create(name="AuditTestGroup2")
+        Group.objects.create(name="AuditTestGroupWithoutPermission")
+        group1.permissions.add(self.orphaned_perm)
+        group2.permissions.add(self.orphaned_perm)
+
+        in_group1 = UserFactory()
+        in_both_groups = UserFactory()
+        direct_only = UserFactory()
+        direct_and_group = UserFactory()
+        UserFactory()  # without the permission
+        in_group1.groups.add(group1)
+        in_both_groups.groups.add(group1, group2)
+        direct_only.user_permissions.add(self.orphaned_perm)
+        direct_and_group.user_permissions.add(self.orphaned_perm)
+        direct_and_group.groups.add(group2)
+
+        perm = self._get_permission_json()
+
+        self.assertEqual(perm["group_count"], 2)
+        # every user is counted once, no matter how many ways of getting
+        # the permission he has
+        self.assertEqual(perm["user_count"], 4)
+        self.assertEqual(perm["direct_user_count"], 2)
+
+    def test_audit_counts_do_not_require_show_groups(self):
+        group = Group.objects.create(name="AuditTestGroup")
+        group.permissions.add(self.orphaned_perm)
+        UserFactory().groups.add(group)
+
+        perm = self._get_permission_json("--show-groups")
+
+        self.assertEqual(perm["group_count"], 1)
+        self.assertEqual(perm["user_count"], 1)
+        self.assertEqual(perm["groups"], ["AuditTestGroup"])
+
+    def test_audit_table_contains_counts(self):
+        group = Group.objects.create(name="AuditTestGroup")
+        group.permissions.add(self.orphaned_perm)
+        UserFactory().groups.add(group)
+
+        out = StringIO()
+        call_command("audit_extra_view_permissions", stdout=out)
+
+        output = out.getvalue()
+        self.assertIn("group_count", output)
+        self.assertIn("user_count", output)
+        self.assertIn("direct_user_count", output)
+        (line,) = [line for line in output.splitlines() if self.orphaned_perm.codename in line]
+        cells = [cell.strip() for cell in strip_ansi(line).strip("|").split("|")]
+        # status, codename, name, content_type, group_count, user_count, direct_user_count
+        self.assertEqual(cells[-3:], ["1", "1", "0"])
 
 
 class ExportRestoreRoundTripTestCase(TestCase):

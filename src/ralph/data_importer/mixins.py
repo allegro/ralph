@@ -93,6 +93,7 @@ class ImportForeignKeyMixin:
         and ``Field.column_name`` are found in ``data``.
         """
         if field.column_name == "management_ip":
-            field.save(obj, data, is_m2m=False, **kwargs)
+            if field.column_name in data:
+                field.save(obj, data, is_m2m=False, **kwargs)
         elif field.attribute and field.column_name in data:
             field.save(obj, data, is_m2m, **kwargs)
