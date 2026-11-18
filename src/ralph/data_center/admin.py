@@ -223,6 +223,9 @@ class ClusterAdmin(CustomFieldValueAdminMixin, RalphAdmin):
     def get_queryset(self, request):
         return super().get_queryset(request).filter(visibility_scope_filter(request.user))
 
+    def get_import_scope_filter(self, request):
+        return visibility_scope_filter(request.user)
+
     def get_fieldsets(self, request, obj=None):
         """
         Attach master info fieldset only if show_master_summary option checked
@@ -566,6 +569,9 @@ class DataCenterAssetAdmin(
 
     def get_queryset(self, request):
         return super().get_queryset(request).filter(visibility_scope_filter(request.user))
+
+    def get_import_scope_filter(self, request):
+        return visibility_scope_filter(request.user)
 
     def get_export_queryset(self, request):
         qs = (

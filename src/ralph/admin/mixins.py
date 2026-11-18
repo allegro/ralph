@@ -412,13 +412,23 @@ class RalphAdminImportExportMixin(ImportExportModelAdmin):
         # to which user has access
         return self.get_queryset(request).values_list("pk", flat=True)
 
+    def get_import_scope_filter(self, request):
+        """
+        Return `Q` object limiting objects which could be created / modified
+        by import (ex. the same restrictions as in `get_queryset`), or `None`
+        if there are no restrictions other than object permissions.
+        """
+        return None
+
     def _restrict_resource_classes(self, request, resource_classes, action):
+        scope_filter = self.get_import_scope_filter(request) if action == "change" else None
         return [
             restrict_resource_class(
                 resource_class,
                 request.user,
                 action,
                 exclude_fields=self.import_export_exclude_fields,
+                scope_filter=scope_filter,
             )
             for resource_class in resource_classes
         ]

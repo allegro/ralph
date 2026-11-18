@@ -7,11 +7,28 @@ resources used in admin.
 from collections import OrderedDict
 from copy import copy
 
-from django.core.exceptions import FieldDoesNotExist, PermissionDenied
+from django.core.exceptions import FieldDoesNotExist, ObjectDoesNotExist, PermissionDenied
 from django.db.models.constants import LOOKUP_SEP
 from django.utils.translation import gettext_lazy as _
 
 from ralph.lib.permissions.models import PermByFieldMixin, PermissionsForObjectMixin
+from ralph.lib.polymorphic.models import Polymorphic
+
+
+def _get_concrete_object(obj):
+    """
+    Return the most specific (descendant) instance of polymorphic object, ex.
+    `BackOfficeAsset` for `BaseObject` selected as foreign key target, to
+    be able to check its object permissions.
+    """
+    if isinstance(obj, PermissionsForObjectMixin) or not isinstance(obj, Polymorphic):
+        return obj
+    if not obj.content_type_id:
+        return obj
+    try:
+        return obj.last_descendant
+    except (ObjectDoesNotExist, AttributeError):
+        return obj
 
 
 def _get_model_field(model, name):
@@ -53,6 +70,24 @@ def _get_fields_to_check(model, attribute):
     return result
 
 
+def _get_permission_attribute(resource_class, name, field):
+    """
+    Return attribute used to check permissions to resource field.
+
+    Fields which do not expose a model field directly (computed fields
+    without `attribute` or reverse accessors like `baseobjectssupport_set`)
+    have to declare it explicitly in `computed_fields_permissions` of
+    resource (mapping from field name or field attribute to the model field
+    path used to check permissions). Attribute mapping covers also generated
+    `*_str` export variants of the field.
+    """
+    mapping = getattr(resource_class, "computed_fields_permissions", {})
+    for key in (name, field.attribute):
+        if key and key in mapping:
+            return mapping[key]
+    return field.attribute or ""
+
+
 def has_access_to_attribute(model, attribute, user, action):
     """
     Check if user has `action` (view/change) permission to resource field
@@ -76,6 +111,7 @@ class RestrictedResourceMixin:
 
     _ralph_user = None
     _forbidden_import_columns = frozenset()
+    _scope_filter = None
 
     def before_import(self, dataset, **kwargs):
         forbidden = set(dataset.headers or []) & self._forbidden_import_columns
@@ -91,6 +127,19 @@ class RestrictedResourceMixin:
             instance.has_permission_to_object(self._ralph_user)
         ):
             raise PermissionDenied(_("You don't have permissions to this object"))
+        self._check_object_scope(instance)
+
+    def _check_object_scope(self, instance):
+        """
+        Check if object is in scope allowed for the user (ex. visibility
+        scope applied in admin's queryset).
+        """
+        if self._scope_filter is None or instance.pk is None:
+            return
+        if not (
+            type(instance)._default_manager.filter(self._scope_filter, pk=instance.pk).exists()
+        ):
+            raise PermissionDenied(_("You don't have permissions to this object"))
 
     def _check_related_objects_permissions(self, instance, row):
         """
@@ -103,7 +152,10 @@ class RestrictedResourceMixin:
                 continue
             model_field = _get_model_field(model, field.attribute.split(LOOKUP_SEP)[0])
             related_model = getattr(model_field, "related_model", None)
-            if not (related_model and issubclass(related_model, PermissionsForObjectMixin)):
+            if not (
+                related_model
+                and issubclass(related_model, (PermissionsForObjectMixin, Polymorphic))
+            ):
                 continue
             if model_field.many_to_many:
                 values = field.clean(row) or []
@@ -111,7 +163,10 @@ class RestrictedResourceMixin:
                 value = getattr(instance, model_field.name, None)
                 values = [value] if value else []
             for obj in values:
-                if not obj.has_permission_to_object(self._ralph_user):
+                target = _get_concrete_object(obj)
+                if isinstance(target, PermissionsForObjectMixin) and not (
+                    target.has_permission_to_object(self._ralph_user)
+                ):
                     raise PermissionDenied(
                         _("You don't have permissions to select this value: %(value)s")
                         % {"value": obj}
@@ -132,11 +187,13 @@ class RestrictedResourceMixin:
         self._check_object_permission(instance)
 
 
-def restrict_resource_class(resource_class, user, action, exclude_fields=()):
+def restrict_resource_class(resource_class, user, action, exclude_fields=(), scope_filter=None):
     """
     Return subclass of `resource_class` containing only fields to which
     `user` has `action` (view for export, change for import) permission.
     Fields from `exclude_fields` are removed for every user.
+    If `scope_filter` (`Q` object) is provided, import is limited to objects
+    matching it (before and after changes).
     """
     model = resource_class._meta.model
     import_id_fields = set(resource_class._meta.import_id_fields or ())
@@ -144,7 +201,7 @@ def restrict_resource_class(resource_class, user, action, exclude_fields=()):
     allowed = OrderedDict()
     forbidden_columns = set()
     for name, field in resource_class.fields.items():
-        attribute = field.attribute or ""
+        attribute = _get_permission_attribute(resource_class, name, field)
         excluded = name in exclude_fields or attribute.split(LOOKUP_SEP)[0] in exclude_fields
         if not excluded and (
             user.is_superuser
@@ -171,6 +228,7 @@ def restrict_resource_class(resource_class, user, action, exclude_fields=()):
         "fields": allowed,
         "_meta": meta,
         "_ralph_user": user,
+        "_scope_filter": scope_filter,
         "_forbidden_import_columns": frozenset(forbidden_columns),
     }
     # `type.__new__` is used directly to not trigger resource metaclasses

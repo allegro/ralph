@@ -418,6 +418,10 @@ class LicenceResource(ResourceWithPrice, RalphModelResource):
             "baseobject_ptr",
         )
 
+    # reverse accessor is checked against permissions of `base_objects` field
+    # (applies also to `base_objects_str` export column)
+    computed_fields_permissions = {"baseobjectlicence_set": "base_objects"}
+
     def get_queryset(self):
         return Licence.objects_used_free_with_related.all()
 
@@ -475,6 +479,10 @@ class SupportResource(ResourceWithPrice, RalphModelResource):
             "baseobject_ptr",
         )
         prefetch_related = ("tags",)
+
+    # reverse accessor is checked against permissions of `base_objects` field
+    # (applies also to `base_objects_str` export column)
+    computed_fields_permissions = {"baseobjectssupport_set": "base_objects"}
 
     def get_queryset(self):
         return Support.objects_with_related.all()
@@ -596,6 +604,8 @@ class BaseObjectsSupportRichResource(RalphModelResource):
     price_per_object = fields.Field(
         column_name="support__price_per_object",
     )
+    # permissions required to export/import computed fields (without attribute)
+    computed_fields_permissions = {"price_per_object": "support__price"}
 
     class Meta:
         model = BaseObjectsSupport

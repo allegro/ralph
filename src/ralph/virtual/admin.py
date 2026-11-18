@@ -156,6 +156,9 @@ class VirtualServerAdmin(
             Prefetch("parent", queryset=BaseObject.polymorphic_objects.all()),
         )
 
+    def get_import_scope_filter(self, request):
+        return visibility_scope_filter(request.user)
+
     @mark_safe
     def parent_(self, obj):
         try:
@@ -344,6 +347,9 @@ class CloudHostAdmin(
             },
         ),
     )
+
+    def get_import_scope_filter(self, request):
+        return visibility_scope_filter(request.user)
 
     def get_queryset(self, request):
         return (

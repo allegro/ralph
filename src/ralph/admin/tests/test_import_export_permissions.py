@@ -14,9 +14,20 @@ from django.urls import reverse
 from import_export.formats import base_formats
 
 from ralph.accounts.models import RalphUser, Region
+from ralph.accounts.tests.factories import RegionFactory
 from ralph.admin.mixins import RalphAdminImportExportMixin
 from ralph.admin.sites import ralph_site
 from ralph.admin.tests.tests_views import FACTORY_MAP
+from ralph.assets.tests.factories import ServiceEnvironmentFactory
+from ralph.back_office.models import BackOfficeAsset
+from ralph.back_office.tests.factories import BackOfficeAssetFactory
+from ralph.data_center.models import DataCenterAsset
+from ralph.data_center.tests.factories import DataCenterAssetFactory
+from ralph.data_importer.resources import BaseObjectsSupportRichResource
+from ralph.lib.permissions.import_export import restrict_resource_class
+from ralph.lib.visibility_scope.tests import ServiceBasedVisibilityScopeFactory
+from ralph.licences.models import Licence
+from ralph.supports.models import Support
 from ralph.tests import factories
 from ralph.tests.mixins import ClientMixin
 
@@ -350,3 +361,179 @@ class ImportExportPermissionsTestCase(ClientMixin, TestCase):
         self.assertTrue(result.has_errors())
         self.admin_user.refresh_from_db()
         self.assertNotEqual(self.admin_user.password, "plain")
+
+
+class ComputedFieldsPermissionsTestCase(TestCase):
+    def setUp(self):
+        self.user = factories.UserFactory(is_staff=True)
+        self.user.user_permissions.add(
+            *Permission.objects.filter(
+                codename__in=["view_baseobjectssupport", "view_support"]
+            )
+        )
+        self.user = RalphUser.objects.get(pk=self.user.pk)
+
+    def _export_headers(self):
+        resource_class = restrict_resource_class(
+            BaseObjectsSupportRichResource, self.user, "view"
+        )
+        return resource_class().get_export_headers()
+
+    def test_computed_price_is_hidden_without_price_permission(self):
+        headers = self._export_headers()
+        self.assertNotIn("support__price", headers)
+        self.assertNotIn("support__price_per_object", headers)
+
+    def test_computed_price_is_exported_with_price_permission(self):
+        self.user.user_permissions.add(
+            Permission.objects.get(codename="view_support_price_field")
+        )
+        self.user = RalphUser.objects.get(pk=self.user.pk)
+        headers = self._export_headers()
+        self.assertIn("support__price", headers)
+        self.assertIn("support__price_per_object", headers)
+
+
+class ImportExportRelatedPermissionsMixin:
+    def _make_user(self, *codenames, content_types=()):
+        user = factories.UserFactory(is_staff=True)
+        permissions = list(Permission.objects.filter(codename__in=codenames))
+        if content_types:
+            permissions += Permission.objects.filter(
+                content_type__in=[ContentType.objects.get_for_model(m) for m in content_types]
+            )
+        user.user_permissions.add(*permissions)
+        return RalphUser.objects.get(pk=user.pk)
+
+    def _request(self, user):
+        request = RequestFactory().get("/")
+        request.user = user
+        return request
+
+    def _export_headers(self, model, user):
+        model_admin = ralph_site._registry[model]
+        resource = model_admin.get_export_resource_classes(self._request(user))[0]()
+        return resource.get_export_headers()
+
+    def _import(self, model, user, headers, row):
+        model_admin = ralph_site._registry[model]
+        resource = model_admin.get_import_resource_classes(self._request(user))[0]()
+        dataset = tablib.Dataset(headers=headers)
+        dataset.append(row)
+        return resource.import_data(dataset, dry_run=False, user=user)
+
+
+@ddt
+class BaseObjectsFieldPermissionsTestCase(ImportExportRelatedPermissionsMixin, TestCase):
+    @data(
+        (Support, "support"),
+        (Licence, "licence"),
+    )
+    def test_export_requires_base_objects_field_permission(self, params):
+        model, name = params
+        user = self._make_user("view_{}".format(name))
+        headers = self._export_headers(model, user)
+        self.assertNotIn("base_objects", headers)
+        self.assertNotIn("base_objects_str", headers)
+
+        user = self._make_user("view_{}".format(name), "view_{}_base_objects_field".format(name))
+        headers = self._export_headers(model, user)
+        self.assertIn("base_objects", headers)
+        self.assertIn("base_objects_str", headers)
+
+    @data(
+        (Support, "support"),
+        (Licence, "licence"),
+    )
+    def test_import_requires_base_objects_field_permission(self, params):
+        model, name = params
+        user = self._make_user("add_{}".format(name), "change_{}".format(name))
+        result = self._import(model, user, ["id", "base_objects"], [1, ""])
+        self.assertTrue(result.has_errors())
+        self.assertIsInstance(result.base_errors[0].error, PermissionDenied)
+
+        user = self._make_user(
+            "add_{}".format(name),
+            "change_{}".format(name),
+            "change_{}_base_objects_field".format(name),
+        )
+        result = self._import(model, user, ["id", "base_objects"], [1, ""])
+        self.assertFalse(result.base_errors)
+
+
+class PolymorphicRelatedObjectsPermissionsTestCase(ImportExportRelatedPermissionsMixin, TestCase):
+    def setUp(self):
+        self.region = RegionFactory()
+        self.other_region = RegionFactory()
+        self.user = self._make_user(content_types=[BackOfficeAsset])
+        self.user.regions.add(self.region)
+        self.user = RalphUser.objects.get(pk=self.user.pk)
+        self.asset = BackOfficeAssetFactory(region=self.region)
+
+    def test_parent_from_other_region_is_rejected(self):
+        parent = BackOfficeAssetFactory(region=self.other_region)
+        result = self._import(
+            BackOfficeAsset, self.user, ["id", "parent"], [self.asset.pk, parent.pk]
+        )
+        self.assertTrue(result.has_errors())
+        self.asset.refresh_from_db()
+        self.assertIsNone(self.asset.parent_id)
+
+    def test_parent_from_own_region_is_accepted(self):
+        parent = BackOfficeAssetFactory(region=self.region)
+        result = self._import(
+            BackOfficeAsset, self.user, ["id", "parent"], [self.asset.pk, parent.pk]
+        )
+        self.assertFalse(result.has_errors())
+        self.asset.refresh_from_db()
+        self.assertEqual(self.asset.parent_id, parent.pk)
+
+
+class ImportVisibilityScopeTestCase(ImportExportRelatedPermissionsMixin, TestCase):
+    def setUp(self):
+        self.service_env_in_scope = ServiceEnvironmentFactory()
+        self.service_env_outside_scope = ServiceEnvironmentFactory()
+        scope = ServiceBasedVisibilityScopeFactory()
+        scope.services.set([self.service_env_in_scope.service])
+        self.scoped_user = self._make_user(content_types=[DataCenterAsset])
+        scope.users.set([self.scoped_user])
+        self.unscoped_user = self._make_user(content_types=[DataCenterAsset])
+        self.asset_in_scope = DataCenterAssetFactory(
+            service_env=self.service_env_in_scope, remarks="old"
+        )
+        self.asset_outside_scope = DataCenterAssetFactory(
+            service_env=self.service_env_outside_scope, remarks="old"
+        )
+
+    def test_asset_in_scope_could_be_updated(self):
+        result = self._import(
+            DataCenterAsset,
+            self.scoped_user,
+            ["id", "remarks"],
+            [self.asset_in_scope.pk, "new"],
+        )
+        self.assertFalse(result.has_errors())
+        self.asset_in_scope.refresh_from_db()
+        self.assertEqual(self.asset_in_scope.remarks, "new")
+
+    def test_asset_outside_scope_could_not_be_updated(self):
+        result = self._import(
+            DataCenterAsset,
+            self.scoped_user,
+            ["id", "remarks"],
+            [self.asset_outside_scope.pk, "new"],
+        )
+        self.assertTrue(result.has_errors())
+        self.asset_outside_scope.refresh_from_db()
+        self.assertEqual(self.asset_outside_scope.remarks, "old")
+
+    def test_user_without_scope_could_update_any_asset(self):
+        result = self._import(
+            DataCenterAsset,
+            self.unscoped_user,
+            ["id", "remarks"],
+            [self.asset_outside_scope.pk, "new"],
+        )
+        self.assertFalse(result.has_errors())
+        self.asset_outside_scope.refresh_from_db()
+        self.assertEqual(self.asset_outside_scope.remarks, "new")
