@@ -36,7 +36,11 @@ curl -sf -u "admin:$NEW_PASS" -X POST "$SONAR_URL/api/projects/create" \
 curl -sf -u "admin:$NEW_PASS" -X POST "$SONAR_URL/api/qualitygates/select" \
   -d "gateName=SQE-Gate&projectKey=sqe-ralph" >/dev/null
 
+set +e
 docker run --rm --network host -e SONAR_HOST_URL="$SONAR_URL" -e SONAR_TOKEN="$TOKEN" \
   -v "$PWD:/usr/src" sonarsource/sonar-scanner-cli:latest -Dsonar.qualitygate.wait=true \
   -Dsonar.qualitygate.timeout=600
-echo "Quality gate passed."
+scan_rc=$?
+set -e
+python3 tests/team/tools/sonar_report.py "$SONAR_URL" "$NEW_PASS"
+exit $scan_rc

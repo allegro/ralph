@@ -96,6 +96,7 @@ jobs:
             --runner "bash -c 'cd tests/team && ../../.venv/bin/pytest -x -q -W ignore'"
           rc=$?
           set -e
+          mkdir -p tests/team/reports
           # mutmut exits non-zero when mutants survive; that is judged by the
           # score gate below. Exit codes with bit 0 set (=fatal error) still fail.
           if [ $((rc & 1)) -ne 0 ]; then echo "mutmut fatal error ($rc)"; exit 1; fi
