@@ -15,6 +15,7 @@ and the file is restored. Exit code 1 if any killable mutant survives.
 
 Usage (repo root, env sourced):  python tests/team/tools/custom_mutants.py
 """
+
 import json
 import subprocess
 import sys
@@ -26,34 +27,82 @@ BO = "src/ralph/back_office/models.py"
 
 MUTANTS = [
     # id, operator, file, original, mutated, rule
-    ("C01", "OP-SEAT", LIC, "if self.quantity > available:", "if self.quantity >= available:", "BR1"),
+    (
+        "C01",
+        "OP-SEAT",
+        LIC,
+        "if self.quantity > available:",
+        "if self.quantity >= available:",
+        "BR1",
+    ),
     ("C02", "OP-SEAT", LIC, "self.quantity < 1:", "self.quantity < 0:", "BR1"),
     ("C03", "OP-SEAT", LIC, "if licence.free > 0", "if licence.free >= 0", "BR1"),
-    ("C04", "OP-SEAT", LIC, "return self.number_bought - self.used",
-     "return self.number_bought - self.used + 1", "BR1"),
-    ("C05", "OP-COND", LIC,
-     "if bo_asset and self.licence and self.licence.region_id != bo_asset.region_id:",
-     "if bo_asset and self.licence:", "BR2"),
-    ("C06", "OP-COND", LIC,
-     "if bo_asset and self.licence and self.licence.region_id != bo_asset.region_id:",
-     "if self.licence and self.licence.region_id != bo_asset.region_id:", "BR2"),
-    ("C07", "OP-COND", LIC, "self.licence.region_id != bo_asset.region_id",
-     "self.licence.region_id == bo_asset.region_id", "BR2"),
+    (
+        "C04",
+        "OP-SEAT",
+        LIC,
+        "return self.number_bought - self.used",
+        "return self.number_bought - self.used + 1",
+        "BR1",
+    ),
+    (
+        "C05",
+        "OP-COND",
+        LIC,
+        "if bo_asset and self.licence and self.licence.region_id != bo_asset.region_id:",
+        "if bo_asset and self.licence:",
+        "BR2",
+    ),
+    (
+        "C06",
+        "OP-COND",
+        LIC,
+        "if bo_asset and self.licence and self.licence.region_id != bo_asset.region_id:",
+        "if self.licence and self.licence.region_id != bo_asset.region_id:",
+        "BR2",
+    ),
+    (
+        "C07",
+        "OP-COND",
+        LIC,
+        "self.licence.region_id != bo_asset.region_id",
+        "self.licence.region_id == bo_asset.region_id",
+        "BR2",
+    ),
     ("C08", "OP-ACCT", LIC, "others = others.exclude(pk=self.pk)", "others = others", "BR1"),
-    ("C09", "OP-ACCT", LIC, "return sum(map(get_sum, [base_objects_qs, users_qs]))",
-     "return sum(map(get_sum, [base_objects_qs]))", "BR1"),
-    ("C10", "OP-ACCT", LIC, "return (self.user_count or 0) + (self.baseobject_count or 0)",
-     "return self.baseobject_count or 0", "BR1"),
-    ("C11", "OP-IDEM", BO, "BaseObjectLicence.objects.get_or_create(",
-     "BaseObjectLicence.objects.create(", "BR4"),
+    (
+        "C09",
+        "OP-ACCT",
+        LIC,
+        "return sum(map(get_sum, [base_objects_qs, users_qs]))",
+        "return sum(map(get_sum, [base_objects_qs]))",
+        "BR1",
+    ),
+    (
+        "C10",
+        "OP-ACCT",
+        LIC,
+        "return (self.user_count or 0) + (self.baseobject_count or 0)",
+        "return self.baseobject_count or 0",
+        "BR1",
+    ),
+    (
+        "C11",
+        "OP-IDEM",
+        BO,
+        "BaseObjectLicence.objects.get_or_create(",
+        "BaseObjectLicence.objects.create(",
+        "BR4",
+    ),
 ]
 
 TEST_CMD = [str(REPO / ".venv/bin/pytest"), "-x", "-q", "-W", "ignore", "-p", "no:cacheprovider"]
 
 
 def run_suite():
-    return subprocess.run(TEST_CMD, cwd=REPO / "tests/team",
-                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode
+    return subprocess.run(
+        TEST_CMD, cwd=REPO / "tests/team", stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+    ).returncode
 
 
 def main():
@@ -72,8 +121,17 @@ def main():
             status = "KILLED" if run_suite() != 0 else "SURVIVED"
         finally:
             path.write_text(src)
-        results.append({"id": mid, "operator": op, "rule": rule, "file": rel,
-                        "from": orig, "to": mut, "status": status})
+        results.append(
+            {
+                "id": mid,
+                "operator": op,
+                "rule": rule,
+                "file": rel,
+                "from": orig,
+                "to": mut,
+                "status": status,
+            }
+        )
         print(f"{mid} {op:8} {rule}  {status}")
     (REPO / "tests/team/reports").mkdir(exist_ok=True)
     (REPO / "tests/team/reports/custom_mutants.json").write_text(json.dumps(results, indent=2))

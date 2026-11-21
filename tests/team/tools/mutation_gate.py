@@ -9,6 +9,7 @@ Fails (exit 1) when the rule score is below --min-rule-score.
 Mutants mutmut marks as "skipped"/"suspicious"/"timeout" are reported but
 counted as killed for timeouts (the test run did not pass), as mutmut does.
 """
+
 import argparse
 import ast
 import sys
@@ -18,8 +19,11 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[3]
 RULE_FUNCS = {
     "src/ralph/licences/models.py": [
-        "Licence.used", "Licence.free", "Licence.get_autocomplete_queryset",
-        "BaseObjectLicence.clean", "BaseObjectLicence._validate_seat_limit",
+        "Licence.used",
+        "Licence.free",
+        "Licence.get_autocomplete_queryset",
+        "BaseObjectLicence.clean",
+        "BaseObjectLicence._validate_seat_limit",
     ],
 }
 
@@ -35,6 +39,7 @@ def ranges(rel, names):
                 if isinstance(ch, ast.FunctionDef):
                     found[name] = (ch.lineno, ch.end_lineno)
                 visit(ch, name + ".")
+
     visit(tree)
     return [found[n] for n in names if n in found]
 

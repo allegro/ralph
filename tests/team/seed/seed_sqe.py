@@ -16,6 +16,7 @@ Creates (idempotent - safe to run twice):
   Assets  : SQE-BO-001..004 (PK, status new/new/in use/free), SQE-BO-101 (UK, new)
   Transitions on BackOfficeAsset.status: release / return / liquidate
 """
+
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 
@@ -38,11 +39,16 @@ manager_group.permissions.set(
     Permission.objects.filter(content_type__app_label__in=["licences", "back_office"])
 )
 clerk_group, _ = Group.objects.get_or_create(name="SQE Regional Clerk")
-clerk_group.permissions.set(perms(
-    "view_licence", "view_software", "view_licencetype",
-    "view_baseobjectlicence", "add_baseobjectlicence",
-    "view_backofficeasset",
-))
+clerk_group.permissions.set(
+    perms(
+        "view_licence",
+        "view_software",
+        "view_licencetype",
+        "view_baseobjectlicence",
+        "add_baseobjectlicence",
+        "view_backofficeasset",
+    )
+)
 
 
 def user(username, password, group, regions, superuser=False):
@@ -83,8 +89,14 @@ wh, _ = Warehouse.objects.get_or_create(name="Islamabad HQ")
 def asset(barcode, region, status, user=None):
     a, _ = BackOfficeAsset.objects.get_or_create(
         barcode=barcode,
-        defaults=dict(region=region, status=status, model=model, warehouse=wh,
-                      hostname=barcode.lower(), user=user),
+        defaults=dict(
+            region=region,
+            status=status,
+            model=model,
+            warehouse=wh,
+            hostname=barcode.lower(),
+            user=user,
+        ),
     )
     return a
 
@@ -115,5 +127,10 @@ transition("release", [S.new, S.free], S.used, ["assign_user", "assign_licence"]
 transition("return", [S.used], S.free, ["unassign_user", "unassign_licences"])
 transition("liquidate", [S.free, S.damaged], S.liquidated, [])
 
-print("SQE seed OK:", Licence.objects.filter(niw__startswith="SQE-").count(), "licences,",
-      BackOfficeAsset.objects.filter(barcode__startswith="SQE-").count(), "assets")
+print(
+    "SQE seed OK:",
+    Licence.objects.filter(niw__startswith="SQE-").count(),
+    "licences,",
+    BackOfficeAsset.objects.filter(barcode__startswith="SQE-").count(),
+    "assets",
+)

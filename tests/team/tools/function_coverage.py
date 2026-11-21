@@ -10,6 +10,7 @@ Usage:
     coverage json --rcfile=.coveragerc -o coverage.json
     python tools/function_coverage.py coverage.json [--fail-under 100]
 """
+
 import ast
 import json
 import sys
@@ -19,12 +20,16 @@ SRC = Path(__file__).resolve().parents[3] / "src" / "ralph"
 
 # file -> functions (Class.method or function) in the business-logic scope
 SCOPE = {
-    "licences/models.py": "*",          # whole module
+    "licences/models.py": "*",  # whole module
     "licences/api.py": ["BaseObjectLicenceSerializer.validate"],
     "back_office/models.py": [
-        "_check_assets_owner", "_check_assets_user", "_check_user_assigned",
-        "autocomplete_user", "BackOfficeAsset.assign_user",
-        "BackOfficeAsset.assign_licence", "BackOfficeAsset.unassign_user",
+        "_check_assets_owner",
+        "_check_assets_user",
+        "_check_user_assigned",
+        "autocomplete_user",
+        "BackOfficeAsset.assign_user",
+        "BackOfficeAsset.assign_licence",
+        "BackOfficeAsset.unassign_user",
         "BackOfficeAsset.unassign_licences",
     ],
     "lib/transitions/models.py": ["_check_instances_for_transition", "_prepare_action_data"],
@@ -42,6 +47,7 @@ def function_ranges(path):
                 visit(child, prefix + child.name + ".")
             elif isinstance(child, ast.ClassDef):
                 visit(child, prefix + child.name + ".")
+
     visit(tree)
     return out
 
@@ -60,18 +66,27 @@ def main(argv):
         ranges = function_ranges(SRC / rel)
         names = [None] if funcs == "*" else funcs
         for name in names:
-            lo, hi = (1, 10 ** 9) if name is None else ranges[name]
-            s = {l for l in executed | missing if lo <= l <= hi}
-            ms = {l for l in missing if lo <= l <= hi}
+            lo, hi = (1, 10**9) if name is None else ranges[name]
+            s = {ln for ln in executed | missing if lo <= ln <= hi}
+            ms = {ln for ln in missing if lo <= ln <= hi}
             b = [x for x in all_br if lo <= x[0] <= hi]
             mb = [x for x in missing_br if lo <= x[0] <= hi]
-            tot_s, tot_ms, tot_b, tot_mb = tot_s + len(s), tot_ms + len(ms), tot_b + len(b), tot_mb + len(mb)
+            tot_s, tot_ms, tot_b, tot_mb = (
+                tot_s + len(s),
+                tot_ms + len(ms),
+                tot_b + len(b),
+                tot_mb + len(mb),
+            )
             label = f"{rel}::{name or '(whole module)'}"
-            print(f"{label:62} {len(s):5} {len(ms):4} {len(b):4} {len(mb):6}  "
-                  f"{sorted(ms) or ''} {mb or ''}")
+            print(
+                f"{label:62} {len(s):5} {len(ms):4} {len(b):4} {len(mb):6}  "
+                f"{sorted(ms) or ''} {mb or ''}"
+            )
     pct = 100.0 * ((tot_s - tot_ms) + (tot_b - tot_mb)) / max(1, tot_s + tot_b)
-    print(f"\nSCOPE TOTAL: statements {tot_s - tot_ms}/{tot_s}, branches {tot_b - tot_mb}/{tot_b}, "
-          f"combined {pct:.1f}%")
+    print(
+        f"\nSCOPE TOTAL: statements {tot_s - tot_ms}/{tot_s}, branches {tot_b - tot_mb}/{tot_b}, "
+        f"combined {pct:.1f}%"
+    )
     if fail_under is not None and pct < fail_under:
         print(f"FAIL: combined coverage {pct:.1f}% < {fail_under}%")
         return 1
