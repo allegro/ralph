@@ -139,4 +139,6 @@ jobs:
       - name: Build release package (stand-in for deployment)
         run: uv build --wheel --out-dir dist
       - uses: actions/upload-artifact@v4
-        with: { name: ralph-release-${{ github.sha }}, path: dist/ }
+        with:
+          name: "ralph-release-${{ github.sha }}"
+          path: dist/
