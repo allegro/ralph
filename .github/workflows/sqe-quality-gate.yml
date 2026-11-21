@@ -1,0 +1,137 @@
+# SE3002 SQE quality gate.
+# Runs on every pull request: team tests + coverage gate, mutation gate,
+# SonarQube quality gate. Merge is blocked by branch protection requiring all
+# three checks; the deploy job only runs on main when all three pass.
+# No escape hatches: no continue-on-error, no `|| true`.
+name: sqe-quality-gate
+
+on:
+  pull_request:
+  push:
+    branches: [ng, main]
+
+env:
+  RALPH_VERSION: "3.0.0"
+  DJANGO_SETTINGS_MODULE: ralph.settings.test
+  TEST_DB_ENGINE: psql
+  DATABASE_ENGINE: django.db.backends.postgresql
+  DATABASE_HOST: 127.0.0.1
+  DATABASE_PORT: 5432
+  DATABASE_USER: ralph_ng
+  DATABASE_PASSWORD: ralph_ng
+  DATABASE_NAME: ralph_ng
+  COVERAGE_GATE: "99"        # scope combined stmt+branch %, see report 4.4
+  MUTATION_GATE: "90"        # rule-function mutation score %, see report 5.3
+
+jobs:
+  unit-tests:
+    name: unit-tests (coverage gate)
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ralph_ng
+          POSTGRES_PASSWORD: ralph_ng
+          POSTGRES_DB: ralph_ng
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ralph_ng" --health-interval 5s
+          --health-timeout 5s --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with: { python-version: "3.10" }
+      - name: System libraries
+        run: sudo apt-get update && sudo apt-get install -y libmysqlclient-dev libldap2-dev libsasl2-dev pkg-config
+      - name: Install Ralph + test tools
+        run: |
+          uv sync --group test
+          uv pip install pytest pytest-django coverage mutmut==2.5.1
+      - name: Team tests with coverage
+        working-directory: tests/team
+        run: ../../.venv/bin/coverage run --rcfile=.coveragerc -m pytest -W ignore --create-db --junitxml=reports/junit.xml
+      - name: Coverage gate (business-logic scope)
+        working-directory: tests/team
+        run: |
+          ../../.venv/bin/coverage json --rcfile=.coveragerc -o coverage.json
+          ../../.venv/bin/python tools/make_sonar_coverage.py
+          ../../.venv/bin/python tools/function_coverage.py coverage.json --fail-under "$COVERAGE_GATE"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-reports
+          path: |
+            tests/team/reports/
+            tests/team/coverage.xml
+            tests/team/coverage.json
+
+  mutation:
+    name: mutation (score gate)
+    needs: unit-tests
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_USER: ralph_ng, POSTGRES_PASSWORD: ralph_ng, POSTGRES_DB: ralph_ng }
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U ralph_ng" --health-interval 5s --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with: { python-version: "3.10" }
+      - run: sudo apt-get update && sudo apt-get install -y libmysqlclient-dev libldap2-dev libsasl2-dev pkg-config
+      - run: |
+          uv sync --group test
+          uv pip install pytest pytest-django coverage mutmut==2.5.1
+      - name: Create test DB once (later runs reuse it)
+        working-directory: tests/team
+        run: ../../.venv/bin/pytest -q -W ignore --create-db
+      - name: mutmut on business-rule module
+        env: { PYTHONPATH: "${{ github.workspace }}/src" }
+        run: |
+          set +e
+          .venv/bin/mutmut run --paths-to-mutate src/ralph/licences/models.py \
+            --tests-dir tests/team --no-progress \
+            --runner "bash -c 'cd tests/team && ../../.venv/bin/pytest -x -q -W ignore'"
+          rc=$?
+          set -e
+          # mutmut exits non-zero when mutants survive; that is judged by the
+          # score gate below. Exit codes with bit 0 set (=fatal error) still fail.
+          if [ $((rc & 1)) -ne 0 ]; then echo "mutmut fatal error ($rc)"; exit 1; fi
+          .venv/bin/mutmut junitxml > tests/team/reports/mutmut.xml
+      - name: Mutation score gate
+        run: .venv/bin/python tests/team/tools/mutation_gate.py tests/team/reports/mutmut.xml --min-rule-score "$MUTATION_GATE"
+      - name: Custom business-rule mutation operators (all must be killed)
+        run: .venv/bin/python tests/team/tools/custom_mutants.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: mutation-reports, path: tests/team/reports/ }
+
+  sonarqube:
+    name: sonarqube (quality gate)
+    needs: unit-tests
+    runs-on: ubuntu-24.04
+    services:
+      sonarqube:
+        image: sonarqube:community
+        ports: ["9000:9000"]
+        env: { SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true" }
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/download-artifact@v4
+        with: { name: unit-reports, path: tests/team }
+      - name: Analyse and enforce SQE-Gate
+        run: bash tests/team/tools/sonar_ci.sh
+
+  deploy:
+    name: deploy (blocked unless all gates pass)
+    needs: [unit-tests, mutation, sonarqube]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build release image (stand-in for deployment)
+        run: docker build -f docker/Dockerfile-prod -t sqe-ralph:${{ github.sha }} .
