@@ -134,5 +134,9 @@ jobs:
     environment: staging
     steps:
       - uses: actions/checkout@v4
-      - name: Build release image (stand-in for deployment)
-        run: docker build -f docker/Dockerfile-prod -t sqe-ralph:${{ github.sha }} .
+      - uses: astral-sh/setup-uv@v6
+        with: { python-version: "3.10" }
+      - name: Build release package (stand-in for deployment)
+        run: uv build --wheel --out-dir dist
+      - uses: actions/upload-artifact@v4
+        with: { name: ralph-release-${{ github.sha }}, path: dist/ }
