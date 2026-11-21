@@ -21,12 +21,14 @@ TOKEN=$(curl -sf -u "admin:$NEW_PASS" -X POST "$SONAR_URL/api/user_tokens/genera
 # Team quality gate on OVERALL code (a fresh CI container has no previous
 # analysis, so "new code" conditions would never be evaluated).
 # Set the thresholds from your first local SonarQube run (report section 4.4):
-#   ratings 1=A .. 5=E ; fail if WORSE than the baseline rating.
+#   Baseline (sqe-baseline tag): bugs 31, vulnerabilities 29, code smells 22,
+#   duplication 0.7%. Gate fails if a change makes any of these WORSE.
+#   Coverage is gated per function in the unit-tests job (99%).
 curl -sf -u "admin:$NEW_PASS" -X POST "$SONAR_URL/api/qualitygates/create" -d "name=SQE-Gate" >/dev/null
-for cond in "coverage:LT:${SONAR_MIN_COVERAGE:-95}" \
-            "reliability_rating:GT:${SONAR_MAX_RELIABILITY_RATING:-3}" \
-            "security_rating:GT:${SONAR_MAX_SECURITY_RATING:-3}" \
-            "duplicated_lines_density:GT:${SONAR_MAX_DUPLICATION:-5}"; do
+for cond in "bugs:GT:${SONAR_MAX_BUGS:-31}" \
+            "vulnerabilities:GT:${SONAR_MAX_VULNERABILITIES:-29}" \
+            "code_smells:GT:${SONAR_MAX_CODE_SMELLS:-22}" \
+            "duplicated_lines_density:GT:${SONAR_MAX_DUPLICATION:-1.0}"; do
   IFS=: read -r metric op err <<< "$cond"
   curl -sf -u "admin:$NEW_PASS" -X POST "$SONAR_URL/api/qualitygates/create_condition" \
     -d "gateName=SQE-Gate&metric=$metric&op=$op&error=$err" >/dev/null
