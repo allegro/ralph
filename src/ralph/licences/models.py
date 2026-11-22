@@ -327,6 +327,31 @@ class BaseObjectLicence(models.Model):
         bo_asset = getattr_dunder(self.base_object, "asset__backofficeasset")
         if bo_asset and self.licence and self.licence.region_id != bo_asset.region_id:
             raise ValidationError(_("Asset region is in a different region than licence."))
+        self._validate_seat_limit()
+
+    def _validate_seat_limit(self):
+        """SQE-D01: an assignment must take 1..free seats of the licence.
+
+        Seats already held by this assignment (when editing) are not counted
+        as used, so increasing an existing assignment up to the limit works.
+        """
+        if self.quantity is None or self.quantity < 1:
+            raise ValidationError(_("Quantity must be at least 1 seat."))
+        others = BaseObjectLicence.objects.filter(licence_id=self.licence_id)
+        if self.pk:
+            others = others.exclude(pk=self.pk)
+        used_by_others = (others.aggregate(s=Sum("quantity"))["s"] or 0) + (
+            LicenceUser.objects.filter(licence_id=self.licence_id).aggregate(s=Sum("quantity"))[
+                "s"
+            ]
+            or 0
+        )
+        available = self.licence.number_bought - used_by_others
+        if self.quantity > available:
+            raise ValidationError(
+                _("Not enough free seats: requested %(req)s, available %(free)s.")
+                % {"req": self.quantity, "free": max(available, 0)}
+            )
 
 
 class LicenceUser(models.Model):
