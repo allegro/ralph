@@ -6,14 +6,17 @@ request: valid cases must give 201, invalid ones 400.
 """
 
 import json
+import os
 from pathlib import Path
 
 import pytest
 from conftest import unique
 
-CASES = json.loads(
-    (Path(__file__).resolve().parents[1] / "generator" / "out" / "cases.json").read_text()
+# SQE_CASES lets the regeneration demo point the suite at another generated file.
+CASES_FILE = os.environ.get(
+    "SQE_CASES", str(Path(__file__).resolve().parents[1] / "generator" / "out" / "cases.json")
 )
+CASES = json.loads(Path(CASES_FILE).read_text())
 
 # Where Ralph is looser than our test basis -> documented defects.
 # A strict xfail turns red as soon as the defect is fixed.
