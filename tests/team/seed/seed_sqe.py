@@ -21,7 +21,7 @@ from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
 
 from ralph.accounts.models import RalphUser, Region
-from ralph.assets.models import AssetModel, Category, ObjectModelType
+from ralph.assets.models import AssetHolder, AssetModel, Category, ObjectModelType
 from ralph.back_office.models import BackOfficeAsset, BackOfficeAssetStatus as S, Warehouse
 from ralph.lib.transitions.models import Action, Transition, TransitionModel
 from ralph.licences.models import BaseObjectLicence, Licence, LicenceType, Software
@@ -39,15 +39,16 @@ manager_group.permissions.set(
     Permission.objects.filter(content_type__app_label__in=["licences", "back_office"])
 )
 clerk_group, _ = Group.objects.get_or_create(name="SQE Regional Clerk")
+# Ralph checks permissions per field too (e.g. view_licence_niw_field), so the
+# clerk gets every view permission of licences/back office + adding assignments.
 clerk_group.permissions.set(
-    perms(
-        "view_licence",
-        "view_software",
-        "view_licencetype",
-        "view_baseobjectlicence",
-        "add_baseobjectlicence",
-        "view_backofficeasset",
+    list(
+        Permission.objects.filter(
+            content_type__app_label__in=["licences", "back_office", "assets"],
+            codename__startswith="view_",
+        )
     )
+    + perms("add_baseobjectlicence")
 )
 
 
@@ -84,6 +85,8 @@ model, _ = AssetModel.objects.get_or_create(
     name="ThinkPad T14", defaults={"type": ObjectModelType.back_office, "category": cat}
 )
 wh, _ = Warehouse.objects.get_or_create(name="Islamabad HQ")
+# Ralph requires "property of" on assets created through the API/UI.
+holder, _ = AssetHolder.objects.get_or_create(name="SQE Holding")
 
 
 def asset(barcode, region, status, user=None):
@@ -96,8 +99,12 @@ def asset(barcode, region, status, user=None):
             warehouse=wh,
             hostname=barcode.lower(),
             user=user,
+            property_of=holder,
         ),
     )
+    if a.property_of_id is None:
+        a.property_of = holder
+        a.save()
     return a
 
 
@@ -126,6 +133,34 @@ def transition(name, sources, target, actions):
 transition("release", [S.new, S.free], S.used, ["assign_user", "assign_licence"])
 transition("return", [S.used], S.free, ["unassign_user", "unassign_licences"])
 transition("liquidate", [S.free, S.damaged], S.liquidated, [])
+
+# Roles are (re)applied last: per-transition permissions (can_run_release_transition,
+# ...) only exist once the transitions above have been created.
+manager_group.permissions.set(
+    list(Permission.objects.filter(content_type__app_label__in=["licences", "back_office"]))
+    + list(Permission.objects.filter(codename__startswith="can_view_extra_"))
+    + list(
+        Permission.objects.filter(
+            content_type__app_label="assets",
+            codename__in=["view_assetholder", "view_assetmodel", "view_category"],
+        )
+    )
+    + perms("view_ralphuser")
+    + list(
+        Permission.objects.filter(
+            content_type__app_label="transitions", codename__startswith="view_"
+        )
+    )
+)
+clerk_group.permissions.set(
+    list(
+        Permission.objects.filter(
+            content_type__app_label__in=["licences", "back_office", "assets"],
+            codename__startswith="view_",
+        )
+    )
+    + perms("add_baseobjectlicence")
+)
 
 print(
     "SQE seed OK:",

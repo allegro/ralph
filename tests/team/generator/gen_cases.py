@@ -79,11 +79,19 @@ def integer_cases(schema, field, prop, required):
         out.append(case(schema, field, "EP", "valid in range", mid, True, "inside [min, max]"))
         if lo is not None:
             out.append(case(schema, field, "EP", "below range", lo - 10, False, f"< min {lo}"))
-            for v, ok, where in [(lo - 1, False, "just below"), (lo, True, "at"), (lo + 1, True, "just above")]:
+            for v, ok, where in [
+                (lo - 1, False, "just below"),
+                (lo, True, "at"),
+                (lo + 1, True, "just above"),
+            ]:
                 out.append(case(schema, field, "BVA", f"min {where}", v, ok, f"min = {lo}"))
         if hi is not None:
             out.append(case(schema, field, "EP", "above range", hi + 10, False, f"> max {hi}"))
-            for v, ok, where in [(hi - 1, True, "just below"), (hi, True, "at"), (hi + 1, False, "just above")]:
+            for v, ok, where in [
+                (hi - 1, True, "just below"),
+                (hi, True, "at"),
+                (hi + 1, False, "just above"),
+            ]:
                 out.append(case(schema, field, "BVA", f"max {where}", v, ok, f"max = {hi}"))
     out.append(case(schema, field, "EP", "wrong type", "abc", False, "not an integer"))
     out.append(case(schema, field, "EP", "null", None, False, "null not allowed"))
@@ -101,14 +109,50 @@ def string_cases(schema, field, prop, required):
         out.append(case(schema, field, "EP", "wrong type", 12345, False, "not a date string"))
         return out
     lo, hi = prop.get("minLength", 0), prop.get("maxLength")
-    out.append(case(schema, field, "EP", "valid length", "@len:" + str(min(10, hi or 10)), True, "typical"))
+    out.append(
+        case(
+            schema, field, "EP", "valid length", "@len:" + str(min(10, hi or 10)), True, "typical"
+        )
+    )
     if lo > 0:
-        for n, ok, where in [(lo - 1, False, "just below"), (lo, True, "at"), (lo + 1, True, "just above")]:
-            out.append(case(schema, field, "BVA", f"minLength {where}", "@len:" + str(n), ok, f"minLength = {lo}"))
+        for n, ok, where in [
+            (lo - 1, False, "just below"),
+            (lo, True, "at"),
+            (lo + 1, True, "just above"),
+        ]:
+            out.append(
+                case(
+                    schema,
+                    field,
+                    "BVA",
+                    f"minLength {where}",
+                    "@len:" + str(n),
+                    ok,
+                    f"minLength = {lo}",
+                )
+            )
     if hi is not None:
-        out.append(case(schema, field, "EP", "too long", "@len:" + str(hi + 50), False, f"> maxLength {hi}"))
-        for n, ok, where in [(hi - 1, True, "just below"), (hi, True, "at"), (hi + 1, False, "just above")]:
-            out.append(case(schema, field, "BVA", f"maxLength {where}", "@len:" + str(n), ok, f"maxLength = {hi}"))
+        out.append(
+            case(
+                schema, field, "EP", "too long", "@len:" + str(hi + 50), False, f"> maxLength {hi}"
+            )
+        )
+        for n, ok, where in [
+            (hi - 1, True, "just below"),
+            (hi, True, "at"),
+            (hi + 1, False, "just above"),
+        ]:
+            out.append(
+                case(
+                    schema,
+                    field,
+                    "BVA",
+                    f"maxLength {where}",
+                    "@len:" + str(n),
+                    ok,
+                    f"maxLength = {hi}",
+                )
+            )
     if required:
         out.append(case(schema, field, "EP", "missing", "@missing", False, "required field"))
     return out
