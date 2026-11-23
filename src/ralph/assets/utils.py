@@ -5,7 +5,6 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
 
 
-
 class DNSaaSPublisherMixin:
     """Generate data formatted for DNSaaS auto txt update"""
 

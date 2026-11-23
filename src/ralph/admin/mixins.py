@@ -37,7 +37,8 @@ from ralph.lib.permissions.admin import (
     PermissionAdminMixin,
     PermissionsPerObjectFormMixin,
 )
-from ralph.lib.permissions.models import PermByFieldMixin
+from ralph.lib.permissions.import_export import restrict_resource_class
+from ralph.lib.permissions.models import PermByFieldMixin, PermissionsForObjectMixin
 from ralph.lib.permissions.views import PermissionViewMetaClass
 
 logger = logging.getLogger(__name__)
@@ -382,6 +383,60 @@ class RalphAdminMixin(DashboardChangelistMixin, RalphAutocompleteMixin):
 
 class RalphAdminImportExportMixin(ImportExportModelAdmin):
     _export_queryset_manager = None
+    # set to False to disable import / export for everyone (including superusers)
+    import_enabled = True
+    export_enabled = True
+    # resource fields which could not be exported nor imported by anyone
+    import_export_exclude_fields = ()
+
+    def _has_model_permission(self, request, action):
+        opts = self.opts
+        codename = get_permission_codename(action, opts)
+        return request.user.has_perm("%s.%s" % (opts.app_label, codename))
+
+    def has_export_permission(self, request):
+        return self.export_enabled and self.has_view_permission(request)
+
+    def has_import_permission(self, request):
+        # import creates new objects and updates existing ones (by pk);
+        # notice that `has_change_permission` without object falls back
+        # to view permission in Ralph, so it's checked explicitly here
+        return (
+            self.import_enabled
+            and self.has_add_permission(request)
+            and self._has_model_permission(request, "change")
+        )
+
+    def get_valid_export_item_pks(self, request):
+        # limit objects which could be exported using admin action to objects
+        # to which user has access
+        return self.get_queryset(request).values_list("pk", flat=True)
+
+    def get_import_scope_filter(self, request):
+        """
+        Return `Q` object limiting objects which could be created / modified
+        by import (ex. the same restrictions as in `get_queryset`), or `None`
+        if there are no restrictions other than object permissions.
+        """
+        return None
+
+    def _restrict_resource_classes(self, request, resource_classes, action):
+        scope_filter = self.get_import_scope_filter(request) if action == "change" else None
+        return [
+            restrict_resource_class(
+                resource_class,
+                request.user,
+                action,
+                exclude_fields=self.import_export_exclude_fields,
+                scope_filter=scope_filter,
+            )
+            for resource_class in resource_classes
+        ]
+
+    def get_import_resource_classes(self, request):
+        return self._restrict_resource_classes(
+            request, super().get_import_resource_classes(request), "change"
+        )
 
     def get_export_queryset(self, request):
         # mark request as "exporter" request
@@ -404,12 +459,27 @@ class RalphAdminImportExportMixin(ImportExportModelAdmin):
 
         resource_prefetch_related = getattr(resource._meta, "prefetch_related", [])
         if resource_prefetch_related:
-            queryset = queryset.prefetch_related(*resource_prefetch_related)
+            # prefetches defined in resource take precedence over the ones from
+            # admin's queryset (Django raises ValueError when the same lookup
+            # is prefetched twice with different querysets)
+            resource_lookups = {
+                getattr(lookup, "prefetch_to", lookup) for lookup in resource_prefetch_related
+            }
+            admin_prefetch_related = [
+                lookup
+                for lookup in queryset._prefetch_related_lookups
+                if getattr(lookup, "prefetch_to", lookup) not in resource_lookups
+            ]
+            queryset = queryset.prefetch_related(None).prefetch_related(
+                *admin_prefetch_related, *resource_prefetch_related
+            )
         return list(queryset)
 
     def get_export_resource_classes(self, request):
         """
         If `export_class` is defined in Admin, use it.
+
+        Only fields to which user has view permission are exported.
         """
         resource_classes = self.get_resource_classes(request)
         export_classes = [
@@ -418,15 +488,20 @@ class RalphAdminImportExportMixin(ImportExportModelAdmin):
             if getattr(resource_class, "export_class", None)
         ]
         if export_classes:
-            return export_classes
-        return resource_classes
+            resource_classes = export_classes
+        return self._restrict_resource_classes(request, resource_classes, "view")
 
     def get_queryset(self, request):
         # if it is "exporter" request, try to use `_export_queryset_manager`
         # manager defined in admin
         if hasattr(request, "_is_export") and self._export_queryset_manager:
             logger.info("Using {} manager for export".format(self._export_queryset_manager))
-            return getattr(self.model, self._export_queryset_manager).all()
+            queryset = getattr(self.model, self._export_queryset_manager).all()
+            # respect object-level permissions (normally applied by
+            # `PermissionPerObjectAdminMixin.get_queryset`)
+            if issubclass(self.model, PermissionsForObjectMixin):
+                queryset = self.model._get_objects_for_user(request.user, queryset)
+            return queryset
         return super().get_queryset(request)
 
 
