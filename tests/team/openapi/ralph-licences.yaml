@@ -1,0 +1,201 @@
+openapi: 3.0.3
+info:
+  title: Ralph licence workflows (SQE Module 2 test basis)
+  version: "1.0"
+  description: |
+    Endpoints used by W1 (register a licence) and W2 (assign licence seats).
+    Written by the team from Ralph's serializers (licences/api.py) and the
+    live OPTIONS metadata of the running app at baseline b80ca56 + D01 fix.
+    Constraints marked x-sqe-assumption are our justified test-basis
+    assumptions where Ralph's code is looser than the business rule.
+servers:
+  - url: http://localhost:8000
+security:
+  - tokenAuth: []
+components:
+  securitySchemes:
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: 'Value "Token <key>" from POST /api-token-auth/'
+  responses:
+    BadRequest: {description: Validation error, content: {application/json: {schema: {type: object}}}}
+    Unauthorized: {description: No or invalid token}
+    Forbidden: {description: Authenticated but not allowed}
+    NotFound: {description: Object does not exist}
+  schemas:
+    LicenceInput:
+      type: object
+      required: [number_bought, region, licence_type, software]
+      properties:
+        number_bought:
+          type: integer
+          minimum: 1
+          maximum: 2147483647
+          x-sqe-assumption: "Ralph accepts <= 0 (IntegerField); a licence must have at least 1 seat (defect D04)"
+        niw:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: Inventory number, unique (FR3)
+        order_no: {type: string, maxLength: 50}
+        provider: {type: string, maxLength: 100}
+        invoice_no: {type: string, maxLength: 128}
+        accounting_id: {type: string, maxLength: 200}
+        license_details: {type: string, maxLength: 1024}
+        invoice_date: {type: string, format: date}
+        valid_thru: {type: string, format: date}
+        region: {type: integer, minimum: 1, description: Region id (required)}
+        licence_type: {type: integer, minimum: 1, description: Licence type id (required)}
+        software: {type: integer, minimum: 1, description: Software id (required)}
+    Licence:
+      allOf:
+        - $ref: '#/components/schemas/LicenceInput'
+        - type: object
+          properties:
+            id: {type: integer}
+    AssignmentInput:
+      type: object
+      required: [licence, base_object]
+      properties:
+        licence: {type: integer, minimum: 1}
+        base_object: {type: integer, minimum: 1}
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 2147483647
+          default: 1
+          x-sqe-rule: "BR1: quantity <= free seats of the licence (checked per request)"
+    LicenceUserInput:
+      type: object
+      required: [licence, user]
+      properties:
+        licence: {type: integer, minimum: 1}
+        user: {type: integer, minimum: 1}
+        quantity: {type: integer, minimum: 1, maximum: 2147483647, default: 1}
+  parameters:
+    Id: {name: id, in: path, required: true, schema: {type: integer, minimum: 1}}
+    Limit: {name: limit, in: query, required: false, schema: {type: integer, minimum: 1, maximum: 100}}
+    Niw: {name: niw, in: query, required: false, schema: {type: string, maxLength: 200}}
+paths:
+  /api-token-auth/:
+    post:
+      summary: Obtain an API token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required: [username, password]
+              properties: {username: {type: string}, password: {type: string}}
+      responses:
+        "200": {description: Token issued}
+        "400": {$ref: '#/components/responses/BadRequest'}
+  /api/licences/:
+    get:
+      summary: List licences (W1, read-back of the shared record)
+      parameters: [{$ref: '#/components/parameters/Limit'}, {$ref: '#/components/parameters/Niw'}]
+      responses:
+        "200": {description: Page of licences}
+        "401": {$ref: '#/components/responses/Unauthorized'}
+    post:
+      summary: Register a licence (W1)
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/LicenceInput'}}}
+      responses:
+        "201": {description: Created}
+        "400": {$ref: '#/components/responses/BadRequest'}
+        "401": {$ref: '#/components/responses/Unauthorized'}
+        "403": {$ref: '#/components/responses/Forbidden'}
+  /api/licences/{id}/:
+    parameters: [{$ref: '#/components/parameters/Id'}]
+    get:
+      summary: Read one licence
+      responses:
+        "200": {description: Licence}
+        "401": {$ref: '#/components/responses/Unauthorized'}
+        "404": {$ref: '#/components/responses/NotFound'}
+    patch:
+      summary: Change a licence (e.g. number_bought)
+      requestBody:
+        content: {application/json: {schema: {$ref: '#/components/schemas/LicenceInput'}}}
+      responses:
+        "200": {description: Updated}
+        "400": {$ref: '#/components/responses/BadRequest'}
+        "401": {$ref: '#/components/responses/Unauthorized'}
+        "404": {$ref: '#/components/responses/NotFound'}
+    delete:
+      summary: Delete a licence
+      responses:
+        "204": {description: Deleted}
+        "401": {$ref: '#/components/responses/Unauthorized'}
+        "404": {$ref: '#/components/responses/NotFound'}
+  /api/base-objects-licences/:
+    get:
+      summary: List seat assignments to assets (W2 read-back)
+      parameters:
+        - {name: licence, in: query, required: false, schema: {type: integer}}
+        - {$ref: '#/components/parameters/Limit'}
+      responses:
+        "200": {description: Page of assignments}
+        "401": {$ref: '#/components/responses/Unauthorized'}
+    post:
+      summary: Assign licence seats to an asset (W2)
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/AssignmentInput'}}}
+      responses:
+        "201": {description: Created}
+        "400": {$ref: '#/components/responses/BadRequest'}
+        "401": {$ref: '#/components/responses/Unauthorized'}
+        "403": {$ref: '#/components/responses/Forbidden'}
+  /api/base-objects-licences/{id}/:
+    parameters: [{$ref: '#/components/parameters/Id'}]
+    get:
+      summary: Read one assignment
+      responses:
+        "200": {description: Assignment}
+        "401": {$ref: '#/components/responses/Unauthorized'}
+        "404": {$ref: '#/components/responses/NotFound'}
+    patch:
+      summary: Change assigned quantity
+      requestBody:
+        content: {application/json: {schema: {$ref: '#/components/schemas/AssignmentInput'}}}
+      responses:
+        "200": {description: Updated}
+        "400": {$ref: '#/components/responses/BadRequest'}
+        "401": {$ref: '#/components/responses/Unauthorized'}
+        "404": {$ref: '#/components/responses/NotFound'}
+    delete:
+      summary: Remove an assignment (frees seats)
+      responses:
+        "204": {description: Deleted}
+        "401": {$ref: '#/components/responses/Unauthorized'}
+        "404": {$ref: '#/components/responses/NotFound'}
+  /api/licence-users/:
+    get:
+      summary: List seat assignments to users
+      responses:
+        "200": {description: Page}
+        "401": {$ref: '#/components/responses/Unauthorized'}
+    post:
+      summary: Assign licence seats to a user
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/LicenceUserInput'}}}
+      responses:
+        "201": {description: Created}
+        "400": {$ref: '#/components/responses/BadRequest'}
+        "401": {$ref: '#/components/responses/Unauthorized'}
+  /api/back-office-assets/{id}/:
+    parameters: [{$ref: '#/components/parameters/Id'}]
+    get:
+      summary: Read an asset (status, region; W2 precondition)
+      responses:
+        "200": {description: Asset}
+        "401": {$ref: '#/components/responses/Unauthorized'}
+        "404": {$ref: '#/components/responses/NotFound'}
