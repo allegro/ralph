@@ -44,6 +44,7 @@ IMPORT_EXPORT_FACTORY_MAP: dict[str, str | None] = {
     "ralph.deployment.models.PrebootItem": None,
     "ralph.networks.models.networks.DiscoveryQueue": None,
     "ralph.switchports.models.validation.SwitchportRefreshJob": None,
+    "ralph.switchports.models.validation.DiffEntry": None,
 }
 
 

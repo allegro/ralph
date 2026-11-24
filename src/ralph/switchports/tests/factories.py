@@ -16,6 +16,7 @@ from ralph.switchports.models.validation import (
     DiffStamp,
     BackendValidationResult,
     ValidationStatus,
+    SwitchportDiffStatus,
 )
 
 
@@ -84,7 +85,9 @@ class BackendValidationResultFactory(DjangoModelFactory):
 
 
 class DiffEntryFactory(DjangoModelFactory):
+    switch = SubFactory(DataCenterAssetFactory)
     label = Sequence(lambda n: f"0/0/{n}")
+    status = SwitchportDiffStatus.NOT_VALIDATED.value
 
     class Meta:
         model = DiffEntry

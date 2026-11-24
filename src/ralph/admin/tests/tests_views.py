@@ -14,9 +14,9 @@ from ralph.tests.models import Foo
 
 FACTORY_MAP = {
     "django.contrib.auth.models.Group": "ralph.accounts.tests.factories.GroupFactory",  # noqa
-    "ralph.accessories.models.Accessory": "ralph.accessories.tests.factories.AccessoryFactory",  # noqa
     "ralph.access_cards.models.AccessCard": "ralph.access_cards.tests.factories.AccessCardFactory",  # noqa
     "ralph.access_cards.models.AccessZone": "ralph.access_cards.tests.factories.AccessZoneFactory",  # noqa
+    "ralph.accessories.models.Accessory": "ralph.accessories.tests.factories.AccessoryFactory",  # noqa
     "ralph.accounts.models.RalphUser": "ralph.accounts.tests.factories.UserFactory",  # noqa
     "ralph.accounts.models.Region": "ralph.accounts.tests.factories.RegionFactory",  # noqa
     "ralph.accounts.models.Team": "ralph.accounts.tests.factories.TeamFactory",
@@ -52,8 +52,8 @@ FACTORY_MAP = {
     "ralph.data_center.models.physical.DataCenter": "ralph.data_center.tests.factories.DataCenterFactory",  # noqa
     "ralph.data_center.models.physical.DataCenterAsset": "ralph.data_center.tests.factories.DataCenterAssetFullFactory",  # noqa
     "ralph.data_center.models.physical.Rack": "ralph.data_center.tests.factories.RackFactory",  # noqa
-    "ralph.data_center.models.physical.RackModule": "ralph.data_center.tests.factories.RackModuleFactory",  # noqa
     "ralph.data_center.models.physical.RackAccessory": "ralph.data_center.tests.factories.RackAccessoryFactory",  # noqa
+    "ralph.data_center.models.physical.RackModule": "ralph.data_center.tests.factories.RackModuleFactory",  # noqa
     "ralph.data_center.models.physical.ServerRoom": "ralph.data_center.tests.factories.ServerRoomFactory",  # noqa
     "ralph.data_center.models.virtual.BaseObjectCluster": "ralph.data_center.tests.factories.BaseObjectClusterFactory",  # noqa
     "ralph.data_center.models.virtual.Cluster": "ralph.data_center.tests.factories.ClusterFactory",  # noqa
@@ -68,14 +68,14 @@ FACTORY_MAP = {
     "ralph.domains.models.domains.Domain": "ralph.domains.tests.factories.DomainFactory",  # noqa
     "ralph.domains.models.domains.DomainCategory": "ralph.domains.tests.factories.DomainCategoryFactory",  # noqa
     "ralph.domains.models.domains.DomainContract": "ralph.domains.tests.factories.DomainContractFactory",  # noqa
-    "ralph.domains.models.domains.DomainRegistrant": "ralph.domains.tests.factories.DomainRegistrantFactory",  # noqa
     "ralph.domains.models.domains.DomainProviderAdditionalServices": "ralph.domains.tests.factories.DomainProviderAdditionalServicesFactory",  # noqa
+    "ralph.domains.models.domains.DomainRegistrant": "ralph.domains.tests.factories.DomainRegistrantFactory",  # noqa
     "ralph.lib.custom_fields.models.CustomField": "ralph.lib.custom_fields.tests.factories.CustomFieldFactory",  # noqa
-    "ralph.lib.visibility_scope.models.ServiceBasedVisibilityScope": "ralph.lib.visibility_scope.tests.ServiceBasedVisibilityScopeFactory",  # noqa
     "ralph.lib.transitions.models.Transition": "ralph.lib.transitions.tests.factories.TransitionFactory",  # noqa
     "ralph.lib.transitions.models.TransitionJob": "ralph.lib.transitions.tests.factories.TransitionJobFactory",  # noqa
     "ralph.lib.transitions.models.TransitionModel": "ralph.lib.transitions.tests.factories.TransitionModelFactory",  # noqa
     "ralph.lib.transitions.models.TransitionsHistory": "ralph.lib.transitions.tests.factories.TransitionsHistoryFactory",  # noqa
+    "ralph.lib.visibility_scope.models.ServiceBasedVisibilityScope": "ralph.lib.visibility_scope.tests.ServiceBasedVisibilityScopeFactory",  # noqa
     "ralph.licences.models.Licence": "ralph.licences.tests.factories.LicenceFactory",  # noqa
     "ralph.licences.models.LicenceType": "ralph.licences.tests.factories.LicenceTypeFactory",  # noqa
     "ralph.licences.models.LicenceUser": "ralph.licences.tests.factories.LicenceUserFactory",  # noqa
@@ -88,25 +88,31 @@ FACTORY_MAP = {
     "ralph.operations.models.Failure": "ralph.operations.tests.factories.FailureFactory",  # noqa
     "ralph.operations.models.Incident": "ralph.operations.tests.factories.IncidentFactory",  # noqa
     "ralph.operations.models.Operation": "ralph.operations.tests.factories.OperationFactory",  # noqa
+    "ralph.operations.models.OperationStatus": "ralph.operations.tests.factories.OperationStatusFactory",  # noqa
     "ralph.operations.models.OperationType": "ralph.operations.tests.factories.OperationTypeFactory",  # noqa
     "ralph.operations.models.Problem": "ralph.operations.tests.factories.ProblemFactory",  # noqa
-    "ralph.operations.models.OperationStatus": "ralph.operations.tests.factories.OperationStatusFactory",  # noqa
     "ralph.reports.models.Report": "ralph.reports.factories.ReportFactory",
     "ralph.reports.models.ReportLanguage": "ralph.reports.factories.ReportLanguageFactory",  # noqa
+    "ralph.sim_cards.models.CellularCarrier": "ralph.sim_cards.tests.factories.CellularCarrierFactory",  # noqa
+    "ralph.sim_cards.models.SIMCard": "ralph.sim_cards.tests.factories.SIMCardFactory",  # noqa
+    "ralph.sim_cards.models.SIMCardFeatures": "ralph.sim_cards.tests.factories.SIMCardFeatureFactory",  # noqa
     "ralph.ssl_certificates.models.SSLCertificate": "ralph.ssl_certificates.tests.factories.SSLCertificatesFactory",  # noqa
     "ralph.supports.models.BaseObjectsSupport": "ralph.supports.tests.factories.BaseObjectsSupportFactory",  # noqa
     "ralph.supports.models.Support": "ralph.supports.tests.factories.SupportFactory",  # noqa
     "ralph.supports.models.SupportType": "ralph.supports.tests.factories.SupportTypeFactory",  # noqa
-    "ralph.switchports.models.connections.Port": "ralph.switchports.tests.factories.PortFactory",  # noqa
     "ralph.switchports.models.connections.Connection": "ralph.switchports.tests.factories.ConnectionFactory",  # noqa
+    "ralph.switchports.models.connections.Port": "ralph.switchports.tests.factories.PortFactory",  # noqa
     "ralph.switchports.models.rack_config.RackSwitchConfigurationOverride": "ralph.switchports.tests.factories.RackSwitchConfigurationOverrideFactory",  # noqa
+    "ralph.switchports.models.validation.DiffEntry": "ralph.switchports.tests.factories.DiffEntryFactory",  # noqa
+    "ralph.trade_marks.models.Design": "ralph.trade_marks.tests.factories.DesignFactory",  # noqa
+    "ralph.trade_marks.models.Patent": "ralph.trade_marks.tests.factories.PatentFactory",  # noqa
+    "ralph.trade_marks.models.ProviderAdditionalMarking": "ralph.trade_marks.tests.factories.ProviderAdditionalMarkingFactory",  # noqa
     "ralph.trade_marks.models.TradeMark": "ralph.trade_marks.tests.factories.TradeMarkFactory",  # noqa
+    "ralph.trade_marks.models.TradeMarkCountry": "ralph.trade_marks.tests.factories.TradeMarkCountryFactory",  # noqa
+    "ralph.trade_marks.models.TradeMarkRegistrarInstitution": "ralph.trade_marks.tests.factories.TradeMarkRegistrarInstitutionFactory",  # noqa
     "ralph.trade_marks.models.TradeMarksLinkedDomains": "ralph.trade_marks.tests.factories.TradeMarksLinkedDomainsFactory",  # noqa
     "ralph.trade_marks.models.UtilityModel": "ralph.trade_marks.tests.factories.UtilityModelFactory",  # noqa
     "ralph.trade_marks.models.UtilityModelLinkedDomains": "ralph.trade_marks.tests.factories.UtilityModelLinkedDomainsFactory",  # noqa
-    "ralph.trade_marks.models.ProviderAdditionalMarking": "ralph.trade_marks.tests.factories.ProviderAdditionalMarkingFactory",  # noqa
-    "ralph.trade_marks.models.TradeMarkCountry": "ralph.trade_marks.tests.factories.TradeMarkCountryFactory",  # noqa
-    "ralph.trade_marks.models.TradeMarkRegistrarInstitution": "ralph.trade_marks.tests.factories.TradeMarkRegistrarInstitutionFactory",  # noqa
     "ralph.virtual.models.CloudFlavor": "ralph.virtual.tests.factories.CloudFlavorFactory",  # noqa
     "ralph.virtual.models.CloudHost": "ralph.virtual.tests.factories.CloudHostFullFactory",  # noqa
     "ralph.virtual.models.CloudImage": "ralph.virtual.tests.factories.CloudImageFactory",  # noqa
@@ -114,11 +120,6 @@ FACTORY_MAP = {
     "ralph.virtual.models.CloudProvider": "ralph.virtual.tests.factories.CloudProviderFactory",  # noqa
     "ralph.virtual.models.VirtualServer": "ralph.virtual.tests.factories.VirtualServerFullFactory",  # noqa
     "ralph.virtual.models.VirtualServerType": "ralph.virtual.tests.factories.VirtualServerTypeFactory",  # noqa
-    "ralph.sim_cards.models.SIMCard": "ralph.sim_cards.tests.factories.SIMCardFactory",  # noqa
-    "ralph.sim_cards.models.CellularCarrier": "ralph.sim_cards.tests.factories.CellularCarrierFactory",  # noqa
-    "ralph.sim_cards.models.SIMCardFeatures": "ralph.sim_cards.tests.factories.SIMCardFeatureFactory",  # noqa
-    "ralph.trade_marks.models.Design": "ralph.trade_marks.tests.factories.DesignFactory",  # noqa
-    "ralph.trade_marks.models.Patent": "ralph.trade_marks.tests.factories.PatentFactory",  # noqa
 }
 
 EXCLUDE_MODELS = [
@@ -139,9 +140,9 @@ EXCLUDE_MODELS = [
     "ralph.tests.models.Car",
     "ralph.tests.models.Car2",
     "ralph.tests.models.Foo",
-    "ralph.tests.models.TestManufacturer",
     "ralph.tests.models.Order",
     "ralph.tests.models.PolymorphicTestModel",
+    "ralph.tests.models.TestManufacturer",
 ]
 
 EXCLUDE_ADD_VIEW = [
