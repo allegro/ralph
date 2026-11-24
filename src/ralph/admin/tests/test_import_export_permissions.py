@@ -31,7 +31,7 @@ from ralph.supports.models import Support
 from ralph.tests import factories
 from ralph.tests.mixins import ClientMixin
 
-IMPORT_EXPORT_FACTORY_MAP: dict[str, str | None]  = {
+IMPORT_EXPORT_FACTORY_MAP: dict[str, str | None] = {
     **FACTORY_MAP,
     # models without factories (or with factories which could not be used
     # here) - only access to import/export views is checked for them
@@ -344,8 +344,9 @@ class ImportExportPermissionsTestCase(ClientMixin, TestCase):
 
     def test_disabled_import_and_export_are_forbidden_even_for_superuser(self):
         self.login_as_user(self.admin_user)
-        with patch.object(self.model_admin, "import_enabled", False), patch.object(
-            self.model_admin, "export_enabled", False
+        with (
+            patch.object(self.model_admin, "import_enabled", False),
+            patch.object(self.model_admin, "export_enabled", False),
         ):
             self.assertEqual(self.client.get(self._url("export")).status_code, 403)
             self.assertEqual(self.client.get(self._url("import")).status_code, 403)
@@ -367,16 +368,12 @@ class ComputedFieldsPermissionsTestCase(TestCase):
     def setUp(self):
         self.user = factories.UserFactory(is_staff=True)
         self.user.user_permissions.add(
-            *Permission.objects.filter(
-                codename__in=["view_baseobjectssupport", "view_support"]
-            )
+            *Permission.objects.filter(codename__in=["view_baseobjectssupport", "view_support"])
         )
         self.user = RalphUser.objects.get(pk=self.user.pk)
 
     def _export_headers(self):
-        resource_class = restrict_resource_class(
-            BaseObjectsSupportRichResource, self.user, "view"
-        )
+        resource_class = restrict_resource_class(BaseObjectsSupportRichResource, self.user, "view")
         return resource_class().get_export_headers()
 
     def test_computed_price_is_hidden_without_price_permission(self):
@@ -385,9 +382,7 @@ class ComputedFieldsPermissionsTestCase(TestCase):
         self.assertNotIn("support__price_per_object", headers)
 
     def test_computed_price_is_exported_with_price_permission(self):
-        self.user.user_permissions.add(
-            Permission.objects.get(codename="view_support_price_field")
-        )
+        self.user.user_permissions.add(Permission.objects.get(codename="view_support_price_field"))
         self.user = RalphUser.objects.get(pk=self.user.pk)
         headers = self._export_headers()
         self.assertIn("support__price", headers)
