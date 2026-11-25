@@ -1,3 +1,4 @@
+from django.contrib import admin
 from django.urls import reverse
 from django.utils.encoding import smart_str
 from django.utils.safestring import mark_safe
@@ -117,7 +118,7 @@ class SwitchportDiffStatusFilter(ChoicesListFilter):
 
 
 class SwitchportDiffStampFilter(ChoicesListFilter):
-    """Filter diff entries by stamp. Unstamped by default"""
+    """Filter diff entries by stamp. Unstamped only by default"""
 
     title = _("Processed")
     parameter_name = "stamp"
@@ -167,19 +168,37 @@ class SwitchportReportAdmin(RalphAdmin):
         ("status", SwitchportDiffStatusFilter),
         ("stamp", SwitchportDiffStampFilter),
     )
-    readonly_fields = ["switch", "label", "status", "ralph_asset", "netmaker_asset"]
+    readonly_fields = [
+        "switch",
+        "label",
+        "status",
+        "ralph_asset",
+        "netmaker_asset",
+        "created",
+        "modified",
+    ]
     actions = ("stamp_entries", "unstamp_entries")
     redirect_to_detail_view_if_one_search_result = False
     ordering = (
         "-modified",
         "-created",
     )
+    import_enabled = False
 
     def ack_by(self, obj):
         return None if obj.stamp is None else obj.stamp.actor.username
 
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
     def has_delete_permission(self, request, obj=None):
         return False
+
+    def has_ack_permission(self, request, obj=None):
+        return request.user.has_perm("switchports.add_diffstamp")
 
     def stamp_entries(self, request, queryset):
         DiffStamp.objects.bulk_create(
@@ -188,11 +207,13 @@ class SwitchportReportAdmin(RalphAdmin):
         )
 
     stamp_entries.short_description = _("Acknowledge entries")
+    stamp_entries.allowed_permissions=["ack"]
 
     def unstamp_entries(self, request, queryset):
         DiffStamp.objects.filter(entry__in=queryset).delete()
 
     unstamp_entries.short_description = _("Unacknowledge entries")
+    unstamp_entries.allowed_permissions=["ack"]
 
     @mark_safe
     def _switch(self, obj):
