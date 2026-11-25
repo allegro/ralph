@@ -1,4 +1,3 @@
-from django.contrib import admin
 from django.urls import reverse
 from django.utils.encoding import smart_str
 from django.utils.safestring import mark_safe
@@ -207,13 +206,13 @@ class SwitchportReportAdmin(RalphAdmin):
         )
 
     stamp_entries.short_description = _("Acknowledge entries")
-    stamp_entries.allowed_permissions=["ack"]
+    stamp_entries.allowed_permissions = ["ack"]
 
     def unstamp_entries(self, request, queryset):
         DiffStamp.objects.filter(entry__in=queryset).delete()
 
     unstamp_entries.short_description = _("Unacknowledge entries")
-    unstamp_entries.allowed_permissions=["ack"]
+    unstamp_entries.allowed_permissions = ["ack"]
 
     @mark_safe
     def _switch(self, obj):
