@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('created', models.DateTimeField(auto_now_add=True, verbose_name='date created')),
                 ('modified', models.DateTimeField(auto_now=True, verbose_name='last modified')),
-                ('label', models.CharField()),
+                ('label', models.CharField(max_length=255)),
                 ('status', models.CharField(choices=[('same_asset', 'Same Asset'), ('asset_mismatch', 'Asset Mismatch'), ('port_missing', 'Port Missing'), ('netmaker_empty', 'Netmaker Empty'), ('ralph_empty', 'Ralph Empty'), ('not_validated', 'Not Validated')], max_length=255)),
                 ('netmaker_asset', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='+', to='data_center.datacenterasset')),
                 ('ralph_asset', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='+', to='data_center.datacenterasset')),
