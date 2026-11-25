@@ -136,6 +136,7 @@ EXCLUDE_MODELS = [
     "ralph.networks.models.networks.DiscoveryQueue",
     "ralph.switchports.models.rack_config.RackSwitchConfigurationOverride",
     "ralph.switchports.models.validation.SwitchportRefreshJob",
+    "ralph.switchports.models.validation.DiffEntry",
     "ralph.tests.models.Bar",
     "ralph.tests.models.Car",
     "ralph.tests.models.Car2",
