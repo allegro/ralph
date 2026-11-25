@@ -71,6 +71,10 @@ class BackOfficeAssetViewSet(RalphAPIViewSet):
         "modified",
         "created",
         "last_status_change",
+        "model",
+        "model__category",
+        "model__category__rght",
+        "model__category__lft",
     ]
     queryset = BackOfficeAsset.objects.all()
     serializer_class = BackOfficeAssetSerializer
