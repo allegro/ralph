@@ -10,6 +10,7 @@ from ralph.api.tests._base import RalphAPITestCase
 from ralph.assets.tests.factories import (
     AssetHolderFactory,
     DataCenterAssetModelFactory,
+    DataCenterCategoryFactory,
     EthernetFactory,
     ServiceEnvironmentFactory,
 )
@@ -425,6 +426,28 @@ class DataCenterAssetAPITests(RalphAPITestCase):
         response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 2)
+
+    def test_filter_by_multiple_model_categories(self):
+        category_1 = DataCenterCategoryFactory(name="category-1")
+        category_2 = DataCenterCategoryFactory(name="category-2")
+        category_3 = DataCenterCategoryFactory(name="category-3")
+        dc_assets = [
+            DataCenterAssetFactory(
+                model=DataCenterAssetModelFactory(name=f"model-{category.name}", category=category)
+            )
+            for category in [category_1, category_2, category_3]
+        ]
+
+        url = reverse("datacenterasset-list") + "?model__category__in={},{}".format(
+            category_1.id, category_2.id
+        )
+        response = self.client.get(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["count"], 2)
+        self.assertCountEqual(
+            [item["id"] for item in response.data["results"]],
+            [dc_assets[0].id, dc_assets[1].id],
+        )
 
     def test_support_end_date(self):
         dca = DataCenterAssetFactory()

@@ -68,6 +68,39 @@ class TestLookupFilterBackend(RalphAPITestCase):
         Bar.objects.create(name="Bar44", date=None, price=Decimal("41.4"), count=4)
         self.lookup_filter = LookupFilterBackend()
 
+    def test_query_filters_charfield_in(self):
+        request = self.request_factory.get("/api/bar")
+        bvs = BarViewSet()
+        request.query_params = QueryDict(urlencode({"name__in": "Bar11,Bar22"}))
+        bvs.request = request
+        self.assertEqual(
+            len(self.lookup_filter.filter_queryset(request, Bar.objects.all(), bvs)), 2
+        )
+
+    def test_query_filters_integerfield_in(self):
+        request = self.request_factory.get("/api/bar")
+        bvs = BarViewSet()
+        request.query_params = QueryDict(urlencode({"count__in": "1, 3,4"}))
+        bvs.request = request
+        self.assertEqual(
+            len(self.lookup_filter.filter_queryset(request, Bar.objects.all(), bvs)), 3
+        )
+
+    def test_query_filters_integerfield_range(self):
+        request = self.request_factory.get("/api/bar")
+        bvs = BarViewSet()
+        request.query_params = QueryDict(urlencode({"count__range": "2,3"}))
+        bvs.request = request
+        self.assertEqual(
+            len(self.lookup_filter.filter_queryset(request, Bar.objects.all(), bvs)), 2
+        )
+
+        # Failed filter (range requires exactly 2 values)
+        request.query_params = QueryDict(urlencode({"count__range": "1,2,3"}))
+        self.assertEqual(
+            len(self.lookup_filter.filter_queryset(request, Bar.objects.all(), bvs)), 4
+        )
+
     def test_query_filters_charfield(self):
         request = self.request_factory.get("/api/bar")
         bvs = BarViewSet()

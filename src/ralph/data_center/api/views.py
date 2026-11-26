@@ -98,6 +98,11 @@ class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         "service_env__environment__name",
         "firmware_version",
         "bios_version",
+        "model",
+        "model__category",
+        "model__category__rght",
+        "model__category__lft",
+        "model__category__tree_id",
     ]
     additional_filter_class = DataCenterAssetFilterSet
     exclude_filter_fields = ["configuration_path"]

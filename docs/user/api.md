@@ -157,6 +157,7 @@ Ralph API supports multiple query filers:
 
 * filter by (exact) field value (ex. `<URL>?hostname=s1234.local`)
 * lookup filters using Django's `__` convention (check [Django Field lookups documentation](https://docs.djangoproject.com/en/1.8/ref/models/querysets/#field-lookups) for details), ex. `<URL>?hostname__startswith=s123` or `<URL>?invoice_date__lte=2015-01-01`
+* filter by multiple values using `__in` lookup with comma-separated values, ex. `<URL>/data-center-assets/?model__category__in=1,2,3` (`__range` works the same way, but requires exactly 2 values, ex. `<URL>?invoice_date__range=2015-01-01,2015-12-31`)
 * extended filters - allows to filter for multiple fields using single query param - it's usefull especially for polymorphic models (like `BaseObject`) - for example filtering by `name` param, you'll filter by `DataCenterAsset` hostname, `BackOfficeAssetHostname` etc. Example: `<URL>/base-objects/?name=s1234.local`
 * filter by tags using `tag` query param. Multiple tags could be specified in url query. Example: `<URL>?tag=abc&tag=def&tag=123`
 

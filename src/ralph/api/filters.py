@@ -6,7 +6,7 @@ from functools import reduce
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import FieldDoesNotExist
 from django.db import models
-from django.db.models import Lookup, Field
+from django.db.models import Field, Lookup
 from django.forms import Widget
 from django_filters import Filter
 from django_filters.rest_framework import DjangoFilterBackend
@@ -102,7 +102,7 @@ class ImportedIdFilterBackend(BaseFilterBackend):
 
 class ExtendedFiltersBackend(BaseFilterBackend):
     """
-    Apply filters defined by extended filters in view (usefull in Polymorphic
+    Apply filters defined by extended filters in view (useful in Polymorphic
     objects).
 
     For example, when
@@ -152,9 +152,41 @@ class LookupFilterBackend(BaseFilterBackend):
 
     # allowed lookups depending on field type (using Django's __ convention)
     # for other types of fields, only strict lookup is allowed
+    # values for `in` and `range` lookups are passed as comma-separated list,
+    # ex. `<URL>?model__category__in=1,2,3` or `<URL>?count__range=1,10`
     field_type_lookups = {
-        # TODO: in and range filters are not working (some iterable is required)
+        models.ForeignKey: {
+            "ne",
+            "lte",
+            "gte",
+            "lt",
+            "gt",
+            "exact",
+            "in",
+            "isnull",
+        },
+        models.AutoField: {
+            "ne",
+            "lte",
+            "gte",
+            "lt",
+            "gt",
+            "exact",
+            "in",
+            "isnull",
+        },
         models.IntegerField: {
+            "ne",
+            "lte",
+            "gte",
+            "lt",
+            "gt",
+            "exact",
+            "in",
+            "range",
+            "isnull",
+        },
+        models.DecimalField: {
             "ne",
             "lte",
             "gte",
@@ -206,18 +238,6 @@ class LookupFilterBackend(BaseFilterBackend):
             "lt",
             "gt",
         },
-        models.DecimalField: {
-            "ne",
-            "lte",
-            "gte",
-            "lt",
-            "gt",
-            "exact",
-            "in",
-            "range",
-            "isnull",
-        },
-        models.AutoField: {"startswith", "exact", "ne"},
     }
 
     def _validate_single_query_lookup(self, model, model_field_name, lookup, value):
@@ -259,6 +279,11 @@ class LookupFilterBackend(BaseFilterBackend):
                         return {}
                     else:
                         value = BOOL_VALUES[value]
+                elif lookup in ("in", "range"):
+                    value = [v.strip() for v in str(value).split(",") if v.strip()]
+                    if not value or (lookup == "range" and len(value) != 2):
+                        logger.debug("Invalid value for {} filter: {}".format(lookup, value))
+                        return {}
                 result = {"{}__{}".format(model_field_name, lookup): value}
         return result
 
