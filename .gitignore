@@ -85,3 +85,6 @@ tags
 .envrc
 .direnv/
 mise*local.toml
+tests/team/e2e/node_modules/
+tests/team/e2e/node_modules/
+tests/team/e2e/node_modules/
