@@ -1,4 +1,6 @@
 from ralph.settings import *  # noqa
+import copy
+import importlib.metadata
 import os
 from ralph.settings import (
     REDIS_CONNECTION,
@@ -12,6 +14,18 @@ from ralph.settings import (
 )
 
 DEBUG = bool_from_env("RALPH_DEBUG", False)
+
+
+def _get_ralph_version():
+    if version := os.getenv("RALPH_VERSION"):
+        return version
+    try:
+        return importlib.metadata.version("ralph")
+    except importlib.metadata.PackageNotFoundError:
+        return "unknown"
+
+
+RALPH_VERSION = _get_ralph_version()
 
 REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] = (
     "rest_framework.authentication.TokenAuthentication",
@@ -46,6 +60,16 @@ if os.environ.get("USE_REDIS_CACHE"):
             },
         },
     }
+
+    # Menu, breadcrumbs and sitetree are cached per release, so every deploy
+    # starts with a fresh cache instead of serving HTML/tree from the previous one.
+    # Kept separate from "default" so sessions stored in cache survive deploys.
+    _versioned_cache = copy.deepcopy(CACHES["default"])
+    _versioned_cache["KEY_PREFIX"] = f"ralph-{RALPH_VERSION}"
+    CACHES["template_fragments"] = _versioned_cache
+    CACHES["sitetree"] = copy.deepcopy(_versioned_cache)
+    SITETREE_CACHE_NAME = "sitetree"
+    SITETREE_CACHE_TIMEOUT = 86400
 
     if bool_from_env("RALPH_DISABLE_CACHE_FRAGMENTS", False):
         CACHES["template_fragments"] = {

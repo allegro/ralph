@@ -1,4 +1,4 @@
-from factory import SubFactory, post_generation
+from factory import SubFactory, post_generation, Sequence
 from factory.django import DjangoModelFactory
 from factory.fuzzy import FuzzyText
 
@@ -10,6 +10,13 @@ from ralph.switchports.models import (
     RackSwitchConfigurationOverride,
     RackSwitchConfiguration,
     RackConfiguration,
+    DiffEntry,
+)
+from ralph.switchports.models.validation import (
+    DiffStamp,
+    BackendValidationResult,
+    ValidationStatus,
+    SwitchportDiffStatus,
 )
 
 
@@ -17,7 +24,7 @@ class PortFactory(DjangoModelFactory):
     class Meta:
         model = Port
 
-    label = "0/0/0"
+    label = Sequence(lambda n: f"0/0/{n}")
     data_center_asset = SubFactory(DataCenterAssetFactory)
 
 
@@ -55,7 +62,7 @@ class RackSwitchConfigurationFactory(DjangoModelFactory):
     rack_configuration = SubFactory(RackConfigurationFactory)
     switch = SubFactory(DataCenterAssetFactory)
     label = "eth1"
-    backend_validation = False
+    backend_validation = True
 
 
 class RackSwitchConfigurationOverrideFactory(DjangoModelFactory):
@@ -65,3 +72,27 @@ class RackSwitchConfigurationOverrideFactory(DjangoModelFactory):
     data_center_asset = SubFactory(DataCenterAssetFactory)
     rack_switch_configuration = SubFactory(RackSwitchConfigurationFactory)
     switch = SubFactory(DataCenterAssetFactory)
+
+
+class BackendValidationResultFactory(DjangoModelFactory):
+    class Meta:
+        model = BackendValidationResult
+
+    switch = SubFactory(DataCenterAssetFactory)
+    port_label = Sequence(lambda n: f"0/0/{n}")
+    status = ValidationStatus.ASSET_FOUND.value
+    remote_asset = SubFactory(DataCenterAssetFactory)
+
+
+class DiffEntryFactory(DjangoModelFactory):
+    switch = SubFactory(DataCenterAssetFactory)
+    label = Sequence(lambda n: f"0/0/{n}")
+    status = SwitchportDiffStatus.NOT_VALIDATED.value
+
+    class Meta:
+        model = DiffEntry
+
+
+class DiffStampFactory(DjangoModelFactory):
+    class Meta:
+        model = DiffStamp

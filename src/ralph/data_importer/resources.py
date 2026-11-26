@@ -631,13 +631,6 @@ class BaseObjectsSupportRichResource(RalphModelResource):
             "baseobject__configuration_path",
         )
 
-    # def get_queryset(self):
-    #     return (
-    #         super()
-    #         .get_queryset()
-    #         .annotate(objects_count=Count("support__baseobjectssupport"))
-    #     )
-
     def dehydrate_price_per_object(self, bo_support):
         support = bo_support.support
         price = getattr(support.price, "amount", Decimal("0.00"))

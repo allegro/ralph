@@ -1,9 +1,10 @@
 """Refresh validation results from the netmaker backend.
 
-Fetches switch port data from netmaker for each switch related to a
+Fetch switch port data from netmaker for each switch related to a
 RackConfiguration (both the switches configured on the columns and the
-per-server override switches), uses netmaker asset matching to resolve the
-remote asset, and caches the results in BackendValidationResult.
+per-server override switches).
+Use netmaker asset matching to resolve the
+remote asset, and cache the results in BackendValidationResult.
 """
 
 import logging
