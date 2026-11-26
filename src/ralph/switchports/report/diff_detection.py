@@ -1,4 +1,5 @@
 import logging
+from functools import partial
 
 from django.db.models import Q
 
@@ -9,55 +10,39 @@ from ralph.switchports.models.validation import SwitchportDiffStatus, DiffEntry
 
 def compare(vr: BackendValidationResult) -> DiffEntry:
     """Check BackendValidationResult and return a new DiffEntry"""
-    switch = vr.switch
-    label = vr.port_label
-    port = Port.objects.filter(data_center_asset=switch, label=label).first()
-    asset = vr.remote_asset
+    new_entry = partial(
+        DiffEntry,
+        switch=vr.switch,
+        label=vr.port_label,
+        ralph_asset=None,
+        netmaker_asset=None,
+    )
     if not is_validated(vr):
-        return DiffEntry(
-            switch=switch,
-            label=label,
-            status=SwitchportDiffStatus.NOT_VALIDATED.value,
-            netmaker_asset=None,
-            ralph_asset=None,
-        )
+        return new_entry(status=SwitchportDiffStatus.NOT_VALIDATED.value)
+
+    port = Port.objects.filter(data_center_asset=vr.switch, label=vr.port_label).first()
     if not port:
-        return DiffEntry(
-            switch=switch,
-            label=label,
-            status=SwitchportDiffStatus.PORT_MISSING.value,
-            ralph_asset=None,
-            netmaker_asset=None,
-        )
+        return new_entry(status=SwitchportDiffStatus.PORT_MISSING.value)
+
+    asset = vr.remote_asset
     if not asset:
-        return DiffEntry(
-            switch=switch,
-            label=label,
-            status=SwitchportDiffStatus.NETMAKER_EMPTY.value,
-            ralph_asset=None,
-            netmaker_asset=None,
-        )
+        return new_entry(status=SwitchportDiffStatus.NETMAKER_EMPTY.value)
+
     server_port = connected_to(port)
     if not server_port or not (ralph_server := server_port.data_center_asset):
-        return DiffEntry(
-            switch=switch,
-            label=label,
+        return new_entry(
             status=SwitchportDiffStatus.RALPH_EMPTY.value,
-            ralph_asset=None,
             netmaker_asset=asset,
         )
+
     if ralph_server.id == asset.id:
-        return DiffEntry(
-            switch=switch,
-            label=label,
+        return new_entry(
             status=SwitchportDiffStatus.SAME_ASSET.value,
             ralph_asset=ralph_server,
             netmaker_asset=asset,
         )
     else:
-        return DiffEntry(
-            switch=switch,
-            label=label,
+        return new_entry(
             status=SwitchportDiffStatus.ASSET_MISMATCH.value,
             ralph_asset=ralph_server,
             netmaker_asset=asset,
@@ -72,8 +57,6 @@ def compare_all():
     take all switch ports (SP)
     take all switch ports connected to other assets (SPRA)
     then:
-    ??? do we find NOT_SYNCED and NO_PORT_ON_NETMAKER ???
-    ??? how we handle backend_validation flag + override ???
     (SP ∖ SPRA) ∩ (VR ∖ VRRA) - BOTH_EMPTY
     SPRA ∩ (VR ∖ VRRA) - NETMAKER_EMPTY
     (SP ∖ SPRA) ∩ VRRA - RALPH_EMPTY
