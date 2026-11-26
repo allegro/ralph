@@ -75,6 +75,7 @@ class BackOfficeAssetViewSet(RalphAPIViewSet):
         "model__category",
         "model__category__rght",
         "model__category__lft",
+        "model__category__tree_id",
     ]
     queryset = BackOfficeAsset.objects.all()
     serializer_class = BackOfficeAssetSerializer
