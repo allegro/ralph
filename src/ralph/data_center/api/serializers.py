@@ -46,6 +46,17 @@ class BaseObjectClusterSimpleSerializer(RalphAPISerializer):
         fields = ("id", "url", "base_object", "is_master")
 
 
+class BaseObjectClusterSimpleReverseSerializer(RalphAPISerializer):
+    """
+    Serializer to be used in base objects serializers to find clusters related to them e.g.
+    >>>clusters = BaseObjectClusterSimpleReverseSerializer(many=True, read_only=True)
+    """
+
+    class Meta:
+        model = BaseObjectCluster
+        fields = ("is_master", "cluster", "cluster_id")
+
+
 class BaseObjectClusterSerializer(RalphAPISerializer):
     class Meta:
         model = BaseObjectCluster
@@ -154,6 +165,7 @@ class DataCenterAssetSerializer(ComponentSerializerMixin, AssetSerializer):
     rack = SimpleRackSerializer()
     related_hosts = serializers.SerializerMethodField()
     support_end_date = serializers.DateField(required=False, allow_null=True)
+    clusters = BaseObjectClusterSimpleReverseSerializer(many=True, read_only=True)
 
     def get_related_hosts(self, obj):
         from ralph.virtual.api import (
@@ -194,6 +206,8 @@ class DataCenterAssetSaveSerializer(RalphAPISaveSerializer):
 
 
 class DatabaseSerializer(BaseObjectSerializer):
+    clusters = BaseObjectClusterSimpleReverseSerializer(many=True, read_only=True)
+
     class Meta(BaseObjectSerializer.Meta):
         model = Database
         depth = 1

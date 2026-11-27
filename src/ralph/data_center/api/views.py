@@ -89,6 +89,7 @@ class DataCenterAssetViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         "fibrechannelcard_set",
         "processor_set",
         "disk_set",
+        "clusters",
     ]
     filterset_fields = [
         "id",
@@ -160,6 +161,7 @@ class DatabaseViewSet(RalphAPIViewSet):
         "content_type",
         "service_env__service",
         "service_env__environment",
+        "clusters",
     )
 
 

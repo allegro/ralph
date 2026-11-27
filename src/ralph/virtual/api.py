@@ -20,7 +20,10 @@ from ralph.assets.api.views import (
     BaseObjectViewSetMixin,
 )
 from ralph.assets.models import Ethernet
-from ralph.data_center.api.serializers import DataCenterAssetSimpleSerializer
+from ralph.data_center.api.serializers import (
+    DataCenterAssetSimpleSerializer,
+    BaseObjectClusterSimpleReverseSerializer,
+)
 from ralph.data_center.models import DCHost
 from ralph.lib.api.exceptions import Conflict
 from ralph.lib.api.utils import renderer_classes_without_form
@@ -124,6 +127,7 @@ class CloudHostSerializer(NetworkComponentSerializerMixin, BaseObjectSerializer)
     cores = serializers.IntegerField()
     memory = serializers.IntegerField()
     disk = serializers.IntegerField()
+    clusters = BaseObjectClusterSimpleReverseSerializer(many=True, read_only=True)
 
     class Meta(BaseObjectSerializer.Meta):
         model = CloudHost
@@ -168,6 +172,7 @@ class VirtualServerSimpleSerializer(BaseObjectSerializer):
 class VirtualServerSerializer(ComponentSerializerMixin, BaseObjectSerializer):
     type = VirtualServerTypeSerializer()
     hypervisor = serializers.SerializerMethodField()
+    clusters = BaseObjectClusterSimpleReverseSerializer(many=True, read_only=True)
 
     def get_hypervisor(self, obj):
         context = self.context.copy()
@@ -271,6 +276,7 @@ class CloudHostViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         "cloudflavor__virtualcomponent_set__model",
         "virtualcomponent_set__model",
         "licences",
+        "clusters",
         Prefetch("ethernet_set", queryset=Ethernet.objects.select_related("ipaddress")),
     ]
 
@@ -334,6 +340,7 @@ class VirtualServerViewSet(BaseObjectViewSetMixin, RalphAPIViewSet):
         "memory_set",
         "processor_set",
         "disk_set",
+        "clusters",
         Prefetch("ethernet_set", queryset=Ethernet.objects.select_related("ipaddress")),
     ]
     filterset_fields = [
