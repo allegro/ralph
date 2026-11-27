@@ -1,0 +1,32 @@
+============================= test session starts ==============================
+platform linux -- Python 3.10.22, pytest-9.2.0, pluggy-1.7.0 -- /home/computer_world/ralph/.venv/bin/python
+rootdir: /home/computer_world/ralph/tests/team/e2e
+configfile: pytest.ini
+testpaths: .
+plugins: playwright-0.10.0
+collecting ... collected 20 items
+
+test_access_matrix.py::test_s1_manager_can_open_add_licence[chromium] PASSED [  5%]
+test_access_matrix.py::test_s2_clerk_cannot_open_add_licence[chromium] PASSED [ 10%]
+test_access_matrix.py::test_s3_clerk_sees_only_own_region_licences[chromium] PASSED [ 15%]
+test_access_matrix.py::test_s4_clerk_cannot_open_other_region_licence[chromium] PASSED [ 20%]
+test_access_matrix.py::test_s5_manager_can_open_release_transition[chromium] PASSED [ 25%]
+test_access_matrix.py::test_s6_clerk_cannot_open_release_transition[chromium] PASSED [ 30%]
+test_access_matrix.py::test_s7_anonymous_api_is_rejected[chromium] PASSED [ 35%]
+test_access_matrix.py::test_s8_clerk_cannot_create_licence_via_api[chromium] PASSED [ 40%]
+test_uc3_uc4.py::test_uc3_main_release_new_asset_with_user_and_licence[chromium] PASSED [ 45%]
+test_uc3_uc4.py::test_uc3_a1_release_from_free_state[chromium] PASSED    [ 50%]
+test_uc3_uc4.py::test_uc3_a2_release_without_licence[chromium] PASSED    [ 55%]
+test_uc3_uc4.py::test_uc3_e1_release_not_offered_in_disallowed_state[chromium-liquidated] PASSED [ 60%]
+test_uc3_uc4.py::test_uc3_e1_release_not_offered_in_disallowed_state[chromium-in use] PASSED [ 65%]
+test_uc3_uc4.py::test_uc3_e1b_user_is_required[chromium] PASSED          [ 70%]
+test_uc3_uc4.py::test_uc3_e2_full_licence_is_refused[chromium] XFAIL     [ 75%]
+test_uc3_uc4.py::test_uc4_main_return_frees_asset_and_seat[chromium] PASSED [ 80%]
+test_uc3_uc4.py::test_uc4_a1_return_with_two_licences_releases_both[chromium] PASSED [ 85%]
+test_uc3_uc4.py::test_uc4_a2_return_then_release_to_another_user[chromium] PASSED [ 90%]
+test_uc3_uc4.py::test_uc4_e1_clerk_cannot_run_return[chromium] PASSED    [ 95%]
+test_uc3_uc4.py::test_uc4_e2_return_not_offered_when_already_free[chromium] PASSED [100%]
+
+=========================== short test summary info ============================
+XFAIL test_uc3_uc4.py::test_uc3_e2_full_licence_is_refused[chromium] - SQE-D03: release assigns a fully used licence
+================== 19 passed, 1 xfailed in 227.77s (0:03:47) ===================
