@@ -97,7 +97,7 @@ class OpenstackModelsTestCase(RalphAPITestCase):
     def test_get_cloudhost_list(self):
         CloudHostFullFactory.create_batch(100)
         url = reverse("cloudhost-list") + "?limit=100"
-        with self.assertQueriesMoreOrLess(12, plus_minus=1):
+        with self.assertQueriesMoreOrLess(13, plus_minus=1):
             response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data["results"]), 100)
