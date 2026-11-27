@@ -1,0 +1,15 @@
+============================= test session starts ==============================
+platform linux -- Python 3.10.22, pytest-9.2.0, pluggy-1.7.0 -- /home/mehak/ralph/.venv/bin/python
+rootdir: /home/mehak/ralph/tests/team/e2e
+configfile: pytest.ini
+testpaths: .
+plugins: playwright-0.10.0
+collecting ... collected 12 items / 7 deselected / 5 selected
+
+test_uc2_assign_licence.py::test_uc2_main_assign_one_seat_from_asset[chromium] PASSED [ 20%]
+test_uc2_assign_licence.py::test_uc2_a1_assign_two_seats[chromium] PASSED [ 40%]
+test_uc2_assign_licence.py::test_uc2_a2_assign_from_the_licence_side[chromium] PASSED [ 60%]
+test_uc2_assign_licence.py::test_uc2_e1_asset_in_other_region_is_refused[chromium] PASSED [ 80%]
+test_uc2_assign_licence.py::test_uc2_e2_not_enough_seats_is_refused[chromium] PASSED [100%]
+
+================= 5 passed, 7 deselected in 133.00s (0:02:12) ==================

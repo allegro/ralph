@@ -32,3 +32,15 @@ for m in get(f"/api/measures/component?component=sqe-ralph&metricKeys={keys}")["
 ]:
     print(f"  {m['metric']:28} {m.get('value')}")
 print("(ratings: 1=A 2=B 3=C 4=D 5=E)")
+
+# Newest code smells first: SonarQube dates each issue by the commit that last
+# changed its line, so a smell introduced by this pull request is listed on top.
+print("================ Newest code smells ================")
+issues = get(
+    "/api/issues/search?componentKeys=sqe-ralph&types=CODE_SMELL"
+    "&s=CREATION_DATE&asc=false&ps=10&resolved=false"
+)["issues"]
+for i in issues:
+    where = i["component"].split(":", 1)[-1]
+    print(f"  {i.get('creationDate', '')[:10]}  {i['rule']:24} {where}:{i.get('line', '-')}")
+    print(f"      {i['message'][:110]}")

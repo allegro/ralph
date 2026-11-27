@@ -1,0 +1,17 @@
+============================= test session starts ==============================
+platform linux -- Python 3.10.22, pytest-9.2.0, pluggy-1.7.0 -- /home/mehak/ralph/.venv/bin/python
+rootdir: /home/mehak/ralph/tests/team/e2e
+configfile: pytest.ini
+testpaths: .
+plugins: playwright-0.10.0
+collecting ... collected 7 items
+
+test_uc1_register_licence.py::test_uc1_main_register_licence[chromium] PASSED [ 14%]
+test_uc1_register_licence.py::test_uc1_a1_perpetual_licence_without_valid_thru[chromium] PASSED [ 28%]
+test_uc1_register_licence.py::test_uc1_a2_register_for_another_region[chromium] PASSED [ 42%]
+test_uc1_register_licence.py::test_uc1_e1_missing_number_bought_is_rejected[chromium] PASSED [ 57%]
+test_uc1_register_licence.py::test_uc1_e2_duplicate_inventory_number_is_rejected[chromium] PASSED [ 71%]
+test_uc1_register_licence.py::test_uc1_keyboard_reaches_every_required_field_in_order[chromium] PASSED [ 85%]
+test_uc1_register_licence.py::test_uc1_keyboard_only_registration[chromium] PASSED [100%]
+
+========================= 7 passed in 80.55s (0:01:20) =========================

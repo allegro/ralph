@@ -227,18 +227,3 @@ def _hide_overlays(context):
         });
         """
     )
-
-
-@pytest.fixture(autouse=True)
-def _hide_overlays(context):
-    """Hide the Django debug toolbar so it cannot cover buttons or suggestions."""
-    context.add_init_script(
-        """
-        document.addEventListener('DOMContentLoaded', () => {
-          const s = document.createElement('style');
-          s.textContent = '#djDebug, #djDebugToolbar, #djDebugToolbarHandle '
-                        + '{display:none !important; pointer-events:none !important;}';
-          document.head.appendChild(s);
-        });
-        """
-    )
