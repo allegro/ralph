@@ -1,0 +1,22 @@
+============================= test session starts ==============================
+platform linux -- Python 3.10.22, pytest-9.2.0, pluggy-1.7.0 -- /home/mehak/ralph/.venv/bin/python
+rootdir: /home/mehak/ralph/tests/team/e2e
+configfile: pytest.ini
+testpaths: .
+plugins: playwright-0.10.0
+collecting ... collected 15 items / 3 deselected / 12 selected
+
+test_uc1_register_licence.py::test_uc1_main_register_licence[chromium] PASSED [  8%]
+test_uc1_register_licence.py::test_uc1_a1_perpetual_licence_without_valid_thru[chromium] PASSED [ 16%]
+test_uc1_register_licence.py::test_uc1_a2_register_for_another_region[chromium] PASSED [ 25%]
+test_uc1_register_licence.py::test_uc1_e1_missing_number_bought_is_rejected[chromium] PASSED [ 33%]
+test_uc1_register_licence.py::test_uc1_e2_duplicate_inventory_number_is_rejected[chromium] PASSED [ 41%]
+test_uc1_register_licence.py::test_uc1_keyboard_reaches_every_required_field_in_order[chromium] PASSED [ 50%]
+test_uc1_register_licence.py::test_uc1_keyboard_only_registration[chromium] PASSED [ 58%]
+test_uc2_assign_licence.py::test_uc2_main_assign_one_seat_from_asset[chromium] PASSED [ 66%]
+test_uc2_assign_licence.py::test_uc2_a1_assign_two_seats[chromium] PASSED [ 75%]
+test_uc2_assign_licence.py::test_uc2_a2_assign_from_the_licence_side[chromium] PASSED [ 83%]
+test_uc2_assign_licence.py::test_uc2_e1_asset_in_other_region_is_refused[chromium] PASSED [ 91%]
+test_uc2_assign_licence.py::test_uc2_e2_not_enough_seats_is_refused[chromium] PASSED [100%]
+
+================= 12 passed, 3 deselected in 152.18s (0:02:32) =================
