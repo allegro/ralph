@@ -1,0 +1,12 @@
+# Business-logic scope for the two licence workflows (see report section 3).
+[run]
+branch = True
+include =
+    */ralph/licences/models.py
+    */ralph/licences/api.py
+    */ralph/back_office/models.py
+    */ralph/lib/transitions/models.py
+
+[report]
+show_missing = True
+skip_covered = False

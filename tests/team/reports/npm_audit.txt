@@ -1,0 +1,168 @@
+# npm audit report
+
+baseline-browser-mapping  >=2.0.0 <2.11.0
+Severity: moderate
+baseline-browser-mapping process termination on invalid input causes denial of service - https://github.com/advisories/GHSA-w5vr-8v7q-w6rv
+fix available via `npm audit fix`
+node_modules/baseline-browser-mapping
+
+brace-expansion  <=1.1.20
+Severity: high
+brace-expansion: DoS via exponential-time expansion of consecutive non-expanding {} groups - https://github.com/advisories/GHSA-3jxr-9vmj-r5cp
+brace-expansion: DoS via unbounded expansion length causing an out-of-memory process crash - https://github.com/advisories/GHSA-mh99-v99m-4gvg
+brace-expansion: DoS via unbounded intermediate arrays, bypassing the CVE-2026-14257 mitigation - https://github.com/advisories/GHSA-rgw5-rvv9-x895
+brace-expansion: Quadratic-time expansion of the `{a},b}` rewrite causes CPU denial of service - https://github.com/advisories/GHSA-q2hr-2g5m-vwhr
+brace-expansion: DoS via uncontrolled recursion on nested brace groups causing stack exhaustion - https://github.com/advisories/GHSA-qhr7-859c-m2p7
+brace-expansion: DoS via uncontrolled recursion in parseCommaParts causing stack exhaustion - https://github.com/advisories/GHSA-6j4f-fj2g-mc7p
+fix available via `npm audit fix`
+node_modules/brace-expansion
+
+braces  <3.0.3
+Severity: high
+Uncontrolled resource consumption in braces - https://github.com/advisories/GHSA-grv7-fg5c-xmjg
+fix available via `npm audit fix --force`
+Will install gulp-watch@4.2.4, which is a breaking change
+node_modules/braces
+node_modules/gulp-watch/node_modules/braces
+  chokidar  1.3.0 - 2.1.8
+  Depends on vulnerable versions of anymatch
+  Depends on vulnerable versions of braces
+  Depends on vulnerable versions of readdirp
+  node_modules/chokidar
+    glob-watcher  5.0.0 - 5.0.5
+    Depends on vulnerable versions of anymatch
+    Depends on vulnerable versions of chokidar
+    node_modules/glob-watcher
+      gulp  4.0.0 - 4.0.2
+      Depends on vulnerable versions of glob-watcher
+      Depends on vulnerable versions of gulp-cli
+      node_modules/gulp
+    gulp-watch  >=4.2.5
+    Depends on vulnerable versions of anymatch
+    Depends on vulnerable versions of chokidar
+    node_modules/gulp-watch
+  micromatch  <=4.0.7
+  Depends on vulnerable versions of braces
+  node_modules/anymatch/node_modules/micromatch
+  node_modules/findup-sync/node_modules/micromatch
+  node_modules/gulp-watch/node_modules/micromatch
+  node_modules/matchdep/node_modules/micromatch
+  node_modules/readdirp/node_modules/micromatch
+    anymatch  1.2.0 - 2.0.0
+    Depends on vulnerable versions of micromatch
+    node_modules/anymatch
+    node_modules/gulp-watch/node_modules/anymatch
+    findup-sync  0.4.0 - 3.0.0
+    Depends on vulnerable versions of micromatch
+    node_modules/findup-sync
+    node_modules/matchdep/node_modules/findup-sync
+      liftoff  2.2.3 - 3.1.0
+      Depends on vulnerable versions of findup-sync
+      node_modules/liftoff
+        gulp-cli  1.3.0 - 2.3.0
+        Depends on vulnerable versions of liftoff
+        Depends on vulnerable versions of matchdep
+        node_modules/gulp-cli
+      matchdep  >=1.0.1
+      Depends on vulnerable versions of findup-sync
+      Depends on vulnerable versions of micromatch
+      node_modules/matchdep
+    readdirp  2.2.0 - 2.2.1
+    Depends on vulnerable versions of micromatch
+    node_modules/readdirp
+
+browserslist  <=4.28.6
+Severity: high
+Browserslist: Unbounded memory growth (no cache eviction) via distinct query results, leading to eventual OOM - https://github.com/advisories/GHSA-c83g-rgw3-j3cx
+Browserslist: Uncaught crash / prototype write via untrusted browserslist-stats.json custom stats (normalizeStats) - https://github.com/advisories/GHSA-73wf-gq98-2v4g
+fix available via `npm audit fix`
+node_modules/browserslist
+
+decode-uri-component  <=0.5.0
+Severity: high
+decode-uri-component: Denial of service via exponential decoding of malformed percent-encoded input - https://github.com/advisories/GHSA-vcc3-ghjq-m6fr
+decode-uri-component vulnerable to denial of service via quadratic replacement of percent-encoded runs - https://github.com/advisories/GHSA-qr28-fpjm-wq7f
+fix available via `npm audit fix --force`
+Will install gulp-sourcemaps@2.6.5, which is a breaking change
+node_modules/decode-uri-component
+  source-map-resolve  >=0.5.1
+  Depends on vulnerable versions of decode-uri-component
+  node_modules/snapdragon/node_modules/source-map-resolve
+  node_modules/source-map-resolve
+    css  >=2.2.2
+    Depends on vulnerable versions of source-map-resolve
+    node_modules/css
+      gulp-sourcemaps  >=3.0.0
+      Depends on vulnerable versions of @gulp-sourcemaps/identity-map
+      Depends on vulnerable versions of css
+      node_modules/gulp-sourcemaps
+
+lodash  <=4.17.23
+Severity: critical
+Prototype Pollution in lodash - https://github.com/advisories/GHSA-fvqr-27wr-82fm
+Command Injection in lodash - https://github.com/advisories/GHSA-35jh-r3h4-6jhm
+Prototype Pollution in lodash - https://github.com/advisories/GHSA-4xc9-xhrj-v574
+Prototype Pollution in lodash - https://github.com/advisories/GHSA-jf85-cpcp-j695
+Prototype Pollution in lodash - https://github.com/advisories/GHSA-p6mc-m468-83gw
+lodash vulnerable to Code Injection via `_.template` imports key names - https://github.com/advisories/GHSA-r5fr-rjxr-66jc
+lodash vulnerable to prototype pollution via array-path bypass in `_.unset`, `_.omit`, and `_.pullAt - https://github.com/advisories/GHSA-f23m-r3pf-42rh
+fix available via `npm audit fix --force`
+Will install jshint@0.5.9, which is a breaking change
+node_modules/jshint/node_modules/lodash
+node_modules/lodash
+  inquirer  <=0.11.4
+  Depends on vulnerable versions of lodash
+  node_modules/inquirer
+    gulp-bower  >=0.0.13
+    Depends on vulnerable versions of inquirer
+    node_modules/gulp-bower
+  jshint  0.5.0 || >=0.6.0
+  Depends on vulnerable versions of lodash
+  Depends on vulnerable versions of minimatch
+  node_modules/jshint
+
+
+minimatch  <=3.1.3
+Severity: high
+minimatch has a ReDoS via repeated wildcards with non-matching literal in pattern - https://github.com/advisories/GHSA-3ppc-4f35-3m26
+minimatch has ReDoS: matchOne() combinatorial backtracking via multiple non-adjacent GLOBSTAR segments - https://github.com/advisories/GHSA-7r86-cg39-jmmj
+minimatch ReDoS: nested *() extglobs generate catastrophically backtracking regular expressions - https://github.com/advisories/GHSA-23c5-xmqv-rm74
+fix available via `npm audit fix --force`
+Will install jshint@0.5.9, which is a breaking change
+node_modules/minimatch
+
+nanoid  <=3.3.17
+Severity: high
+nanoid: non-secure generators can loop indefinitely with negative size - https://github.com/advisories/GHSA-28wg-ghj8-5hjv
+nanoid: custom generators can loop indefinitely when size is zero - https://github.com/advisories/GHSA-2v37-7h3g-55p8
+fix available via `npm audit fix`
+node_modules/nanoid
+
+postcss  <=8.5.22
+Severity: high
+PostCSS line return parsing error - https://github.com/advisories/GHSA-7fh5-64p2-3v2j
+PostCSS has XSS via Unescaped </style> in its CSS Stringify Output - https://github.com/advisories/GHSA-qx2v-qp2m-jg93
+PostCSS: Arbitrary file read and information disclosure via attacker-controlled sourceMappingURL in CSS comments - https://github.com/advisories/GHSA-6g55-p6wh-862q
+PostCSS: incomplete fix of GHSA-6g55-p6wh-862q — attacker-controlled sourceMappingURL reads arbitrary .map files when `from` is unset - https://github.com/advisories/GHSA-fxqj-rqcc-2cmp
+PostCSS: Path Traversal in Previous Source Map Auto-Loading (sourceMappingURL) leads to Arbitrary .map File Disclosure - https://github.com/advisories/GHSA-r28c-9q8g-f849
+fix available via `npm audit fix --force`
+Will install gulp-sourcemaps@2.6.5, which is a breaking change
+node_modules/@gulp-sourcemaps/identity-map/node_modules/postcss
+node_modules/postcss
+  @gulp-sourcemaps/identity-map  >=2.0.0
+  Depends on vulnerable versions of postcss
+  node_modules/@gulp-sourcemaps/identity-map
+
+source-map-js  1.0.0 - 1.2.1
+Severity: high
+source-map-js allows event-loop denial of service through indexed source-map section offsets - https://github.com/advisories/GHSA-68fv-2mgg-jv7q
+fix available via `npm audit fix`
+node_modules/source-map-js
+
+28 vulnerabilities (11 moderate, 16 high, 1 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
