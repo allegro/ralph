@@ -1,0 +1,1261 @@
+[
+  {
+    "id": "color-contrast",
+    "impact": "serious",
+    "tags": [
+      "cat.color",
+      "wcag2aa",
+      "wcag143",
+      "TTv5",
+      "TT13.c",
+      "EN-301-549",
+      "EN-9.1.4.3",
+      "ACT",
+      "RGAAv4",
+      "RGAA-3.2.1"
+    ],
+    "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+    "help": "Elements must meet minimum color contrast ratio thresholds",
+    "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+    "nodes": [
+      {
+        "any": [
+          {
+            "id": "color-contrast",
+            "data": {
+              "fgColor": "#ffffff",
+              "bgColor": "#43a047",
+              "contrastRatio": 3.3,
+              "fontSize": "9.0pt (12px)",
+              "fontWeight": "normal",
+              "messageKey": null,
+              "expectedContrastRatio": "4.5:1",
+              "shadowColor": null,
+              "colorParse": null
+            },
+            "relatedNodes": [
+              {
+                "html": "<input type=\"submit\" value=\"Save\" name=\"_continue\" class=\"button small success\" autocomplete=\"off\">",
+                "target": [
+                  ".small"
+                ]
+              }
+            ],
+            "impact": "serious",
+            "message": "Element has insufficient color contrast of 3.3 (foreground color: #ffffff, background color: #43a047, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "serious",
+        "html": "<input type=\"submit\" value=\"Save\" name=\"_continue\" class=\"button small success\" autocomplete=\"off\">",
+        "target": [
+          ".small"
+        ],
+        "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.3 (foreground color: #ffffff, background color: #43a047, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+      }
+    ]
+  },
+  {
+    "id": "landmark-one-main",
+    "impact": "moderate",
+    "tags": [
+      "cat.semantics",
+      "best-practice"
+    ],
+    "description": "Ensure the document has a main landmark",
+    "help": "Document should have one main landmark",
+    "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/landmark-one-main?application=axeAPI",
+    "nodes": [
+      {
+        "any": [],
+        "all": [
+          {
+            "id": "page-has-main",
+            "data": null,
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Document does not have a main landmark"
+          }
+        ],
+        "none": [],
+        "impact": "moderate",
+        "html": "<html lang=\"en\" class=\" js flexbox flexboxl...\" style=\"\">",
+        "target": [
+          "html"
+        ],
+        "failureSummary": "Fix all of the following:\n  Document does not have a main landmark"
+      }
+    ]
+  },
+  {
+    "id": "region",
+    "impact": "moderate",
+    "tags": [
+      "cat.keyboard",
+      "best-practice",
+      "RGAAv4",
+      "RGAA-9.2.1"
+    ],
+    "description": "Ensure all page content is contained by landmarks",
+    "help": "All page content should be contained by landmarks",
+    "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/region?application=axeAPI",
+    "nodes": [
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div class=\"row header\">",
+        "target": [
+          ".header"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<legend>Basic info</legend>",
+        "target": [
+          ".medium-6.large-6.small-12:nth-child(1) > fieldset > legend"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div class=\"small-3 columns\">\n      \n        <label class=\"required\" for=\"id_licence_type\">Licence type:</label>\n\n      \n    </div>",
+        "target": [
+          ".medium-6.large-6.small-12:nth-child(1) > fieldset > .field-row.large-12.columns:nth-child(2) > .row > .small-3.columns"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<select name=\"licence_type\" required=\"\" id=\"id_licence_type\">\n  <option value=\"\" selected=\"\">---------</option>\n\n  <option value=\"1\">per user</option>\n\n</select>",
+        "target": [
+          "#id_licence_type"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<span class=\"show-for-sr\">Should be like 'per processor' or 'per machine' and so on. </span>",
+        "target": [
+          ".field-row.large-12.columns:nth-child(2) > .row > .small-9.end.columns > .help-text > .show-for-sr"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div class=\"small-3 columns\">\n      \n        <label for=\"id_manufacturer\">Manufacturer:</label>\n\n      \n    </div>",
+        "target": [
+          ".medium-6.large-6.small-12:nth-child(1) > fieldset > .field-row.large-12.columns:nth-child(3) > .row > .small-3.columns"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div id=\"input-wrapper\" class=\"style-scope badge-input\">\n        <input id=\"text-getter\" is=\"iron-input\" autocomplete=\"off\" class=\"style-scope badge-input\" aria-label=\"Manufacturer\">\n      </div>",
+        "target": [
+          "#id_manufacturer > .horizontal-layout.auto-complete.style-scope > badge-input > .badge-input.style-scope:nth-child(1) > .badge-input.style-scope:nth-child(2)"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<a class=\"style-scope auto-complete\" id=\"lookup_id_manufacturer\" href=\"/assets/manufacturer/?_to_field=id\" aria-label=\"Browse Manufacturer\">\n          <i class=\"fa fa-search style-scope auto-complete\" aria-hidden=\"true\"></i>\n        </a>",
+        "target": [
+          "#lookup_id_manufacturer"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<span class=\"show-for-sr style-scope tool-tip\">Search by:\nManufacturer:\n- name\n</span>",
+        "target": [
+          "#id_manufacturer > .horizontal-layout.auto-complete.style-scope > .auto-complete.style-scope:nth-child(2) > tool-tip > .show-for-sr.tool-tip.style-scope"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div class=\"small-3 columns\">\n      \n        <label class=\"required\" for=\"id_software\">Software:</label>\n\n      \n    </div>",
+        "target": [
+          ".medium-6.large-6.small-12:nth-child(1) > fieldset > .field-row.large-12.columns:nth-child(4) > .row > .small-3.columns"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div id=\"input-wrapper\" class=\"style-scope badge-input\">\n        <input id=\"text-getter\" is=\"iron-input\" autocomplete=\"off\" class=\"style-scope badge-input\" aria-label=\"Software\">\n      </div>",
+        "target": [
+          "#id_software > .horizontal-layout.auto-complete.style-scope > badge-input > .badge-input.style-scope:nth-child(1) > .badge-input.style-scope:nth-child(2)"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<a class=\"style-scope auto-complete\" id=\"lookup_id_software\" href=\"/licences/software/?_to_field=id\" aria-label=\"Browse Software\">\n          <i class=\"fa fa-search style-scope auto-complete\" aria-hidden=\"true\"></i>\n        </a>",
+        "target": [
+          "#lookup_id_software"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<a class=\"style-scope auto-complete\" id=\"add_id_software\" href=\"/licences/software/add/\" aria-label=\"Add new Software\">\n          <i class=\"fa fa-plus-circle style-scope auto-complete\" aria-hidden=\"true\"></i>\n        </a>",
+        "target": [
+          "#add_id_software"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<span class=\"show-for-sr style-scope tool-tip\">Search by:\nSoftware:\n- name\n</span>",
+        "target": [
+          "#id_software > .horizontal-layout.auto-complete.style-scope > .auto-complete.style-scope:nth-child(2) > tool-tip > .show-for-sr.tool-tip.style-scope"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div class=\"field-row large-12 columns\">",
+        "target": [
+          ".medium-6.large-6.small-12:nth-child(1) > fieldset > .field-row.large-12.columns:nth-child(5)"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div class=\"field-row large-12 columns\">",
+        "target": [
+          ".medium-6.large-6.small-12:nth-child(1) > fieldset > .field-row.large-12.columns:nth-child(6)"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div class=\"small-3 columns\">\n      \n        <label for=\"id_valid_thru\">Valid thru:</label>\n\n      \n    </div>",
+        "target": [
+          ".medium-6.large-6.small-12:nth-child(1) > fieldset > .field-row.large-12.columns:nth-child(7) > .row > .small-3.columns"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<input type=\"text\" name=\"valid_thru\" id=\"id_valid_thru\" class=\"datepicker\" autocomplete=\"off\">",
+        "target": [
+          "#id_valid_thru"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<span class=\"show-for-sr\">Leave blank if this licence is perpetual</span>",
+        "target": [
+          ".field-row.large-12.columns:nth-child(7) > .row > .small-9.end.columns > .help-text > .show-for-sr"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div class=\"field-row large-12 columns\">",
+        "target": [
+          ".medium-6.large-6.small-12:nth-child(1) > fieldset > .field-row.large-12.columns:nth-child(8)"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div class=\"field-row large-12 columns\">",
+        "target": [
+          ".medium-6.large-6.small-12:nth-child(1) > fieldset > .field-row.large-12.columns:nth-child(9)"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div class=\"field-row large-12 columns\">",
+        "target": [
+          ".medium-6.large-6.small-12:nth-child(1) > fieldset > .field-row.large-12.columns:nth-child(10)"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div class=\"small-3 columns\">\n      \n        <label for=\"id_service_env\">Service env:</label>\n\n      \n    </div>",
+        "target": [
+          ".medium-6.large-6.small-12:nth-child(1) > fieldset > .field-row.large-12.columns:nth-child(11) > .row > .small-3.columns"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div id=\"input-wrapper\" class=\"style-scope badge-input\">\n        <input id=\"text-getter\" is=\"iron-input\" autocomplete=\"off\" class=\"style-scope badge-input\" aria-label=\"Service env\">\n      </div>",
+        "target": [
+          "#id_service_env > .horizontal-layout.auto-complete.style-scope > badge-input > .badge-input.style-scope:nth-child(1) > .badge-input.style-scope:nth-child(2)"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<a class=\"style-scope auto-complete\" id=\"lookup_id_service_env\" href=\"/assets/serviceenvironment/?_to_field=baseobject_ptr\" aria-label=\"Browse Service env\">\n          <i class=\"fa fa-search style-scope auto-complete\" aria-hidden=\"true\"></i>\n        </a>",
+        "target": [
+          "#lookup_id_service_env"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<span class=\"show-for-sr style-scope tool-tip\">Search by:\nService environment:\n- name\n- name\n</span>",
+        "target": [
+          "#id_service_env > .horizontal-layout.auto-complete.style-scope > .auto-complete.style-scope:nth-child(2) > tool-tip > .show-for-sr.tool-tip.style-scope"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<legend>Financial info</legend>",
+        "target": [
+          ".medium-6.large-6.small-12:nth-child(2) > fieldset > legend"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div class=\"field-row large-12 columns\">",
+        "target": [
+          ".medium-6.large-6.small-12:nth-child(2) > fieldset > .field-row.large-12.columns:nth-child(2)"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div class=\"field-row large-12 columns\">",
+        "target": [
+          ".medium-6.large-6.small-12:nth-child(2) > fieldset > .field-row.large-12.columns:nth-child(3)"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div class=\"field-row large-12 columns\">",
+        "target": [
+          ".medium-6.large-6.small-12:nth-child(2) > fieldset > .field-row.large-12.columns:nth-child(4)"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div class=\"small-3 columns\">\n      \n        <label for=\"id_depreciation_rate\">Depreciation rate:</label>\n\n      \n    </div>",
+        "target": [
+          ".medium-6.large-6.small-12:nth-child(2) > fieldset > .field-row.large-12.columns:nth-child(5) > .row > .small-3.columns"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<input type=\"number\" name=\"depreciation_rate\" value=\"50\" step=\"0.01\" id=\"id_depreciation_rate\" autocomplete=\"off\">",
+        "target": [
+          "#id_depreciation_rate"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<span class=\"show-for-sr\">This value is in percentage. For example value: \"100\" means it depreciates during a year. Value: \"25\" means it depreciates during 4 years, and so on... .</span>",
+        "target": [
+          ".field-row.large-12.columns:nth-child(5) > .row > .small-9.end.columns > .help-text > .show-for-sr"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div class=\"field-row large-12 columns\">",
+        "target": [
+          ".medium-6.large-6.small-12:nth-child(2) > fieldset > .field-row.large-12.columns:nth-child(6)"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div class=\"field-row large-12 columns\">",
+        "target": [
+          ".medium-6.large-6.small-12:nth-child(2) > fieldset > .field-row.large-12.columns:nth-child(7)"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div class=\"field-row large-12 columns\">",
+        "target": [
+          ".medium-6.large-6.small-12:nth-child(2) > fieldset > .field-row.large-12.columns:nth-child(8)"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div class=\"field-row large-12 columns\">",
+        "target": [
+          ".medium-6.large-6.small-12:nth-child(2) > fieldset > .field-row.large-12.columns:nth-child(9)"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div class=\"small-3 columns\">\n      \n        <label for=\"id_accounting_id\">Accounting id:</label>\n\n      \n    </div>",
+        "target": [
+          ".medium-6.large-6.small-12:nth-child(2) > fieldset > .field-row.large-12.columns:nth-child(10) > .row > .small-3.columns"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<input type=\"text\" name=\"accounting_id\" class=\"vTextField\" maxlength=\"200\" id=\"id_accounting_id\" autocomplete=\"off\">",
+        "target": [
+          "#id_accounting_id"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<span class=\"show-for-sr\">Any value to help your accounting department identify this licence</span>",
+        "target": [
+          ".field-row.large-12.columns:nth-child(10) > .row > .small-9.end.columns > .help-text > .show-for-sr"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div class=\"small-3 columns\">\n      \n        <label for=\"id_start_usage\">Start usage:</label>\n\n      \n    </div>",
+        "target": [
+          ".medium-6.large-6.small-12:nth-child(2) > fieldset > .field-row.large-12.columns:nth-child(11) > .row > .small-3.columns"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<input type=\"text\" name=\"start_usage\" id=\"id_start_usage\" class=\"datepicker\" autocomplete=\"off\">",
+        "target": [
+          "#id_start_usage"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<span class=\"show-for-sr\">Fill it if date of first usage is different then date of creation</span>",
+        "target": [
+          ".field-row.large-12.columns:nth-child(11) > .row > .small-9.end.columns > .help-text > .show-for-sr"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div class=\"small-3 columns\">\n      \n        <label for=\"id_budget_info\">Budget info:</label>\n\n      \n    </div>",
+        "target": [
+          ".field-row.large-12.columns:nth-child(12) > .row > .small-3.columns"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div id=\"input-wrapper\" class=\"style-scope badge-input\">\n        <input id=\"text-getter\" is=\"iron-input\" autocomplete=\"off\" class=\"style-scope badge-input\" aria-label=\"Budget info\">\n      </div>",
+        "target": [
+          "#id_budget_info > .horizontal-layout.auto-complete.style-scope > badge-input > .badge-input.style-scope:nth-child(1) > .badge-input.style-scope:nth-child(2)"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<a class=\"style-scope auto-complete\" id=\"lookup_id_budget_info\" href=\"/assets/budgetinfo/?_to_field=id\" aria-label=\"Browse Budget info\">\n          <i class=\"fa fa-search style-scope auto-complete\" aria-hidden=\"true\"></i>\n        </a>",
+        "target": [
+          "#lookup_id_budget_info"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<span class=\"show-for-sr style-scope tool-tip\">Search by:\nBudget info:\n- name\n</span>",
+        "target": [
+          "#id_budget_info > .horizontal-layout.auto-complete.style-scope > .auto-complete.style-scope:nth-child(2) > tool-tip > .show-for-sr.tool-tip.style-scope"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div class=\"field-row large-12 columns\">",
+        "target": [
+          ".field-row.large-12.columns:nth-child(13)"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div class=\"small-3 columns\">\n      \n        <label for=\"id_office_infrastructure\">Office infrastructure:</label>\n\n      \n    </div>",
+        "target": [
+          ".field-row.large-12.columns:nth-child(14) > .row > .small-3.columns"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div id=\"input-wrapper\" class=\"style-scope badge-input\">\n        <input id=\"text-getter\" is=\"iron-input\" autocomplete=\"off\" class=\"style-scope badge-input\" aria-label=\"Office infrastructure\">\n      </div>",
+        "target": [
+          "#id_office_infrastructure > .horizontal-layout.auto-complete.style-scope > badge-input > .badge-input.style-scope:nth-child(1) > .badge-input.style-scope:nth-child(2)"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<a class=\"style-scope auto-complete\" id=\"lookup_id_office_infrastructure\" href=\"/back_office/officeinfrastructure/?_to_field=id\" aria-label=\"Browse Office infrastructure\">\n          <i class=\"fa fa-search style-scope auto-complete\" aria-hidden=\"true\"></i>\n        </a>",
+        "target": [
+          "#lookup_id_office_infrastructure"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<a class=\"style-scope auto-complete\" id=\"add_id_office_infrastructure\" href=\"/back_office/officeinfrastructure/add/\" aria-label=\"Add new Office infrastructure\">\n          <i class=\"fa fa-plus-circle style-scope auto-complete\" aria-hidden=\"true\"></i>\n        </a>",
+        "target": [
+          "#add_id_office_infrastructure"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<span class=\"show-for-sr style-scope tool-tip\">Search by:\nOffice infrastructure:\n- name\n</span>",
+        "target": [
+          "#id_office_infrastructure > .horizontal-layout.auto-complete.style-scope > .auto-complete.style-scope:nth-child(2) > tool-tip > .show-for-sr.tool-tip.style-scope"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div class=\"small-3 columns\">\n      \n        <label for=\"id_property_of\">Property of:</label>\n\n      \n    </div>",
+        "target": [
+          ".field-row.large-12.columns:nth-child(15) > .row > .small-3.columns"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<select name=\"property_of\" id=\"id_property_of\">\n  <option value=\"\" selected=\"\">---------</option>\n\n  <option value=\"1\">SQE Holding</option>\n\n</select>",
+        "target": [
+          "#id_property_of"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      }
+    ]
+  }
+]

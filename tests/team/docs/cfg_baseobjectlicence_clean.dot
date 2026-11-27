@@ -1,0 +1,15 @@
+digraph CFG {
+  rankdir=TB; node [fontname="Helvetica", fontsize=11, shape=box, style="rounded"];
+  edge [fontname="Helvetica", fontsize=10];
+  n1 [label="N1  bo_asset = getattr_dunder(\nself.base_object, 'asset__backofficeasset')"];
+  n2 [label="N2  A: bo_asset ?", shape=diamond, style=""];
+  n3 [label="N3  B: self.licence ?", shape=diamond, style=""];
+  n4 [label="N4  C: licence.region_id\n!= bo_asset.region_id ?", shape=diamond, style=""];
+  n5 [label="N5  raise ValidationError(\n'Asset region is in a different region')"];
+  n6 [label="N6  exit", shape=ellipse];
+  n1 -> n2;
+  n2 -> n3 [label="T"]; n2 -> n6 [label="F"];
+  n3 -> n4 [label="T"]; n3 -> n6 [label="F"];
+  n4 -> n5 [label="T"]; n4 -> n6 [label="F"];
+  n5 -> n6;
+}
