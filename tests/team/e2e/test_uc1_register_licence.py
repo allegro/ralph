@@ -155,6 +155,8 @@ def test_uc1_keyboard_only_registration(page, data):
     niw = new_niw()
     login(page, "manager")
     page.goto(ADD_URL)
+    page.wait_for_load_state("networkidle")
+    page.locator("auto-complete#id_software input#text-getter").wait_for(state="visible")
     page.focus("#id_licence_type")
     page.keyboard.press("ArrowDown")  # -> "per user"
     # move to the Software search box with Tab

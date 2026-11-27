@@ -1,0 +1,740 @@
+[
+  {
+    "id": "color-contrast",
+    "impact": "serious",
+    "tags": [
+      "cat.color",
+      "wcag2aa",
+      "wcag143",
+      "TTv5",
+      "TT13.c",
+      "EN-301-549",
+      "EN-9.1.4.3",
+      "ACT",
+      "RGAAv4",
+      "RGAA-3.2.1"
+    ],
+    "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+    "help": "Elements must meet minimum color contrast ratio thresholds",
+    "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/color-contrast?application=axeAPI",
+    "nodes": [
+      {
+        "any": [
+          {
+            "id": "color-contrast",
+            "data": {
+              "fgColor": "#1e88e5",
+              "bgColor": "#fafafa",
+              "contrastRatio": 3.52,
+              "fontSize": "9.8pt (13px)",
+              "fontWeight": "normal",
+              "messageKey": null,
+              "expectedContrastRatio": "4.5:1",
+              "shadowColor": null,
+              "colorParse": null
+            },
+            "relatedNodes": [
+              {
+                "html": "<a href=\"/licences/licence/1/change/\" title=\"Basic info\" class=\"ellipsis-hidden\">\n          <i class=\"fa fa-info\" aria-hidden=\"true\"></i> <span class=\"tab-label\">Basic info</span>\n        </a>",
+                "target": [
+                  "li[aria-describedby=\"tooltip-mwysxjsc0\"] > a[href$=\"change/\"]"
+                ]
+              }
+            ],
+            "impact": "serious",
+            "message": "Element has insufficient color contrast of 3.52 (foreground color: #1e88e5, background color: #fafafa, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "serious",
+        "html": "<span class=\"tab-label\">Basic info</span>",
+        "target": [
+          "a[href$=\"change/\"] > .tab-label"
+        ],
+        "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.52 (foreground color: #1e88e5, background color: #fafafa, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+      },
+      {
+        "any": [
+          {
+            "id": "color-contrast",
+            "data": {
+              "fgColor": "#1e88e5",
+              "bgColor": "#fafafa",
+              "contrastRatio": 3.52,
+              "fontSize": "9.8pt (13px)",
+              "fontWeight": "normal",
+              "messageKey": null,
+              "expectedContrastRatio": "4.5:1",
+              "shadowColor": null,
+              "colorParse": null
+            },
+            "relatedNodes": [
+              {
+                "html": "<a href=\"\n            \n              /licences/licence/1/assignments/\n            \n            \" title=\"Assignments\" class=\"ellipsis-hidden\">",
+                "target": [
+                  "a[title=\"Assignments\"]"
+                ]
+              }
+            ],
+            "impact": "serious",
+            "message": "Element has insufficient color contrast of 3.52 (foreground color: #1e88e5, background color: #fafafa, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "serious",
+        "html": "<span class=\"tab-label\">Assignments</span>",
+        "target": [
+          "a[title=\"Assignments\"] > .tab-label"
+        ],
+        "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.52 (foreground color: #1e88e5, background color: #fafafa, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+      },
+      {
+        "any": [
+          {
+            "id": "color-contrast",
+            "data": {
+              "fgColor": "#1e88e5",
+              "bgColor": "#fafafa",
+              "contrastRatio": 3.52,
+              "fontSize": "9.8pt (13px)",
+              "fontWeight": "normal",
+              "messageKey": null,
+              "expectedContrastRatio": "4.5:1",
+              "shadowColor": null,
+              "colorParse": null
+            },
+            "relatedNodes": [
+              {
+                "html": "<a href=\"\n            \n              /licences/licence/1/assigned-to-users/\n            \n            \" title=\"Assigned to users\" class=\"ellipsis-hidden\">",
+                "target": [
+                  "a[title=\"Assigned to users\"]"
+                ]
+              }
+            ],
+            "impact": "serious",
+            "message": "Element has insufficient color contrast of 3.52 (foreground color: #1e88e5, background color: #fafafa, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "serious",
+        "html": "<span class=\"tab-label\">Assigned to users</span>",
+        "target": [
+          "a[title=\"Assigned to users\"] > .tab-label"
+        ],
+        "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.52 (foreground color: #1e88e5, background color: #fafafa, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+      },
+      {
+        "any": [
+          {
+            "id": "color-contrast",
+            "data": {
+              "fgColor": "#1e88e5",
+              "bgColor": "#fafafa",
+              "contrastRatio": 3.52,
+              "fontSize": "9.8pt (13px)",
+              "fontWeight": "normal",
+              "messageKey": null,
+              "expectedContrastRatio": "4.5:1",
+              "shadowColor": null,
+              "colorParse": null
+            },
+            "relatedNodes": [
+              {
+                "html": "<a href=\"\n            \n              /licences/licence/1/attachment/\n            \n            \" title=\"Attachments\" class=\"ellipsis-hidden\">",
+                "target": [
+                  "a[title=\"Attachments\"]"
+                ]
+              }
+            ],
+            "impact": "serious",
+            "message": "Element has insufficient color contrast of 3.52 (foreground color: #1e88e5, background color: #fafafa, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "serious",
+        "html": "<span class=\"tab-label\">Attachments</span>",
+        "target": [
+          "a[title=\"Attachments\"] > .tab-label"
+        ],
+        "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.52 (foreground color: #1e88e5, background color: #fafafa, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+      },
+      {
+        "any": [
+          {
+            "id": "color-contrast",
+            "data": {
+              "fgColor": "#1e88e5",
+              "bgColor": "#ffffff",
+              "contrastRatio": 3.67,
+              "fontSize": "9.0pt (12px)",
+              "fontWeight": "normal",
+              "messageKey": null,
+              "expectedContrastRatio": "4.5:1",
+              "shadowColor": null,
+              "colorParse": null
+            },
+            "relatedNodes": [
+              {
+                "html": "<tr class=\"form-row row1 dynamic-baseobjectlicence_set\" id=\"baseobjectlicence_set-0\">",
+                "target": [
+                  "#baseobjectlicence_set-0"
+                ]
+              }
+            ],
+            "impact": "serious",
+            "message": "Element has insufficient color contrast of 3.67 (foreground color: #1e88e5, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "serious",
+        "html": "<a class=\"inline-deletelink\" href=\"#\">Remove</a>",
+        "target": [
+          ".inline-deletelink"
+        ],
+        "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #1e88e5, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+      },
+      {
+        "any": [
+          {
+            "id": "color-contrast",
+            "data": {
+              "fgColor": "#1e88e5",
+              "bgColor": "#ffffff",
+              "contrastRatio": 3.67,
+              "fontSize": "9.0pt (12px)",
+              "fontWeight": "normal",
+              "messageKey": null,
+              "expectedContrastRatio": "4.5:1",
+              "shadowColor": null,
+              "colorParse": null
+            },
+            "relatedNodes": [
+              {
+                "html": "<tr class=\"add-row\"><td colspan=\"3\"><a href=\"#\">Add another Assignments</a></td></tr>",
+                "target": [
+                  ".add-row"
+                ]
+              }
+            ],
+            "impact": "serious",
+            "message": "Element has insufficient color contrast of 3.67 (foreground color: #1e88e5, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "serious",
+        "html": "<a href=\"#\">Add another Assignments</a>",
+        "target": [
+          "td[colspan=\"3\"] > a[href=\"#\"]"
+        ],
+        "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.67 (foreground color: #1e88e5, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+      },
+      {
+        "any": [
+          {
+            "id": "color-contrast",
+            "data": {
+              "fgColor": "#ffffff",
+              "bgColor": "#f04124",
+              "contrastRatio": 3.82,
+              "fontSize": "9.0pt (12px)",
+              "fontWeight": "normal",
+              "messageKey": null,
+              "expectedContrastRatio": "4.5:1",
+              "shadowColor": null,
+              "colorParse": null
+            },
+            "relatedNodes": [
+              {
+                "html": "<a href=\"/licences/licence/1/delete/\" class=\"deletelink button small alert radius left_margin\">Delete</a>",
+                "target": [
+                  ".deletelink"
+                ]
+              }
+            ],
+            "impact": "serious",
+            "message": "Element has insufficient color contrast of 3.82 (foreground color: #ffffff, background color: #f04124, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "serious",
+        "html": "<a href=\"/licences/licence/1/delete/\" class=\"deletelink button small alert radius left_margin\">Delete</a>",
+        "target": [
+          ".deletelink"
+        ],
+        "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.82 (foreground color: #ffffff, background color: #f04124, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+      },
+      {
+        "any": [
+          {
+            "id": "color-contrast",
+            "data": {
+              "fgColor": "#ffffff",
+              "bgColor": "#43a047",
+              "contrastRatio": 3.3,
+              "fontSize": "9.0pt (12px)",
+              "fontWeight": "normal",
+              "messageKey": null,
+              "expectedContrastRatio": "4.5:1",
+              "shadowColor": null,
+              "colorParse": null
+            },
+            "relatedNodes": [
+              {
+                "html": "<input type=\"submit\" value=\"Save\" name=\"_continue\" class=\"button small success\" autocomplete=\"off\">",
+                "target": [
+                  ".success"
+                ]
+              }
+            ],
+            "impact": "serious",
+            "message": "Element has insufficient color contrast of 3.3 (foreground color: #ffffff, background color: #43a047, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "serious",
+        "html": "<input type=\"submit\" value=\"Save\" name=\"_continue\" class=\"button small success\" autocomplete=\"off\">",
+        "target": [
+          ".success"
+        ],
+        "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 3.3 (foreground color: #ffffff, background color: #43a047, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+      }
+    ]
+  },
+  {
+    "id": "label",
+    "impact": "critical",
+    "tags": [
+      "cat.forms",
+      "wcag2a",
+      "wcag412",
+      "section508",
+      "section508.22.n",
+      "TTv5",
+      "TT5.c",
+      "EN-301-549",
+      "EN-9.4.1.2",
+      "ACT",
+      "RGAAv4",
+      "RGAA-11.1.1"
+    ],
+    "description": "Ensure every form element has a label",
+    "help": "Form elements must have labels",
+    "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/label?application=axeAPI",
+    "nodes": [
+      {
+        "any": [
+          {
+            "id": "implicit-label",
+            "data": null,
+            "relatedNodes": [],
+            "impact": "critical",
+            "message": "Element does not have an implicit (wrapped) <label>"
+          },
+          {
+            "id": "explicit-label",
+            "data": null,
+            "relatedNodes": [],
+            "impact": "critical",
+            "message": "Element does not have an explicit <label>"
+          },
+          {
+            "id": "aria-label",
+            "data": null,
+            "relatedNodes": [],
+            "impact": "critical",
+            "message": "aria-label attribute does not exist or is empty"
+          },
+          {
+            "id": "aria-labelledby",
+            "data": null,
+            "relatedNodes": [],
+            "impact": "critical",
+            "message": "aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty"
+          },
+          {
+            "id": "non-empty-title",
+            "data": {
+              "messageKey": "noAttr"
+            },
+            "relatedNodes": [],
+            "impact": "critical",
+            "message": "Element has no title attribute"
+          },
+          {
+            "id": "non-empty-placeholder",
+            "data": {
+              "messageKey": "noAttr"
+            },
+            "relatedNodes": [],
+            "impact": "critical",
+            "message": "Element has no placeholder attribute"
+          },
+          {
+            "id": "presentational-role",
+            "data": null,
+            "relatedNodes": [],
+            "impact": "critical",
+            "message": "Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "critical",
+        "html": "<input type=\"number\" name=\"baseobjectlicence_set-0-quantity\" value=\"1\" class=\"vIntegerField\" min=\"0\" id=\"id_baseobjectlicence_set-0-quantity\" autocomplete=\"off\">",
+        "target": [
+          "#id_baseobjectlicence_set-0-quantity"
+        ],
+        "failureSummary": "Fix any of the following:\n  Element does not have an implicit (wrapped) <label>\n  Element does not have an explicit <label>\n  aria-label attribute does not exist or is empty\n  aria-labelledby attribute does not exist, references elements that do not exist or references elements that are empty\n  Element has no title attribute\n  Element has no placeholder attribute\n  Element's default semantics were not overridden with role=\"none\" or role=\"presentation\""
+      }
+    ]
+  },
+  {
+    "id": "landmark-one-main",
+    "impact": "moderate",
+    "tags": [
+      "cat.semantics",
+      "best-practice"
+    ],
+    "description": "Ensure the document has a main landmark",
+    "help": "Document should have one main landmark",
+    "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/landmark-one-main?application=axeAPI",
+    "nodes": [
+      {
+        "any": [],
+        "all": [
+          {
+            "id": "page-has-main",
+            "data": null,
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Document does not have a main landmark"
+          }
+        ],
+        "none": [],
+        "impact": "moderate",
+        "html": "<html lang=\"en\" class=\" js flexbox flexboxl...\" style=\"\">",
+        "target": [
+          "html"
+        ],
+        "failureSummary": "Fix all of the following:\n  Document does not have a main landmark"
+      }
+    ]
+  },
+  {
+    "id": "region",
+    "impact": "moderate",
+    "tags": [
+      "cat.keyboard",
+      "best-practice",
+      "RGAAv4",
+      "RGAA-9.2.1"
+    ],
+    "description": "Ensure all page content is contained by landmarks",
+    "help": "All page content should be contained by landmarks",
+    "helpUrl": "https://dequeuniversity.com/rules/axe/4.14/region?application=axeAPI",
+    "nodes": [
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div class=\"row header\">",
+        "target": [
+          ".header"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<span class=\"tab-label\">Basic info</span>",
+        "target": [
+          "a[href$=\"change/\"] > .tab-label"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<span class=\"tab-label\">Assignments</span>",
+        "target": [
+          "a[title=\"Assignments\"] > .tab-label"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<span class=\"tab-label\">Assigned to users</span>",
+        "target": [
+          "a[title=\"Assigned to users\"] > .tab-label"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<span class=\"tab-label\">Attachments</span>",
+        "target": [
+          "a[title=\"Attachments\"] > .tab-label"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<h2>Assignments</h2>",
+        "target": [
+          "h2"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<thead>",
+        "target": [
+          "thead"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div id=\"input-wrapper\" class=\"style-scope badge-input\">\n        <input id=\"text-getter\" is=\"iron-input\" autocomplete=\"off\" class=\"style-scope badge-input\" aria-label=\"baseobjectlicence_set-0-base_object\">\n      </div>",
+        "target": [
+          "#id_baseobjectlicence_set-0-base_object > .horizontal-layout.auto-complete.style-scope > badge-input > .badge-input.style-scope:nth-child(1) > .badge-input.style-scope:nth-child(2)"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<a class=\"style-scope auto-complete\" id=\"lookup_id_baseobjectlicence_set-0-base_object\" href=\"/assets/baseobject/?_to_field=id\" aria-label=\"Browse baseobjectlicence_set-0-base_object\">\n          <i class=\"fa fa-search style-scope auto-complete\" aria-hidden=\"true\"></i>\n        </a>",
+        "target": [
+          "#lookup_id_baseobjectlicence_set-0-base_object"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<span class=\"show-for-sr style-scope tool-tip\">",
+        "target": [
+          "#id_baseobjectlicence_set-0-base_object > .horizontal-layout.auto-complete.style-scope > .auto-complete.style-scope:nth-child(2) > tool-tip > .show-for-sr.tool-tip"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<td class=\"field-quantity\">",
+        "target": [
+          "#baseobjectlicence_set-0 > .field-quantity"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div><a class=\"inline-deletelink\" href=\"#\">Remove</a></div>",
+        "target": [
+          ".delete > div:nth-child(2)"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<tr class=\"add-row\"><td colspan=\"3\"><a href=\"#\">Add another Assignments</a></td></tr>",
+        "target": [
+          ".add-row"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      },
+      {
+        "any": [
+          {
+            "id": "region",
+            "data": {
+              "isIframe": false
+            },
+            "relatedNodes": [],
+            "impact": "moderate",
+            "message": "Some page content is not contained by landmarks"
+          }
+        ],
+        "all": [],
+        "none": [],
+        "impact": "moderate",
+        "html": "<div class=\"small-1 columns\">\n        \n        <a href=\"/licences/licence/1/delete/\" class=\"deletelink button small alert radius left_margin\">Delete</a>\n      </div>",
+        "target": [
+          ".admin-bottom > .row > .small-1.columns"
+        ],
+        "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+      }
+    ]
+  }
+]
